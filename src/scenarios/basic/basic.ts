@@ -1,108 +1,53 @@
 import * as THREE from 'three';
-import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
-import { TransformControls } from 'three/examples/jsm/controls/TransformControls';
-// import gsap from 'gsap';
+import { config } from '../../config';
+import { init } from '../../scene';
 
-window.addEventListener('mousemove', (evt) => {
-  cursor.x = evt.clientX / sizes.width - 0.5;
-  cursor.y = -(evt.clientY / sizes.height - 0.5);
-});
+config.cameraType = 'perspective';
+config.handleMouseMove = handleMouseMove;
+config.handleResize = handleResize;
+config.handleHit = handleHit;
+config.handleClick = handleClick;
 
-window.addEventListener('resize', () => {
-  sizes.width = window.innerWidth - CONTROLS_AREA;
-  sizes.height = window.innerHeight;
-  const aspectRatio = sizes.width / sizes.height;
-  camera.aspect = aspectRatio;
-  camera.updateProjectionMatrix();
-  renderer.setSize(sizes.width, sizes.height);
-  // for when moving the window from a retina screen to a non-retina screen
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-});
+const { scene, transformControls, loop, pointer, sceneSize, getHit } =
+  init(config);
+function handleMouseMove(pointer: typeof pointer) {
+  // console.log(pointer);
+}
 
-window.addEventListener('dblclick', () => {
-  const fullscreenElement =
-    document.fullscreenElement || document.webkitFullscreenElement;
-  const requestFullscreen =
-    canvas.requestFullscreen || canvas.webkitRequestFullscreen;
-  const exitFullscreen =
-    document.exitFullscreen || document.webkitExitFullscreen;
+function handleClick(pointer: typeof pointer) {
+  // console.log(getHit());
+  transformControls.attach(getHit()?.object);
+}
 
-  if (!fullscreenElement) {
-    requestFullscreen.call(canvas);
-  } else {
-    exitFullscreen.call(document);
-  }
-});
+function handleResize(size: typeof sceneSize) {
+  // console.log(size);
+}
+function handleHit(
+  hit: THREE.Intersection<THREE.Object3D<THREE.Object3DEventMap>>
+) {
+  // console.log(hit);
+}
 
-const CONTROLS_AREA = 200;
-
-const cursor = {
-  x: 0,
-  y: 0
-};
-
-const scene = new THREE.Scene();
-
-const cube = new THREE.Mesh(
+const cube1 = new THREE.Mesh(
   new THREE.BoxGeometry(1, 1, 1),
   new THREE.MeshBasicMaterial({ color: 0xff0000 })
 );
-cube.position.set(0, 0, 0);
-scene.add(cube);
+config.interactiveObjects.push(cube1);
+cube1.name = 'cube1';
+cube1.position.set(0, 0, 0);
+scene.add(cube1);
 
-const sizes = {
-  width: window.innerWidth - CONTROLS_AREA,
-  height: window.innerHeight
-};
-const aspectRatio = sizes.width / sizes.height;
-const camera = new THREE.PerspectiveCamera(75, aspectRatio, 1, 100);
-// const camera = new THREE.OrthographicCamera(
-//   -1 * aspectRatio,
-//   1 * aspectRatio,
-//   1,
-//   -1,
-//   1,
-//   100
-// );
-camera.position.set(0, 0, 3);
-// camera.lookAt(cube.position);
-scene.add(camera);
+const cube2 = new THREE.Mesh(
+  new THREE.BoxGeometry(1, 1, 1),
+  new THREE.MeshBasicMaterial({ color: 0x00ff00 })
+);
+config.interactiveObjects.push(cube2);
+cube2.name = 'cube2';
+cube2.position.set(2, 0, 0);
+scene.add(cube2);
 
-const axisHelper = new THREE.AxesHelper(100);
-scene.add(axisHelper);
-
-const canvas = document.querySelector('canvas.webgl')!;
-const renderer = new THREE.WebGLRenderer({
-  canvas,
-  antialias: true
-});
-renderer.setSize(sizes.width, sizes.height);
-renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-
-const orbitControls = new OrbitControls(camera, canvas);
-// orbitControls.enabled = false;
-orbitControls.enableDamping = true;
-
-const transformControls = new TransformControls(camera, canvas);
-transformControls.attach(cube);
-transformControls.setSpace('local'); // local | world
-transformControls.addEventListener('dragging-changed', function (event: any) {
-  orbitControls.enabled = !event.value;
-});
-scene.add(transformControls);
-
-// const clock = new THREE.Clock();
 const tick = () => {
-  // const delta = clock.getDelta();
-  // cube.rotation.y += delta * 0.5;
-
-  // camera.position.x = Math.sin(cursor.x * Math.PI * 2) * 3;
-  // camera.position.z = Math.cos(cursor.x * Math.PI * 2) * 3;
-  // camera.position.y = cursor.y * 10;
-
-  orbitControls.update();
-
-  renderer.render(scene, camera);
-  window.requestAnimationFrame(tick);
+  // console.log(pointer);
+  // console.log(getHit());
 };
-tick();
+loop(tick);

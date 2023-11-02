@@ -3,14 +3,43 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import { TransformControls } from 'three/examples/jsm/controls/TransformControls';
 // import gsap from 'gsap';
 
-const cursor = {
-  x: 0,
-  y: 0
-};
 window.addEventListener('mousemove', (evt) => {
   cursor.x = evt.clientX / sizes.width - 0.5;
   cursor.y = -(evt.clientY / sizes.height - 0.5);
 });
+
+window.addEventListener('resize', () => {
+  sizes.width = window.innerWidth - CONTROLS_AREA;
+  sizes.height = window.innerHeight;
+  const aspectRatio = sizes.width / sizes.height;
+  camera.aspect = aspectRatio;
+  camera.updateProjectionMatrix();
+  renderer.setSize(sizes.width, sizes.height);
+  // for when moving the window from a retina screen to a non-retina screen
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+});
+
+window.addEventListener('dblclick', () => {
+  const fullscreenElement =
+    document.fullscreenElement || document.webkitFullscreenElement;
+  const requestFullscreen =
+    canvas.requestFullscreen || canvas.webkitRequestFullscreen;
+  const exitFullscreen =
+    document.exitFullscreen || document.webkitExitFullscreen;
+
+  if (!fullscreenElement) {
+    requestFullscreen.call(canvas);
+  } else {
+    exitFullscreen.call(document);
+  }
+});
+
+const CONTROLS_AREA = 200;
+
+const cursor = {
+  x: 0,
+  y: 0
+};
 
 const scene = new THREE.Scene();
 
@@ -22,8 +51,8 @@ cube.position.set(0, 0, 0);
 scene.add(cube);
 
 const sizes = {
-  width: 800,
-  height: 600
+  width: window.innerWidth - CONTROLS_AREA,
+  height: window.innerHeight
 };
 const aspectRatio = sizes.width / sizes.height;
 const camera = new THREE.PerspectiveCamera(75, aspectRatio, 1, 100);
@@ -48,8 +77,10 @@ const renderer = new THREE.WebGLRenderer({
   antialias: true
 });
 renderer.setSize(sizes.width, sizes.height);
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 
 const orbitControls = new OrbitControls(camera, canvas);
+// orbitControls.enabled = false;
 orbitControls.enableDamping = true;
 
 const transformControls = new TransformControls(camera, canvas);

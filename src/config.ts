@@ -12,6 +12,7 @@ export type SceneSize = {
 export type Config = {
   controlsAreaWidth: number;
   cameraType: 'perspective' | 'orthographic';
+  orthographicCameraRatio: number;
   handleMouseMove(pointer: THREE.Vector2): void;
   handleClick(pointer: THREE.Vector2): void;
   handleResize(sizes: SceneSize): void;
@@ -24,6 +25,7 @@ export type Config = {
 export const config: Config = {
   controlsAreaWidth: 200,
   cameraType: 'perspective',
+  orthographicCameraRatio: 300,
   handleMouseMove() {},
   handleClick() {},
   handleResize() {},

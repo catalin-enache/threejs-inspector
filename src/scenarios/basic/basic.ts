@@ -1,22 +1,34 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import * as THREE from 'three';
 import { config } from '../../config';
 import { init } from '../../scene';
 
-config.cameraType = 'perspective';
+config.cameraType = 'orthographic';
+config.controlsAreaWidth = 300;
+config.orthographicCameraRatio = 400;
 config.handleMouseMove = handleMouseMove;
 config.handleResize = handleResize;
 config.handleHit = handleHit;
 config.handleClick = handleClick;
 
-const { scene, transformControls, loop, pointer, sceneSize, getHit } =
-  init(config);
-function handleMouseMove(pointer: typeof pointer) {
+const {
+  scene,
+  transformControls,
+  loop,
+  pointer,
+  sceneSize,
+  getCamera,
+  getHit
+} = init(config);
+function handleMouseMove(cursor: typeof pointer) {
   // console.log(pointer);
 }
 
-function handleClick(pointer: typeof pointer) {
+function handleClick(cursor: typeof pointer) {
+  const hit = getHit();
   // console.log(getHit());
-  transformControls.attach(getHit()?.object);
+  transformControls.attach(hit?.object);
+  // switchCamera();
 }
 
 function handleResize(size: typeof sceneSize) {
@@ -48,6 +60,8 @@ scene.add(cube2);
 
 const tick = () => {
   // console.log(pointer);
-  // console.log(getHit());
+  // console.log(getHit())
+  const camera = getCamera();
+  console.log(camera.position.length(), camera.zoom);
 };
 loop(tick);

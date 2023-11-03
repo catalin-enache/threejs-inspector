@@ -72,20 +72,7 @@ const init = (config: Config) => {
     }
   });
 
-  window.addEventListener('resize', () => {
-    setSceneSize(config);
-    const aspectRatio = sceneSize.width / sceneSize.height;
-    perspectiveCamera.aspect = aspectRatio;
-    perspectiveCamera.updateProjectionMatrix();
-    renderer.setSize(sceneSize.width, sceneSize.height);
-    // for when moving the window from a retina screen to a non-retina screen
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-    if (config.handleResize) {
-      window.requestAnimationFrame(() => config.handleResize(sceneSize));
-    }
-  });
-
-  window.addEventListener('dblclick', () => {
+  canvas.addEventListener('dblclick', () => {
     const fullscreenElement =
       // @ts-ignore
       document.fullscreenElement || document.webkitFullscreenElement;
@@ -103,32 +90,78 @@ const init = (config: Config) => {
     }
   });
 
+  window.addEventListener('resize', () => {
+    setSceneSize(config);
+    updateCameras();
+    renderer.setSize(sceneSize.width, sceneSize.height);
+    // for when moving the window from a retina screen to a non-retina screen
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    if (config.handleResize) {
+      window.requestAnimationFrame(() => config.handleResize(sceneSize));
+    }
+  });
+
+  const updateCameras = () => {
+    const aspectRatio = sceneSize.width / sceneSize.height;
+    perspectiveCamera.aspect = aspectRatio;
+    perspectiveCamera.updateProjectionMatrix();
+
+    orthographicCamera.left = sceneSize.width / -config.orthographicCameraRatio;
+    orthographicCamera.right = sceneSize.width / config.orthographicCameraRatio;
+    orthographicCamera.top = sceneSize.height / config.orthographicCameraRatio;
+    orthographicCamera.bottom =
+      sceneSize.height / -config.orthographicCameraRatio;
+    orthographicCamera.updateProjectionMatrix();
+  };
+
   const aspectRatio = sceneSize.width / sceneSize.height;
   const perspectiveCamera = new THREE.PerspectiveCamera(
     75,
     aspectRatio,
-    1,
+    0.1,
     100
   );
+  perspectiveCamera.position.set(0, 0, 3);
+  perspectiveCamera.zoom = 1;
   const orthographicCamera = new THREE.OrthographicCamera(
-    -1 * aspectRatio,
-    1 * aspectRatio,
-    1,
-    -1,
-    1,
+    -0,
+    0,
+    0,
+    -0,
+    0.1,
     100
   );
-  const camera =
+  orthographicCamera.position.set(0, 0, 3);
+  orthographicCamera.zoom = 1;
+
+  updateCameras();
+
+  let camera =
     config.cameraType === 'perspective'
       ? perspectiveCamera
       : orthographicCamera;
-  camera.position.set(0, 0, 3);
 
-  const axisHelper = new THREE.AxesHelper(100);
+  const switchCamera = () => {
+    scene.remove(camera);
+    if (config.cameraType === 'perspective') {
+      config.cameraType = 'orthographic';
+      camera = orthographicCamera;
+      orbitControls.object = camera;
+      transformControls.camera = camera;
+    } else {
+      config.cameraType = 'perspective';
+      camera = perspectiveCamera;
+      orbitControls.object = camera;
+      transformControls.camera = camera;
+    }
+    scene.add(camera);
+  };
+
+  const axisHelper = new THREE.AxesHelper(1000);
 
   const orbitControls = new OrbitControls(camera, canvas);
   orbitControls.enabled = true;
-  orbitControls.enableDamping = true;
+  orbitControls.enableDamping = false;
 
   const transformControls = new TransformControls(camera, canvas);
   transformControls.setSpace('local'); // local | world
@@ -149,6 +182,7 @@ const init = (config: Config) => {
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 
   const getHit = () => hit;
+  const getCamera = () => camera;
 
   const loop = (callback: () => void) => {
     orbitControls.update();
@@ -157,19 +191,21 @@ const init = (config: Config) => {
     window.requestAnimationFrame(() => loop(callback));
   };
 
-  return {
+  window.config = {
     pointer,
     sceneSize,
     scene,
-    camera,
     canvas,
     renderer,
     orbitControls,
     transformControls,
     raycaster,
+    getCamera,
+    switchCamera,
     getHit,
     loop
   };
+  return window.config;
 };
 
 export { init };

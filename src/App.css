@@ -1,0 +1,45 @@
+.control {
+    user-select: none;
+    width: 100%;
+}
+
+.control hr {
+    border: 1px solid #213547;
+}
+
+.controlRow {
+    display: flex;
+    margin: 6px 0 6px 0;
+}
+
+.controlRow label {
+    cursor: pointer;
+}
+
+.controlRow input[type=checkbox] {
+    margin: 0 0 0 4px;
+    padding: 0;
+    width: 12px;
+    height: 12px;
+}
+
+.rowTitle, .rowEntry {
+    display: inline-flex;
+    align-items: center;
+    font-size: 14px;
+    line-height: 14px;
+    height: 14px;
+    flex-wrap: nowrap;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.rowTitle {
+    width: 70px;
+}
+
+.rowEntry {
+    flex: 1 1 0;
+}
+

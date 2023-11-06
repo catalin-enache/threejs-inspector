@@ -7,6 +7,7 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 // @ts-ignore
 import { TransformControls } from 'three/examples/jsm/controls/TransformControls';
+import { EVENT_TYPE, THREE_EVENT_TYPE, CONTROL_EVENT_TYPE } from './constants';
 import type { Config, SceneSize } from './config';
 
 type getHitsParams = {
@@ -57,13 +58,6 @@ const init = (config: Config) => {
 
   setSceneSize(config);
 
-  canvas.addEventListener('click', () => {
-    getHits({ raycaster, pointer, camera, config });
-    if (config.handleClick) {
-      window.requestAnimationFrame(() => config.handleClick(pointer));
-    }
-  });
-
   canvas.addEventListener('pointermove', (evt: Event) => {
     setPointer(evt as PointerEvent);
     getHits({ raycaster, pointer, camera, config });
@@ -72,21 +66,43 @@ const init = (config: Config) => {
     }
   });
 
-  canvas.addEventListener('dblclick', () => {
-    const fullscreenElement =
-      // @ts-ignore
-      document.fullscreenElement || document.webkitFullscreenElement;
-    const requestFullscreen =
-      // @ts-ignore
-      canvas.requestFullscreen || canvas.webkitRequestFullscreen;
-    const exitFullscreen =
-      // @ts-ignore
-      document.exitFullscreen || document.webkitExitFullscreen;
+  // @ts-ignore
+  canvas.addEventListener('dblclick', (evt: PointerEvent) => {
+    if (evt.ctrlKey) {
+      const fullscreenElement =
+        // @ts-ignore
+        document.fullscreenElement || document.webkitFullscreenElement;
+      const requestFullscreen =
+        // @ts-ignore
+        canvas.requestFullscreen || canvas.webkitRequestFullscreen;
+      const exitFullscreen =
+        // @ts-ignore
+        document.exitFullscreen || document.webkitExitFullscreen;
 
-    if (!fullscreenElement) {
-      requestFullscreen.call(canvas);
+      if (!fullscreenElement) {
+        requestFullscreen.call(canvas);
+      } else {
+        exitFullscreen.call(document);
+      }
     } else {
-      exitFullscreen.call(document);
+      getHits({ raycaster, pointer, camera, config });
+      const hit = getHit();
+      if (hit) {
+        transformControls.attach(hit.object);
+      } else {
+        transformControls.detach();
+      }
+      window.dispatchEvent(
+        new CustomEvent(EVENT_TYPE.THREE, {
+          detail: {
+            type: THREE_EVENT_TYPE.OBJECT_SELECTED,
+            object: hit?.object || null
+          }
+        })
+      );
+      if (config.handleClick) {
+        window.requestAnimationFrame(() => config.handleClick(pointer));
+      }
     }
   });
 
@@ -98,6 +114,16 @@ const init = (config: Config) => {
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     if (config.handleResize) {
       window.requestAnimationFrame(() => config.handleResize(sceneSize));
+    }
+  });
+
+  window.addEventListener(EVENT_TYPE.CONTROL, (evt: any) => {
+    if (evt.detail.type === CONTROL_EVENT_TYPE.CAMERA_TYPE) {
+      switchCamera();
+    } else if (
+      evt.detail.type === CONTROL_EVENT_TYPE.SELECTED_OBJECT_TRANSFORM
+    ) {
+      transformControls.object?.position.copy(evt.detail.value.position);
     }
   });
 
@@ -168,6 +194,16 @@ const init = (config: Config) => {
   transformControls.addEventListener('dragging-changed', function (event: any) {
     orbitControls.enabled = !event.value;
   });
+  transformControls.addEventListener('objectChange', function (event: any) {
+    window.dispatchEvent(
+      new CustomEvent(EVENT_TYPE.THREE, {
+        detail: {
+          type: THREE_EVENT_TYPE.OBJECT_CHANGE,
+          object: event.target.object
+        }
+      })
+    );
+  });
 
   const scene = new THREE.Scene();
   scene.add(camera);
@@ -191,7 +227,7 @@ const init = (config: Config) => {
     window.requestAnimationFrame(() => loop(callback));
   };
 
-  window.config = {
+  return {
     pointer,
     sceneSize,
     scene,
@@ -205,7 +241,6 @@ const init = (config: Config) => {
     getHit,
     loop
   };
-  return window.config;
 };
 
 export { init };

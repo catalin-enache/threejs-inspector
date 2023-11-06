@@ -1,10 +1,12 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable @typescript-eslint/ban-ts-comment */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import * as THREE from 'three';
 import { config } from '../../config';
 import { init } from '../../scene';
 
-config.cameraType = 'orthographic';
-config.controlsAreaWidth = 300;
+// config.cameraType = 'orthographic';
+// config.controlsAreaWidth = 350;
 config.orthographicCameraRatio = 400;
 config.handleMouseMove = handleMouseMove;
 config.handleResize = handleResize;
@@ -25,10 +27,7 @@ function handleMouseMove(cursor: typeof pointer) {
 }
 
 function handleClick(cursor: typeof pointer) {
-  const hit = getHit();
-  // console.log(getHit());
-  transformControls.attach(hit?.object);
-  // switchCamera();
+  //  console.log(cursor);
 }
 
 function handleResize(size: typeof sceneSize) {
@@ -61,7 +60,7 @@ scene.add(cube2);
 const tick = () => {
   // console.log(pointer);
   // console.log(getHit())
-  const camera = getCamera();
-  console.log(camera.position.length(), camera.zoom);
+  // const camera = getCamera();
+  // console.log(camera.position.length(), camera.zoom);
 };
 loop(tick);

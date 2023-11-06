@@ -23,7 +23,7 @@ export type Config = {
 };
 
 export const config: Config = {
-  controlsAreaWidth: 200,
+  controlsAreaWidth: 330,
   cameraType: 'perspective',
   orthographicCameraRatio: 300,
   handleMouseMove() {},

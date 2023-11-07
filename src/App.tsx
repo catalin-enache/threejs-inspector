@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 /* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-disable @typescript-eslint/ban-ts-comment */
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { useState, useEffect, useCallback } from 'react';
 // import * as THREE from 'three';
 // @ts-ignore
@@ -13,8 +13,11 @@ import {
 } from './constants.ts';
 import './App.css';
 
-function App() {
-  const [scene, setScene] = useState<ReturnType<typeof init> | null>(null);
+export interface AppProps {
+  scene: ReturnType<typeof init>;
+}
+function App({ scene }: AppProps) {
+  // const [scene, setScene] = useState<ReturnType<typeof init> | null>(null);
   const [, setUpdateNow] = useState(0);
 
   const forceUpdate = useCallback(
@@ -25,10 +28,10 @@ function App() {
     []
   );
 
-  const cameraType = scene?.getConfig().cameraType;
-  const transformControls = scene?.getTransformControls();
-  const transformControlsSpace = transformControls?.space;
-  const selectedObject = scene?.getSelectedObject() || null;
+  const cameraType = scene.getConfig().cameraType;
+  const transformControls = scene.getTransformControls();
+  const transformControlsSpace = transformControls.space;
+  const selectedObject = scene.getSelectedObject() || null;
 
   const toggleCameraType = () => {
     window.dispatchEvent(
@@ -41,8 +44,8 @@ function App() {
 
   const toggleTransformSpace = useCallback(() => {
     if (!scene) return;
-    const newSpace = transformControls?.space === 'local' ? 'world' : 'local';
-    transformControls?.setSpace(newSpace);
+    const newSpace = transformControls.space === 'local' ? 'world' : 'local';
+    transformControls.setSpace(newSpace);
     forceUpdate();
   }, [scene, transformControls]);
 
@@ -54,9 +57,10 @@ function App() {
         forceUpdate();
       } else if (evt.detail.type === THREE_EVENT_TYPE.OBJECT_CHANGE) {
         forceUpdate();
-      } else if (evt.detail.type === THREE_EVENT_TYPE.SCENE_READY) {
-        setScene(evt.detail.object);
       }
+      // else if (evt.detail.type === THREE_EVENT_TYPE.SCENE_READY) {
+      //   setScene(evt.detail.object);
+      // }
     });
   }, []);
 

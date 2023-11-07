@@ -49,18 +49,13 @@ function App({ scene }: AppProps) {
     forceUpdate();
   }, [scene, transformControls]);
 
-  console.log({ scene });
-
   useEffect(() => {
     window.addEventListener(EVENT_TYPE.THREE, (evt: any) => {
       if (evt.detail.type === THREE_EVENT_TYPE.OBJECT_SELECTED) {
         forceUpdate();
-      } else if (evt.detail.type === THREE_EVENT_TYPE.OBJECT_CHANGE) {
+      } else if (evt.detail.type === THREE_EVENT_TYPE.OBJECT_TRANSFORM) {
         forceUpdate();
       }
-      // else if (evt.detail.type === THREE_EVENT_TYPE.SCENE_READY) {
-      //   setScene(evt.detail.object);
-      // }
     });
   }, []);
 
@@ -70,8 +65,9 @@ function App({ scene }: AppProps) {
       window.dispatchEvent(
         new CustomEvent(EVENT_TYPE.CONTROL, {
           detail: {
-            type: CONTROL_EVENT_TYPE.SELECTED_OBJECT_TRANSFORM,
-            value: {
+            type: CONTROL_EVENT_TYPE.OBJECT_TRANSFORM,
+            object: {
+              ...selectedObject,
               position: {
                 ...selectedObject.position,
                 [coordinate]: event

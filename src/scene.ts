@@ -7,28 +7,48 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 // @ts-ignore
 import { TransformControls } from 'three/examples/jsm/controls/TransformControls';
-import { EVENT_TYPE, THREE_EVENT_TYPE, CONTROL_EVENT_TYPE } from './constants';
+import {
+  EVENT_TYPE,
+  THREE_EVENT_TYPE,
+  CONTROL_EVENT_TYPE,
+  CONTROLS_AREA_WIDTH
+} from './constants';
 import type { Config, SceneSize } from './config';
 
 type getHitsParams = {
   raycaster: THREE.Raycaster;
   pointer: THREE.Vector2;
   camera: THREE.Camera;
-  config: Config;
 };
 
 const _hits: THREE.Intersection<THREE.Object3D<THREE.Object3DEventMap>>[] = [];
 let hit: THREE.Intersection<THREE.Object3D<THREE.Object3DEventMap>> | null;
-const getHits = ({ raycaster, pointer, camera, config }: getHitsParams) => {
+const interactiveObjects: THREE.Object3D[] = [];
+
+const getHits = ({ raycaster, pointer, camera }: getHitsParams) => {
   raycaster.setFromCamera(pointer, camera);
   _hits.length = 0;
-  raycaster.intersectObjects(config.interactiveObjects, false, _hits);
-  if (_hits.length) {
+  raycaster.intersectObjects(interactiveObjects, false, _hits);
+  if (_hits.length && hit?.object !== _hits[0].object) {
     hit = _hits[0];
-    config.handleHit(hit);
-  } else {
+    window.dispatchEvent(
+      new CustomEvent(EVENT_TYPE.THREE, {
+        detail: {
+          type: THREE_EVENT_TYPE.OBJECT_HIT,
+          object: hit
+        }
+      })
+    );
+  } else if (!_hits.length && hit !== null) {
     hit = null;
-    config.handleHit(hit);
+    window.dispatchEvent(
+      new CustomEvent(EVENT_TYPE.THREE, {
+        detail: {
+          type: THREE_EVENT_TYPE.OBJECT_HIT,
+          object: hit
+        }
+      })
+    );
   }
 };
 
@@ -37,8 +57,8 @@ const sceneSize: SceneSize = {
   height: 0
 };
 
-const setSceneSize = (config: Config) => {
-  sceneSize.width = window.innerWidth - config.controlsAreaWidth;
+const setSceneSize = () => {
+  sceneSize.width = window.innerWidth - CONTROLS_AREA_WIDTH;
   sceneSize.height = window.innerHeight;
 };
 
@@ -56,16 +76,56 @@ const init = (config: Config) => {
 
   const raycaster = new THREE.Raycaster();
 
-  setSceneSize(config);
+  setSceneSize();
 
   let selectedObject: THREE.Object3D | null = null;
 
+  canvas.addEventListener('pointerdown', () => {
+    window.dispatchEvent(
+      new CustomEvent(EVENT_TYPE.THREE, {
+        detail: {
+          type: THREE_EVENT_TYPE.POINTER_DOWN,
+          object: pointer
+        }
+      })
+    );
+  });
+
+  canvas.addEventListener('pointerup', () => {
+    window.dispatchEvent(
+      new CustomEvent(EVENT_TYPE.THREE, {
+        detail: {
+          type: THREE_EVENT_TYPE.POINTER_UP,
+          object: pointer
+        }
+      })
+    );
+  });
+
   canvas.addEventListener('pointermove', (evt: Event) => {
     setPointer(evt as PointerEvent);
-    getHits({ raycaster, pointer, camera, config });
-    if (config.handleMouseMove) {
-      window.requestAnimationFrame(() => config.handleMouseMove(pointer));
-    }
+    getHits({ raycaster, pointer, camera });
+    window.requestAnimationFrame(() => {
+      window.dispatchEvent(
+        new CustomEvent(EVENT_TYPE.THREE, {
+          detail: {
+            type: THREE_EVENT_TYPE.POINTER_MOVE,
+            object: pointer
+          }
+        })
+      );
+    });
+  });
+
+  canvas.addEventListener('click', () => {
+    window.dispatchEvent(
+      new CustomEvent(EVENT_TYPE.THREE, {
+        detail: {
+          type: THREE_EVENT_TYPE.POINTER_CLICK,
+          object: pointer
+        }
+      })
+    );
   });
 
   // @ts-ignore
@@ -87,7 +147,7 @@ const init = (config: Config) => {
         exitFullscreen.call(document);
       }
     } else {
-      getHits({ raycaster, pointer, camera, config });
+      getHits({ raycaster, pointer, camera });
       const hit = getHit();
       if (hit) {
         transformControls.attach(hit.object);
@@ -104,30 +164,32 @@ const init = (config: Config) => {
           }
         })
       );
-      if (config.handleClick) {
-        window.requestAnimationFrame(() => config.handleClick(pointer));
-      }
     }
   });
 
   window.addEventListener('resize', () => {
-    setSceneSize(config);
+    setSceneSize();
     updateCameras();
     renderer.setSize(sceneSize.width, sceneSize.height);
     // for when moving the window from a retina screen to a non-retina screen
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-    if (config.handleResize) {
-      window.requestAnimationFrame(() => config.handleResize(sceneSize));
-    }
+    window.requestAnimationFrame(() => {
+      window.dispatchEvent(
+        new CustomEvent(EVENT_TYPE.THREE, {
+          detail: {
+            type: THREE_EVENT_TYPE.SCENE_RESIZE,
+            object: sceneSize
+          }
+        })
+      );
+    });
   });
 
   window.addEventListener(EVENT_TYPE.CONTROL, (evt: any) => {
     if (evt.detail.type === CONTROL_EVENT_TYPE.CAMERA_TYPE) {
       switchCamera();
-    } else if (
-      evt.detail.type === CONTROL_EVENT_TYPE.SELECTED_OBJECT_TRANSFORM
-    ) {
-      transformControls.object?.position.copy(evt.detail.value.position);
+    } else if (evt.detail.type === CONTROL_EVENT_TYPE.OBJECT_TRANSFORM) {
+      transformControls.object?.position.copy(evt.detail.object.position);
     }
   });
 
@@ -202,7 +264,7 @@ const init = (config: Config) => {
     window.dispatchEvent(
       new CustomEvent(EVENT_TYPE.THREE, {
         detail: {
-          type: THREE_EVENT_TYPE.OBJECT_CHANGE,
+          type: THREE_EVENT_TYPE.OBJECT_TRANSFORM,
           object: event.target.object
         }
       })
@@ -227,6 +289,7 @@ const init = (config: Config) => {
   const getConfig = () => config;
   const getRayCaster = () => raycaster;
   const getTransformControls = () => transformControls;
+  const getInteractiveObjects = () => interactiveObjects;
 
   const loop = (callback: () => void) => {
     orbitControls.update();
@@ -249,6 +312,7 @@ const init = (config: Config) => {
     switchCamera,
     getHit,
     getSelectedObject,
+    getInteractiveObjects,
     loop
   };
   setTimeout(() => {

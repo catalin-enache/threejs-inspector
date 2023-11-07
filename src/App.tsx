@@ -1,11 +1,11 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/ban-ts-comment */
-import React from 'react';
 import { useState, useEffect, useCallback } from 'react';
-import * as THREE from 'three';
+// import * as THREE from 'three';
 // @ts-ignore
 import { InputNumber } from './lib/react-components/InputNumber';
+import { init } from './scene';
 import {
   EVENT_TYPE,
   THREE_EVENT_TYPE,
@@ -14,11 +14,8 @@ import {
 import './App.css';
 
 function App() {
+  const [scene, setScene] = useState<ReturnType<typeof init> | null>(null);
   const [, setUpdateNow] = useState(0);
-  const [cameraType, setCameraType] = useState(false);
-  const [selectedObject, setSelectedObject] = useState<THREE.Object3D | null>(
-    null
-  );
 
   const forceUpdate = useCallback(
     () =>
@@ -27,21 +24,38 @@ function App() {
       }),
     []
   );
-  const toggleCameraType = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setCameraType(event.target.checked);
+
+  const cameraType = scene?.getConfig().cameraType;
+  const transformControls = scene?.getTransformControls();
+  const transformControlsSpace = transformControls?.space;
+  const selectedObject = scene?.getSelectedObject() || null;
+
+  const toggleCameraType = () => {
     window.dispatchEvent(
       new CustomEvent(EVENT_TYPE.CONTROL, {
         detail: { type: CONTROL_EVENT_TYPE.CAMERA_TYPE }
       })
     );
+    forceUpdate();
   };
+
+  const toggleTransformSpace = useCallback(() => {
+    if (!scene) return;
+    const newSpace = transformControls?.space === 'local' ? 'world' : 'local';
+    transformControls?.setSpace(newSpace);
+    forceUpdate();
+  }, [scene, transformControls]);
+
+  console.log({ scene });
 
   useEffect(() => {
     window.addEventListener(EVENT_TYPE.THREE, (evt: any) => {
       if (evt.detail.type === THREE_EVENT_TYPE.OBJECT_SELECTED) {
-        setSelectedObject(evt.detail.object);
+        forceUpdate();
       } else if (evt.detail.type === THREE_EVENT_TYPE.OBJECT_CHANGE) {
         forceUpdate();
+      } else if (evt.detail.type === THREE_EVENT_TYPE.SCENE_READY) {
+        setScene(evt.detail.object);
       }
     });
   }, []);
@@ -66,20 +80,19 @@ function App() {
       // so we force a re-render to update the UI
       forceUpdate();
     },
-    [selectedObject?.name]
+    [selectedObject]
   );
 
   return (
     <div className="control">
       <div className="controlRow">
-        <label className="rowEntry">
-          Switch Camera
-          <input
-            type="checkbox"
-            checked={cameraType}
-            onChange={toggleCameraType}
-          />
-        </label>
+        <div
+          className="rowEntry"
+          style={{ cursor: 'pointer' }}
+          onClick={toggleCameraType}
+        >
+          Camera type {cameraType}
+        </div>
       </div>
       {!selectedObject ? null : (
         <>
@@ -89,6 +102,14 @@ function App() {
           </div>
           <div className="controlRow">
             <div className="rowEntry">{selectedObject.uuid}</div>
+          </div>
+          <hr />
+          <div
+            className="controlRow"
+            style={{ cursor: 'pointer' }}
+            onClick={toggleTransformSpace}
+          >
+            <div className="rowEntry">Space {transformControlsSpace}</div>
           </div>
           <hr />
           <div className="controlRow">

@@ -13,15 +13,19 @@ config.handleResize = handleResize;
 config.handleHit = handleHit;
 config.handleClick = handleClick;
 
+const sceneObjects = init(config);
+export const getSceneObjects = () => sceneObjects;
+
 const {
   scene,
-  transformControls,
+  getTransformControls,
   loop,
   pointer,
   sceneSize,
   getCamera,
   getHit
-} = init(config);
+} = sceneObjects;
+
 function handleMouseMove(cursor: typeof pointer) {
   // console.log(pointer);
 }
@@ -60,7 +64,6 @@ scene.add(cube2);
 const tick = () => {
   // console.log(pointer);
   // console.log(getHit())
-  // const camera = getCamera();
-  // console.log(camera.position.length(), camera.zoom);
+  // console.log(getCamera().position.length(), getCamera().zoom);
 };
 loop(tick);

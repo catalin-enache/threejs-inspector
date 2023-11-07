@@ -58,6 +58,8 @@ const init = (config: Config) => {
 
   setSceneSize(config);
 
+  let selectedObject: THREE.Object3D | null = null;
+
   canvas.addEventListener('pointermove', (evt: Event) => {
     setPointer(evt as PointerEvent);
     getHits({ raycaster, pointer, camera, config });
@@ -89,7 +91,9 @@ const init = (config: Config) => {
       const hit = getHit();
       if (hit) {
         transformControls.attach(hit.object);
+        selectedObject = hit.object;
       } else {
+        selectedObject = null;
         transformControls.detach();
       }
       window.dispatchEvent(
@@ -218,7 +222,11 @@ const init = (config: Config) => {
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 
   const getHit = () => hit;
+  const getSelectedObject = () => selectedObject;
   const getCamera = () => camera;
+  const getConfig = () => config;
+  const getRayCaster = () => raycaster;
+  const getTransformControls = () => transformControls;
 
   const loop = (callback: () => void) => {
     orbitControls.update();
@@ -227,20 +235,35 @@ const init = (config: Config) => {
     window.requestAnimationFrame(() => loop(callback));
   };
 
-  return {
+  const sceneObjects = {
     pointer,
     sceneSize,
     scene,
     canvas,
     renderer,
     orbitControls,
-    transformControls,
-    raycaster,
+    getTransformControls,
+    getRayCaster,
+    getConfig,
     getCamera,
     switchCamera,
     getHit,
+    getSelectedObject,
     loop
   };
+  setTimeout(() => {
+    window.dispatchEvent(
+      new CustomEvent(EVENT_TYPE.THREE, {
+        detail: {
+          type: THREE_EVENT_TYPE.SCENE_READY,
+          object: sceneObjects
+        }
+      })
+    );
+    // TODO: improve here, we dont want a timeout
+  }, 10);
+
+  return sceneObjects;
 };
 
 export { init };

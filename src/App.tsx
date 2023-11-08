@@ -151,7 +151,9 @@ function App({ scene }: AppProps) {
             style={{ cursor: 'pointer' }}
             onClick={toggleTransformSpace}
           >
-            <div className="rowEntry">Space {transformControlsSpace}</div>
+            <div className="rowEntry">
+              Controls space: {transformControlsSpace}
+            </div>
           </div>
           <hr />
           <div className="controlRow">

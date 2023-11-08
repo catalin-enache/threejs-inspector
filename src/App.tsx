@@ -5,6 +5,11 @@ import { useState, useEffect, useCallback } from 'react';
 // import * as THREE from 'three';
 // @ts-ignore
 import { InputNumber } from './lib/react-components/InputNumber';
+import { Info } from './lib/react-components/AppControls/Info';
+import { TransformControls } from './lib/react-components/AppControls/TransformControls';
+import { TransformControlsSpace } from './lib/react-components/AppControls/TransformControlsSpace';
+import { Translate } from './lib/react-components/AppControls/Translate';
+import { Position } from './lib/react-components/AppControls/Position';
 import { init } from './scene';
 import {
   EVENT_TYPE,
@@ -30,7 +35,6 @@ function App({ scene }: AppProps) {
 
   const cameraType = scene.getConfig().cameraType;
   const transformControls = scene.getTransformControls();
-  const transformControlsSpace = transformControls.space;
   const selectedObject = scene.getSelectedObject() || null;
 
   const toggleCameraType = () => {
@@ -139,99 +143,28 @@ function App({ scene }: AppProps) {
       {!selectedObject ? null : (
         <>
           <hr />
-          <div className="controlRow">
-            <div className="rowEntry">Control {selectedObject.name}</div>
-          </div>
-          <div className="controlRow">
-            <div className="rowEntry">{selectedObject.uuid}</div>
-          </div>
+          <Info selectedObject={selectedObject} />
           <hr />
-          <div
-            className="controlRow"
-            style={{ cursor: 'pointer' }}
-            onClick={toggleTransformSpace}
-          >
-            <div className="rowEntry">
-              Controls space: {transformControlsSpace}
-            </div>
-          </div>
+          <TransformControlsSpace
+            transformControls={transformControls}
+            toggleTransformSpace={toggleTransformSpace}
+          />
           <hr />
-          <div className="controlRow">
-            <div className="rowTitle">Controls</div>
-            <div
-              className={`rowEntry controlTab ${
-                transformControls.mode === 'translate' ? 'active' : ''
-              }`}
-              onClick={setTransformMode('translate')}
-            >
-              Translate
-            </div>
-            <div
-              className={`rowEntry controlTab ${
-                transformControls.mode === 'rotate' ? 'active' : ''
-              }`}
-              onClick={setTransformMode('rotate')}
-            >
-              Rotate
-            </div>
-            <div
-              className={`rowEntry controlTab ${
-                transformControls.mode === 'scale' ? 'active' : ''
-              }`}
-              onClick={setTransformMode('scale')}
-            >
-              Scale
-            </div>
-          </div>
+          <TransformControls
+            transformControls={transformControls}
+            setTransformMode={setTransformMode}
+          />
           <hr />
-          <div className="controlRow">
-            <div className="rowTitle">Position</div>
-            <InputNumber
-              className="rowEntry"
-              label="X"
-              value={selectedObject.position.x}
-              onChange={changePosition('x')}
-            />
-            <InputNumber
-              className="rowEntry"
-              label="Y"
-              value={selectedObject.position.y}
-              onChange={changePosition('y')}
-            />
-            <InputNumber
-              className="rowEntry"
-              label="Z"
-              value={selectedObject.position.z}
-              onChange={changePosition('z')}
-            />
-          </div>
+          <Position
+            selectedObject={selectedObject}
+            changePosition={changePosition}
+          />
           <hr />
-          <div className="controlRow">
-            <div className="rowTitle">Translate</div>
-            <InputNumber
-              className="rowEntry"
-              label="X"
-              value={selectedObject.userData.translationDistance?.x || 0}
-              onChange={changeTranslationDistance('x')}
-            />
-            <InputNumber
-              className="rowEntry"
-              label="Y"
-              value={selectedObject.userData.translationDistance?.y || 0}
-              onChange={changeTranslationDistance('y')}
-            />
-            <InputNumber
-              className="rowEntry"
-              label="Z"
-              value={selectedObject.userData.translationDistance?.z || 0}
-              onChange={changeTranslationDistance('z')}
-            />
-          </div>
-          <div className="controlRow">
-            <div className="rowEntry controlButton" onClick={translate}>
-              Apply
-            </div>
-          </div>
+          <Translate
+            translate={translate}
+            changeTranslationDistance={changeTranslationDistance}
+            selectedObject={selectedObject}
+          />
         </>
       )}
     </div>

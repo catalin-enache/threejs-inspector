@@ -43,3 +43,15 @@
     flex: 1 1 0;
 }
 
+.controlTab {
+    cursor: pointer;
+}
+.controlTab.active {
+    color: #08f;
+}
+
+.controlButton {
+    cursor: pointer;
+    color: #08f;
+}
+

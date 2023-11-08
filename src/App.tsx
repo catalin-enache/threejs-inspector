@@ -2,7 +2,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { useState, useEffect, useCallback } from 'react';
-// import * as THREE from 'three';
+import * as THREE from 'three';
 // @ts-ignore
 import { InputNumber } from './lib/react-components/InputNumber';
 import { init } from './scene';
@@ -59,6 +59,48 @@ function App({ scene }: AppProps) {
     });
   }, []);
 
+  const setTransformMode = useCallback(
+    (mode: 'translate' | 'rotate' | 'scale') => () => {
+      transformControls.mode = mode;
+      forceUpdate();
+    },
+    []
+  );
+
+  const changeTranslationDistance = useCallback(
+    (coordinate: 'x' | 'y' | 'z') => (event: number) => {
+      if (!selectedObject) return;
+      selectedObject.userData.translationDistance = {
+        ...selectedObject.userData.translationDistance,
+        [coordinate]: event
+      };
+      forceUpdate();
+    },
+    [selectedObject]
+  );
+
+  const translate = useCallback(() => {
+    if (!selectedObject) return;
+    // const axis = new THREE.Vector3(
+    //   selectedObject.userData.translationDistance?.x || 0,
+    //   selectedObject.userData.translationDistance?.y || 0,
+    //   selectedObject.userData.translationDistance?.z || 0
+    // ).normalize();
+    // selectedObject.translateOnAxis(axis, 1);
+
+    selectedObject.translateX(
+      selectedObject.userData.translationDistance?.x || 0
+    );
+    selectedObject.translateY(
+      selectedObject.userData.translationDistance?.y || 0
+    );
+    selectedObject.translateZ(
+      selectedObject.userData.translationDistance?.z || 0
+    );
+
+    forceUpdate();
+  }, [selectedObject]);
+
   const changePosition = useCallback(
     (coordinate: 'x' | 'y' | 'z') => (event: number) => {
       if (!selectedObject) return;
@@ -82,6 +124,8 @@ function App({ scene }: AppProps) {
     },
     [selectedObject]
   );
+
+  console.log('selectedObject', selectedObject);
 
   return (
     <div className="control">
@@ -113,6 +157,34 @@ function App({ scene }: AppProps) {
           </div>
           <hr />
           <div className="controlRow">
+            <div className="rowTitle">Controls</div>
+            <div
+              className={`rowEntry controlTab ${
+                transformControls.mode === 'translate' ? 'active' : ''
+              }`}
+              onClick={setTransformMode('translate')}
+            >
+              Translate
+            </div>
+            <div
+              className={`rowEntry controlTab ${
+                transformControls.mode === 'rotate' ? 'active' : ''
+              }`}
+              onClick={setTransformMode('rotate')}
+            >
+              Rotate
+            </div>
+            <div
+              className={`rowEntry controlTab ${
+                transformControls.mode === 'scale' ? 'active' : ''
+              }`}
+              onClick={setTransformMode('scale')}
+            >
+              Scale
+            </div>
+          </div>
+          <hr />
+          <div className="controlRow">
             <div className="rowTitle">Position</div>
             <InputNumber
               className="rowEntry"
@@ -132,6 +204,33 @@ function App({ scene }: AppProps) {
               value={selectedObject.position.z}
               onChange={changePosition('z')}
             />
+          </div>
+          <hr />
+          <div className="controlRow">
+            <div className="rowTitle">Translate</div>
+            <InputNumber
+              className="rowEntry"
+              label="X"
+              value={selectedObject.userData.translationDistance?.x || 0}
+              onChange={changeTranslationDistance('x')}
+            />
+            <InputNumber
+              className="rowEntry"
+              label="Y"
+              value={selectedObject.userData.translationDistance?.y || 0}
+              onChange={changeTranslationDistance('y')}
+            />
+            <InputNumber
+              className="rowEntry"
+              label="Z"
+              value={selectedObject.userData.translationDistance?.z || 0}
+              onChange={changeTranslationDistance('z')}
+            />
+          </div>
+          <div className="controlRow">
+            <div className="rowEntry controlButton" onClick={translate}>
+              Apply
+            </div>
           </div>
         </>
       )}

@@ -100,7 +100,7 @@ export default (config: Config) => {
   cube2.name = 'cube2';
   cube2.position.set(2, 0, 0);
   getInteractiveObjects().push(cube2);
-  scene.add(cube2);
+  cube1.add(cube2);
 
   const tick = () => {
     // console.log(pointer);

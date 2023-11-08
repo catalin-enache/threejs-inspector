@@ -16,12 +16,12 @@ export default (config: Config) => {
 
   const {
     scene,
-    getTransformControls,
+    // getTransformControls,
     loop,
-    pointer,
-    sceneSize,
-    getCamera,
-    getHit,
+    // pointer,
+    // sceneSize,
+    // getCamera,
+    // getHit,
     getInteractiveObjects
   } = init(config);
 
@@ -80,6 +80,7 @@ export default (config: Config) => {
     }
   });
 
+  // @ts-ignore
   function handleObjectTransform(evtType: EVENT_TYPE, object: THREE.Object3D) {
     // console.log(evtType, object.position);
   }

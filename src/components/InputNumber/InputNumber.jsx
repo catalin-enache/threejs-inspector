@@ -1,5 +1,5 @@
 import { useEffect, useRef, useCallback, useState } from 'react';
-import { UINumber } from '../../components/ui';
+import { UINumber } from '../../lib/ui/ui';
 import './InputNumber.css';
 
 export const InputNumber = ({

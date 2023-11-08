@@ -2,7 +2,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 // @ts-ignore
-import { InputNumber } from '../InputNumber';
+import { InputNumber } from '../../InputNumber';
 import * as THREE from 'three';
 
 interface TranslateProps {

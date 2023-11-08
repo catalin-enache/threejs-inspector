@@ -5,17 +5,17 @@ import { useState, useEffect, useCallback } from 'react';
 // import * as THREE from 'three';
 // @ts-ignore
 import { InputNumber } from './lib/react-components/InputNumber';
-import { Info } from './lib/react-components/AppControls/Info';
-import { TransformControls } from './lib/react-components/AppControls/TransformControls';
-import { TransformControlsSpace } from './lib/react-components/AppControls/TransformControlsSpace';
-import { Translate } from './lib/react-components/AppControls/Translate';
-import { Position } from './lib/react-components/AppControls/Position';
-import { init } from './scene';
+import { Info } from './Controls/Info';
+import { TransformControls } from './Controls/TransformControls';
+import { TransformControlsSpace } from './Controls/TransformControlsSpace';
+import { Translate } from './Controls/Translate';
+import { Position } from './Controls/Position';
+import { init } from '../../scene';
 import {
   EVENT_TYPE,
   THREE_EVENT_TYPE,
   CONTROL_EVENT_TYPE
-} from './constants.ts';
+} from '../../constants.ts';
 import './App.css';
 
 export interface AppProps {

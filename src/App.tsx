@@ -2,7 +2,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { useState, useEffect, useCallback } from 'react';
-import * as THREE from 'three';
+// import * as THREE from 'three';
 // @ts-ignore
 import { InputNumber } from './lib/react-components/InputNumber';
 import { init } from './scene';
@@ -124,8 +124,6 @@ function App({ scene }: AppProps) {
     },
     [selectedObject]
   );
-
-  console.log('selectedObject', selectedObject);
 
   return (
     <div className="control">

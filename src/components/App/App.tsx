@@ -31,7 +31,6 @@ export interface AppProps {
   scene: ReturnType<typeof init>;
 }
 function App({ scene }: AppProps) {
-  // const [scene, setScene] = useState<ReturnType<typeof init> | null>(null);
   const [, setUpdateNow] = useState(0);
 
   const forceUpdate = useCallback(

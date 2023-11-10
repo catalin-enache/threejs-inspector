@@ -1,6 +1,22 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/ban-ts-comment */
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { useEffect, useRef, useCallback, useState } from 'react';
+// @ts-ignore
 import { UINumber } from 'lib/ui/ui';
 import './InputNumber.css';
+
+interface InputNumberProps {
+  label?: string;
+  value?: number;
+  min?: number;
+  max?: number;
+  step?: number;
+  nudge?: number;
+  className?: string;
+  onChange?: (value: number) => void;
+}
 
 export const InputNumber = ({
   label = '',
@@ -11,11 +27,11 @@ export const InputNumber = ({
   nudge = 1,
   className = '',
   onChange = (value) => console.log(value)
-}) => {
+}: InputNumberProps) => {
   const [, setUpdateNow] = useState(0);
-  const inputRef = useRef(null);
-  const labelRef = useRef(null);
-  const lastOnChangeListener = useRef(null);
+  const inputRef = useRef<any>(null);
+  const labelRef = useRef<HTMLElement | null>(null);
+  const lastOnChangeListener = useRef<any>(null);
 
   const forceUpdate = useCallback(
     () =>
@@ -34,7 +50,7 @@ export const InputNumber = ({
   inputRef.current?.setNudge(nudge);
   inputRef.current?.setRange(min, max);
 
-  const onDomReady = useCallback((ref) => {
+  const onDomReady = useCallback((ref: HTMLElement | null) => {
     if (!ref) {
       labelRef.current = null;
       inputRef.current = null;

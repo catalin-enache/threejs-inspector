@@ -1,2 +1,2 @@
-import { InputNumber } from './InputNumber.jsx';
+import { InputNumber } from './InputNumber';
 export { InputNumber };

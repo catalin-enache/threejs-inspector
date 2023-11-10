@@ -4,18 +4,28 @@
 import { useState, useEffect, useCallback } from 'react';
 // import * as THREE from 'three';
 // @ts-ignore
-import { InputNumber } from './lib/react-components/InputNumber';
+import { InputNumber } from '../InputNumber';
 import { Info } from './Controls/Info';
 import { TransformControls } from './Controls/TransformControls';
 import { TransformControlsSpace } from './Controls/TransformControlsSpace';
 import { Translate } from './Controls/Translate';
 import { Position } from './Controls/Position';
+import { Rotation } from './Controls/Rotation';
+import { Scale } from './Controls/Scale';
+import { useToggleCameraType } from './Hooks/useToggleCameraType';
+import { useToggleTransformSpace } from './Hooks/useToggleTransformSpace';
+import { useSetTransformMode } from './Hooks/useSetTransformMode';
+import { useChangeTranslationDistance } from './Hooks/useChangeTranslationDistance';
+import { useTranslate } from './Hooks/useTranslate';
+import { useChangePosition } from './Hooks/useChangePosition';
+import { useChangeRotation } from './Hooks/useChangeRotation';
+import { useChangeScale } from './Hooks/useChangeScale';
 import { init } from '../../scene';
 import {
   EVENT_TYPE,
-  THREE_EVENT_TYPE,
-  CONTROL_EVENT_TYPE
-} from '../../constants.ts';
+  THREE_EVENT_TYPE
+  // CONTROL_EVENT_TYPE
+} from '../../constants';
 import './App.css';
 
 export interface AppProps {
@@ -33,26 +43,6 @@ function App({ scene }: AppProps) {
     []
   );
 
-  const cameraType = scene.getConfig().cameraType;
-  const transformControls = scene.getTransformControls();
-  const selectedObject = scene.getSelectedObject() || null;
-
-  const toggleCameraType = () => {
-    window.dispatchEvent(
-      new CustomEvent(EVENT_TYPE.CONTROL, {
-        detail: { type: CONTROL_EVENT_TYPE.CAMERA_TYPE }
-      })
-    );
-    forceUpdate();
-  };
-
-  const toggleTransformSpace = useCallback(() => {
-    if (!scene) return;
-    const newSpace = transformControls.space === 'local' ? 'world' : 'local';
-    transformControls.setSpace(newSpace);
-    forceUpdate();
-  }, [scene, transformControls]);
-
   useEffect(() => {
     window.addEventListener(EVENT_TYPE.THREE, (evt: any) => {
       if (evt.detail.type === THREE_EVENT_TYPE.OBJECT_SELECTED) {
@@ -63,71 +53,33 @@ function App({ scene }: AppProps) {
     });
   }, []);
 
-  const setTransformMode = useCallback(
-    (mode: 'translate' | 'rotate' | 'scale') => () => {
-      transformControls.mode = mode;
-      forceUpdate();
-    },
-    []
-  );
+  const cameraType = scene.getConfig().cameraType;
+  const transformControls = scene.getTransformControls();
+  const selectedObject = scene.getSelectedObject() || null;
 
-  const changeTranslationDistance = useCallback(
-    (coordinate: 'x' | 'y' | 'z') => (event: number) => {
-      if (!selectedObject) return;
-      selectedObject.userData.translationDistance = {
-        ...selectedObject.userData.translationDistance,
-        [coordinate]: event
-      };
-      forceUpdate();
-    },
-    [selectedObject]
-  );
+  const toggleCameraType = useToggleCameraType({ forceUpdate });
+  const toggleTransformSpace = useToggleTransformSpace({
+    scene,
+    transformControls,
+    forceUpdate
+  });
+  const setTransformMode = useSetTransformMode({
+    transformControls,
+    forceUpdate
+  });
 
-  const translate = useCallback(() => {
-    if (!selectedObject) return;
-    // const axis = new THREE.Vector3(
-    //   selectedObject.userData.translationDistance?.x || 0,
-    //   selectedObject.userData.translationDistance?.y || 0,
-    //   selectedObject.userData.translationDistance?.z || 0
-    // ).normalize();
-    // selectedObject.translateOnAxis(axis, 1);
+  const changeTranslationDistance = useChangeTranslationDistance({
+    selectedObject,
+    forceUpdate
+  });
 
-    selectedObject.translateX(
-      selectedObject.userData.translationDistance?.x || 0
-    );
-    selectedObject.translateY(
-      selectedObject.userData.translationDistance?.y || 0
-    );
-    selectedObject.translateZ(
-      selectedObject.userData.translationDistance?.z || 0
-    );
+  const translate = useTranslate({ selectedObject, forceUpdate });
 
-    forceUpdate();
-  }, [selectedObject]);
+  const changePosition = useChangePosition({ selectedObject, forceUpdate });
 
-  const changePosition = useCallback(
-    (coordinate: 'x' | 'y' | 'z') => (event: number) => {
-      if (!selectedObject) return;
-      window.dispatchEvent(
-        new CustomEvent(EVENT_TYPE.CONTROL, {
-          detail: {
-            type: CONTROL_EVENT_TYPE.OBJECT_TRANSFORM,
-            object: {
-              ...selectedObject,
-              position: {
-                ...selectedObject.position,
-                [coordinate]: event
-              }
-            }
-          }
-        })
-      );
-      // Object3D has just been updated from previous dispatched Event,
-      // so we force a re-render to update the UI
-      forceUpdate();
-    },
-    [selectedObject]
-  );
+  const changeRotation = useChangeRotation({ selectedObject, forceUpdate });
+
+  const changeScale = useChangeScale({ selectedObject, forceUpdate });
 
   return (
     <div className="control">
@@ -159,6 +111,13 @@ function App({ scene }: AppProps) {
             selectedObject={selectedObject}
             changePosition={changePosition}
           />
+          <hr />
+          <Rotation
+            selectedObject={selectedObject}
+            changeRotation={changeRotation}
+          />
+          <hr />
+          <Scale selectedObject={selectedObject} changeScale={changeScale} />
           <hr />
           <Translate
             translate={translate}

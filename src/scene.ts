@@ -189,7 +189,19 @@ const init = (config: Config) => {
     if (evt.detail.type === CONTROL_EVENT_TYPE.CAMERA_TYPE) {
       switchCamera();
     } else if (evt.detail.type === CONTROL_EVENT_TYPE.OBJECT_TRANSFORM) {
-      transformControls.object?.position.copy(evt.detail.object.position);
+      // console.log(evt.detail.type, evt.detail.object.matrix);
+      // transformControls.object?.applyMatrix4(evt.detail.object.matrix);
+      // transformControls.object?.position.copy(evt.detail.object.position);
+      // transformControls.object?.rotation.copy(evt.detail.object.rotation);
+      // transformControls.object?.updateMatrix();
+      // transformControls.object?.rotation.fromArray(
+      //   transformControls.object?.rotation.toArray()
+      // );
+      // transformControls.object.rotation.x = evt.detail.object.rotation.x;
+      // transformControls.object.rotation.y = evt.detail.object.rotation.y;
+      // transformControls.object.rotation.z = evt.detail.object.rotation.z;
+      // transformControls.object?.matrix.copy(evt.detail.object.matrix);
+      // transformControls.object?.updateMatrix();
     }
   });
 

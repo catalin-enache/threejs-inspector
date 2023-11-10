@@ -4,7 +4,6 @@
 import { useState, useEffect, useCallback } from 'react';
 // import * as THREE from 'three';
 // @ts-ignore
-import { InputNumber } from '../InputNumber';
 import { Info } from './Controls/Info';
 import { TransformControls } from './Controls/TransformControls';
 import { TransformControlsSpace } from './Controls/TransformControlsSpace';
@@ -20,12 +19,12 @@ import { useTranslate } from './Hooks/useTranslate';
 import { useChangePosition } from './Hooks/useChangePosition';
 import { useChangeRotation } from './Hooks/useChangeRotation';
 import { useChangeScale } from './Hooks/useChangeScale';
-import { init } from '../../scene';
+import { init } from 'src/scene';
 import {
   EVENT_TYPE,
   THREE_EVENT_TYPE
   // CONTROL_EVENT_TYPE
-} from '../../constants';
+} from 'src/constants';
 import './App.css';
 
 export interface AppProps {

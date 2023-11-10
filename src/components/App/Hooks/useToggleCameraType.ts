@@ -1,5 +1,5 @@
 import { useCallback } from 'react';
-import { CONTROL_EVENT_TYPE, EVENT_TYPE } from '../../../constants.ts';
+import { CONTROL_EVENT_TYPE, EVENT_TYPE } from 'src/constants.ts';
 
 interface useToggleCameraTypeProps {
   forceUpdate: () => void;

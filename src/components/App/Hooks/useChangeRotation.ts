@@ -3,7 +3,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import * as THREE from 'three';
 import { useCallback } from 'react';
-import { CONTROL_EVENT_TYPE, EVENT_TYPE } from '../../../constants.ts';
+import { CONTROL_EVENT_TYPE, EVENT_TYPE } from 'src/constants.ts';
 
 interface useChangeRotationProps {
   forceUpdate: () => void;

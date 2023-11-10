@@ -2,13 +2,13 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import * as THREE from 'three';
-import type { Config } from '../../config';
+import type { Config } from 'src/config';
 import {
   EVENT_TYPE,
   THREE_EVENT_TYPE,
   CONTROL_EVENT_TYPE
-} from '../../constants';
-import { init } from '../../scene';
+} from 'src/constants';
+import { init } from 'src/scene';
 
 export default (config: Config) => {
   // config.cameraType = 'orthographic';

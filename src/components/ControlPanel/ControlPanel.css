@@ -1,6 +1,7 @@
 .control {
     user-select: none;
     width: 100%;
+    background-color: rgba(0, 0, 0, 0.8);
 }
 
 .control hr {
@@ -22,6 +23,34 @@
     width: 12px;
     height: 12px;
 }
+
+.controlRow select {
+    cursor: pointer;
+    background: transparent;
+    color: white;
+    border-radius: 0;
+    border: 0;
+    outline: 0;
+    height: 14px;
+    font-size: 14px;
+    padding: 0 4px;
+    margin: 0;
+    line-height: 1;
+    -moz-appearance: none;
+    -webkit-appearance: none;
+}
+.controlRow option {
+    cursor: pointer;
+    border: 0;
+    border-radius: 0;
+    height: 14px;
+    line-height: 1;
+    -moz-appearance: none;
+    -webkit-appearance: none;
+    background: transparent;
+    color: black;
+}
+
 
 .rowTitle, .rowEntry {
     display: inline-flex;

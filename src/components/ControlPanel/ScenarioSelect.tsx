@@ -2,11 +2,12 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import React, { useEffect, useState, useCallback } from 'react';
-import ControlPanel from 'components/ControlPanel/ControlPanel';
-import { config } from 'src/config';
-import { init, SceneObjects } from 'src/scene';
+import ControlPanel from 'components/ControlPanel/index.ts';
+import { config } from 'src/config.ts';
+import { init, SceneObjects } from 'src/scene.ts';
+import './ControlPanel.css';
 
-import basic, { setConfig as basicSetConfig } from 'scenarios/basic/basic';
+import basic, { setConfig as basicSetConfig } from 'scenarios/basic/basic.ts';
 import second, {
   setConfig as secondSetConfig
 } from 'scenarios/second/second.ts';
@@ -23,6 +24,7 @@ const scenarioMap = {
 };
 
 export const ScenarioSelect = () => {
+  const [showControlPanel, setShowControlPanel] = useState(false);
   const [sceneObjects, setSceneObjects] = useState<SceneObjects | null>(null);
   const searchParams = new URLSearchParams(window.location.search);
   const scenario = (searchParams.get('scenario') ||
@@ -43,6 +45,10 @@ export const ScenarioSelect = () => {
     [searchParams]
   );
 
+  const toggleControlPanel = useCallback(() => {
+    setShowControlPanel((state) => !state);
+  }, []);
+
   useEffect(() => {
     console.log('scenario', scenario);
     const updatedConfig = scenarioMap[scenario].config({ ...config });
@@ -52,16 +58,28 @@ export const ScenarioSelect = () => {
   }, [scenario]);
 
   return (
-    <div>
-      <div>
-        <div>Scene Select</div>
-        <select value={scenario} onChange={handleSceneChange}>
-          {Object.keys(scenarioMap).map((scene) => (
-            <option key={scene}>{scene}</option>
-          ))}
-        </select>
+    <>
+      <div className="control">
+        <div className="controlRow">
+          <div
+            className="rowTitle"
+            style={{ cursor: 'pointer' }}
+            onClick={toggleControlPanel}
+          >
+            {showControlPanel ? 'Collapse' : 'Expand'}
+          </div>
+          <div className="rowEntry">
+            <select value={scenario} onChange={handleSceneChange}>
+              {Object.keys(scenarioMap).map((scene) => (
+                <option key={scene}>{scene}</option>
+              ))}
+            </select>
+          </div>
+        </div>
       </div>
-      {sceneObjects && <ControlPanel scene={sceneObjects} />}
-    </div>
+      {sceneObjects && showControlPanel && (
+        <ControlPanel scene={sceneObjects} />
+      )}
+    </>
   );
 };

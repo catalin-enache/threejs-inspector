@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 
 // import basic from 'scenarios/basic/basic';
 
-const sceneMap = {
+const scenarioMap = {
   one: () => {
     console.log('one');
   },
@@ -12,22 +12,22 @@ const sceneMap = {
   // basic
 };
 
-export const SceneSelect = () => {
-  const [scene, setScene] = useState('one');
+export const ScenarioSelect = () => {
+  const [scenario, setScenario] = useState('one');
   const handleSceneChange = (evt: React.ChangeEvent<HTMLSelectElement>) => {
-    setScene(evt.target.value);
+    setScenario(evt.target.value);
   };
 
   useEffect(() => {
-    console.log('scene', scene);
-    sceneMap[scene as keyof typeof sceneMap]();
-  }, [scene]);
+    console.log('scenario', scenario);
+    scenarioMap[scenario as keyof typeof scenarioMap]();
+  }, [scenario]);
 
   return (
     <div>
       <div>Scene Select</div>
-      <select value={scene} onChange={handleSceneChange}>
-        {Object.keys(sceneMap).map((scene) => (
+      <select value={scenario} onChange={handleSceneChange}>
+        {Object.keys(scenarioMap).map((scene) => (
           <option key={scene}>{scene}</option>
         ))}
       </select>

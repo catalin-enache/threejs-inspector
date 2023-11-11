@@ -6,7 +6,7 @@ import ReactDOM from 'react-dom/client';
 import { config } from './config';
 import App from './components/App/App';
 import { EVENT_TYPE, THREE_EVENT_TYPE } from './constants';
-import { SceneSelect } from 'components/SceneSelect';
+import { ScenarioSelect } from 'src/components/ScenarioSelect';
 import './index.css';
 
 import scene from 'scenarios/basic/basic';
@@ -16,7 +16,7 @@ window.addEventListener(EVENT_TYPE.THREE, (evt: any) => {
     ReactDOM.createRoot(document.getElementById('root')!).render(
       <React.StrictMode>
         <>
-          <SceneSelect />
+          <ScenarioSelect />
           <App scene={evt.detail.object} />
         </>
       </React.StrictMode>

@@ -21,64 +21,60 @@ type getHitsParams = {
   camera: THREE.Camera;
 };
 
-const _hits: THREE.Intersection<THREE.Object3D<THREE.Object3DEventMap>>[] = [];
-let hit: THREE.Intersection<THREE.Object3D<THREE.Object3DEventMap>> | null;
-const interactiveObjects: THREE.Object3D[] = [];
-
-const getHits = ({ raycaster, pointer, camera }: getHitsParams) => {
-  raycaster.setFromCamera(pointer, camera);
-  _hits.length = 0;
-  raycaster.intersectObjects(interactiveObjects, false, _hits);
-  if (_hits.length && hit?.object !== _hits[0].object) {
-    hit = _hits[0];
-    window.dispatchEvent(
-      new CustomEvent(EVENT_TYPE.THREE, {
-        detail: {
-          type: THREE_EVENT_TYPE.OBJECT_HIT,
-          object: hit
-        }
-      })
-    );
-  } else if (!_hits.length && hit !== null) {
-    hit = null;
-    window.dispatchEvent(
-      new CustomEvent(EVENT_TYPE.THREE, {
-        detail: {
-          type: THREE_EVENT_TYPE.OBJECT_HIT,
-          object: hit
-        }
-      })
-    );
-  }
-};
-
-const sceneSize: SceneSize = {
-  width: 0,
-  height: 0
-};
-
-const setSceneSize = () => {
-  sceneSize.width = window.innerWidth - CONTROLS_AREA_WIDTH;
-  sceneSize.height = window.innerHeight;
-};
-
-const pointer = new THREE.Vector2(0, 0);
-
-const setPointer = (evt: PointerEvent) => {
-  // @ts-ignore
-  pointer.x = (evt.clientX / sceneSize.width) * 2 - 1;
-  // @ts-ignore
-  pointer.y = -(evt.clientY / sceneSize.height) * 2 + 1;
-};
-
 const init = (config: Config) => {
   const canvas = document.querySelector('canvas.webgl')!;
-
+  const _hits: THREE.Intersection<THREE.Object3D<THREE.Object3DEventMap>>[] =
+    [];
+  let hit: THREE.Intersection<THREE.Object3D<THREE.Object3DEventMap>> | null;
+  const interactiveObjects: THREE.Object3D[] = [];
+  const pointer = new THREE.Vector2(0, 0);
   const raycaster = new THREE.Raycaster();
+  const sceneSize: SceneSize = {
+    width: 0,
+    height: 0
+  };
+  let selectedObject: THREE.Object3D | null = null;
+
+  const getHits = ({ raycaster, pointer, camera }: getHitsParams) => {
+    raycaster.setFromCamera(pointer, camera);
+    _hits.length = 0;
+    raycaster.intersectObjects(interactiveObjects, false, _hits);
+    if (_hits.length && hit?.object !== _hits[0].object) {
+      hit = _hits[0];
+      window.dispatchEvent(
+        new CustomEvent(EVENT_TYPE.THREE, {
+          detail: {
+            type: THREE_EVENT_TYPE.OBJECT_HIT,
+            object: hit
+          }
+        })
+      );
+    } else if (!_hits.length && hit !== null) {
+      hit = null;
+      window.dispatchEvent(
+        new CustomEvent(EVENT_TYPE.THREE, {
+          detail: {
+            type: THREE_EVENT_TYPE.OBJECT_HIT,
+            object: hit
+          }
+        })
+      );
+    }
+  };
+
+  const setSceneSize = () => {
+    sceneSize.width = window.innerWidth - CONTROLS_AREA_WIDTH;
+    sceneSize.height = window.innerHeight;
+  };
+
+  const setPointer = (evt: PointerEvent) => {
+    // @ts-ignore
+    pointer.x = (evt.clientX / sceneSize.width) * 2 - 1;
+    // @ts-ignore
+    pointer.y = -(evt.clientY / sceneSize.height) * 2 + 1;
+  };
 
   setSceneSize();
-
-  let selectedObject: THREE.Object3D | null = null;
 
   canvas.addEventListener('pointerdown', () => {
     window.dispatchEvent(

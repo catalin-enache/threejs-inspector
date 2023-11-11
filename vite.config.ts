@@ -24,7 +24,8 @@ export default defineConfig({
       src: path.resolve(__dirname, './src'),
       assets: path.resolve(__dirname, './src/assets'),
       components: path.resolve(__dirname, './src/components'),
-      lib: path.resolve(__dirname, './src/lib')
+      lib: path.resolve(__dirname, './src/lib'),
+      scenarios: path.resolve(__dirname, './src/scenarios')
     },
     extensions: ['.js', '.jsx', '.ts', '.tsx', '.json']
   }

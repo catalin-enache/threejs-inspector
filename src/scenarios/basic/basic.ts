@@ -10,7 +10,10 @@ import {
 } from 'src/constants';
 import { init } from 'src/scene';
 
-export default (config: Config) => {
+interface Scenario {
+  config: Config;
+}
+export default ({ config }: Scenario) => {
   // config.cameraType = 'orthographic';
   config.orthographicCameraRatio = 400;
 

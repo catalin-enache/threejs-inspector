@@ -189,6 +189,7 @@ const init = (config: Config) => {
     if (evt.detail.type === CONTROL_EVENT_TYPE.CAMERA_TYPE) {
       switchCamera();
     } else if (evt.detail.type === CONTROL_EVENT_TYPE.OBJECT_TRANSFORM) {
+      // pass
     }
   });
 
@@ -314,17 +315,14 @@ const init = (config: Config) => {
     getInteractiveObjects,
     loop
   };
-  setTimeout(() => {
-    window.dispatchEvent(
-      new CustomEvent(EVENT_TYPE.THREE, {
-        detail: {
-          type: THREE_EVENT_TYPE.SCENE_READY,
-          object: sceneObjects
-        }
-      })
-    );
-    // TODO: improve here, we dont want a timeout
-  }, 10);
+  window.dispatchEvent(
+    new CustomEvent(EVENT_TYPE.THREE, {
+      detail: {
+        type: THREE_EVENT_TYPE.SCENE_READY,
+        object: sceneObjects
+      }
+    })
+  );
 
   return sceneObjects;
 };

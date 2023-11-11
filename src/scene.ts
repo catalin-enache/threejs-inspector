@@ -7,12 +7,7 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 // @ts-ignore
 import { TransformControls } from 'three/examples/jsm/controls/TransformControls';
-import {
-  EVENT_TYPE,
-  THREE_EVENT_TYPE,
-  CONTROL_EVENT_TYPE,
-  CONTROLS_AREA_WIDTH
-} from './constants';
+import { EVENT_TYPE, THREE_EVENT_TYPE, CONTROL_EVENT_TYPE } from './constants';
 import type { Config, SceneSize } from './config';
 
 type getHitsParams = {
@@ -63,7 +58,7 @@ const init = (config: Config) => {
   };
 
   const setSceneSize = () => {
-    sceneSize.width = window.innerWidth - CONTROLS_AREA_WIDTH;
+    sceneSize.width = window.innerWidth;
     sceneSize.height = window.innerHeight;
   };
 

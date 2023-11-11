@@ -27,15 +27,19 @@ body {
 }
 
 #main {
-  display: flex;
+  display: block;
+  position: relative;
 }
 
-#control {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: flex-start;
-    padding: 0 1.5em;
+#app {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 330px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
 }
 

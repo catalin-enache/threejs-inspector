@@ -25,12 +25,12 @@ import {
   THREE_EVENT_TYPE
   // CONTROL_EVENT_TYPE
 } from 'src/constants';
-import './App.css';
+import 'src/components/App/ControlPanel.css';
 
-export interface AppProps {
+export interface ControlPanelProps {
   scene: ReturnType<typeof init>;
 }
-function App({ scene }: AppProps) {
+function ControlPanel({ scene }: ControlPanelProps) {
   const [, setUpdateNow] = useState(0);
 
   const forceUpdate = useCallback(
@@ -128,4 +128,4 @@ function App({ scene }: AppProps) {
   );
 }
 
-export default App;
+export default ControlPanel;

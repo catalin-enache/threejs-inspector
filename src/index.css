@@ -29,9 +29,11 @@ body {
 #main {
   display: block;
   position: relative;
+  width: 100vw;
+  height: 100vh;
 }
 
-#app {
+#controlPanel {
   position: absolute;
   top: 0;
   right: 0;

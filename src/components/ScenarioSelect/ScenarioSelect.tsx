@@ -1,36 +1,67 @@
-import React, { useEffect, useState } from 'react';
+/* eslint-disable @typescript-eslint/ban-ts-comment */
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-unused-vars */
+import React, { useEffect, useState, useCallback } from 'react';
+import ControlPanel from 'components/ControlPanel/ControlPanel';
+import { config } from 'src/config';
+import { init, SceneObjects } from 'src/scene';
 
-// import basic from 'scenarios/basic/basic';
+import basic, { setConfig as basicSetConfig } from 'scenarios/basic/basic';
+import second, {
+  setConfig as secondSetConfig
+} from 'scenarios/second/second.ts';
 
 const scenarioMap = {
-  one: () => {
-    console.log('one');
+  basic: {
+    config: basicSetConfig,
+    run: basic
   },
-  two: () => {
-    console.log('two');
+  second: {
+    config: secondSetConfig,
+    run: second
   }
-  // basic
 };
 
 export const ScenarioSelect = () => {
-  const [scenario, setScenario] = useState('one');
-  const handleSceneChange = (evt: React.ChangeEvent<HTMLSelectElement>) => {
-    setScenario(evt.target.value);
-  };
+  const [sceneObjects, setSceneObjects] = useState<SceneObjects | null>(null);
+  const searchParams = new URLSearchParams(window.location.search);
+  const scenario = (searchParams.get('scenario') ||
+    'basic') as keyof typeof scenarioMap;
+
+  useEffect(() => {
+    if (!searchParams.get('scenario')) {
+      searchParams.set('scenario', Object.keys(scenarioMap)[0]);
+      window.location.search = searchParams.toString();
+    }
+  }, [searchParams]);
+
+  const handleSceneChange = useCallback(
+    (evt: React.ChangeEvent<HTMLSelectElement>) => {
+      searchParams.set('scenario', evt.target.value);
+      window.location.search = searchParams.toString();
+    },
+    [searchParams]
+  );
 
   useEffect(() => {
     console.log('scenario', scenario);
-    scenarioMap[scenario as keyof typeof scenarioMap]();
+    const updatedConfig = scenarioMap[scenario].config({ ...config });
+    const sceneObjects: SceneObjects = init(updatedConfig);
+    scenarioMap[scenario].run(sceneObjects);
+    setSceneObjects(sceneObjects);
   }, [scenario]);
 
   return (
     <div>
-      <div>Scene Select</div>
-      <select value={scenario} onChange={handleSceneChange}>
-        {Object.keys(scenarioMap).map((scene) => (
-          <option key={scene}>{scene}</option>
-        ))}
-      </select>
+      <div>
+        <div>Scene Select</div>
+        <select value={scenario} onChange={handleSceneChange}>
+          {Object.keys(scenarioMap).map((scene) => (
+            <option key={scene}>{scene}</option>
+          ))}
+        </select>
+      </div>
+      {sceneObjects && <ControlPanel scene={sceneObjects} />}
     </div>
   );
 };

@@ -11,7 +11,7 @@ import {
 } from 'src/constants';
 
 export const setConfig = (config: Config) => {
-  config.cameraType = 'orthographic';
+  config.cameraType = 'perspective';
   config.orthographicCameraRatio = 400;
   return config;
 };
@@ -92,19 +92,10 @@ export default (sceneObjects: SceneObjects) => {
     new THREE.BoxGeometry(1, 1, 1),
     new THREE.MeshBasicMaterial({ color: 0xff0000 })
   );
-  cube1.name = 'cube1';
+  cube1.name = 'cube3';
   cube1.position.set(0, 0, 0);
   getInteractiveObjects().push(cube1);
   scene.add(cube1);
-
-  const cube2 = new THREE.Mesh(
-    new THREE.BoxGeometry(1, 1, 1),
-    new THREE.MeshBasicMaterial({ color: 0x00ff00 })
-  );
-  cube2.name = 'cube2';
-  cube2.position.set(2, 0, 0);
-  getInteractiveObjects().push(cube2);
-  cube1.add(cube2);
 
   const tick = () => {
     // console.log(pointer);

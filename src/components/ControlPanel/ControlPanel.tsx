@@ -19,16 +19,16 @@ import { useTranslate } from './Hooks/useTranslate';
 import { useChangePosition } from './Hooks/useChangePosition';
 import { useChangeRotation } from './Hooks/useChangeRotation';
 import { useChangeScale } from './Hooks/useChangeScale';
-import { init } from 'src/scene';
+import type { SceneObjects } from 'src/scene';
 import {
   EVENT_TYPE,
   THREE_EVENT_TYPE
   // CONTROL_EVENT_TYPE
 } from 'src/constants';
-import 'src/components/App/ControlPanel.css';
+import './ControlPanel.css';
 
 export interface ControlPanelProps {
-  scene: ReturnType<typeof init>;
+  scene: SceneObjects;
 }
 function ControlPanel({ scene }: ControlPanelProps) {
   const [, setUpdateNow] = useState(0);

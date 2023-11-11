@@ -317,5 +317,6 @@ const init = (config: Config) => {
 
   return sceneObjects;
 };
-
+export type SceneObjects = ReturnType<typeof init>;
+export type Init = typeof init;
 export { init };

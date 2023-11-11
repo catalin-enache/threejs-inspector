@@ -13,7 +13,7 @@ import scene from 'scenarios/basic/basic';
 
 window.addEventListener(EVENT_TYPE.THREE, (evt: any) => {
   if (evt.detail.type === THREE_EVENT_TYPE.SCENE_READY) {
-    ReactDOM.createRoot(document.getElementById('root')!).render(
+    ReactDOM.createRoot(document.getElementById('control')!).render(
       <React.StrictMode>
         <>
           <ScenarioSelect />

@@ -22,7 +22,7 @@ type getHitsParams = {
 };
 
 const init = (config: Config) => {
-  const canvas = document.querySelector('canvas.webgl')!;
+  const canvas = document.querySelector('canvas#webgl')!;
   const _hits: THREE.Intersection<THREE.Object3D<THREE.Object3DEventMap>>[] =
     [];
   let hit: THREE.Intersection<THREE.Object3D<THREE.Object3DEventMap>> | null;

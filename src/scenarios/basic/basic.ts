@@ -85,7 +85,9 @@ export default (sceneObjects: SceneObjects) => {
 
   // @ts-ignore
   function handleObjectTransform(evtType: EVENT_TYPE, object: THREE.Object3D) {
-    // console.log(evtType, object.position);
+    // console.log(evtType, 'position', object.position);
+    // console.log(evtType, 'rotation', object.rotation);
+    // console.log(evtType, 'scale', object.scale);
   }
 
   const cube1 = new THREE.Mesh(

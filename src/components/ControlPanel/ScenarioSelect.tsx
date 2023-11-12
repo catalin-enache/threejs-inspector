@@ -24,7 +24,7 @@ const scenarioMap = {
 };
 
 export const ScenarioSelect = () => {
-  const [showControlPanel, setShowControlPanel] = useState(false);
+  const [showControlPanel, setShowControlPanel] = useState(true);
   const [sceneObjects, setSceneObjects] = useState<SceneObjects | null>(null);
   const searchParams = new URLSearchParams(window.location.search);
   const scenario = (searchParams.get('scenario') ||

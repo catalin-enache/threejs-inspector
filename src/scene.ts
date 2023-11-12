@@ -274,6 +274,8 @@ const init = (config: Config) => {
   renderer.setSize(sceneSize.width, sceneSize.height);
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 
+  const clock = new THREE.Clock();
+
   const getHit = () => hit;
   const getSelectedObject = () => selectedObject;
   const getCamera = () => camera;
@@ -281,11 +283,32 @@ const init = (config: Config) => {
   const getRayCaster = () => raycaster;
   const getTransformControls = () => transformControls;
   const getInteractiveObjects = () => interactiveObjects;
+  const getClock = () => clock;
 
+  let isPlaying = true;
+  const getIsPlaying = () => isPlaying;
+  const play = () => {
+    isPlaying = true;
+    clock.start();
+  };
+  const pause = () => {
+    clock.stop();
+    isPlaying = false;
+  };
   const loop = (callback: () => void) => {
+    getIsPlaying() && callback();
+    // this is to update ControlPanel for the selected object
+    // just in case it was transformed
+    window.dispatchEvent(
+      new CustomEvent(EVENT_TYPE.THREE, {
+        detail: {
+          type: THREE_EVENT_TYPE.OBJECT_TRANSFORM,
+          object: getSelectedObject()
+        }
+      })
+    );
     orbitControls.update();
     renderer.render(scene, camera);
-    callback();
     window.requestAnimationFrame(() => loop(callback));
   };
 
@@ -304,6 +327,10 @@ const init = (config: Config) => {
     getHit,
     getSelectedObject,
     getInteractiveObjects,
+    getIsPlaying,
+    play,
+    pause,
+    getClock,
     loop
   };
   window.dispatchEvent(

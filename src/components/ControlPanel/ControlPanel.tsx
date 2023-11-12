@@ -54,6 +54,10 @@ function ControlPanel({ scene }: ControlPanelProps) {
   const cameraType = scene.getConfig().cameraType;
   const transformControls = scene.getTransformControls();
   const selectedObject = scene.getSelectedObject() || null;
+  const togglePlay = useCallback(() => {
+    scene.getIsPlaying() ? scene.pause() : scene.play();
+    forceUpdate();
+  }, [scene.getIsPlaying()]);
 
   const toggleCameraType = useToggleCameraType({ forceUpdate });
   const toggleTransformSpace = useToggleTransformSpace({
@@ -88,6 +92,16 @@ function ControlPanel({ scene }: ControlPanelProps) {
           onClick={toggleCameraType}
         >
           Camera type {cameraType}
+        </div>
+      </div>
+      <hr />
+      <div className="controlRow">
+        <div
+          className="rowEntry"
+          style={{ cursor: 'pointer' }}
+          onClick={togglePlay}
+        >
+          {scene.getIsPlaying() ? 'Pause' : 'Play'}
         </div>
       </div>
       {!selectedObject ? null : (

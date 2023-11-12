@@ -25,6 +25,7 @@ export default (sceneObjects: SceneObjects) => {
     // sceneSize,
     // getCamera,
     // getHit,
+    getClock,
     getInteractiveObjects
   } = sceneObjects;
 
@@ -109,6 +110,9 @@ export default (sceneObjects: SceneObjects) => {
   cube1.add(cube2);
 
   const tick = () => {
+    const delta = getClock().getDelta();
+    cube1.rotation.x += 0.5 * delta;
+    cube2.rotation.y += 0.5 * delta;
     // console.log(pointer);
     // console.log(getHit())
     // console.log(getCamera().position.length(), getCamera().zoom);

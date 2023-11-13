@@ -1,0 +1,44 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-unused-vars */
+export interface BaseCustomControl {
+  type: 'float' | 'integer' | 'boolean' | 'button';
+  name: string;
+  value?: any;
+  label?: string;
+}
+
+export interface CustomButtonControl extends BaseCustomControl {
+  type: 'button';
+}
+
+export interface CustomBooleanControl extends BaseCustomControl {
+  type: 'boolean';
+  value?: boolean;
+}
+
+export interface CustomFloatControl extends BaseCustomControl {
+  type: 'float';
+  value?: number;
+  min?: number;
+  max?: number;
+  step?: number;
+  nudge?: number;
+}
+
+export interface CustomIntegerControl extends BaseCustomControl {
+  type: 'integer';
+  value?: number;
+  min?: number;
+  max?: number;
+  step?: number;
+  nudge?: number;
+}
+
+export type CustomControl =
+  | CustomFloatControl
+  | CustomIntegerControl
+  | CustomBooleanControl
+  | CustomButtonControl;
+
+export type CustomControls = Record<string, CustomControl>;

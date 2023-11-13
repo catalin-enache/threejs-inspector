@@ -7,7 +7,7 @@ import type { SceneObjects } from 'src/scene';
 import {
   EVENT_TYPE,
   THREE_EVENT_TYPE,
-  CONTROL_EVENT_TYPE
+  STANDARD_CONTROL_EVENT_TYPE
 } from 'src/constants';
 
 export const setConfig = (config: Config) => {
@@ -73,14 +73,16 @@ export default (sceneObjects: SceneObjects) => {
   });
 
   window.addEventListener(EVENT_TYPE.THREE, (evt: any) => {
-    if (evt.detail.type === THREE_EVENT_TYPE.OBJECT_TRANSFORM) {
+    if (evt.detail.type === THREE_EVENT_TYPE.SELECTED_OBJECT_TRANSFORM) {
       handleObjectTransform(EVENT_TYPE.THREE, evt.detail.object);
     }
   });
 
-  window.addEventListener(EVENT_TYPE.CONTROL, (evt: any) => {
-    if (evt.detail.type === CONTROL_EVENT_TYPE.OBJECT_TRANSFORM) {
-      handleObjectTransform(EVENT_TYPE.CONTROL, evt.detail.object);
+  window.addEventListener(EVENT_TYPE.STANDARD_CONTROL, (evt: any) => {
+    if (
+      evt.detail.type === STANDARD_CONTROL_EVENT_TYPE.SELECTED_OBJECT_TRANSFORM
+    ) {
+      handleObjectTransform(EVENT_TYPE.STANDARD_CONTROL, evt.detail.object);
     }
   });
 

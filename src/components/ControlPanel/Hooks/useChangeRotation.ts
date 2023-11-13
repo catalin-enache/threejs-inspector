@@ -3,7 +3,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import * as THREE from 'three';
 import { useCallback } from 'react';
-import { CONTROL_EVENT_TYPE, EVENT_TYPE } from 'src/constants.ts';
+import { STANDARD_CONTROL_EVENT_TYPE, EVENT_TYPE } from 'src/constants.ts';
 
 interface useChangeRotationProps {
   forceUpdate: () => void;
@@ -25,9 +25,9 @@ export const useChangeRotation = ({
         selectedObject.rotation.z = radian;
       }
       window.dispatchEvent(
-        new CustomEvent(EVENT_TYPE.CONTROL, {
+        new CustomEvent(EVENT_TYPE.STANDARD_CONTROL, {
           detail: {
-            type: CONTROL_EVENT_TYPE.OBJECT_TRANSFORM,
+            type: STANDARD_CONTROL_EVENT_TYPE.SELECTED_OBJECT_TRANSFORM,
             object: selectedObject
           }
         })

@@ -29,6 +29,7 @@ export const InputNumber = ({
   onChange = (value) => console.log(value)
 }: InputNumberProps) => {
   const [, setUpdateNow] = useState(0);
+  const [isEditing, setIsEditing] = useState(false);
   const inputRef = useRef<any>(null);
   const labelRef = useRef<HTMLElement | null>(null);
   const lastOnChangeListener = useRef<any>(null);
@@ -45,7 +46,15 @@ export const InputNumber = ({
     onChange(inputRef.current?.getValue());
   }, [onChange]);
 
-  inputRef.current?.setValue(value);
+  const handleFocus = useCallback(() => {
+    setIsEditing(true);
+  }, []);
+
+  const handleBlur = useCallback(() => {
+    setIsEditing(false);
+  }, []);
+
+  !isEditing && inputRef.current?.setValue(value);
   inputRef.current?.setStep(step);
   inputRef.current?.setNudge(nudge);
   inputRef.current?.setRange(min, max);
@@ -61,6 +70,8 @@ export const InputNumber = ({
     inputRef.current = uiNumber;
     labelRef.current.appendChild(inputRef.current.dom);
     inputRef.current.dom.addEventListener('change', handleChange);
+    inputRef.current.dom.addEventListener('focus', handleFocus);
+    inputRef.current.dom.addEventListener('blur', handleBlur);
     forceUpdate();
   }, []);
 
@@ -73,6 +84,20 @@ export const InputNumber = ({
     inputRef.current.dom.addEventListener('change', handleChange);
     lastOnChangeListener.current = handleChange;
   }, [handleChange]);
+
+  useEffect(() => {
+    if (!inputRef.current) {
+      return;
+    }
+    return () => {
+      inputRef.current?.dom.removeEventListener(
+        'change',
+        lastOnChangeListener.current
+      );
+      inputRef.current?.dom.removeEventListener('focus', handleFocus);
+      inputRef.current?.dom.removeEventListener('blur', handleBlur);
+    };
+  }, []);
 
   return (
     <label className={`inputNumberLabel ${className}`} ref={onDomReady}>

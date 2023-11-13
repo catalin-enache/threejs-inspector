@@ -7,8 +7,14 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 // @ts-ignore
 import { TransformControls } from 'three/examples/jsm/controls/TransformControls';
-import { EVENT_TYPE, THREE_EVENT_TYPE, CONTROL_EVENT_TYPE } from './constants';
+import {
+  EVENT_TYPE,
+  THREE_EVENT_TYPE,
+  STANDARD_CONTROL_EVENT_TYPE,
+  CUSTOM_CONTROL_EVENT_TYPE
+} from './constants';
 import type { Config, SceneSize } from './config';
+import { CustomControl, CustomControls } from 'src/types.ts';
 
 type getHitsParams = {
   raycaster: THREE.Raycaster;
@@ -29,6 +35,7 @@ const init = (config: Config) => {
     height: 0
   };
   let selectedObject: THREE.Object3D | null = null;
+  const customControls: CustomControls = {};
 
   const getHits = ({ raycaster, pointer, camera }: getHitsParams) => {
     raycaster.setFromCamera(pointer, camera);
@@ -176,13 +183,55 @@ const init = (config: Config) => {
     });
   });
 
-  window.addEventListener(EVENT_TYPE.CONTROL, (evt: any) => {
-    if (evt.detail.type === CONTROL_EVENT_TYPE.CAMERA_TYPE) {
+  window.addEventListener(EVENT_TYPE.STANDARD_CONTROL, (evt: any) => {
+    if (evt.detail.type === STANDARD_CONTROL_EVENT_TYPE.CAMERA_TYPE) {
       switchCamera();
-    } else if (evt.detail.type === CONTROL_EVENT_TYPE.OBJECT_TRANSFORM) {
+    } else if (
+      evt.detail.type === STANDARD_CONTROL_EVENT_TYPE.SELECTED_OBJECT_TRANSFORM
+    ) {
       // pass
     }
   });
+
+  // The order this is fired is Scene, Scenario, ControlPanel
+  // in the same order as ScenarioSelect initializes the scenario
+  // @ts-ignore
+  window.addEventListener(EVENT_TYPE.CUSTOM_CONTROL, (evt: CustomEvent) => {
+    if (evt.detail.type === CUSTOM_CONTROL_EVENT_TYPE.VALUE_CHANGED) {
+      const { name, value } = evt.detail;
+      customControls[name].value = value;
+    }
+  });
+
+  const addCustomControl = (control: CustomControl) => {
+    customControls[control.name] = control;
+    window.dispatchEvent(
+      new CustomEvent(EVENT_TYPE.CUSTOM_CONTROL, {
+        detail: {
+          type: CUSTOM_CONTROL_EVENT_TYPE.CREATE,
+          name: control.name,
+          object: customControls
+        }
+      })
+    );
+  };
+
+  // This is dispatched from Scene as well as from CustomControlInput
+  const changeCustomControlValue = (name: string, value: any) => {
+    if (!customControls[name]) return;
+    // it is also updated when scene listens for this event
+    // so updating here is in theory redundant
+    customControls[name].value = value;
+    window.dispatchEvent(
+      new CustomEvent(EVENT_TYPE.CUSTOM_CONTROL, {
+        detail: {
+          type: CUSTOM_CONTROL_EVENT_TYPE.VALUE_CHANGED,
+          name,
+          value
+        }
+      })
+    );
+  };
 
   const updateCameras = () => {
     const aspectRatio = sceneSize.width / sceneSize.height;
@@ -255,7 +304,7 @@ const init = (config: Config) => {
     window.dispatchEvent(
       new CustomEvent(EVENT_TYPE.THREE, {
         detail: {
-          type: THREE_EVENT_TYPE.OBJECT_TRANSFORM,
+          type: THREE_EVENT_TYPE.SELECTED_OBJECT_TRANSFORM,
           object: event.target.object
         }
       })
@@ -276,6 +325,7 @@ const init = (config: Config) => {
 
   const clock = new THREE.Clock();
 
+  const getCustomControls = () => customControls;
   const getHit = () => hit;
   const getSelectedObject = () => selectedObject;
   const getCamera = () => camera;
@@ -299,14 +349,15 @@ const init = (config: Config) => {
     getIsPlaying() && callback();
     // this is to update ControlPanel for the selected object
     // just in case it was transformed
-    window.dispatchEvent(
-      new CustomEvent(EVENT_TYPE.THREE, {
-        detail: {
-          type: THREE_EVENT_TYPE.OBJECT_TRANSFORM,
-          object: getSelectedObject()
-        }
-      })
-    );
+    getSelectedObject() &&
+      window.dispatchEvent(
+        new CustomEvent(EVENT_TYPE.THREE, {
+          detail: {
+            type: THREE_EVENT_TYPE.SELECTED_OBJECT_TRANSFORM,
+            object: getSelectedObject()
+          }
+        })
+      );
     orbitControls.update();
     renderer.render(scene, camera);
     window.requestAnimationFrame(() => loop(callback));
@@ -320,6 +371,9 @@ const init = (config: Config) => {
     renderer,
     orbitControls,
     getTransformControls,
+    addCustomControl,
+    changeCustomControlValue,
+    getCustomControls,
     getRayCaster,
     getConfig,
     getCamera,

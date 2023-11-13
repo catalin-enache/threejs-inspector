@@ -19,11 +19,12 @@ import { useTranslate } from './Hooks/useTranslate';
 import { useChangePosition } from './Hooks/useChangePosition';
 import { useChangeRotation } from './Hooks/useChangeRotation';
 import { useChangeScale } from './Hooks/useChangeScale';
+import { CustomControlInput } from 'components/CustomControlInput/CustomControlInput.tsx';
 import type { SceneObjects } from 'src/scene';
 import {
   EVENT_TYPE,
-  THREE_EVENT_TYPE
-  // CONTROL_EVENT_TYPE
+  THREE_EVENT_TYPE,
+  CUSTOM_CONTROL_EVENT_TYPE
 } from 'src/constants';
 import './ControlPanel.css';
 
@@ -32,7 +33,8 @@ export interface ControlPanelProps {
 }
 function ControlPanel({ scene }: ControlPanelProps) {
   const [, setUpdateNow] = useState(0);
-
+  const customControls = scene.getCustomControls();
+  const customControlsNames = Object.keys(customControls);
   const forceUpdate = useCallback(
     () =>
       setUpdateNow((state) => {
@@ -42,10 +44,23 @@ function ControlPanel({ scene }: ControlPanelProps) {
   );
 
   useEffect(() => {
-    window.addEventListener(EVENT_TYPE.THREE, (evt: any) => {
+    // @ts-ignore
+    window.addEventListener(EVENT_TYPE.THREE, (evt: CustomEvent) => {
       if (evt.detail.type === THREE_EVENT_TYPE.OBJECT_SELECTED) {
         forceUpdate();
-      } else if (evt.detail.type === THREE_EVENT_TYPE.OBJECT_TRANSFORM) {
+      } else if (
+        evt.detail.type === THREE_EVENT_TYPE.SELECTED_OBJECT_TRANSFORM
+      ) {
+        forceUpdate();
+      }
+    });
+    // The order this is fired is Scene, Scenario, ControlPanel
+    // in the same order as ScenarioSelect initializes the scenario
+    // @ts-ignore
+    window.addEventListener(EVENT_TYPE.CUSTOM_CONTROL, (evt: CustomEvent) => {
+      if (evt.detail.type === CUSTOM_CONTROL_EVENT_TYPE.CREATE) {
+        forceUpdate();
+      } else if (evt.detail.type === CUSTOM_CONTROL_EVENT_TYPE.VALUE_CHANGED) {
         forceUpdate();
       }
     });
@@ -138,6 +153,17 @@ function ControlPanel({ scene }: ControlPanelProps) {
           />
         </>
       )}
+      <>
+        {customControlsNames.length && <hr />}
+        {customControlsNames.map((name) => {
+          const customControl = customControls[name];
+          return (
+            <div key={name} className="controlRow">
+              <CustomControlInput className="rowEntry" {...customControl} />
+            </div>
+          );
+        })}
+      </>
     </div>
   );
 }

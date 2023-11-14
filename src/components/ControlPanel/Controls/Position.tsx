@@ -2,7 +2,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 // @ts-ignore
-import { InputFloat } from 'src/components/InputFloat';
+import { InputNumber } from 'src/components/InputNumber';
 import * as THREE from 'three';
 
 interface PositionProps {
@@ -14,19 +14,19 @@ export const Position = ({ selectedObject, changePosition }: PositionProps) => {
     <>
       <div className="controlRow">
         <div className="rowTitle">Position</div>
-        <InputFloat
+        <InputNumber
           className="rowEntry"
           label="X"
           value={selectedObject.position.x}
           onChange={changePosition('x')}
         />
-        <InputFloat
+        <InputNumber
           className="rowEntry"
           label="Y"
           value={selectedObject.position.y}
           onChange={changePosition('y')}
         />
-        <InputFloat
+        <InputNumber
           className="rowEntry"
           label="Z"
           value={selectedObject.position.z}

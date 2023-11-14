@@ -120,10 +120,10 @@ export default (sceneObjects: SceneObjects) => {
     max: 1
   });
   addCustomControl({
-    type: 'float',
+    type: 'integer',
     name: 'C2',
     label: 'C2L',
-    value: 0.6,
+    value: 1,
     min: 0,
     max: 2
   });

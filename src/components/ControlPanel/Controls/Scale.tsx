@@ -2,7 +2,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 // @ts-ignore
-import { InputFloat } from 'src/components/InputFloat';
+import { InputNumber } from 'src/components/InputNumber';
 import * as THREE from 'three';
 
 interface RotationProps {
@@ -14,19 +14,19 @@ export const Scale = ({ selectedObject, changeScale }: RotationProps) => {
     <>
       <div className="controlRow">
         <div className="rowTitle">Scale</div>
-        <InputFloat
+        <InputNumber
           className="rowEntry"
           label="X"
           value={selectedObject.scale.x}
           onChange={changeScale('x')}
         />
-        <InputFloat
+        <InputNumber
           className="rowEntry"
           label="Y"
           value={selectedObject.scale.y}
           onChange={changeScale('y')}
         />
-        <InputFloat
+        <InputNumber
           className="rowEntry"
           label="Z"
           value={selectedObject.scale.z}

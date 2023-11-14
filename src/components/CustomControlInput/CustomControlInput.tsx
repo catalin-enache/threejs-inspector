@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { InputFloat } from 'src/components/InputFloat';
+import { InputNumber } from 'src/components/InputNumber';
 import type { CustomControl } from 'src/types.ts';
 import { useCallback } from 'react';
 import { CUSTOM_CONTROL_EVENT_TYPE, EVENT_TYPE } from 'src/constants.ts';
@@ -31,8 +31,9 @@ export const CustomControlInput = (props: CustomControlInputProps) => {
     },
     [name]
   );
-  return type === 'float' ? (
-    <InputFloat
+  return type === 'float' || type === 'integer' ? (
+    <InputNumber
+      type={type}
       className={className}
       label={label}
       value={value}

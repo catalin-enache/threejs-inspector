@@ -2,7 +2,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 // @ts-ignore
-import { InputFloat } from 'src/components/InputFloat';
+import { InputNumber } from 'src/components/InputNumber';
 import * as THREE from 'three';
 
 interface RotationProps {
@@ -14,19 +14,19 @@ export const Rotation = ({ selectedObject, changeRotation }: RotationProps) => {
     <>
       <div className="controlRow">
         <div className="rowTitle">Rotation</div>
-        <InputFloat
+        <InputNumber
           className="rowEntry"
           label="X"
           value={THREE.MathUtils.radToDeg(selectedObject.rotation.x)}
           onChange={changeRotation('x')}
         />
-        <InputFloat
+        <InputNumber
           className="rowEntry"
           label="Y"
           value={THREE.MathUtils.radToDeg(selectedObject.rotation.y)}
           onChange={changeRotation('y')}
         />
-        <InputFloat
+        <InputNumber
           className="rowEntry"
           label="Z"
           value={THREE.MathUtils.radToDeg(selectedObject.rotation.z)}

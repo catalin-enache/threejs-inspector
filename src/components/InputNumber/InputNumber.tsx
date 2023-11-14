@@ -4,10 +4,12 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { useEffect, useRef, useCallback, useState } from 'react';
 // @ts-ignore
-import { UINumber } from 'lib/ui/ui';
-import 'components/InputFloat/InputFloat.css';
+import { UINumber, UIInteger } from 'lib/ui/ui';
+import 'components/InputNumber/InputNumber.css';
 
-interface InputFloatProps {
+interface InputNumberProps {
+  type?: 'float' | 'integer';
+  precision?: number;
   label?: string;
   value?: number;
   min?: number;
@@ -18,7 +20,9 @@ interface InputFloatProps {
   onChange?: (value: number) => void;
 }
 
-export const InputFloat = ({
+export const InputNumber = ({
+  type = 'float',
+  precision = 2,
   label = '',
   value = 0,
   min = -Infinity,
@@ -27,7 +31,7 @@ export const InputFloat = ({
   nudge = 1,
   className = '',
   onChange = (value) => console.log(value)
-}: InputFloatProps) => {
+}: InputNumberProps) => {
   const [, setUpdateNow] = useState(0);
   const [isEditing, setIsEditing] = useState(false);
   const inputRef = useRef<any>(null);
@@ -58,6 +62,7 @@ export const InputFloat = ({
   inputRef.current?.setStep(step);
   inputRef.current?.setNudge(nudge);
   inputRef.current?.setRange(min, max);
+  type === 'float' && inputRef.current?.setPrecision(precision);
 
   const onDomReady = useCallback((ref: HTMLElement | null) => {
     if (!ref) {
@@ -66,12 +71,17 @@ export const InputFloat = ({
       return;
     }
     labelRef.current = ref;
-    const uiNumber = new UINumber();
+    const uiNumber = type === 'float' ? new UINumber() : new UIInteger();
     inputRef.current = uiNumber;
     labelRef.current.appendChild(inputRef.current.dom);
     inputRef.current.dom.addEventListener('change', handleChange);
     inputRef.current.dom.addEventListener('focus', handleFocus);
     inputRef.current.dom.addEventListener('blur', handleBlur);
+    inputRef.current?.setValue(value);
+    inputRef.current.setStep(step);
+    inputRef.current.setNudge(nudge);
+    inputRef.current.setRange(min, max);
+    type === 'float' && inputRef.current.setPrecision(precision);
     forceUpdate();
   }, []);
 

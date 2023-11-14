@@ -2,7 +2,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 // @ts-ignore
-import { InputNumber } from 'components/InputNumber';
+import { InputFloat } from 'src/components/InputFloat';
 // import * as THREE from 'three';
 
 interface TransformControlsProps {

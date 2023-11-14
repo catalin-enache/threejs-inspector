@@ -5,9 +5,9 @@
 import { useEffect, useRef, useCallback, useState } from 'react';
 // @ts-ignore
 import { UINumber } from 'lib/ui/ui';
-import './InputNumber.css';
+import 'components/InputFloat/InputFloat.css';
 
-interface InputNumberProps {
+interface InputFloatProps {
   label?: string;
   value?: number;
   min?: number;
@@ -18,7 +18,7 @@ interface InputNumberProps {
   onChange?: (value: number) => void;
 }
 
-export const InputNumber = ({
+export const InputFloat = ({
   label = '',
   value = 0,
   min = -Infinity,
@@ -27,7 +27,7 @@ export const InputNumber = ({
   nudge = 1,
   className = '',
   onChange = (value) => console.log(value)
-}: InputNumberProps) => {
+}: InputFloatProps) => {
   const [, setUpdateNow] = useState(0);
   const [isEditing, setIsEditing] = useState(false);
   const inputRef = useRef<any>(null);

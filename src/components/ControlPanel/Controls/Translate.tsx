@@ -2,7 +2,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 // @ts-ignore
-import { InputNumber } from 'components/InputNumber';
+import { InputFloat } from 'src/components/InputFloat';
 import * as THREE from 'three';
 
 interface TranslateProps {
@@ -21,19 +21,19 @@ export const Translate = ({
     <>
       <div className="controlRow">
         <div className="rowTitle">Translate</div>
-        <InputNumber
+        <InputFloat
           className="rowEntry"
           label="X"
           value={selectedObject.userData.translationDistance?.x || 0}
           onChange={changeTranslationDistance('x')}
         />
-        <InputNumber
+        <InputFloat
           className="rowEntry"
           label="Y"
           value={selectedObject.userData.translationDistance?.y || 0}
           onChange={changeTranslationDistance('y')}
         />
-        <InputNumber
+        <InputFloat
           className="rowEntry"
           label="Z"
           value={selectedObject.userData.translationDistance?.z || 0}

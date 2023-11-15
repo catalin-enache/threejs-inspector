@@ -127,6 +127,13 @@ export default (sceneObjects: SceneObjects) => {
     min: 0,
     max: 2
   });
+  addCustomControl({
+    type: 'select',
+    name: 'S2',
+    label: 'S2L',
+    value: 'aaa',
+    options: ['aaa', 'bbb', 'ccc']
+  });
 
   const cube1 = new THREE.Mesh(
     new THREE.BoxGeometry(1, 1, 1),

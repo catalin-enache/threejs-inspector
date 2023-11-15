@@ -2,7 +2,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 export interface BaseCustomControl {
-  type: 'float' | 'integer' | 'boolean' | 'button';
+  type: 'float' | 'integer' | 'select' | 'boolean' | 'button';
   name: string;
   value?: any;
   label?: string;
@@ -35,9 +35,15 @@ export interface CustomIntegerControl extends BaseCustomControl {
   nudge?: number;
 }
 
+export interface CustomSelectControl extends BaseCustomControl {
+  type: 'select';
+  options: string[];
+}
+
 export type CustomControl =
   | CustomFloatControl
   | CustomIntegerControl
+  | CustomSelectControl
   | CustomBooleanControl
   | CustomButtonControl;
 

@@ -40,6 +40,10 @@ export interface CustomSelectControl extends BaseCustomControl {
   options: string[];
 }
 
+export interface CustomCheckboxControl extends BaseCustomControl {
+  type: 'boolean';
+}
+
 export type CustomControl =
   | CustomFloatControl
   | CustomIntegerControl

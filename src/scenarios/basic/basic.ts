@@ -113,26 +113,32 @@ export default (sceneObjects: SceneObjects) => {
 
   addCustomControl({
     type: 'float',
-    name: 'C1',
-    label: 'C1L',
+    name: 'F',
+    label: 'Float',
     value: 0.5,
     min: 0,
     max: 1
   });
   addCustomControl({
     type: 'integer',
-    name: 'C2',
-    label: 'C2L',
+    name: 'I',
+    label: 'Int',
     value: 1,
     min: 0,
     max: 2
   });
   addCustomControl({
     type: 'select',
-    name: 'S2',
-    label: 'S2L',
+    name: 'S',
+    label: 'Select',
     value: 'aaa',
     options: ['aaa', 'bbb', 'ccc']
+  });
+  addCustomControl({
+    type: 'boolean',
+    name: 'C',
+    label: 'Check',
+    value: false
   });
 
   const cube1 = new THREE.Mesh(

@@ -6,6 +6,7 @@ import { InputSelect } from 'components/InputSelect/InputSelect.tsx';
 import type { CustomControl } from 'src/types.ts';
 import { useCallback } from 'react';
 import { CUSTOM_CONTROL_EVENT_TYPE, EVENT_TYPE } from 'src/constants.ts';
+import { InputBoolean } from 'components/InputBoolean/InputBoolean.tsx';
 
 type CustomControlInputProps = CustomControl & {
   className: string;
@@ -43,6 +44,14 @@ export const CustomControlInput = (props: CustomControlInputProps) => {
     />
   ) : type === 'select' ? (
     <InputSelect
+      className={className}
+      value={value}
+      label={label}
+      onChange={handleChange}
+      {...rest}
+    />
+  ) : type === 'boolean' ? (
+    <InputBoolean
       className={className}
       value={value}
       label={label}

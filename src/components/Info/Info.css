@@ -1,21 +1,14 @@
 .info.info {
   display: flex;
-  flex-flow: column;
+  flex-flow: row;
   color: white;
   overflow: visible;
   justify-content: flex-start;
   align-items: flex-start;
 }
 
-.info.info.inline {
-  flex-flow: row;
-}
-
 .info .info__label {
   color: white;
-}
-
-.info.info.inline .info__label {
   margin-right: 6px;
 }
 

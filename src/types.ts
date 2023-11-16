@@ -3,7 +3,6 @@ export interface BaseCustomControl {
   name: string;
   value?: any;
   label?: string;
-  inline?: boolean;
 }
 
 export interface CustomInfoControl extends BaseCustomControl {

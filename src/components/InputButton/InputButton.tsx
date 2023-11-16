@@ -36,6 +36,7 @@ export const InputButton = (props: InputButtonProps) => {
   const handlePointerDown = useCallback<
     React.PointerEventHandler<HTMLElement>
   >(() => {
+    clearTimeout(timeoutRef.current!);
     timeoutRef.current = setTimeout(() => {
       setIsContinuous(true);
     }, 500) as unknown as number;

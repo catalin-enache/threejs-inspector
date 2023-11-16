@@ -336,8 +336,7 @@ const init = (config: Config) => {
     type: 'info',
     name: 'FPS',
     label: 'FPS',
-    value: '',
-    inline: true
+    value: ''
   });
 
   let _lastTime = 0;

@@ -2,11 +2,12 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { InputNumber } from 'src/components/InputNumber';
-import { InputSelect } from 'components/InputSelect/InputSelect.tsx';
-import type { CustomControl } from 'src/types.ts';
+import { InputSelect } from 'components/InputSelect/InputSelect';
+import { InputBoolean } from 'components/InputBoolean/InputBoolean';
+import { InputButton } from 'components/InputButton/InputButton';
+import type { CustomControl } from 'src/types';
 import { useCallback } from 'react';
-import { CUSTOM_CONTROL_EVENT_TYPE, EVENT_TYPE } from 'src/constants.ts';
-import { InputBoolean } from 'components/InputBoolean/InputBoolean.tsx';
+import { CUSTOM_CONTROL_EVENT_TYPE, EVENT_TYPE } from 'src/constants';
 
 type CustomControlInputProps = CustomControl & {
   className: string;
@@ -56,6 +57,14 @@ export const CustomControlInput = (props: CustomControlInputProps) => {
       value={value}
       label={label}
       onChange={handleChange}
+      {...rest}
+    />
+  ) : type === 'button' ? (
+    <InputButton
+      className={className}
+      value={value}
+      label={label}
+      onClick={handleChange}
       {...rest}
     />
   ) : null;

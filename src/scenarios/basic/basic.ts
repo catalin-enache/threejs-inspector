@@ -140,6 +140,12 @@ export default (sceneObjects: SceneObjects) => {
     label: 'Check',
     value: false
   });
+  addCustomControl({
+    type: 'button',
+    name: 'B',
+    label: 'Button',
+    step: 0.01
+  });
 
   const cube1 = new THREE.Mesh(
     new THREE.BoxGeometry(1, 1, 1),

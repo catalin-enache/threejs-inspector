@@ -26,7 +26,7 @@ export const InputBoolean = (props: InputBooleanProps) => {
       {label}
       <input
         type="checkbox"
-        className={`inputCheckbox`}
+        className={`inputBoolean`}
         checked={value}
         onChange={handleChange}
       ></input>

@@ -10,11 +10,20 @@ export interface BaseCustomControl {
 
 export interface CustomButtonControl extends BaseCustomControl {
   type: 'button';
+  value?: number;
+  step?: number;
+  precision?: number;
 }
 
 export interface CustomBooleanControl extends BaseCustomControl {
   type: 'boolean';
   value?: boolean;
+}
+
+export interface CustomSelectControl extends BaseCustomControl {
+  type: 'select';
+  value?: string;
+  options: string[];
 }
 
 export interface CustomFloatControl extends BaseCustomControl {
@@ -33,15 +42,6 @@ export interface CustomIntegerControl extends BaseCustomControl {
   max?: number;
   step?: number;
   nudge?: number;
-}
-
-export interface CustomSelectControl extends BaseCustomControl {
-  type: 'select';
-  options: string[];
-}
-
-export interface CustomCheckboxControl extends BaseCustomControl {
-  type: 'boolean';
 }
 
 export type CustomControl =

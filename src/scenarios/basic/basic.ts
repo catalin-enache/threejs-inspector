@@ -98,7 +98,17 @@ export default (sceneObjects: SceneObjects) => {
     }
   });
 
-  // @ts-ignore
+  window.addEventListener('keydown', (evt: KeyboardEvent) => {
+    if (evt.key === 'r') {
+      cube2.rotation.x += 0.1;
+      // sceneObjects.getInteractiveObjects().forEach((obj) => {
+      //   if (obj.name === 'cube1') {
+      //     obj.rotation.x += 0.1;
+      //   }
+      // });
+    }
+  });
+
   function handleSelectedObjectTransform(
     _evtType: EVENT_TYPE,
     _object: THREE.Object3D

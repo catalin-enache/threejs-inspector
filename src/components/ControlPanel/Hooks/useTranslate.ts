@@ -36,7 +36,7 @@ export const useTranslate = ({
       new CustomEvent(EVENT_TYPE.STANDARD_CONTROL, {
         detail: {
           type: STANDARD_CONTROL_EVENT_TYPE.SELECTED_OBJECT_TRANSFORM,
-          object: selectedObject
+          value: selectedObject
         }
       })
     );

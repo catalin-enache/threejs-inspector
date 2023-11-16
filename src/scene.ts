@@ -47,7 +47,7 @@ const init = (config: Config) => {
         new CustomEvent(EVENT_TYPE.THREE, {
           detail: {
             type: THREE_EVENT_TYPE.OBJECT_HIT,
-            object: hit
+            value: hit
           }
         })
       );
@@ -57,7 +57,7 @@ const init = (config: Config) => {
         new CustomEvent(EVENT_TYPE.THREE, {
           detail: {
             type: THREE_EVENT_TYPE.OBJECT_HIT,
-            object: hit
+            value: hit
           }
         })
       );
@@ -83,7 +83,7 @@ const init = (config: Config) => {
       new CustomEvent(EVENT_TYPE.THREE, {
         detail: {
           type: THREE_EVENT_TYPE.POINTER_DOWN,
-          object: pointer
+          value: pointer
         }
       })
     );
@@ -94,7 +94,7 @@ const init = (config: Config) => {
       new CustomEvent(EVENT_TYPE.THREE, {
         detail: {
           type: THREE_EVENT_TYPE.POINTER_UP,
-          object: pointer
+          value: pointer
         }
       })
     );
@@ -108,7 +108,7 @@ const init = (config: Config) => {
         new CustomEvent(EVENT_TYPE.THREE, {
           detail: {
             type: THREE_EVENT_TYPE.POINTER_MOVE,
-            object: pointer
+            value: pointer
           }
         })
       );
@@ -120,7 +120,7 @@ const init = (config: Config) => {
       new CustomEvent(EVENT_TYPE.THREE, {
         detail: {
           type: THREE_EVENT_TYPE.POINTER_CLICK,
-          object: pointer
+          value: pointer
         }
       })
     );
@@ -158,7 +158,7 @@ const init = (config: Config) => {
         new CustomEvent(EVENT_TYPE.THREE, {
           detail: {
             type: THREE_EVENT_TYPE.OBJECT_SELECTED,
-            object: hit?.object || null
+            value: hit?.object || null
           }
         })
       );
@@ -176,7 +176,7 @@ const init = (config: Config) => {
         new CustomEvent(EVENT_TYPE.THREE, {
           detail: {
             type: THREE_EVENT_TYPE.SCENE_RESIZE,
-            object: sceneSize
+            value: sceneSize
           }
         })
       );
@@ -210,7 +210,7 @@ const init = (config: Config) => {
         detail: {
           type: CUSTOM_CONTROL_EVENT_TYPE.CREATE,
           name: control.name,
-          object: customControls
+          value: customControls
         }
       })
     );
@@ -305,7 +305,7 @@ const init = (config: Config) => {
       new CustomEvent(EVENT_TYPE.THREE, {
         detail: {
           type: THREE_EVENT_TYPE.SELECTED_OBJECT_TRANSFORM,
-          object: event.target.object
+          value: event.target.object
         }
       })
     );
@@ -354,7 +354,7 @@ const init = (config: Config) => {
         new CustomEvent(EVENT_TYPE.THREE, {
           detail: {
             type: THREE_EVENT_TYPE.SELECTED_OBJECT_TRANSFORM,
-            object: getSelectedObject()
+            value: getSelectedObject()
           }
         })
       );
@@ -391,7 +391,7 @@ const init = (config: Config) => {
     new CustomEvent(EVENT_TYPE.THREE, {
       detail: {
         type: THREE_EVENT_TYPE.SCENE_READY,
-        object: sceneObjects
+        value: sceneObjects
       }
     })
   );

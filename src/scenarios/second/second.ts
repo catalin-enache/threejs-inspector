@@ -31,50 +31,50 @@ export default (sceneObjects: SceneObjects) => {
 
   window.addEventListener(EVENT_TYPE.THREE, (evt: any) => {
     if (evt.detail.type === THREE_EVENT_TYPE.SCENE_RESIZE) {
-      // console.log(evt.detail.type, evt.detail.object);
+      // console.log(evt.detail.type, evt.detail.value);
     }
   });
 
   window.addEventListener(EVENT_TYPE.THREE, (evt: any) => {
     if (evt.detail.type === THREE_EVENT_TYPE.POINTER_DOWN) {
-      // console.log(evt.detail.type, evt.detail.object);
+      // console.log(evt.detail.type, evt.detail.value);
     }
   });
 
   window.addEventListener(EVENT_TYPE.THREE, (evt: any) => {
     if (evt.detail.type === THREE_EVENT_TYPE.POINTER_UP) {
-      // console.log(evt.detail.type, evt.detail.object);
+      // console.log(evt.detail.type, evt.detail.value);
     }
   });
 
   window.addEventListener(EVENT_TYPE.THREE, (evt: any) => {
     if (evt.detail.type === THREE_EVENT_TYPE.POINTER_CLICK) {
-      // console.log(evt.detail.type, evt.detail.object);
+      // console.log(evt.detail.type, evt.detail.value);
     }
   });
 
   window.addEventListener(EVENT_TYPE.THREE, (evt: any) => {
     if (evt.detail.type === THREE_EVENT_TYPE.POINTER_MOVE) {
-      // console.log(evt.detail.type, evt.detail.object);
+      // console.log(evt.detail.type, evt.detail.value);
       // console.log(getHit());
     }
   });
 
   window.addEventListener(EVENT_TYPE.THREE, (evt: any) => {
     if (evt.detail.type === THREE_EVENT_TYPE.OBJECT_HIT) {
-      // console.log(evt.detail.type, evt.detail.object);
+      // console.log(evt.detail.type, evt.detail.value);
     }
   });
 
   window.addEventListener(EVENT_TYPE.THREE, (evt: any) => {
     if (evt.detail.type === THREE_EVENT_TYPE.OBJECT_SELECTED) {
-      // console.log(evt.detail.type, evt.detail.object);
+      // console.log(evt.detail.type, evt.detail.value);
     }
   });
 
   window.addEventListener(EVENT_TYPE.THREE, (evt: any) => {
     if (evt.detail.type === THREE_EVENT_TYPE.SELECTED_OBJECT_TRANSFORM) {
-      handleObjectTransform(EVENT_TYPE.THREE, evt.detail.object);
+      handleObjectTransform(EVENT_TYPE.THREE, evt.detail.value);
     }
   });
 
@@ -82,15 +82,15 @@ export default (sceneObjects: SceneObjects) => {
     if (
       evt.detail.type === STANDARD_CONTROL_EVENT_TYPE.SELECTED_OBJECT_TRANSFORM
     ) {
-      handleObjectTransform(EVENT_TYPE.STANDARD_CONTROL, evt.detail.object);
+      handleObjectTransform(EVENT_TYPE.STANDARD_CONTROL, evt.detail.value);
     }
   });
 
   // @ts-ignore
-  function handleObjectTransform(evtType: EVENT_TYPE, object: THREE.Object3D) {
-    // console.log(evtType, 'position', object.position);
-    // console.log(evtType, 'rotation', object.rotation);
-    // console.log(evtType, 'scale', object.scale);
+  function handleObjectTransform(evtType: EVENT_TYPE, value: THREE.Object3D) {
+    // console.log(evtType, 'position', value.position);
+    // console.log(evtType, 'rotation', value.rotation);
+    // console.log(evtType, 'scale', value.scale);
   }
 
   const cube1 = new THREE.Mesh(

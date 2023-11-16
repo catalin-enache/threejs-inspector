@@ -183,6 +183,17 @@ const init = (config: Config) => {
     });
   });
 
+  // call play/pause on spacebar press
+  window.addEventListener('keydown', (evt: KeyboardEvent) => {
+    if (evt.code === 'Space') {
+      if (getIsPlaying()) {
+        pause();
+      } else {
+        play();
+      }
+    }
+  });
+
   window.addEventListener(EVENT_TYPE.STANDARD_CONTROL, (evt: any) => {
     if (evt.detail.type === STANDARD_CONTROL_EVENT_TYPE.CAMERA_TYPE) {
       switchCamera();

@@ -44,6 +44,9 @@ function ControlPanel({ scene }: ControlPanelProps) {
   );
 
   useEffect(() => {
+    window.addEventListener('keydown', (_evt: KeyboardEvent) => {
+      forceUpdate();
+    });
     // @ts-ignore
     window.addEventListener(EVENT_TYPE.THREE, (evt: CustomEvent) => {
       if (evt.detail.type === THREE_EVENT_TYPE.OBJECT_SELECTED) {

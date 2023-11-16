@@ -1,6 +1,3 @@
-/* eslint-disable @typescript-eslint/ban-ts-comment */
-/* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-disable @typescript-eslint/no-unused-vars */
 export interface BaseCustomControl {
   type: 'float' | 'integer' | 'select' | 'boolean' | 'button';
   name: string;

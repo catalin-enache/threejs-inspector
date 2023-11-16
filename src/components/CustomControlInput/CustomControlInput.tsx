@@ -1,6 +1,3 @@
-/* eslint-disable @typescript-eslint/ban-ts-comment */
-/* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import { InputNumber } from 'src/components/InputNumber';
 import { InputSelect } from 'components/InputSelect/InputSelect';
 import { InputBoolean } from 'components/InputBoolean/InputBoolean';

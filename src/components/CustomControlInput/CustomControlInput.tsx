@@ -2,6 +2,7 @@ import { InputNumber } from 'src/components/InputNumber';
 import { InputSelect } from 'components/InputSelect/InputSelect';
 import { InputBoolean } from 'components/InputBoolean/InputBoolean';
 import { InputButton } from 'components/InputButton/InputButton';
+import { Info } from 'components/Info/Info';
 import type { CustomControl } from 'src/types';
 import { useCallback } from 'react';
 import { CUSTOM_CONTROL_EVENT_TYPE, EVENT_TYPE } from 'src/constants';
@@ -64,5 +65,7 @@ export const CustomControlInput = (props: CustomControlInputProps) => {
       onClick={handleChange}
       {...rest}
     />
+  ) : type === 'info' ? (
+    <Info className={className} value={value} label={label} {...rest} />
   ) : null;
 };

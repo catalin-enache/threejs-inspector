@@ -4,11 +4,12 @@ import type { SceneObjects } from 'src/scene';
 import {
   EVENT_TYPE,
   THREE_EVENT_TYPE,
-  STANDARD_CONTROL_EVENT_TYPE
+  STANDARD_CONTROL_EVENT_TYPE,
+  CUSTOM_CONTROL_EVENT_TYPE
 } from 'src/constants';
 
 export const setConfig = (config: Config) => {
-  config.cameraType = 'perspective';
+  config.cameraType = 'orthographic';
   config.orthographicCameraRatio = 400;
   return config;
 };
@@ -22,7 +23,10 @@ export default (sceneObjects: SceneObjects) => {
     // sceneSize,
     // getCamera,
     // getHit,
-    getClock,
+    addCustomControl,
+    // changeCustomControlValue,
+    // getClock,
+    getDelta,
     getInteractiveObjects
   } = sceneObjects;
 
@@ -71,7 +75,7 @@ export default (sceneObjects: SceneObjects) => {
 
   window.addEventListener(EVENT_TYPE.THREE, (evt: any) => {
     if (evt.detail.type === THREE_EVENT_TYPE.SELECTED_OBJECT_TRANSFORM) {
-      handleObjectTransform(EVENT_TYPE.THREE, evt.detail.value);
+      handleSelectedObjectTransform(EVENT_TYPE.THREE, evt.detail.value);
     }
   });
 
@@ -79,29 +83,97 @@ export default (sceneObjects: SceneObjects) => {
     if (
       evt.detail.type === STANDARD_CONTROL_EVENT_TYPE.SELECTED_OBJECT_TRANSFORM
     ) {
-      handleObjectTransform(EVENT_TYPE.STANDARD_CONTROL, evt.detail.value);
+      handleSelectedObjectTransform(
+        EVENT_TYPE.STANDARD_CONTROL,
+        evt.detail.value
+      );
     }
   });
 
+  // The order this is fired is Scene, Scenario, ControlPanel
+  // in the same order as ScenarioSelect initializes the scenario
   // @ts-ignore
-  function handleObjectTransform(evtType: EVENT_TYPE, value: THREE.Object3D) {
-    // console.log(evtType, 'position', value.position);
-    // console.log(evtType, 'rotation', value.rotation);
-    // console.log(evtType, 'scale', value.scale);
+  window.addEventListener(EVENT_TYPE.CUSTOM_CONTROL, (evt: CustomEvent) => {
+    if (evt.detail.type === CUSTOM_CONTROL_EVENT_TYPE.VALUE_CHANGED) {
+      // console.log(evt.detail.type, evt.detail.name, evt.detail.value);
+    }
+  });
+
+  window.addEventListener('keydown', (evt: KeyboardEvent) => {
+    if (evt.key === 'r') {
+      cube1.rotation.x += 0.1;
+      // sceneObjects.getInteractiveObjects().forEach((obj) => {
+      //   if (obj.name === 'cube1') {
+      //     obj.rotation.x += 0.1;
+      //   }
+      // });
+    }
+  });
+
+  function handleSelectedObjectTransform(
+    _evtType: EVENT_TYPE,
+    _object: THREE.Object3D
+  ) {
+    // console.log(_evtType, 'position', _object.position);
+    // console.log(_evtType, 'rotation', _object.rotation);
+    // console.log(_evtType, 'scale', _object.scale);
   }
+
+  addCustomControl({
+    type: 'float',
+    name: 'F',
+    label: 'Float',
+    value: 0.5,
+    min: 0,
+    max: 1
+  });
+  addCustomControl({
+    type: 'integer',
+    name: 'I',
+    label: 'Int',
+    value: 1,
+    min: 0,
+    max: 2
+  });
+  addCustomControl({
+    type: 'select',
+    name: 'S',
+    label: 'Select',
+    value: 'aaa',
+    options: ['aaa', 'bbb', 'ccc']
+  });
+  addCustomControl({
+    type: 'boolean',
+    name: 'C',
+    label: 'Check',
+    value: false
+  });
+  addCustomControl({
+    type: 'button',
+    name: 'B',
+    label: 'Button',
+    step: 0.01
+  });
+  addCustomControl({
+    type: 'info',
+    name: 'INF',
+    label: 'Info',
+    value: 'Some info'
+  });
 
   const cube1 = new THREE.Mesh(
     new THREE.BoxGeometry(1, 1, 1),
     new THREE.MeshBasicMaterial({ color: 0xff0000 })
   );
-  cube1.name = 'cube3';
+  cube1.name = 'cube1';
   cube1.position.set(0, 0, 0);
   getInteractiveObjects().push(cube1);
   scene.add(cube1);
 
   const tick = () => {
-    const delta = getClock().getDelta();
+    const delta = getDelta();
     cube1.rotation.x += 0.5 * delta;
+    // changeCustomControlValue('C1', Math.random());
     // console.log(pointer);
     // console.log(getHit())
     // console.log(getCamera().position.length(), getCamera().zoom);

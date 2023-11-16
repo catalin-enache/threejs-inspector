@@ -1,8 +1,14 @@
 export interface BaseCustomControl {
-  type: 'float' | 'integer' | 'select' | 'boolean' | 'button';
+  type: 'float' | 'integer' | 'select' | 'boolean' | 'button' | 'info';
   name: string;
   value?: any;
   label?: string;
+  inline?: boolean;
+}
+
+export interface CustomInfoControl extends BaseCustomControl {
+  type: 'info';
+  value?: string;
 }
 
 export interface CustomButtonControl extends BaseCustomControl {
@@ -46,6 +52,7 @@ export type CustomControl =
   | CustomIntegerControl
   | CustomSelectControl
   | CustomBooleanControl
-  | CustomButtonControl;
+  | CustomButtonControl
+  | CustomInfoControl;
 
 export type CustomControls = Record<string, CustomControl>;

@@ -332,6 +332,28 @@ const init = (config: Config) => {
 
   const clock = new THREE.Clock();
 
+  addCustomControl({
+    type: 'info',
+    name: 'FPS',
+    label: 'FPS',
+    value: '',
+    inline: true
+  });
+
+  let _lastTime = 0;
+  let delta = 0;
+  const internalTick = () => {
+    delta = getClock().getDelta();
+    const currTime = Math.floor(+new Date() / 100);
+    const fps = (1 / delta).toFixed(0);
+    if (currTime > _lastTime) {
+      changeCustomControlValue('FPS', fps);
+      _lastTime = currTime;
+    }
+    return true;
+  };
+
+  const getDelta = () => delta;
   const getCustomControls = () => customControls;
   const getHit = () => hit;
   const getSelectedObject = () => selectedObject;
@@ -353,7 +375,7 @@ const init = (config: Config) => {
     isPlaying = false;
   };
   const loop = (callback: () => void) => {
-    getIsPlaying() && callback();
+    getIsPlaying() && internalTick() && callback();
     // this is to update ControlPanel for the selected object
     // just in case it was transformed
     getSelectedObject() &&
@@ -392,6 +414,7 @@ const init = (config: Config) => {
     play,
     pause,
     getClock,
+    getDelta,
     loop
   };
   window.dispatchEvent(

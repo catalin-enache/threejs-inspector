@@ -223,6 +223,21 @@ const init = (config: Config) => {
       } else {
         play();
       }
+    } else if (evt.code === 'Numpad1') {
+      // front
+      camera.position.set(0, 0, 12);
+    } else if (evt.code === 'Numpad7') {
+      // top
+      camera.position.set(0, 12, 0);
+    } else if (evt.code === 'Numpad3') {
+      // right
+      camera.position.set(12, 0, 0);
+    } else if (evt.code === 'Numpad9') {
+      // inverse
+      camera.position.negate();
+    } else if (evt.code === 'Numpad5') {
+      // inverse
+      switchCamera();
     }
   });
 
@@ -374,7 +389,7 @@ const init = (config: Config) => {
     0.1,
     100
   );
-  perspectiveCamera.position.set(0, 0, 3);
+  perspectiveCamera.position.set(0, 0, 12);
   perspectiveCamera.zoom = 1;
   const orthographicCamera = new THREE.OrthographicCamera(
     -0,
@@ -384,7 +399,7 @@ const init = (config: Config) => {
     0.1,
     100
   );
-  orthographicCamera.position.set(0, 0, 3);
+  orthographicCamera.position.set(0, 0, 12);
   orthographicCamera.zoom = 1;
 
   updateCameras();

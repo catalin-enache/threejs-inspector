@@ -64,7 +64,7 @@ export interface ScreenInfo {
   value: any;
   linkObject: THREE.Object3D;
   position: { x: number; y: number };
-  size: { width: number; height: number };
+  size?: { width?: number; height?: number };
   color: { bg: string; fg: string };
 }
 

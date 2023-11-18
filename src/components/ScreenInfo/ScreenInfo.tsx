@@ -39,24 +39,28 @@ export const ScreenInfo = (props: ScreenInfoProps) => {
   return (
     <>
       {Object.keys(screenInfos).map((key) => {
-        const { position, color, value, size } = screenInfos[key];
+        const {
+          position,
+          color,
+          value,
+          size = { width: undefined, height: undefined }
+        } = screenInfos[key];
         return (
           <div
             key={key}
             style={{
+              fontSize: '10px',
               pointerEvents: 'none',
               display: 'flex',
               placeContent: 'center',
               flexFlow: 'column',
               userSelect: 'none',
               position: 'fixed',
-              transform: `translate(${position.x - size.width / 2}px, ${
-                position.y - size.height / 2
-              }px)`,
+              transform: `translate(calc(${position.x}px - 50%), calc(${position.y}px - 50%))`,
               top: 0,
               left: 0,
-              width: size.width,
-              height: size.height,
+              width: size.width || 'auto',
+              height: size.height || 'auto',
               backgroundColor: color.bg,
               color: color.fg
             }}

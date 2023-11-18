@@ -12,7 +12,7 @@ import type { CustomInfoControl } from 'src/types';
 
 export const setConfig = (config: Config) => {
   config.cameraType = 'perspective';
-  config.orthographicCameraRatio = 400;
+  config.orthographicCameraRatio = 100;
   return config;
 };
 
@@ -97,7 +97,7 @@ export default (sceneObjects: SceneObjects) => {
     name: 'Cube1_Coords2D',
     value: '?',
     position: { x: 0, y: 0 },
-    size: { width: 50, height: 50 },
+    size: { width: 40, height: 40 },
     color: { bg: 'rgba(0,0,0,.5)', fg: 'white' }
   });
 
@@ -106,7 +106,7 @@ export default (sceneObjects: SceneObjects) => {
     name: 'Cube2_Coords2D',
     value: '?',
     position: { x: 0, y: 0 },
-    size: { width: 50, height: 50 },
+    size: { width: 40, height: 40 },
     color: { bg: 'rgba(0,0,0,.5)', fg: 'white' }
   });
 

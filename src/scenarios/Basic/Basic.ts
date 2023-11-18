@@ -18,7 +18,7 @@ import type {
 
 export const setConfig = (config: Config) => {
   config.cameraType = 'perspective';
-  config.orthographicCameraRatio = 400;
+  config.orthographicCameraRatio = 100;
   return config;
 };
 
@@ -146,7 +146,7 @@ export default (sceneObjects: SceneObjects) => {
     type: 'float',
     name: 'F',
     label: 'Float',
-    value: 0.5,
+    value: 0,
     min: 0,
     max: 1
   });
@@ -222,8 +222,8 @@ export default (sceneObjects: SceneObjects) => {
     name: 'Cube1',
     value: '?',
     position: { x: 0, y: 0 },
-    size: { width: 50, height: 50 },
-    color: { bg: 'rgba(0,0,0,.5)', fg: 'white' }
+    // size: { width: 0, height: 0 },
+    color: { bg: 'rgba(0,0,0,0.5)', fg: 'white' }
   });
 
   addScreenInfo({
@@ -231,8 +231,8 @@ export default (sceneObjects: SceneObjects) => {
     name: 'Cube2',
     value: '?',
     position: { x: 0, y: 0 },
-    size: { width: 50, height: 50 },
-    color: { bg: 'rgba(0,0,0,.5)', fg: 'white' }
+    size: { width: 40, height: 40 },
+    color: { bg: 'rgba(0,0,0,0.5)', fg: 'white' }
   });
 
   const tick = () => {

@@ -42,7 +42,7 @@ function ControlPanel({ scene }: ControlPanelProps) {
 
   useEffect(() => {
     window.addEventListener('keydown', (_evt: KeyboardEvent) => {
-      forceUpdate(); // for space-bar Play/Pause in particular
+      forceUpdate(); // in particular for space-bar Play/Pause camera view & type
     });
     // @ts-ignore
     window.addEventListener(EVENT_TYPE.THREE, (evt: CustomEvent) => {

@@ -10,5 +10,5 @@ export type Config = {
 
 export const config: Config = {
   cameraType: 'perspective',
-  orthographicCameraRatio: 300
+  orthographicCameraRatio: 100
 };

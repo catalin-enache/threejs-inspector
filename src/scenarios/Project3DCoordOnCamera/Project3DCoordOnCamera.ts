@@ -7,13 +7,8 @@ import {
   // SCREEN_INFO_EVENT_TYPE,
   STANDARD_CONTROL_EVENT_TYPE,
   THREE_EVENT_TYPE
-} from 'src/constants.ts';
-// import {
-//   EVENT_TYPE,
-//   THREE_EVENT_TYPE,
-//   STANDARD_CONTROL_EVENT_TYPE,
-//   CUSTOM_CONTROL_EVENT_TYPE
-// } from 'src/constants';
+} from 'src/constants';
+import type { CustomInfoControl } from 'src/types';
 
 export const setConfig = (config: Config) => {
   config.cameraType = 'perspective';
@@ -65,14 +60,14 @@ export default (sceneObjects: SceneObjects) => {
     // console.log(_evtType, 'scale', _object.scale);
   }
 
-  addCustomControl({
+  addCustomControl<CustomInfoControl>({
     type: 'info',
     name: 'cube1',
     label: 'Cube1',
     value: ''
   });
 
-  addCustomControl({
+  addCustomControl<CustomInfoControl>({
     type: 'info',
     name: 'cube2',
     label: 'Cube2',

@@ -7,6 +7,14 @@ import {
   STANDARD_CONTROL_EVENT_TYPE,
   CUSTOM_CONTROL_EVENT_TYPE
 } from 'src/constants';
+import type {
+  CustomBooleanControl,
+  CustomButtonControl,
+  CustomFloatControl,
+  CustomInfoControl,
+  CustomIntegerControl,
+  CustomSelectControl
+} from 'src/types';
 
 export const setConfig = (config: Config) => {
   config.cameraType = 'perspective';
@@ -134,7 +142,7 @@ export default (sceneObjects: SceneObjects) => {
     // console.log(_evtType, 'scale', _object.scale);
   }
 
-  addCustomControl({
+  addCustomControl<CustomFloatControl>({
     type: 'float',
     name: 'F',
     label: 'Float',
@@ -142,7 +150,7 @@ export default (sceneObjects: SceneObjects) => {
     min: 0,
     max: 1
   });
-  addCustomControl({
+  addCustomControl<CustomIntegerControl>({
     type: 'integer',
     name: 'I',
     label: 'Cube1 Y',
@@ -150,20 +158,20 @@ export default (sceneObjects: SceneObjects) => {
     min: 0,
     max: 2
   });
-  addCustomControl({
+  addCustomControl<CustomSelectControl>({
     type: 'select',
     name: 'S',
     label: 'Cube2 Color',
     value: '0x00ff00',
     options: ['0x00ff00', '0x00ffff', '0xffff00']
   });
-  addCustomControl({
+  addCustomControl<CustomBooleanControl>({
     type: 'boolean',
     name: 'C',
     label: 'Cube2 visible',
     value: true
   });
-  addCustomControl({
+  addCustomControl<CustomButtonControl>({
     type: 'button',
     name: 'B',
     label: 'Cube2 Y',
@@ -172,19 +180,19 @@ export default (sceneObjects: SceneObjects) => {
     precision: 2,
     step: 0.1
   });
-  addCustomControl({
+  addCustomControl<CustomInfoControl>({
     type: 'info',
     name: 'Pointer',
     label: 'Pointer',
     value: 'Some info'
   });
-  addCustomControl({
+  addCustomControl<CustomInfoControl>({
     type: 'info',
     name: 'Hit',
     label: 'Hit',
     value: 'Some info'
   });
-  addCustomControl({
+  addCustomControl<CustomInfoControl>({
     type: 'info',
     name: 'Camera',
     label: 'Camera',

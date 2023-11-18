@@ -256,7 +256,7 @@ const init = (config: Config) => {
     }
   });
 
-  const addCustomControl = (control: CustomControl) => {
+  const addCustomControl = <C extends CustomControl>(control: C) => {
     customControls[control.name] = control;
     window.dispatchEvent(
       new CustomEvent(EVENT_TYPE.CUSTOM_CONTROL, {

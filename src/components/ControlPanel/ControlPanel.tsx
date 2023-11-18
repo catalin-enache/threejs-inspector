@@ -42,15 +42,17 @@ function ControlPanel({ scene }: ControlPanelProps) {
 
   useEffect(() => {
     window.addEventListener('keydown', (_evt: KeyboardEvent) => {
-      forceUpdate();
+      forceUpdate(); // for space-bar Play/Pause in particular
     });
     // @ts-ignore
     window.addEventListener(EVENT_TYPE.THREE, (evt: CustomEvent) => {
       if (evt.detail.type === THREE_EVENT_TYPE.OBJECT_SELECTED) {
+        // updates standard controls from object transform matrix
         forceUpdate();
       } else if (
         evt.detail.type === THREE_EVENT_TYPE.SELECTED_OBJECT_TRANSFORM
       ) {
+        // updates standard controls from object transform matrix
         forceUpdate();
       }
     });
@@ -59,8 +61,10 @@ function ControlPanel({ scene }: ControlPanelProps) {
     // @ts-ignore
     window.addEventListener(EVENT_TYPE.CUSTOM_CONTROL, (evt: CustomEvent) => {
       if (evt.detail.type === CUSTOM_CONTROL_EVENT_TYPE.CREATE) {
+        // updates custom controls values
         forceUpdate();
       } else if (evt.detail.type === CUSTOM_CONTROL_EVENT_TYPE.VALUE_CHANGED) {
+        // updates custom controls values
         forceUpdate();
       }
     });

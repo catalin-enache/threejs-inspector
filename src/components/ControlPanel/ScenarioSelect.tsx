@@ -1,22 +1,23 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import ControlPanel from 'components/ControlPanel/index.ts';
-import { config } from 'src/config.ts';
-import { init, SceneObjects } from 'src/scene.ts';
+import ControlPanel from 'components/ControlPanel/index';
+import { ScreenInfo } from 'components/ScreenInfo/ScreenInfo';
+import { config } from 'src/config';
+import { init, SceneObjects } from 'src/scene';
 import './ControlPanel.css';
 
-import basic, { setConfig as basicSetConfig } from 'scenarios/basic/basic.ts';
-import second, {
-  setConfig as secondSetConfig
-} from 'scenarios/second/second.ts';
+import Basic, { setConfig as BasicSetConfig } from 'scenarios/Basic/Basic.ts';
+import Project3DCoordOnCamera, {
+  setConfig as Project3DCoordOnCameraSetConfig
+} from 'scenarios/Project3DCoordOnCamera/Project3DCoordOnCamera.ts';
 
 const scenarioMap = {
-  basic: {
-    config: basicSetConfig,
-    run: basic
+  Basic: {
+    config: BasicSetConfig,
+    run: Basic
   },
-  second: {
-    config: secondSetConfig,
-    run: second
+  Project3DCoordOnCamera: {
+    config: Project3DCoordOnCameraSetConfig,
+    run: Project3DCoordOnCamera
   }
 };
 
@@ -25,7 +26,7 @@ export const ScenarioSelect = () => {
   const [sceneObjects, setSceneObjects] = useState<SceneObjects | null>(null);
   const searchParams = new URLSearchParams(window.location.search);
   const scenario = (searchParams.get('scenario') ||
-    'basic') as keyof typeof scenarioMap;
+    'Basic') as keyof typeof scenarioMap;
 
   useEffect(() => {
     if (!searchParams.get('scenario')) {
@@ -56,6 +57,7 @@ export const ScenarioSelect = () => {
 
   return (
     <>
+      {sceneObjects && <ScreenInfo scene={sceneObjects} />}
       <div className="control">
         <div className="controlRow">
           <div

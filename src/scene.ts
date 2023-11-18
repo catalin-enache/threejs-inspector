@@ -7,15 +7,50 @@ import {
   EVENT_TYPE,
   THREE_EVENT_TYPE,
   STANDARD_CONTROL_EVENT_TYPE,
-  CUSTOM_CONTROL_EVENT_TYPE
+  CUSTOM_CONTROL_EVENT_TYPE,
+  SCREEN_INFO_EVENT_TYPE
 } from './constants';
 import type { Config, SceneSize } from './config';
-import { CustomControl, CustomControls } from 'src/types.ts';
+import {
+  CustomControl,
+  CustomControls,
+  ScreenInfo,
+  ScreenInfos
+} from 'src/types';
 
 type getHitsParams = {
   raycaster: THREE.Raycaster;
   pointer: THREE.Vector2;
   camera: THREE.Camera;
+};
+
+const _vector = new THREE.Vector3();
+export const project3DCoordinateOnCamera = ({
+  camera,
+  sceneSize,
+  object
+}: {
+  camera: THREE.Camera;
+  sceneSize: SceneSize;
+  object: THREE.Object3D;
+}) => {
+  const widthHalf = 0.5 * sceneSize.width;
+  const heightHalf = 0.5 * sceneSize.height;
+  object.updateMatrixWorld();
+  camera.updateMatrixWorld();
+  // Get the position of the center of the object in world space
+  _vector.setFromMatrixPosition(object.matrixWorld);
+  // Project the 3D position vector onto the 2D screen using the camera
+  _vector.project(camera);
+  const x = widthHalf + _vector.x * widthHalf; // good
+  const y = heightHalf - _vector.y * heightHalf; // good
+  // const x = (_vector.x * 0.5 + 0.5) * sceneSize.width; // good
+  // const y = (_vector.y * -0.5 + 0.5) * sceneSize.height; // good
+
+  const roundedX = x.toFixed(2);
+  const roundedY = y.toFixed(2);
+
+  return { x: +roundedX, y: +roundedY };
 };
 
 const init = (config: Config) => {
@@ -32,6 +67,7 @@ const init = (config: Config) => {
   };
   let selectedObject: THREE.Object3D | null = null;
   const customControls: CustomControls = {};
+  const screenInfos: ScreenInfos = {};
 
   const getHits = ({ raycaster, pointer, camera }: getHitsParams) => {
     raycaster.setFromCamera(pointer, camera);
@@ -196,7 +232,17 @@ const init = (config: Config) => {
     } else if (
       evt.detail.type === STANDARD_CONTROL_EVENT_TYPE.SELECTED_OBJECT_TRANSFORM
     ) {
-      // pass
+      if (evt.detail.value.userData.screenInfo) {
+        // pass
+      }
+    }
+  });
+
+  window.addEventListener(EVENT_TYPE.THREE, (evt: any) => {
+    if (evt.detail.type === THREE_EVENT_TYPE.SELECTED_OBJECT_TRANSFORM) {
+      if (evt.detail.value.userData.screenInfo) {
+        // pass
+      }
     }
   });
 
@@ -221,6 +267,18 @@ const init = (config: Config) => {
         }
       })
     );
+    setTimeout(() => {
+      // to honor initial value
+      window.dispatchEvent(
+        new CustomEvent(EVENT_TYPE.CUSTOM_CONTROL, {
+          detail: {
+            type: CUSTOM_CONTROL_EVENT_TYPE.VALUE_CHANGED,
+            name: control.name,
+            value: control.value
+          }
+        })
+      );
+    }, 0);
   };
 
   // This is dispatched from Scene as well as from CustomControlInput
@@ -233,6 +291,62 @@ const init = (config: Config) => {
       new CustomEvent(EVENT_TYPE.CUSTOM_CONTROL, {
         detail: {
           type: CUSTOM_CONTROL_EVENT_TYPE.VALUE_CHANGED,
+          name,
+          value
+        }
+      })
+    );
+  };
+
+  const addScreenInfo = (info: ScreenInfo) => {
+    screenInfos[info.name] = info;
+    info.linkObject.userData.screenInfo = info;
+    window.dispatchEvent(
+      new CustomEvent(EVENT_TYPE.SCREEN_INFO, {
+        detail: {
+          type: SCREEN_INFO_EVENT_TYPE.CREATE,
+          name: info.name,
+          value: screenInfos
+        }
+      })
+    );
+  };
+
+  const refreshAllScreenInfoPositions = () => {
+    Object.keys(screenInfos).forEach((name) => {
+      refreshScreenInfoPosition(name);
+    });
+  };
+
+  const refreshScreenInfoPosition = (name: string) => {
+    if (!screenInfos[name]) return;
+    const object = screenInfos[name].linkObject;
+    const pos = project3DCoordinateOnCamera({
+      camera,
+      sceneSize,
+      object
+    });
+    screenInfos[name].position = pos;
+    window.dispatchEvent(
+      // for ScreenInfo to re-render
+      new CustomEvent(EVENT_TYPE.SCREEN_INFO, {
+        detail: {
+          type: SCREEN_INFO_EVENT_TYPE.REFRESH_POSITION,
+          name,
+          value: screenInfos
+        }
+      })
+    );
+  };
+
+  const changeScreenInfoValue = (name: string, value: any) => {
+    if (!screenInfos[name]) return;
+    screenInfos[name].value = value;
+    window.dispatchEvent(
+      // for ScreenInfo to re-render
+      new CustomEvent(EVENT_TYPE.SCREEN_INFO, {
+        detail: {
+          type: SCREEN_INFO_EVENT_TYPE.VALUE_CHANGED,
           name,
           value
         }
@@ -301,6 +415,9 @@ const init = (config: Config) => {
   const orbitControls = new OrbitControls(camera, canvas);
   orbitControls.enabled = true;
   orbitControls.enableDamping = false;
+  orbitControls.addEventListener('change', () => {
+    // pass
+  });
 
   const transformControls = new TransformControls(camera, canvas);
   transformControls.setSpace('local'); // local | world
@@ -352,6 +469,7 @@ const init = (config: Config) => {
     return true;
   };
 
+  const getScreenInfos = () => screenInfos;
   const getDelta = () => delta;
   const getCustomControls = () => customControls;
   const getHit = () => hit;
@@ -363,7 +481,7 @@ const init = (config: Config) => {
   const getInteractiveObjects = () => interactiveObjects;
   const getClock = () => clock;
 
-  let isPlaying = true;
+  let isPlaying = false;
   const getIsPlaying = () => isPlaying;
   const play = () => {
     isPlaying = true;
@@ -374,18 +492,8 @@ const init = (config: Config) => {
     isPlaying = false;
   };
   const loop = (callback: () => void) => {
+    refreshAllScreenInfoPositions();
     getIsPlaying() && internalTick() && callback();
-    // this is to update ControlPanel for the selected object
-    // just in case it was transformed
-    getSelectedObject() &&
-      window.dispatchEvent(
-        new CustomEvent(EVENT_TYPE.THREE, {
-          detail: {
-            type: THREE_EVENT_TYPE.SELECTED_OBJECT_TRANSFORM,
-            value: getSelectedObject()
-          }
-        })
-      );
     orbitControls.update();
     renderer.render(scene, camera);
     window.requestAnimationFrame(() => loop(callback));
@@ -401,6 +509,9 @@ const init = (config: Config) => {
     getTransformControls,
     addCustomControl,
     changeCustomControlValue,
+    addScreenInfo,
+    getScreenInfos,
+    changeScreenInfoValue,
     getCustomControls,
     getRayCaster,
     getConfig,

@@ -29,8 +29,8 @@ export const useChangeRotation = ({
           }
         })
       );
-      // Object3D has just been updated from previous dispatched Event,
-      // so we force a re-render to update the UI
+      // Object3D has just been updated,
+      // so we force a re-render to update ControlPanel
       forceUpdate();
     },
     [forceUpdate, selectedObject]

@@ -1,3 +1,5 @@
+import type THREE from 'three';
+// import type { SceneSize } from './config';
 export interface BaseCustomControl {
   type: 'float' | 'integer' | 'select' | 'boolean' | 'button' | 'info';
   name: string;
@@ -13,6 +15,7 @@ export interface CustomInfoControl extends BaseCustomControl {
 export interface CustomButtonControl extends BaseCustomControl {
   type: 'button';
   value?: number;
+  defaultValue?: number;
   step?: number;
   precision?: number;
 }
@@ -55,3 +58,14 @@ export type CustomControl =
   | CustomInfoControl;
 
 export type CustomControls = Record<string, CustomControl>;
+
+export interface ScreenInfo {
+  name: string;
+  value: any;
+  linkObject: THREE.Object3D;
+  position: { x: number; y: number };
+  size: { width: number; height: number };
+  color: { bg: string; fg: string };
+}
+
+export type ScreenInfos = Record<string, ScreenInfo>;

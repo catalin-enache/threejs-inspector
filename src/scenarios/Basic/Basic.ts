@@ -9,7 +9,7 @@ import {
 } from 'src/constants';
 
 export const setConfig = (config: Config) => {
-  config.cameraType = 'orthographic';
+  config.cameraType = 'perspective';
   config.orthographicCameraRatio = 400;
   return config;
 };
@@ -19,12 +19,14 @@ export default (sceneObjects: SceneObjects) => {
     scene,
     // getTransformControls,
     loop,
-    // pointer,
+    pointer,
     // sceneSize,
-    // getCamera,
-    // getHit,
+    getCamera,
+    getHit,
     addCustomControl,
-    // changeCustomControlValue,
+    changeScreenInfoValue,
+    addScreenInfo,
+    changeCustomControlValue,
     // getClock,
     getDelta,
     getInteractiveObjects
@@ -95,6 +97,24 @@ export default (sceneObjects: SceneObjects) => {
   // @ts-ignore
   window.addEventListener(EVENT_TYPE.CUSTOM_CONTROL, (evt: CustomEvent) => {
     if (evt.detail.type === CUSTOM_CONTROL_EVENT_TYPE.VALUE_CHANGED) {
+      if (['FPS', 'Pointer', 'Hit', 'Camera'].includes(evt.detail.name)) return;
+      if (evt.detail.name === 'B') {
+        cube2.position.y = evt.detail.value;
+      } else if (evt.detail.name === 'C') {
+        cube2.visible = evt.detail.value;
+      } else if (evt.detail.name === 'S') {
+        cube2.material.color.set(
+          evt.detail.value === '0x00ff00'
+            ? 0x00ff00
+            : evt.detail.value === '0x00ffff'
+            ? 0x00ffff
+            : 0xffff00
+        );
+      } else if (evt.detail.name === 'F') {
+        cube1.rotation.y = evt.detail.value;
+      } else if (evt.detail.name === 'I') {
+        cube1.position.y = evt.detail.value;
+      }
       // console.log(evt.detail.type, evt.detail.name, evt.detail.value);
     }
   });
@@ -102,11 +122,6 @@ export default (sceneObjects: SceneObjects) => {
   window.addEventListener('keydown', (evt: KeyboardEvent) => {
     if (evt.key === 'r') {
       cube1.rotation.x += 0.1;
-      // sceneObjects.getInteractiveObjects().forEach((obj) => {
-      //   if (obj.name === 'cube1') {
-      //     obj.rotation.x += 0.1;
-      //   }
-      // });
     }
   });
 
@@ -130,34 +145,49 @@ export default (sceneObjects: SceneObjects) => {
   addCustomControl({
     type: 'integer',
     name: 'I',
-    label: 'Int',
-    value: 1,
+    label: 'Cube1 Y',
+    value: 0,
     min: 0,
     max: 2
   });
   addCustomControl({
     type: 'select',
     name: 'S',
-    label: 'Select',
-    value: 'aaa',
-    options: ['aaa', 'bbb', 'ccc']
+    label: 'Cube2 Color',
+    value: '0x00ff00',
+    options: ['0x00ff00', '0x00ffff', '0xffff00']
   });
   addCustomControl({
     type: 'boolean',
     name: 'C',
-    label: 'Check',
-    value: false
+    label: 'Cube2 visible',
+    value: true
   });
   addCustomControl({
     type: 'button',
     name: 'B',
-    label: 'Button',
-    step: 0.01
+    label: 'Cube2 Y',
+    value: 0,
+    defaultValue: 0,
+    precision: 2,
+    step: 0.1
   });
   addCustomControl({
     type: 'info',
-    name: 'INF',
-    label: 'Info',
+    name: 'Pointer',
+    label: 'Pointer',
+    value: 'Some info'
+  });
+  addCustomControl({
+    type: 'info',
+    name: 'Hit',
+    label: 'Hit',
+    value: 'Some info'
+  });
+  addCustomControl({
+    type: 'info',
+    name: 'Camera',
+    label: 'Camera',
     value: 'Some info'
   });
 
@@ -170,13 +200,50 @@ export default (sceneObjects: SceneObjects) => {
   getInteractiveObjects().push(cube1);
   scene.add(cube1);
 
+  const cube2 = new THREE.Mesh(
+    new THREE.BoxGeometry(1, 1, 1),
+    new THREE.MeshBasicMaterial({ color: 0x00ff00 })
+  );
+  cube2.name = 'cube2';
+  cube2.position.set(2, 0, 0);
+  getInteractiveObjects().push(cube2);
+  cube1.add(cube2);
+
+  addScreenInfo({
+    linkObject: cube1,
+    name: 'Cube1',
+    value: '?',
+    position: { x: 0, y: 0 },
+    size: { width: 50, height: 50 },
+    color: { bg: 'rgba(0,0,0,.5)', fg: 'white' }
+  });
+
+  addScreenInfo({
+    linkObject: cube2,
+    name: 'Cube2',
+    value: '?',
+    position: { x: 0, y: 0 },
+    size: { width: 50, height: 50 },
+    color: { bg: 'rgba(0,0,0,.5)', fg: 'white' }
+  });
+
   const tick = () => {
     const delta = getDelta();
     cube1.rotation.x += 0.5 * delta;
-    // changeCustomControlValue('C1', Math.random());
-    // console.log(pointer);
-    // console.log(getHit())
-    // console.log(getCamera().position.length(), getCamera().zoom);
+    cube2.rotation.y += 0.5 * delta;
+    changeScreenInfoValue('Cube1', `${cube1.rotation.x.toFixed(2)}`);
+    changeScreenInfoValue('Cube2', `${cube2.rotation.y.toFixed(2)}`);
+    changeCustomControlValue(
+      'Pointer',
+      `${pointer.x.toFixed(2)} ${pointer.y.toFixed(2)}`
+    );
+    changeCustomControlValue('Hit', `${getHit()?.object?.name || ''}`);
+    changeCustomControlValue(
+      'Camera',
+      `dist: ${getCamera()
+        .position.length()
+        .toFixed(2)} zoom: ${getCamera().zoom.toFixed(2)}`
+    );
   };
   loop(tick);
 };

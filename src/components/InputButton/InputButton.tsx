@@ -4,6 +4,7 @@ interface InputButtonProps {
   label?: string;
   className?: string;
   value?: number;
+  defaultValue?: number;
   step?: number;
   precision?: number;
   rate?: number;
@@ -14,6 +15,7 @@ export const InputButton = (props: InputButtonProps) => {
     label = '',
     className = '',
     value = 0,
+    defaultValue = 0,
     step = 1,
     precision = 2,
     rate = 100,
@@ -25,22 +27,33 @@ export const InputButton = (props: InputButtonProps) => {
   const [isContinuous, setIsContinuous] = useState(false);
   const timeoutRef = React.useRef<number | null>(null);
 
-  const handlePointerUp = useCallback<
-    React.PointerEventHandler<HTMLElement>
-  >(() => {
-    clearTimeout(timeoutRef.current!);
-    setIsContinuous(false);
-    onClick(Number((value + step).toFixed(precision)));
-  }, [onClick, value, step, precision]);
+  const handlePointerUp = useCallback<React.PointerEventHandler<HTMLElement>>(
+    (event) => {
+      if (event && event.button === 2) {
+        event.preventDefault();
+        onClick(defaultValue);
+        return;
+      }
+      clearTimeout(timeoutRef.current!);
+      setIsContinuous(false);
+      onClick(Number((value + step).toFixed(precision)));
+    },
+    [onClick, value, step, precision]
+  );
 
-  const handlePointerDown = useCallback<
-    React.PointerEventHandler<HTMLElement>
-  >(() => {
-    clearTimeout(timeoutRef.current!);
-    timeoutRef.current = setTimeout(() => {
-      setIsContinuous(true);
-    }, 500) as unknown as number;
-  }, [onClick, value, step, precision]);
+  const handlePointerDown = useCallback<React.PointerEventHandler<HTMLElement>>(
+    (event) => {
+      if (event && event.button === 2) {
+        event.preventDefault();
+        return;
+      }
+      clearTimeout(timeoutRef.current!);
+      timeoutRef.current = setTimeout(() => {
+        setIsContinuous(true);
+      }, 500) as unknown as number;
+    },
+    [onClick, value, step, precision]
+  );
 
   useEffect(() => {
     if (isContinuous) {
@@ -56,6 +69,7 @@ export const InputButton = (props: InputButtonProps) => {
   return (
     <label
       className={`inputLabel inputButton ${className} `}
+      onContextMenu={(e) => e.preventDefault()}
       onPointerDown={handlePointerDown}
       onPointerUp={handlePointerUp}
     >

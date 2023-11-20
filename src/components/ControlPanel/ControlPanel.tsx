@@ -39,6 +39,9 @@ function ControlPanel({ scene }: ControlPanelProps) {
       }),
     []
   );
+  const isOrbitCamera = scene.getOrbitControlsAreEnabled();
+  const isFPSCamera = !isOrbitCamera;
+  const navType = isFPSCamera ? 'FPS' : 'Orbit';
 
   useEffect(() => {
     window.addEventListener('keydown', (_evt: KeyboardEvent) => {
@@ -78,6 +81,10 @@ function ControlPanel({ scene }: ControlPanelProps) {
     forceUpdate();
   }, [scene.getIsPlaying()]);
 
+  const toggleNavigationType = useCallback(() => {
+    scene.toggleOrbitControls();
+    forceUpdate();
+  }, []);
   const toggleCameraType = useToggleCameraType({ forceUpdate });
   const toggleTransformSpace = useToggleTransformSpace({
     scene,
@@ -105,12 +112,20 @@ function ControlPanel({ scene }: ControlPanelProps) {
   return (
     <div className="control">
       <div className="controlRow">
+        <div className="rowTitle">Camera</div>
         <div
           className="rowEntry"
           style={{ cursor: 'pointer' }}
           onClick={toggleCameraType}
         >
-          Camera type {cameraType}
+          <span title="Toggle with key Num 5">{cameraType}</span>
+        </div>
+        <div
+          className="rowEntry"
+          style={{ cursor: 'pointer' }}
+          onClick={toggleNavigationType}
+        >
+          <span title="Toggle with key o">{navType}</span>
         </div>
       </div>
       <hr />

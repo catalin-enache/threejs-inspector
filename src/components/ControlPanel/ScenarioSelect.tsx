@@ -5,10 +5,13 @@ import { config } from 'src/config';
 import { init, SceneObjects } from 'src/scene';
 import './ControlPanel.css';
 
-import Basic, { setConfig as BasicSetConfig } from 'scenarios/Basic/Basic.ts';
+import Basic, { setConfig as BasicSetConfig } from 'scenarios/Basic/Basic';
 import Project3DCoordOnCamera, {
   setConfig as Project3DCoordOnCameraSetConfig
-} from 'scenarios/Project3DCoordOnCamera/Project3DCoordOnCamera.ts';
+} from 'scenarios/Project3DCoordOnCamera/Project3DCoordOnCamera';
+import DotProduct, {
+  setConfig as DotProductSetConfig
+} from 'scenarios/DotProduct/DotProduct';
 
 const scenarioMap = {
   Basic: {
@@ -18,11 +21,15 @@ const scenarioMap = {
   Project3DCoordOnCamera: {
     config: Project3DCoordOnCameraSetConfig,
     run: Project3DCoordOnCamera
+  },
+  DotProduct: {
+    config: DotProductSetConfig,
+    run: DotProduct
   }
 };
 
 export const ScenarioSelect = () => {
-  const [showControlPanel, setShowControlPanel] = useState(true);
+  const [showControlPanel, setShowControlPanel] = useState(false);
   const [sceneObjects, setSceneObjects] = useState<SceneObjects | null>(null);
   const searchParams = new URLSearchParams(window.location.search);
   const scenario = (searchParams.get('scenario') ||
@@ -50,6 +57,7 @@ export const ScenarioSelect = () => {
   useEffect(() => {
     console.log('scenario', scenario);
     const updatedConfig = scenarioMap[scenario].config({ ...config });
+    setShowControlPanel(updatedConfig.controlPanelExpanded);
     const sceneObjects: SceneObjects = init(updatedConfig);
     scenarioMap[scenario].run(sceneObjects);
     setSceneObjects(sceneObjects);

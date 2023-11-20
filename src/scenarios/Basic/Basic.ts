@@ -19,6 +19,7 @@ import type {
 export const setConfig = (config: Config) => {
   config.cameraType = 'perspective';
   config.orthographicCameraRatio = 100;
+  config.controlPanelExpanded = true;
   return config;
 };
 
@@ -198,6 +199,18 @@ export default (sceneObjects: SceneObjects) => {
     label: 'Camera',
     value: 'Some info'
   });
+  addCustomControl<CustomInfoControl>({
+    type: 'info',
+    name: 'Camera2',
+    label: 'Camera2',
+    value: 'Some info'
+  });
+  addCustomControl<CustomInfoControl>({
+    type: 'info',
+    name: 'Camera3',
+    label: 'Camera3',
+    value: 'Some info'
+  });
 
   const cube1 = new THREE.Mesh(
     new THREE.BoxGeometry(1, 1, 1),
@@ -251,6 +264,22 @@ export default (sceneObjects: SceneObjects) => {
       `dist: ${getCamera()
         .position.length()
         .toFixed(2)} zoom: ${getCamera().zoom.toFixed(2)}`
+    );
+    changeCustomControlValue(
+      'Camera2',
+      `x: ${getCamera().position.x.toFixed(
+        2
+      )} y: ${getCamera().position.y.toFixed(
+        2
+      )} z: ${getCamera().position.z.toFixed(2)}`
+    );
+    changeCustomControlValue(
+      'Camera3',
+      `x: ${getCamera().rotation.x.toFixed(
+        2
+      )} y: ${getCamera().rotation.y.toFixed(
+        2
+      )} z: ${getCamera().rotation.z.toFixed(2)}`
     );
   };
   loop(tick);

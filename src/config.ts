@@ -6,9 +6,11 @@ export type SceneSize = {
 export type Config = {
   cameraType: 'perspective' | 'orthographic';
   orthographicCameraRatio: number;
+  controlPanelExpanded: boolean;
 };
 
 export const config: Config = {
   cameraType: 'perspective',
-  orthographicCameraRatio: 100
+  orthographicCameraRatio: 100,
+  controlPanelExpanded: true
 };

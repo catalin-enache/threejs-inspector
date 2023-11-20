@@ -1,7 +1,7 @@
-import './ScreenInfo.css';
 import { useCallback, useEffect, useState } from 'react';
-import { EVENT_TYPE, SCREEN_INFO_EVENT_TYPE } from 'src/constants.ts';
-import { SceneObjects } from 'src/scene.ts';
+import { EVENT_TYPE, SCREEN_INFO_EVENT_TYPE } from 'src/constants';
+import { SceneObjects } from 'src/scene';
+import './ScreenInfo.css';
 
 export interface ScreenInfoProps {
   scene: SceneObjects;
@@ -16,24 +16,28 @@ export const ScreenInfo = (props: ScreenInfoProps) => {
   const forceUpdate = useCallback(
     () =>
       setUpdateNow((state) => {
-        return (state + 1) % 3;
+        return (state + 1) % 100;
       }),
     []
   );
 
-  // const continuousUpdate = useCallback(() => {
-  //   forceUpdate();
-  //   requestAnimationFrame(continuousUpdate);
-  // }, []);
+  const continuousUpdate = useCallback(() => {
+    forceUpdate();
+    requestAnimationFrame(continuousUpdate);
+  }, []);
 
   useEffect(() => {
     window.addEventListener(EVENT_TYPE.SCREEN_INFO, (e: any) => {
       if (e.detail.type === SCREEN_INFO_EVENT_TYPE.REFRESH_POSITION) {
-        forceUpdate();
+        // forceUpdate();
       } else if (e.detail.type === SCREEN_INFO_EVENT_TYPE.VALUE_CHANGED) {
-        forceUpdate();
+        // forceUpdate();
       }
     });
+    // the approach above is only working when forceUpdate is counting more than % 3
+    // but in any case continuousUpdate does not cause more re-renders
+    // than those triggered by the listeners above
+    continuousUpdate();
   }, []);
 
   return (
@@ -45,6 +49,7 @@ export const ScreenInfo = (props: ScreenInfoProps) => {
           value,
           size = { width: undefined, height: undefined }
         } = screenInfos[key];
+
         return (
           <div
             key={key}

@@ -13,6 +13,7 @@ import type { CustomInfoControl } from 'src/types';
 export const setConfig = (config: Config) => {
   config.cameraType = 'perspective';
   config.orthographicCameraRatio = 100;
+  config.controlPanelExpanded = true;
   return config;
 };
 

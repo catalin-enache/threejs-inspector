@@ -11,6 +11,9 @@ import {
   SCREEN_INFO_EVENT_TYPE
 } from './constants';
 import type { Config, SceneSize } from './config';
+import { setupFPSCamera } from 'src/sceneModules/fpsCamera';
+import { resetCamera } from 'src/sceneModules/resetCamera';
+import { focusCamera } from 'src/sceneModules/focusCamera';
 import {
   CustomControl,
   CustomControls,
@@ -68,6 +71,9 @@ const init = (config: Config) => {
   let selectedObject: THREE.Object3D | null = null;
   const customControls: CustomControls = {};
   const screenInfos: ScreenInfos = {};
+  // this has greater precedence over orbitControls.enabled
+  // orbitControls.enabled can become enabled only if orbitControlsAreEnabled is true
+  let orbitControlsAreEnabled = false;
 
   const getHits = ({ raycaster, pointer, camera }: getHitsParams) => {
     raycaster.setFromCamera(pointer, camera);
@@ -109,6 +115,10 @@ const init = (config: Config) => {
   };
 
   setSceneSize();
+
+  canvas.addEventListener('contextmenu', (evt: Event) => {
+    evt.preventDefault();
+  });
 
   canvas.addEventListener('pointerdown', () => {
     window.dispatchEvent(
@@ -215,7 +225,6 @@ const init = (config: Config) => {
     });
   });
 
-  // call play/pause on spacebar press
   window.addEventListener('keydown', (evt: KeyboardEvent) => {
     if (evt.code === 'Space') {
       if (getIsPlaying()) {
@@ -223,21 +232,16 @@ const init = (config: Config) => {
       } else {
         play();
       }
-    } else if (evt.code === 'Numpad1') {
-      // front
-      camera.position.set(0, 0, 12);
-    } else if (evt.code === 'Numpad7') {
-      // top
-      camera.position.set(0, 12, 0);
-    } else if (evt.code === 'Numpad3') {
-      // right
-      camera.position.set(12, 0, 0);
-    } else if (evt.code === 'Numpad9') {
-      // inverse
-      camera.position.negate();
+    } else if (
+      ['Numpad1', 'Numpad7', 'Numpad3', 'Numpad9'].includes(evt.code)
+    ) {
+      resetCamera({ code: evt.code, camera, orbitControls });
     } else if (evt.code === 'Numpad5') {
-      // inverse
       switchCamera();
+    } else if (evt.code === 'KeyF') {
+      focusCamera({ orbitControls, transformControls });
+    } else if (evt.code === 'KeyO') {
+      toggleOrbitControls();
     }
   });
 
@@ -270,6 +274,12 @@ const init = (config: Config) => {
       customControls[name].value = value;
     }
   });
+
+  // key O
+  const toggleOrbitControls = () => {
+    orbitControlsAreEnabled = !orbitControlsAreEnabled;
+    orbitControls.enabled = orbitControlsAreEnabled;
+  };
 
   const addCustomControl = <C extends CustomControl>(control: C) => {
     customControls[control.name] = control;
@@ -428,7 +438,7 @@ const init = (config: Config) => {
   const axisHelper = new THREE.AxesHelper(1000);
 
   const orbitControls = new OrbitControls(camera, canvas);
-  orbitControls.enabled = true;
+  orbitControls.enabled = orbitControlsAreEnabled;
   orbitControls.enableDamping = false;
   orbitControls.addEventListener('change', () => {
     // pass
@@ -437,6 +447,7 @@ const init = (config: Config) => {
   const transformControls = new TransformControls(camera, canvas);
   transformControls.setSpace('local'); // local | world
   transformControls.addEventListener('dragging-changed', function (event: any) {
+    if (!orbitControlsAreEnabled) return;
     orbitControls.enabled = !event.value;
   });
   transformControls.addEventListener('objectChange', function (event: any) {
@@ -484,6 +495,8 @@ const init = (config: Config) => {
     return true;
   };
 
+  const getOrbitControls = () => orbitControls;
+  const getOrbitControlsAreEnabled = () => orbitControlsAreEnabled;
   const getScreenInfos = () => screenInfos;
   const getDelta = () => delta;
   const getCustomControls = () => customControls;
@@ -506,10 +519,13 @@ const init = (config: Config) => {
     clock.stop();
     isPlaying = false;
   };
+
+  const { fpsCamera } = setupFPSCamera({ getCamera, getOrbitControls });
   const loop = (callback: () => void) => {
     refreshAllScreenInfoPositions();
+    fpsCamera();
     getIsPlaying() && internalTick() && callback();
-    orbitControls.update();
+    orbitControls.enabled && orbitControls.update();
     renderer.render(scene, camera);
     window.requestAnimationFrame(() => loop(callback));
   };
@@ -520,7 +536,9 @@ const init = (config: Config) => {
     scene,
     canvas,
     renderer,
-    orbitControls,
+    getOrbitControls,
+    getOrbitControlsAreEnabled,
+    toggleOrbitControls,
     getTransformControls,
     addCustomControl,
     changeCustomControlValue,

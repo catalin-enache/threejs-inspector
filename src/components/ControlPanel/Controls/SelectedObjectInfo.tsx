@@ -2,10 +2,12 @@
 import { InputNumber } from 'src/components/InputNumber';
 import * as THREE from 'three';
 
-interface InfoProps {
+interface SelectedObjectInfoProps {
   selectedObject: THREE.Object3D<THREE.Object3DEventMap>;
 }
-export const Info = ({ selectedObject }: InfoProps) => {
+export const SelectedObjectInfo = ({
+  selectedObject
+}: SelectedObjectInfoProps) => {
   return (
     <>
       <div className="controlRow">

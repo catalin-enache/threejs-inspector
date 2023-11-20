@@ -74,6 +74,7 @@ const init = (config: Config) => {
   // this has greater precedence over orbitControls.enabled
   // orbitControls.enabled can become enabled only if orbitControlsAreEnabled is true
   let orbitControlsAreEnabled = false;
+  let fps = 0;
 
   const getHits = ({ raycaster, pointer, camera }: getHitsParams) => {
     raycaster.setFromCamera(pointer, camera);
@@ -475,26 +476,20 @@ const init = (config: Config) => {
 
   const clock = new THREE.Clock();
 
-  addCustomControl({
-    type: 'info',
-    name: 'FPS',
-    label: 'FPS',
-    value: ''
-  });
-
   let _lastTime = 0;
   let delta = 0;
   const internalTick = () => {
     delta = getClock().getDelta();
     const currTime = Math.floor(+new Date() / 100);
-    const fps = (1 / delta).toFixed(0);
+    const _fps = Math.round(1 / delta);
     if (currTime > _lastTime) {
-      changeCustomControlValue('FPS', fps);
+      fps = _fps;
       _lastTime = currTime;
     }
     return true;
   };
 
+  const getFps = () => fps;
   const getOrbitControls = () => orbitControls;
   const getOrbitControlsAreEnabled = () => orbitControlsAreEnabled;
   const getScreenInfos = () => screenInfos;
@@ -536,6 +531,7 @@ const init = (config: Config) => {
     scene,
     canvas,
     renderer,
+    getFps,
     getOrbitControls,
     getOrbitControlsAreEnabled,
     toggleOrbitControls,

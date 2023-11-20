@@ -1,14 +1,14 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 // import * as THREE from 'three';
 // @ts-ignore
-import { Info } from './Controls/Info';
+import { SelectedObjectInfo } from 'src/components/ControlPanel/Controls/SelectedObjectInfo';
+import { GeneralInfo } from 'src/components/ControlPanel/Controls/GeneralInfo';
 import { TransformControls } from './Controls/TransformControls';
 import { TransformControlsSpace } from './Controls/TransformControlsSpace';
 import { Translate } from './Controls/Translate';
 import { Position } from './Controls/Position';
 import { Rotation } from './Controls/Rotation';
 import { Scale } from './Controls/Scale';
-import { useToggleCameraType } from './Hooks/useToggleCameraType';
 import { useToggleTransformSpace } from './Hooks/useToggleTransformSpace';
 import { useSetTransformMode } from './Hooks/useSetTransformMode';
 import { useChangeTranslationDistance } from './Hooks/useChangeTranslationDistance';
@@ -16,7 +16,7 @@ import { useTranslate } from './Hooks/useTranslate';
 import { useChangePosition } from './Hooks/useChangePosition';
 import { useChangeRotation } from './Hooks/useChangeRotation';
 import { useChangeScale } from './Hooks/useChangeScale';
-import { CustomControlInput } from 'components/CustomControlInput/CustomControlInput.tsx';
+import { CustomControlInput } from 'components/CustomControlInput/CustomControlInput';
 import type { SceneObjects } from 'src/scene';
 import {
   EVENT_TYPE,
@@ -32,20 +32,35 @@ function ControlPanel({ scene }: ControlPanelProps) {
   const [, setUpdateNow] = useState(0);
   const customControls = scene.getCustomControls();
   const customControlsNames = Object.keys(customControls);
+  const isInteracting = useRef(false);
   const forceUpdate = useCallback(
     () =>
       setUpdateNow((state) => {
-        return (state + 1) % 3;
+        return (state + 1) % 100;
       }),
     []
   );
-  const isOrbitCamera = scene.getOrbitControlsAreEnabled();
-  const isFPSCamera = !isOrbitCamera;
-  const navType = isFPSCamera ? 'FPS' : 'Orbit';
+
+  const continuousUpdate = useCallback(() => {
+    forceUpdate();
+    isInteracting.current && requestAnimationFrame(continuousUpdate);
+  }, []);
+
+  const fps = scene.getFps();
 
   useEffect(() => {
+    window.addEventListener('pointerdown', () => {
+      isInteracting.current = true;
+      continuousUpdate(); // in particular for space-bar Play/Pause camera view & type
+    });
+    window.addEventListener('pointerup', () => {
+      isInteracting.current = false;
+    });
     window.addEventListener('keydown', (_evt: KeyboardEvent) => {
-      forceUpdate(); // in particular for space-bar Play/Pause camera view & type
+      !isInteracting.current && forceUpdate();
+    });
+    window.addEventListener('wheel', (_evt: MouseEvent) => {
+      !isInteracting.current && forceUpdate();
     });
     // @ts-ignore
     window.addEventListener(EVENT_TYPE.THREE, (evt: CustomEvent) => {
@@ -73,7 +88,6 @@ function ControlPanel({ scene }: ControlPanelProps) {
     });
   }, []);
 
-  const cameraType = scene.getConfig().cameraType;
   const transformControls = scene.getTransformControls();
   const selectedObject = scene.getSelectedObject() || null;
   const togglePlay = useCallback(() => {
@@ -81,11 +95,6 @@ function ControlPanel({ scene }: ControlPanelProps) {
     forceUpdate();
   }, [scene.getIsPlaying()]);
 
-  const toggleNavigationType = useCallback(() => {
-    scene.toggleOrbitControls();
-    forceUpdate();
-  }, []);
-  const toggleCameraType = useToggleCameraType({ forceUpdate });
   const toggleTransformSpace = useToggleTransformSpace({
     scene,
     transformControls,
@@ -111,23 +120,7 @@ function ControlPanel({ scene }: ControlPanelProps) {
 
   return (
     <div className="control">
-      <div className="controlRow">
-        <div className="rowTitle">Camera</div>
-        <div
-          className="rowEntry"
-          style={{ cursor: 'pointer' }}
-          onClick={toggleCameraType}
-        >
-          <span title="Toggle with key Num 5">{cameraType}</span>
-        </div>
-        <div
-          className="rowEntry"
-          style={{ cursor: 'pointer' }}
-          onClick={toggleNavigationType}
-        >
-          <span title="Toggle with key o">{navType}</span>
-        </div>
-      </div>
+      <GeneralInfo scene={scene} forceUpdate={forceUpdate} />
       <hr />
       <div className="controlRow">
         <div
@@ -135,13 +128,13 @@ function ControlPanel({ scene }: ControlPanelProps) {
           style={{ cursor: 'pointer' }}
           onClick={togglePlay}
         >
-          {scene.getIsPlaying() ? 'Pause' : 'Play'}
+          {scene.getIsPlaying() ? `Pause ${fps}` : 'Play'}
         </div>
       </div>
       {!selectedObject ? null : (
         <>
           <hr />
-          <Info selectedObject={selectedObject} />
+          <SelectedObjectInfo selectedObject={selectedObject} />
           <hr />
           <TransformControlsSpace
             transformControls={transformControls}

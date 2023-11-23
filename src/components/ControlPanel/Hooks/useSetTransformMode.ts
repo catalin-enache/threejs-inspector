@@ -10,7 +10,7 @@ export const useSetTransformMode = ({
 }: useSetTransformModeProps) => {
   return useCallback(
     (mode: 'translate' | 'rotate' | 'scale') => () => {
-      transformControls.mode = mode;
+      transformControls.setMode(mode);
       forceUpdate();
     },
     [forceUpdate, transformControls]

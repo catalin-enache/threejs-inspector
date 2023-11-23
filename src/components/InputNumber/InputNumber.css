@@ -17,6 +17,7 @@ input.Number {
     border: 0px;
     padding: 0 0 0 4px;
     width: 100%;
+    font-family: monospace;
 }
 
 input.Number:focus {

@@ -10,10 +10,10 @@ export const SelectedObjectInfo = ({
 }: SelectedObjectInfoProps) => {
   return (
     <>
-      <div className="controlRow">
+      <div className="controlRow" title="F (focus)">
         <div className="rowEntry">Control {selectedObject.name}</div>
       </div>
-      <div className="controlRow">
+      <div className="controlRow" title="F (focus)">
         <div className="rowEntry">{selectedObject.uuid}</div>
       </div>
     </>

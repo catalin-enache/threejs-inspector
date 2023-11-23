@@ -55,6 +55,18 @@ export const ScenarioSelect = () => {
   }, []);
 
   useEffect(() => {
+    const handleKeyDown = (evt: KeyboardEvent) => {
+      if (evt.code === 'KeyT') {
+        toggleControlPanel();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [toggleControlPanel]);
+
+  useEffect(() => {
     console.log('scenario', scenario);
     const updatedConfig = scenarioMap[scenario].config({ ...config });
     setShowControlPanel(updatedConfig.controlPanelExpanded);
@@ -72,6 +84,7 @@ export const ScenarioSelect = () => {
             className="rowTitle"
             style={{ cursor: 'pointer' }}
             onClick={toggleControlPanel}
+            title="T"
           >
             {showControlPanel ? 'Collapse' : 'Expand'}
           </div>

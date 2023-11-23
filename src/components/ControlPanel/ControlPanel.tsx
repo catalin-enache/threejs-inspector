@@ -127,6 +127,7 @@ function ControlPanel({ scene }: ControlPanelProps) {
           className="rowEntry"
           style={{ cursor: 'pointer' }}
           onClick={togglePlay}
+          title="Space"
         >
           {scene.getIsPlaying() ? `Pause ${fps}` : 'Play'}
         </div>

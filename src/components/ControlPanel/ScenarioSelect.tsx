@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import ControlPanel from 'components/ControlPanel/index';
 import { ScreenInfo } from 'components/ScreenInfo/ScreenInfo';
+import { useKey } from 'components/ControlPanel/Hooks/useKey';
 import { config } from 'src/config';
 import { init, SceneObjects } from 'src/scene';
 import './ControlPanel.css';
@@ -12,6 +13,9 @@ import Project3DCoordOnCamera, {
 import DotProduct, {
   setConfig as DotProductSetConfig
 } from 'scenarios/DotProduct/DotProduct';
+import Asteroids, {
+  setConfig as AsteroidsSetConfig
+} from 'scenarios/Asteroids/Asteroids';
 
 const scenarioMap = {
   Basic: {
@@ -25,15 +29,39 @@ const scenarioMap = {
   DotProduct: {
     config: DotProductSetConfig,
     run: DotProduct
+  },
+  Asteroids: {
+    config: AsteroidsSetConfig,
+    run: Asteroids
   }
 };
 
 export const ScenarioSelect = () => {
+  const [, setUpdateNow] = useState(0);
   const [showControlPanel, setShowControlPanel] = useState(false);
   const [sceneObjects, setSceneObjects] = useState<SceneObjects | null>(null);
   const searchParams = new URLSearchParams(window.location.search);
   const scenario = (searchParams.get('scenario') ||
     'Basic') as keyof typeof scenarioMap;
+
+  const forceUpdate = useCallback(
+    () =>
+      setUpdateNow((state) => {
+        return (state + 1) % 100;
+      }),
+    []
+  );
+
+  const continuousUpdate = useCallback(() => {
+    forceUpdate();
+    requestAnimationFrame(continuousUpdate);
+  }, []);
+
+  useEffect(() => {
+    setTimeout(() => {
+      continuousUpdate();
+    }, 100);
+  }, []);
 
   useEffect(() => {
     if (!searchParams.get('scenario')) {
@@ -54,17 +82,7 @@ export const ScenarioSelect = () => {
     setShowControlPanel((state) => !state);
   }, []);
 
-  useEffect(() => {
-    const handleKeyDown = (evt: KeyboardEvent) => {
-      if (evt.code === 'KeyT') {
-        toggleControlPanel();
-      }
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => {
-      window.removeEventListener('keydown', handleKeyDown);
-    };
-  }, [toggleControlPanel]);
+  useKey({ keyCode: 'KeyT', keyDownCallback: toggleControlPanel });
 
   useEffect(() => {
     console.log('scenario', scenario);

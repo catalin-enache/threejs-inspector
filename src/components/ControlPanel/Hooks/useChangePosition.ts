@@ -3,11 +3,9 @@ import { useCallback } from 'react';
 import { STANDARD_CONTROL_EVENT_TYPE, EVENT_TYPE } from 'src/constants.ts';
 
 interface useChangePositionProps {
-  forceUpdate: () => void;
   selectedObject: THREE.Object3D<THREE.Object3DEventMap> | null;
 }
 export const useChangePosition = ({
-  forceUpdate,
   selectedObject
 }: useChangePositionProps) => {
   return useCallback(
@@ -28,10 +26,7 @@ export const useChangePosition = ({
           }
         })
       );
-      // Object3D has just been updated,
-      // so we force a re-render to update ControlPanel
-      forceUpdate();
     },
-    [forceUpdate, selectedObject]
+    [selectedObject]
   );
 };

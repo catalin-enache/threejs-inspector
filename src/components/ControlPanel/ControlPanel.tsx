@@ -1,6 +1,6 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
-// import * as THREE from 'three';
 // @ts-ignore
+// import * as THREE from 'three';
+import { useCallback } from 'react';
 import { SelectedObjectInfo } from 'src/components/ControlPanel/Controls/SelectedObjectInfo';
 import { GeneralInfo } from 'src/components/ControlPanel/Controls/GeneralInfo';
 import { TransformControls } from './Controls/TransformControls';
@@ -18,109 +18,44 @@ import { useChangeRotation } from './Hooks/useChangeRotation';
 import { useChangeScale } from './Hooks/useChangeScale';
 import { CustomControlInput } from 'components/CustomControlInput/CustomControlInput';
 import type { SceneObjects } from 'src/scene';
-import {
-  EVENT_TYPE,
-  THREE_EVENT_TYPE,
-  CUSTOM_CONTROL_EVENT_TYPE
-} from 'src/constants';
 import './ControlPanel.css';
 
 export interface ControlPanelProps {
   scene: SceneObjects;
 }
 function ControlPanel({ scene }: ControlPanelProps) {
-  const [, setUpdateNow] = useState(0);
   const customControls = scene.getCustomControls();
   const customControlsNames = Object.keys(customControls);
-  const isInteracting = useRef(false);
-  const forceUpdate = useCallback(
-    () =>
-      setUpdateNow((state) => {
-        return (state + 1) % 100;
-      }),
-    []
-  );
-
-  const continuousUpdate = useCallback(() => {
-    forceUpdate();
-    isInteracting.current && requestAnimationFrame(continuousUpdate);
-  }, []);
-
   const fps = scene.getFps();
-
-  useEffect(() => {
-    window.addEventListener('pointerdown', () => {
-      isInteracting.current = true;
-      continuousUpdate(); // in particular for space-bar Play/Pause camera view & type
-    });
-    window.addEventListener('pointerup', () => {
-      isInteracting.current = false;
-    });
-    window.addEventListener('keydown', (_evt: KeyboardEvent) => {
-      !isInteracting.current && forceUpdate();
-    });
-    window.addEventListener('wheel', (_evt: MouseEvent) => {
-      !isInteracting.current && forceUpdate();
-    });
-    // @ts-ignore
-    window.addEventListener(EVENT_TYPE.THREE, (evt: CustomEvent) => {
-      if (evt.detail.type === THREE_EVENT_TYPE.OBJECT_SELECTED) {
-        // updates standard controls from object transform matrix
-        forceUpdate();
-      } else if (
-        evt.detail.type === THREE_EVENT_TYPE.SELECTED_OBJECT_TRANSFORM
-      ) {
-        // updates standard controls from object transform matrix
-        forceUpdate();
-      }
-    });
-    // The order this is fired is Scene, Scenario, ControlPanel
-    // in the same order as ScenarioSelect initializes the scenario
-    // @ts-ignore
-    window.addEventListener(EVENT_TYPE.CUSTOM_CONTROL, (evt: CustomEvent) => {
-      if (evt.detail.type === CUSTOM_CONTROL_EVENT_TYPE.CREATE) {
-        // updates custom controls values
-        forceUpdate();
-      } else if (evt.detail.type === CUSTOM_CONTROL_EVENT_TYPE.VALUE_CHANGED) {
-        // updates custom controls values
-        forceUpdate();
-      }
-    });
-  }, []);
-
   const transformControls = scene.getTransformControls();
   const selectedObject = scene.getSelectedObject() || null;
   const togglePlay = useCallback(() => {
     scene.getIsPlaying() ? scene.pause() : scene.play();
-    forceUpdate();
   }, [scene.getIsPlaying()]);
 
   const toggleTransformSpace = useToggleTransformSpace({
     scene,
-    transformControls,
-    forceUpdate
+    transformControls
   });
   const setTransformMode = useSetTransformMode({
-    transformControls,
-    forceUpdate
+    transformControls
   });
 
   const changeTranslationDistance = useChangeTranslationDistance({
-    selectedObject,
-    forceUpdate
+    selectedObject
   });
 
-  const translate = useTranslate({ selectedObject, forceUpdate });
+  const translate = useTranslate({ selectedObject });
 
-  const changePosition = useChangePosition({ selectedObject, forceUpdate });
+  const changePosition = useChangePosition({ selectedObject });
 
-  const changeRotation = useChangeRotation({ selectedObject, forceUpdate });
+  const changeRotation = useChangeRotation({ selectedObject });
 
-  const changeScale = useChangeScale({ selectedObject, forceUpdate });
+  const changeScale = useChangeScale({ selectedObject });
 
   return (
     <div className="control">
-      <GeneralInfo scene={scene} forceUpdate={forceUpdate} />
+      <GeneralInfo scene={scene} />
       <hr />
       <div className="controlRow">
         <div

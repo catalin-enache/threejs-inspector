@@ -1,13 +1,13 @@
 import * as THREE from 'three';
 import type { SceneObjects } from 'src/scene';
-import { useCallback, useState, useEffect } from 'react';
+import { useCallback, useState } from 'react';
 import { useToggleCameraType } from 'components/ControlPanel/Hooks/useToggleCameraType';
+import { useKey } from 'components/ControlPanel/Hooks/useKey';
 
 interface GeneralInfoProps {
   scene: SceneObjects;
-  forceUpdate: () => void;
 }
-export const GeneralInfo = ({ scene, forceUpdate }: GeneralInfoProps) => {
+export const GeneralInfo = ({ scene }: GeneralInfoProps) => {
   const [showCameraDetails, setShowCameraDetails] = useState(false);
   const camera = scene.getCamera();
   const isOrbitCamera = scene.getOrbitControlsAreEnabled();
@@ -19,24 +19,13 @@ export const GeneralInfo = ({ scene, forceUpdate }: GeneralInfoProps) => {
 
   const toggleNavigationType = useCallback(() => {
     scene.toggleOrbitControls();
-    forceUpdate();
   }, []);
-  const toggleCameraType = useToggleCameraType({ forceUpdate });
+  const toggleCameraType = useToggleCameraType();
   const toggleShowCameraDetails = useCallback(() => {
     setShowCameraDetails((state) => !state);
   }, []);
 
-  useEffect(() => {
-    const handleKeyDown = (evt: KeyboardEvent) => {
-      if (evt.code === 'KeyC') {
-        toggleShowCameraDetails();
-      }
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => {
-      window.removeEventListener('keydown', handleKeyDown);
-    };
-  }, []);
+  useKey({ keyCode: 'KeyC', keyDownCallback: toggleShowCameraDetails });
 
   return (
     <>

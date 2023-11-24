@@ -3,13 +3,9 @@ import { useCallback } from 'react';
 import { STANDARD_CONTROL_EVENT_TYPE, EVENT_TYPE } from 'src/constants.ts';
 
 interface useChangeScaleProps {
-  forceUpdate: () => void;
   selectedObject: THREE.Object3D<THREE.Object3DEventMap> | null;
 }
-export const useChangeScale = ({
-  forceUpdate,
-  selectedObject
-}: useChangeScaleProps) => {
+export const useChangeScale = ({ selectedObject }: useChangeScaleProps) => {
   return useCallback(
     (coordinate: 'x' | 'y' | 'z') => (event: number) => {
       if (!selectedObject) return;
@@ -28,10 +24,7 @@ export const useChangeScale = ({
           }
         })
       );
-      // Object3D has just been updated,
-      // so we force a re-render to update ControlPanel
-      forceUpdate();
     },
-    [forceUpdate, selectedObject]
+    [selectedObject]
   );
 };

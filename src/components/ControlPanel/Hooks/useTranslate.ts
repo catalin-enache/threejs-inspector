@@ -3,13 +3,9 @@ import { useCallback } from 'react';
 import { STANDARD_CONTROL_EVENT_TYPE, EVENT_TYPE } from 'src/constants.ts';
 
 interface useTranslateProps {
-  forceUpdate: () => void;
   selectedObject: THREE.Object3D<THREE.Object3DEventMap> | null;
 }
-export const useTranslate = ({
-  forceUpdate,
-  selectedObject
-}: useTranslateProps) => {
+export const useTranslate = ({ selectedObject }: useTranslateProps) => {
   return useCallback(() => {
     if (!selectedObject) return;
     // const axis = new THREE.Vector3(
@@ -37,7 +33,5 @@ export const useTranslate = ({
         }
       })
     );
-
-    forceUpdate();
-  }, [forceUpdate, selectedObject]);
+  }, [selectedObject]);
 };

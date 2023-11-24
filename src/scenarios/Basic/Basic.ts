@@ -69,12 +69,17 @@ export default (sceneObjects: SceneObjects) => {
     if (evt.detail.type === THREE_EVENT_TYPE.POINTER_MOVE) {
       // console.log(evt.detail.type, evt.detail.value);
       // console.log(getHit());
+      changeCustomControlValue(
+        'Pointer',
+        `${pointer.x.toFixed(2)} ${pointer.y.toFixed(2)}`
+      );
     }
   });
 
   window.addEventListener(EVENT_TYPE.THREE, (evt: any) => {
     if (evt.detail.type === THREE_EVENT_TYPE.OBJECT_HIT) {
       // console.log(evt.detail.type, evt.detail.value);
+      changeCustomControlValue('Hit', `${getHit()?.object?.name || ''}`);
     }
   });
 
@@ -254,11 +259,6 @@ export default (sceneObjects: SceneObjects) => {
     cube2.rotation.y += 0.5 * delta;
     changeScreenInfoValue('Cube1', `${cube1.rotation.x.toFixed(2)}`);
     changeScreenInfoValue('Cube2', `${cube2.rotation.y.toFixed(2)}`);
-    changeCustomControlValue(
-      'Pointer',
-      `${pointer.x.toFixed(2)} ${pointer.y.toFixed(2)}`
-    );
-    changeCustomControlValue('Hit', `${getHit()?.object?.name || ''}`);
     changeCustomControlValue(
       'Camera',
       `dist: ${getCamera()

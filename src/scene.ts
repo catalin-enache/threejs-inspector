@@ -7,8 +7,7 @@ import {
   EVENT_TYPE,
   THREE_EVENT_TYPE,
   STANDARD_CONTROL_EVENT_TYPE,
-  CUSTOM_CONTROL_EVENT_TYPE,
-  SCREEN_INFO_EVENT_TYPE
+  CUSTOM_CONTROL_EVENT_TYPE
 } from './constants';
 import type { Config, SceneSize } from './config';
 import { setupFPSCamera } from 'src/sceneModules/fpsCamera';
@@ -73,7 +72,7 @@ const init = (config: Config) => {
   const screenInfos: ScreenInfos = {};
   // this has greater precedence over orbitControls.enabled
   // orbitControls.enabled can become enabled only if orbitControlsAreEnabled is true
-  let orbitControlsAreEnabled = false;
+  let orbitControlsAreEnabled = true;
   let fps = 0;
 
   const getHits = ({ raycaster, pointer, camera }: getHitsParams) => {
@@ -266,7 +265,7 @@ const init = (config: Config) => {
     }
   });
 
-  // The order this is fired is Scene, Scenario, ControlPanel
+  // The order this is fired is Scene, Scenario, ControlPanel (if it has a listener)
   // in the same order as ScenarioSelect initializes the scenario
   // @ts-ignore
   window.addEventListener(EVENT_TYPE.CUSTOM_CONTROL, (evt: CustomEvent) => {
@@ -327,15 +326,6 @@ const init = (config: Config) => {
   const addScreenInfo = (info: ScreenInfo) => {
     screenInfos[info.name] = info;
     info.linkObject.userData.screenInfo = info;
-    window.dispatchEvent(
-      new CustomEvent(EVENT_TYPE.SCREEN_INFO, {
-        detail: {
-          type: SCREEN_INFO_EVENT_TYPE.CREATE,
-          name: info.name,
-          value: screenInfos
-        }
-      })
-    );
   };
 
   const refreshAllScreenInfoPositions = () => {
@@ -353,31 +343,11 @@ const init = (config: Config) => {
       object
     });
     screenInfos[name].position = pos;
-    window.dispatchEvent(
-      // for ScreenInfo to re-render
-      new CustomEvent(EVENT_TYPE.SCREEN_INFO, {
-        detail: {
-          type: SCREEN_INFO_EVENT_TYPE.REFRESH_POSITION,
-          name,
-          value: screenInfos
-        }
-      })
-    );
   };
 
   const changeScreenInfoValue = (name: string, value: any) => {
     if (!screenInfos[name]) return;
     screenInfos[name].value = value;
-    window.dispatchEvent(
-      // for ScreenInfo to re-render
-      new CustomEvent(EVENT_TYPE.SCREEN_INFO, {
-        detail: {
-          type: SCREEN_INFO_EVENT_TYPE.VALUE_CHANGED,
-          name,
-          value
-        }
-      })
-    );
   };
 
   const updateCameras = () => {

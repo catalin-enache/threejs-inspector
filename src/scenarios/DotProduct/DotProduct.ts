@@ -4,7 +4,6 @@ import type { SceneObjects } from 'src/scene';
 import {
   // CUSTOM_CONTROL_EVENT_TYPE,
   EVENT_TYPE,
-  // SCREEN_INFO_EVENT_TYPE,
   STANDARD_CONTROL_EVENT_TYPE,
   THREE_EVENT_TYPE
 } from 'src/constants';

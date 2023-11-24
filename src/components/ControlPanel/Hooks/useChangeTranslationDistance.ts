@@ -2,11 +2,9 @@ import * as THREE from 'three';
 import { useCallback } from 'react';
 
 interface useChangeTranslationDistanceProps {
-  forceUpdate: () => void;
   selectedObject: THREE.Object3D<THREE.Object3DEventMap> | null;
 }
 export const useChangeTranslationDistance = ({
-  forceUpdate,
   selectedObject
 }: useChangeTranslationDistanceProps) => {
   return useCallback(
@@ -16,8 +14,7 @@ export const useChangeTranslationDistance = ({
         ...selectedObject.userData.translationDistance,
         [coordinate]: event
       };
-      forceUpdate();
     },
-    [forceUpdate, selectedObject]
+    [selectedObject]
   );
 };

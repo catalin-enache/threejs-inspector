@@ -14,4 +14,5 @@
 
 .info .info__value {
   color: darkgray;
+  font-family: monospace;
 }

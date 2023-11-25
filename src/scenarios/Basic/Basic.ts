@@ -73,6 +73,14 @@ export default (sceneObjects: SceneObjects) => {
         'Pointer',
         `${pointer.x.toFixed(2)} ${pointer.y.toFixed(2)}`
       );
+      changeScreenInfoValue(
+        'Cursor',
+        `${pointer.x.toFixed(2)} ${pointer.y.toFixed(2)}`
+      );
+      changeScreenInfoValue(
+        'Cursor2',
+        `${pointer.x.toFixed(2)} ${pointer.y.toFixed(2)}`
+      );
     }
   });
 
@@ -251,6 +259,21 @@ export default (sceneObjects: SceneObjects) => {
     position: { x: 0, y: 0 },
     size: { width: 40, height: 40 },
     color: { bg: 'rgba(0,0,0,0.5)', fg: 'white' }
+  });
+
+  addScreenInfo({
+    name: 'Cursor',
+    value: '?',
+    position: { x: 40, y: 10 },
+    size: { width: 80, height: 20 },
+    color: { bg: 'rgba(100,100,100,0.5)', fg: 'white' }
+  });
+  addScreenInfo({
+    name: 'Cursor2',
+    value: '?',
+    position: { x: 40, y: 30 },
+    size: { width: 80, height: 20 },
+    color: { bg: 'rgba(100,100,100,0.5)', fg: 'white' }
   });
 
   const tick = () => {

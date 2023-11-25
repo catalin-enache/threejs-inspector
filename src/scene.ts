@@ -325,6 +325,7 @@ const init = (config: Config) => {
 
   const addScreenInfo = (info: ScreenInfo) => {
     screenInfos[info.name] = info;
+    if (!info.linkObject) return;
     info.linkObject.userData.screenInfo = info;
   };
 
@@ -335,8 +336,8 @@ const init = (config: Config) => {
   };
 
   const refreshScreenInfoPosition = (name: string) => {
-    if (!screenInfos[name]) return;
-    const object = screenInfos[name].linkObject;
+    if (!screenInfos[name] || !screenInfos[name].linkObject) return;
+    const object = screenInfos[name].linkObject!;
     const pos = project3DCoordinateOnCamera({
       camera,
       sceneSize,

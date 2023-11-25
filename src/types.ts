@@ -62,7 +62,7 @@ export type CustomControls = Record<string, CustomControl>;
 export interface ScreenInfo {
   name: string;
   value: any;
-  linkObject: THREE.Object3D;
+  linkObject?: THREE.Object3D;
   position: { x: number; y: number };
   size?: { width?: number; height?: number };
   color: { bg: string; fg: string };

@@ -17,8 +17,13 @@ export const ScreenInfo = (props: ScreenInfoProps) => {
           position,
           color,
           value,
-          size = { width: undefined, height: undefined }
+          size = { width: undefined, height: undefined },
+          linkObject
         } = screenInfos[key];
+
+        if (linkObject && !linkObject.visible) {
+          return null;
+        }
 
         return (
           <div

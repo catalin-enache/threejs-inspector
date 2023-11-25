@@ -1,5 +1,7 @@
 import { SceneObjects } from 'src/scene';
+import { useCallback, useRef } from 'react';
 import './ScreenInfo.css';
+import { useKey } from 'components/ControlPanel/Hooks/useKey.ts';
 
 export interface ScreenInfoProps {
   scene: SceneObjects;
@@ -9,6 +11,17 @@ export const ScreenInfo = (props: ScreenInfoProps) => {
   const { scene } = props;
   const { getScreenInfos } = scene;
   const screenInfos = getScreenInfos();
+  const showScreenInfo = useRef(true);
+
+  const toggleShowScreenInfo = useCallback(() => {
+    showScreenInfo.current = !showScreenInfo.current;
+  }, []);
+
+  useKey({ keyCode: 'KeyI', keyDownCallback: toggleShowScreenInfo });
+
+  if (!showScreenInfo.current) {
+    return null;
+  }
 
   return (
     <>

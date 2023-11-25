@@ -70,7 +70,7 @@ function ControlPanel({ scene }: ControlPanelProps) {
           className="rowEntry"
           style={{ cursor: 'pointer' }}
           onClick={scene.toggleShowScreenInfo}
-          title="Key I"
+          title="I"
         >
           {scene.getShowScreenInfo() ? 'Hide ScreenInfo' : 'Show ScreenInfo'}
         </div>

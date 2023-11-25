@@ -70,10 +70,21 @@ const init = (config: Config) => {
   let selectedObject: THREE.Object3D | null = null;
   const customControls: CustomControls = {};
   const screenInfos: ScreenInfos = {};
+  let showScreenInfo = true;
   // this has greater precedence over orbitControls.enabled
   // orbitControls.enabled can become enabled only if orbitControlsAreEnabled is true
   let orbitControlsAreEnabled = true;
   let fps = 0;
+
+  const toggleShowScreenInfo = () => {
+    showScreenInfo = !showScreenInfo;
+  };
+
+  window.addEventListener('keydown', (evt: KeyboardEvent) => {
+    if (evt.code === 'KeyI') {
+      toggleShowScreenInfo();
+    }
+  });
 
   const getHits = ({ raycaster, pointer, camera }: getHitsParams) => {
     raycaster.setFromCamera(pointer, camera);
@@ -460,6 +471,7 @@ const init = (config: Config) => {
     return true;
   };
 
+  const getShowScreenInfo = () => showScreenInfo;
   const getFps = () => fps;
   const getOrbitControls = () => orbitControls;
   const getOrbitControlsAreEnabled = () => orbitControlsAreEnabled;
@@ -502,6 +514,8 @@ const init = (config: Config) => {
     scene,
     canvas,
     renderer,
+    toggleShowScreenInfo,
+    getShowScreenInfo,
     getFps,
     getOrbitControls,
     getOrbitControlsAreEnabled,

@@ -66,6 +66,14 @@ function ControlPanel({ scene }: ControlPanelProps) {
         >
           {scene.getIsPlaying() ? `Pause ${fps}` : 'Play'}
         </div>
+        <div
+          className="rowEntry"
+          style={{ cursor: 'pointer' }}
+          onClick={scene.toggleShowScreenInfo}
+          title="Key I"
+        >
+          {scene.getShowScreenInfo() ? 'Hide ScreenInfo' : 'Show ScreenInfo'}
+        </div>
       </div>
       {!selectedObject ? null : (
         <>

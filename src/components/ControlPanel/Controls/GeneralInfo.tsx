@@ -3,6 +3,7 @@ import type { SceneObjects } from 'src/scene';
 import { useCallback, useState } from 'react';
 import { useToggleCameraType } from 'components/ControlPanel/Hooks/useToggleCameraType';
 import { useKey } from 'components/ControlPanel/Hooks/useKey';
+import { ResetView } from 'components/ControlPanel/Controls/ResetView';
 
 interface GeneralInfoProps {
   scene: SceneObjects;
@@ -29,6 +30,7 @@ export const GeneralInfo = ({ scene }: GeneralInfoProps) => {
 
   return (
     <>
+      <ResetView scene={scene} />
       <div className="controlRow">
         <div
           className="rowTitle"

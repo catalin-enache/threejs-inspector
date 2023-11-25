@@ -1,54 +1,43 @@
 // @ts-ignore
 import { InputNumber } from 'src/components/InputNumber';
-import { useEffect } from 'react';
+import { SceneObjects } from 'src/scene.ts';
+import { useCallback } from 'react';
 // import * as THREE from 'three';
 
 interface TransformControlsProps {
-  transformControls: any;
-  setTransformMode: (mode: 'translate' | 'rotate' | 'scale') => () => void;
+  scene: SceneObjects;
 }
-export const TransformControls = ({
-  transformControls,
-  setTransformMode
-}: TransformControlsProps) => {
-  useEffect(() => {
-    const handleKeyDown = (_evt: KeyboardEvent) => {
-      _evt.code === 'Comma' && setTransformMode('translate')();
-      _evt.code === 'Period' && setTransformMode('rotate')();
-      _evt.code === 'Slash' && setTransformMode('scale')();
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => {
-      window.removeEventListener('keydown', handleKeyDown);
-    };
-  }, [setTransformMode]);
+export const TransformControls = ({ scene }: TransformControlsProps) => {
+  const mode = scene.getTransformControls().mode;
+  const setTransformControlsMode = useCallback(
+    (_mode: string) => () => {
+      scene.setTransformControlsMode(_mode);
+    },
+    []
+  );
   return (
     <>
       <div className="controlRow">
         <div className="rowTitle">Controls</div>
         <div
           className={`rowEntry controlTab ${
-            transformControls.mode === 'translate' ? 'active' : ''
+            mode === 'translate' ? 'active' : ''
           }`}
-          onClick={setTransformMode('translate')}
+          onClick={setTransformControlsMode('translate')}
           title="Comma"
         >
           Translate
         </div>
         <div
-          className={`rowEntry controlTab ${
-            transformControls.mode === 'rotate' ? 'active' : ''
-          }`}
-          onClick={setTransformMode('rotate')}
+          className={`rowEntry controlTab ${mode === 'rotate' ? 'active' : ''}`}
+          onClick={setTransformControlsMode('rotate')}
           title="Period"
         >
           Rotate
         </div>
         <div
-          className={`rowEntry controlTab ${
-            transformControls.mode === 'scale' ? 'active' : ''
-          }`}
-          onClick={setTransformMode('scale')}
+          className={`rowEntry controlTab ${mode === 'scale' ? 'active' : ''}`}
+          onClick={setTransformControlsMode('scale')}
           title="Slash"
         >
           Scale

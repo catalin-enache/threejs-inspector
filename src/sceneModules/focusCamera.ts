@@ -12,7 +12,6 @@ export const focusCamera = ({
   } else {
     const focusOn = new THREE.Vector3();
     transformControls.object.getWorldPosition(focusOn);
-    const { x, y, z } = focusOn;
-    orbitControls.target.set(x, y, z);
+    orbitControls.target.copy(focusOn);
   }
 };

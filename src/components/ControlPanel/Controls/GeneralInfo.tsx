@@ -1,7 +1,6 @@
 import * as THREE from 'three';
 import type { SceneObjects } from 'src/scene';
 import { useCallback, useState } from 'react';
-import { useToggleCameraType } from 'components/ControlPanel/Hooks/useToggleCameraType';
 import { useKey } from 'components/ControlPanel/Hooks/useKey';
 import { ResetView } from 'components/ControlPanel/Controls/ResetView';
 
@@ -17,11 +16,6 @@ export const GeneralInfo = ({ scene }: GeneralInfoProps) => {
   const cameraType = scene.getConfig().cameraType;
   const cameraTypeLabel =
     cameraType === 'perspective' ? 'Perspective' : 'Orthographic';
-
-  const toggleNavigationType = useCallback(() => {
-    scene.toggleOrbitControls();
-  }, []);
-  const toggleCameraType = useToggleCameraType();
   const toggleShowCameraDetails = useCallback(() => {
     setShowCameraDetails((state) => !state);
   }, []);
@@ -43,14 +37,14 @@ export const GeneralInfo = ({ scene }: GeneralInfoProps) => {
         <div
           className="rowEntry"
           style={{ cursor: 'pointer' }}
-          onClick={toggleCameraType}
+          onClick={scene.switchCamera}
         >
           <span title="Num 5">{cameraTypeLabel}</span>
         </div>
         <div
           className="rowEntry"
           style={{ cursor: 'pointer' }}
-          onClick={toggleNavigationType}
+          onClick={scene.toggleOrbitControls}
         >
           <span title="O">{navType}</span>
         </div>

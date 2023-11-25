@@ -75,16 +75,25 @@ const init = (config: Config) => {
   // orbitControls.enabled can become enabled only if orbitControlsAreEnabled is true
   let orbitControlsAreEnabled = true;
   let fps = 0;
+  const axisHelper = new THREE.AxesHelper(1000);
 
   const toggleShowScreenInfo = () => {
     showScreenInfo = !showScreenInfo;
   };
 
-  window.addEventListener('keydown', (evt: KeyboardEvent) => {
-    if (evt.code === 'KeyI') {
-      toggleShowScreenInfo();
-    }
-  });
+  const toggleAxisHelper = () => {
+    axisHelper.visible = !axisHelper.visible;
+  };
+
+  const toggleTransformControlsSpace = () => {
+    transformControls.setSpace(
+      transformControls.space === 'local' ? 'world' : 'local'
+    );
+  };
+
+  const setTransformControlsMode = (mode: string) => {
+    transformControls.setMode(mode);
+  };
 
   const getHits = ({ raycaster, pointer, camera }: getHitsParams) => {
     raycaster.setFromCamera(pointer, camera);
@@ -253,26 +262,34 @@ const init = (config: Config) => {
       focusCamera({ orbitControls, transformControls });
     } else if (evt.code === 'KeyO') {
       toggleOrbitControls();
+    } else if (evt.code === 'KeyL') {
+      toggleTransformControlsSpace();
+    } else if (evt.code === 'KeyI') {
+      toggleShowScreenInfo();
+    } else if (evt.code === 'KeyX') {
+      toggleAxisHelper();
+    } else if (
+      evt.code === 'Comma' ||
+      evt.code === 'Period' ||
+      evt.code === 'Slash'
+    ) {
+      evt.code === 'Comma' && setTransformControlsMode('translate');
+      evt.code === 'Period' && setTransformControlsMode('rotate');
+      evt.code === 'Slash' && setTransformControlsMode('scale');
     }
   });
 
   window.addEventListener(EVENT_TYPE.STANDARD_CONTROL, (evt: any) => {
-    if (evt.detail.type === STANDARD_CONTROL_EVENT_TYPE.CAMERA_TYPE) {
-      switchCamera();
-    } else if (
+    if (
       evt.detail.type === STANDARD_CONTROL_EVENT_TYPE.SELECTED_OBJECT_TRANSFORM
     ) {
-      if (evt.detail.value.userData.screenInfo) {
-        // pass
-      }
+      // pass
     }
   });
 
   window.addEventListener(EVENT_TYPE.THREE, (evt: any) => {
     if (evt.detail.type === THREE_EVENT_TYPE.SELECTED_OBJECT_TRANSFORM) {
-      if (evt.detail.value.userData.screenInfo) {
-        // pass
-      }
+      // pass
     }
   });
 
@@ -418,8 +435,6 @@ const init = (config: Config) => {
     scene.add(camera);
   };
 
-  const axisHelper = new THREE.AxesHelper(1000);
-
   const orbitControls = new OrbitControls(camera, canvas);
   orbitControls.enabled = orbitControlsAreEnabled;
   orbitControls.enableDamping = false;
@@ -471,6 +486,7 @@ const init = (config: Config) => {
     return true;
   };
 
+  const getAxisHelper = () => axisHelper;
   const getShowScreenInfo = () => showScreenInfo;
   const getFps = () => fps;
   const getOrbitControls = () => orbitControls;
@@ -514,6 +530,8 @@ const init = (config: Config) => {
     scene,
     canvas,
     renderer,
+    toggleAxisHelper,
+    getAxisHelper,
     toggleShowScreenInfo,
     getShowScreenInfo,
     getFps,
@@ -521,16 +539,19 @@ const init = (config: Config) => {
     getOrbitControlsAreEnabled,
     toggleOrbitControls,
     getTransformControls,
+    toggleTransformControlsSpace,
+    setTransformControlsMode,
     addCustomControl,
     changeCustomControlValue,
+    getCustomControls,
     addScreenInfo,
     getScreenInfos,
     changeScreenInfoValue,
-    getCustomControls,
     getRayCaster,
     getConfig,
     getCamera,
     switchCamera,
+    focusCamera,
     getHit,
     getSelectedObject,
     getInteractiveObjects,

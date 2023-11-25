@@ -9,8 +9,6 @@ import { Translate } from './Controls/Translate';
 import { Position } from './Controls/Position';
 import { Rotation } from './Controls/Rotation';
 import { Scale } from './Controls/Scale';
-import { useToggleTransformSpace } from './Hooks/useToggleTransformSpace';
-import { useSetTransformMode } from './Hooks/useSetTransformMode';
 import { useChangeTranslationDistance } from './Hooks/useChangeTranslationDistance';
 import { useTranslate } from './Hooks/useTranslate';
 import { useChangePosition } from './Hooks/useChangePosition';
@@ -27,19 +25,10 @@ function ControlPanel({ scene }: ControlPanelProps) {
   const customControls = scene.getCustomControls();
   const customControlsNames = Object.keys(customControls);
   const fps = scene.getFps();
-  const transformControls = scene.getTransformControls();
   const selectedObject = scene.getSelectedObject() || null;
   const togglePlay = useCallback(() => {
     scene.getIsPlaying() ? scene.pause() : scene.play();
   }, [scene.getIsPlaying()]);
-
-  const toggleTransformSpace = useToggleTransformSpace({
-    scene,
-    transformControls
-  });
-  const setTransformMode = useSetTransformMode({
-    transformControls
-  });
 
   const changeTranslationDistance = useChangeTranslationDistance({
     selectedObject
@@ -55,6 +44,7 @@ function ControlPanel({ scene }: ControlPanelProps) {
 
   return (
     <div className="control">
+      <hr />
       <GeneralInfo scene={scene} />
       <hr />
       <div className="controlRow">
@@ -72,7 +62,15 @@ function ControlPanel({ scene }: ControlPanelProps) {
           onClick={scene.toggleShowScreenInfo}
           title="I"
         >
-          {scene.getShowScreenInfo() ? 'Hide ScreenInfo' : 'Show ScreenInfo'}
+          {scene.getShowScreenInfo() ? 'Hide SInfo' : 'Show SInfo'}
+        </div>
+        <div
+          className="rowEntry"
+          style={{ cursor: 'pointer' }}
+          onClick={scene.toggleAxisHelper}
+          title="X"
+        >
+          {scene.getAxisHelper().visible ? 'Hide Axis' : 'Show Axis'}
         </div>
       </div>
       {!selectedObject ? null : (
@@ -80,15 +78,9 @@ function ControlPanel({ scene }: ControlPanelProps) {
           <hr />
           <SelectedObjectInfo selectedObject={selectedObject} />
           <hr />
-          <TransformControlsSpace
-            transformControls={transformControls}
-            toggleTransformSpace={toggleTransformSpace}
-          />
+          <TransformControlsSpace scene={scene} />
           <hr />
-          <TransformControls
-            transformControls={transformControls}
-            setTransformMode={setTransformMode}
-          />
+          <TransformControls scene={scene} />
           <hr />
           <Position
             selectedObject={selectedObject}

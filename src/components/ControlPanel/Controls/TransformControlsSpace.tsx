@@ -1,35 +1,39 @@
 // @ts-ignore
 import { InputNumber } from 'src/components/InputNumber';
-import { useEffect } from 'react';
+import { SceneObjects } from 'src/scene.ts';
+import { useCallback } from 'react';
 // import * as THREE from 'three';
 
 interface TransformControlsSpaceProps {
-  transformControls: any;
-  toggleTransformSpace: () => void;
+  scene: SceneObjects;
 }
 export const TransformControlsSpace = ({
-  transformControls,
-  toggleTransformSpace
+  scene
 }: TransformControlsSpaceProps) => {
-  useEffect(() => {
-    const handleKeyDown = (_evt: KeyboardEvent) => {
-      _evt.code === 'KeyL' && toggleTransformSpace();
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => {
-      window.removeEventListener('keydown', handleKeyDown);
-    };
-  }, [toggleTransformSpace]);
+  const transformControls = scene.getTransformControls();
+  const orbitControls = scene.getOrbitControls();
+  // const focusCamera = scene.focusCamera;
+  const focusCamera = useCallback(() => {
+    scene.focusCamera({ transformControls, orbitControls });
+  }, []);
   return (
     <>
-      <div
-        className="controlRow"
-        style={{ cursor: 'pointer' }}
-        onClick={toggleTransformSpace}
-        title="L"
-      >
-        <div className="rowEntry">
-          Controls space: {transformControls.space}
+      <div className="controlRow">
+        <div
+          className="rowEntry"
+          style={{ cursor: 'pointer' }}
+          onClick={scene.toggleTransformControlsSpace}
+          title="L"
+        >
+          Space: {scene.getTransformControls().space}
+        </div>
+        <div
+          className="rowEntry"
+          onClick={focusCamera}
+          title="F"
+          style={{ cursor: 'pointer' }}
+        >
+          Focus
         </div>
       </div>
     </>

@@ -13,8 +13,10 @@ import type {
   CustomFloatControl,
   CustomInfoControl,
   CustomIntegerControl,
-  CustomSelectControl
+  CustomSelectControl,
+  UserData
 } from 'src/types';
+import { Line } from 'lib/three/Line';
 
 export const setConfig = (config: Config) => {
   config.cameraType = 'perspective';
@@ -37,8 +39,8 @@ export default (sceneObjects: SceneObjects) => {
     addScreenInfo,
     changeCustomControlValue,
     // getClock,
-    getDelta,
-    getInteractiveObjects
+    getDelta
+    // getInteractiveObjects
   } = sceneObjects;
 
   window.addEventListener(EVENT_TYPE.THREE, (evt: any) => {
@@ -231,7 +233,7 @@ export default (sceneObjects: SceneObjects) => {
   );
   cube1.name = 'cube1';
   cube1.position.set(0, 0, 0);
-  getInteractiveObjects().push(cube1);
+  (cube1.userData as UserData).isInteractive = true;
   scene.add(cube1);
 
   const cube2 = new THREE.Mesh(
@@ -240,8 +242,29 @@ export default (sceneObjects: SceneObjects) => {
   );
   cube2.name = 'cube2';
   cube2.position.set(2, 0, 0);
-  getInteractiveObjects().push(cube2);
+  (cube2.userData as UserData).isInteractive = true;
+  // automatically adding Line
+  (cube2.userData as UserData).lineTo = {
+    object: cube1,
+    color: 0xffff00
+  };
+
   cube1.add(cube2);
+
+  const cube3 = new THREE.Mesh(
+    new THREE.BoxGeometry(1, 1, 1),
+    new THREE.MeshBasicMaterial({ color: 0x0000ff })
+  );
+  cube3.name = 'cube3';
+  cube3.position.set(2, 0, 0);
+  (cube3.userData as UserData).isInteractive = true;
+
+  cube2.add(cube3);
+
+  // manually adding Line
+  const line2 = new Line(cube2, cube3, 0xffff00);
+  line2.name = 'line2';
+  scene.add(line2);
 
   addScreenInfo({
     linkObject: cube1,
@@ -279,7 +302,6 @@ export default (sceneObjects: SceneObjects) => {
   const tick = () => {
     const delta = getDelta();
     cube1.rotation.x += 0.5 * delta;
-    cube2.rotation.y += 0.5 * delta;
     changeScreenInfoValue('Cube1', `${cube1.rotation.x.toFixed(2)}`);
     changeScreenInfoValue('Cube2', `${cube2.rotation.y.toFixed(2)}`);
     changeCustomControlValue(

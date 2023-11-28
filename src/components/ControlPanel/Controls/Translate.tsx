@@ -1,6 +1,7 @@
 // @ts-ignore
 import { InputNumber } from 'src/components/InputNumber';
 import * as THREE from 'three';
+import { UserData } from 'src/types';
 
 interface TranslateProps {
   selectedObject: THREE.Object3D<THREE.Object3DEventMap>;
@@ -14,6 +15,7 @@ export const Translate = ({
   changeTranslationDistance,
   translate
 }: TranslateProps) => {
+  const userData = selectedObject.userData as UserData;
   return (
     <>
       <div className="controlRow">
@@ -21,19 +23,19 @@ export const Translate = ({
         <InputNumber
           className="rowEntry"
           label="X"
-          value={selectedObject.userData.translationDistance?.x || 0}
+          value={userData.translationDistance?.x || 0}
           onChange={changeTranslationDistance('x')}
         />
         <InputNumber
           className="rowEntry"
           label="Y"
-          value={selectedObject.userData.translationDistance?.y || 0}
+          value={userData.translationDistance?.y || 0}
           onChange={changeTranslationDistance('y')}
         />
         <InputNumber
           className="rowEntry"
           label="Z"
-          value={selectedObject.userData.translationDistance?.z || 0}
+          value={userData.translationDistance?.z || 0}
           onChange={changeTranslationDistance('z')}
         />
       </div>

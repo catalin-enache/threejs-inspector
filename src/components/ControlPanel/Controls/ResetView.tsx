@@ -1,4 +1,4 @@
-import { SceneObjects } from 'src/scene.ts';
+import { SceneObjects } from 'src/scene';
 import { useCallback } from 'react';
 import { resetCamera } from 'src/sceneModules/resetCamera';
 

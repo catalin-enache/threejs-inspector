@@ -8,6 +8,7 @@ import {
   THREE_EVENT_TYPE
 } from 'src/constants';
 import type { CustomInfoControl } from 'src/types';
+import { UserData } from 'src/types';
 
 export const setConfig = (config: Config) => {
   config.cameraType = 'perspective';
@@ -28,10 +29,10 @@ export default (sceneObjects: SceneObjects) => {
     addCustomControl,
     changeCustomControlValue,
     addScreenInfo,
-    changeScreenInfoValue,
+    changeScreenInfoValue
     // getClock,
     // getDelta,
-    getInteractiveObjects
+    // getInteractiveObjects
   } = sceneObjects;
 
   window.addEventListener(EVENT_TYPE.THREE, (evt: any) => {
@@ -80,7 +81,7 @@ export default (sceneObjects: SceneObjects) => {
   );
   cube1.name = 'cube1';
   cube1.position.set(0, 0, 0);
-  getInteractiveObjects().push(cube1);
+  (cube1.userData as UserData).isInteractive = true;
   scene.add(cube1);
 
   const cube2 = new THREE.Mesh(
@@ -89,7 +90,7 @@ export default (sceneObjects: SceneObjects) => {
   );
   cube2.name = 'cube2';
   cube2.position.set(-2, 0, 0);
-  getInteractiveObjects().push(cube2);
+  (cube2.userData as UserData).isInteractive = true;
   scene.add(cube2);
 
   addScreenInfo({

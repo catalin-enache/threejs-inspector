@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { useCallback } from 'react';
-import { STANDARD_CONTROL_EVENT_TYPE, EVENT_TYPE } from 'src/constants.ts';
+import { STANDARD_CONTROL_EVENT_TYPE, EVENT_TYPE } from 'src/constants';
+import { UserData } from 'src/types';
 
 interface useTranslateProps {
   selectedObject: THREE.Object3D<THREE.Object3DEventMap> | null;
@@ -8,22 +9,17 @@ interface useTranslateProps {
 export const useTranslate = ({ selectedObject }: useTranslateProps) => {
   return useCallback(() => {
     if (!selectedObject) return;
+    const userData = selectedObject.userData as UserData;
     // const axis = new THREE.Vector3(
-    //   selectedObject.userData.translationDistance?.x || 0,
-    //   selectedObject.userData.translationDistance?.y || 0,
-    //   selectedObject.userData.translationDistance?.z || 0
+    //   userData.translationDistance?.x || 0,
+    //   userData.translationDistance?.y || 0,
+    //   userData.translationDistance?.z || 0
     // ).normalize();
     // selectedObject.translateOnAxis(axis, 1);
 
-    selectedObject.translateX(
-      selectedObject.userData.translationDistance?.x || 0
-    );
-    selectedObject.translateY(
-      selectedObject.userData.translationDistance?.y || 0
-    );
-    selectedObject.translateZ(
-      selectedObject.userData.translationDistance?.z || 0
-    );
+    selectedObject.translateX(userData.translationDistance?.x || 0);
+    selectedObject.translateY(userData.translationDistance?.y || 0);
+    selectedObject.translateZ(userData.translationDistance?.z || 0);
 
     window.dispatchEvent(
       new CustomEvent(EVENT_TYPE.STANDARD_CONTROL, {

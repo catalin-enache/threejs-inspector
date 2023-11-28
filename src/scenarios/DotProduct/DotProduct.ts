@@ -8,6 +8,8 @@ import {
   THREE_EVENT_TYPE
 } from 'src/constants';
 // import type { CustomInfoControl } from 'src/types';
+// import { Line } from 'lib/three/Line';
+import { UserData } from 'src/types';
 
 export const setConfig = (config: Config) => {
   config.cameraType = 'orthographic';
@@ -28,10 +30,10 @@ export default (sceneObjects: SceneObjects) => {
     // addCustomControl,
     // changeCustomControlValue,
     addScreenInfo,
-    changeScreenInfoValue,
+    changeScreenInfoValue
     // getClock,
     // getDelta,
-    getInteractiveObjects
+    // getInteractiveObjects
   } = sceneObjects;
 
   window.addEventListener(EVENT_TYPE.THREE, (evt: any) => {
@@ -68,7 +70,7 @@ export default (sceneObjects: SceneObjects) => {
   );
   cube1.name = 'cube1';
   cube1.position.set(0, 0, 0);
-  getInteractiveObjects().push(cube1);
+  (cube1.userData as UserData).isInteractive = true;
   scene.add(cube1);
 
   const cube2 = new THREE.Mesh(
@@ -77,7 +79,11 @@ export default (sceneObjects: SceneObjects) => {
   );
   cube2.name = 'cube2';
   cube2.position.set(4, 0, 0);
-  getInteractiveObjects().push(cube2);
+  (cube2.userData as UserData).isInteractive = true;
+  (cube2.userData as UserData).lineTo = {
+    object: cube1,
+    color: 0xffff00
+  };
   scene.add(cube2);
 
   const cube3 = new THREE.Mesh(
@@ -86,7 +92,11 @@ export default (sceneObjects: SceneObjects) => {
   );
   cube3.name = 'cube3';
   cube3.position.set(0, 4, 0);
-  getInteractiveObjects().push(cube3);
+  (cube3.userData as UserData).isInteractive = true;
+  (cube3.userData as UserData).lineTo = {
+    object: cube1,
+    color: 0xffff00
+  };
   scene.add(cube3);
 
   addScreenInfo({
@@ -106,7 +116,7 @@ export default (sceneObjects: SceneObjects) => {
     // size: { width: 40, height: 40 },
     color: { bg: 'rgba(0,0,0,0)', fg: 'white' }
   });
-  //
+
   addScreenInfo({
     linkObject: cube3,
     name: 'Cube3',

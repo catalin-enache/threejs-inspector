@@ -17,8 +17,13 @@ import {
   CustomControl,
   CustomControls,
   ScreenInfo,
-  ScreenInfos
+  ScreenInfos,
+  UserData,
+  InternalContinuousUpdate,
+  isInternalContinuousUpdate,
+  isDestroyable
 } from 'src/types';
+import { Line } from 'lib/three/Line';
 
 type getHitsParams = {
   raycaster: THREE.Raycaster;
@@ -60,7 +65,9 @@ const init = (config: Config) => {
   const _hits: THREE.Intersection<THREE.Object3D<THREE.Object3DEventMap>>[] =
     [];
   let hit: THREE.Intersection<THREE.Object3D<THREE.Object3DEventMap>> | null;
-  const interactiveObjects: THREE.Object3D[] = [];
+  const interactiveObjects: Record<string, THREE.Object3D> = {};
+  const internalContinuousUpdates: Record<string, InternalContinuousUpdate> =
+    {};
   const pointer = new THREE.Vector2(0, 0);
   const raycaster = new THREE.Raycaster();
   const sceneSize: SceneSize = {
@@ -76,6 +83,60 @@ const init = (config: Config) => {
   let orbitControlsAreEnabled = true;
   let fps = 0;
   const axisHelper = new THREE.AxesHelper(1000);
+  const scene = new THREE.Scene();
+  scene.name = 'scene';
+
+  THREE.Object3D.prototype.add = (function () {
+    const originalAdd = THREE.Object3D.prototype.add;
+    return function (this: THREE.Object3D, ...objects: THREE.Object3D[]) {
+      objects.forEach((object) => {
+        const userData = object.userData as UserData;
+        originalAdd.call(this, object);
+        if (userData.isInteractive) {
+          interactiveObjects[object.uuid] = object;
+        }
+        if (isInternalContinuousUpdate(object)) {
+          internalContinuousUpdates[object.uuid] = object;
+        }
+        if (userData.lineTo) {
+          // this makes dependants (a Line) on object and userData.lineTo.object
+          const line = new Line(
+            object,
+            userData.lineTo.object,
+            userData.lineTo.color
+          );
+          line.name = `lineTo_${userData.lineTo.object.name}_from_${object.name}`;
+          scene.add(line);
+        }
+      });
+      return this;
+    };
+  })();
+
+  THREE.Object3D.prototype.remove = (function () {
+    const originalRemove = THREE.Object3D.prototype.remove;
+    return function (this: THREE.Object3D, ...objects: THREE.Object3D[]) {
+      objects.forEach((object) => {
+        const userData = object.userData as UserData;
+        if (userData.isInteractive) {
+          delete interactiveObjects[object.uuid];
+        }
+        if (isInternalContinuousUpdate(object)) {
+          delete internalContinuousUpdates[object.uuid];
+        }
+        if (isDestroyable(object)) {
+          object.onDestroy();
+        }
+        if (userData.dependants) {
+          Object.values(userData.dependants).forEach((dependant) => {
+            scene.remove(dependant);
+          });
+        }
+        originalRemove.call(this, object);
+      });
+      return this;
+    };
+  })();
 
   const toggleShowScreenInfo = () => {
     showScreenInfo = !showScreenInfo;
@@ -98,7 +159,7 @@ const init = (config: Config) => {
   const getHits = ({ raycaster, pointer, camera }: getHitsParams) => {
     raycaster.setFromCamera(pointer, camera);
     _hits.length = 0;
-    raycaster.intersectObjects(interactiveObjects, false, _hits);
+    raycaster.intersectObjects(Object.values(interactiveObjects), false, _hits);
     if (_hits.length && hit?.object !== _hits[0].object) {
       hit = _hits[0];
       window.dispatchEvent(
@@ -354,7 +415,8 @@ const init = (config: Config) => {
   const addScreenInfo = (info: ScreenInfo) => {
     screenInfos[info.name] = info;
     if (!info.linkObject) return;
-    info.linkObject.userData.screenInfo = info;
+    const userData = info.linkObject.userData as UserData;
+    userData.screenInfo = info;
   };
 
   const refreshAllScreenInfoPositions = () => {
@@ -459,7 +521,6 @@ const init = (config: Config) => {
     );
   });
 
-  const scene = new THREE.Scene();
   scene.add(camera);
   scene.add(axisHelper);
   scene.add(transformControls);
@@ -475,7 +536,7 @@ const init = (config: Config) => {
 
   let _lastTime = 0;
   let delta = 0;
-  const internalTick = () => {
+  const internalPlayTick = () => {
     delta = getClock().getDelta();
     const currTime = Math.floor(+new Date() / 100);
     const _fps = Math.round(1 / delta);
@@ -484,6 +545,11 @@ const init = (config: Config) => {
       _lastTime = currTime;
     }
     return true;
+  };
+  const internalContinuousTick = () => {
+    Object.values(internalContinuousUpdates).forEach((object) => {
+      object.internalContinuousUpdate();
+    });
   };
 
   const getAxisHelper = () => axisHelper;
@@ -518,7 +584,8 @@ const init = (config: Config) => {
   const loop = (callback: () => void) => {
     refreshAllScreenInfoPositions();
     fpsCamera();
-    getIsPlaying() && internalTick() && callback();
+    internalContinuousTick();
+    getIsPlaying() && internalPlayTick() && callback();
     orbitControls.enabled && orbitControls.update();
     renderer.render(scene, camera);
     window.requestAnimationFrame(() => loop(callback));

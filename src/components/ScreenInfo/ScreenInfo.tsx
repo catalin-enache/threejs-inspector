@@ -25,7 +25,7 @@ export const ScreenInfo = (props: ScreenInfoProps) => {
           linkObject
         } = screenInfos[key];
 
-        if (linkObject && !linkObject.visible) {
+        if (linkObject && (!linkObject.visible || !linkObject.parent)) {
           return null;
         }
 

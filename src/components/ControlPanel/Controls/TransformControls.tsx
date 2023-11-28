@@ -1,6 +1,6 @@
 // @ts-ignore
 import { InputNumber } from 'src/components/InputNumber';
-import { SceneObjects } from 'src/scene.ts';
+import { SceneObjects } from 'src/scene';
 import { useCallback } from 'react';
 // import * as THREE from 'three';
 

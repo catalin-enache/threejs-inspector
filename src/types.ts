@@ -69,3 +69,29 @@ export interface ScreenInfo {
 }
 
 export type ScreenInfos = Record<string, ScreenInfo>;
+
+export type UserData = {
+  translationDistance?: THREE.Vector3;
+  isInteractive?: boolean;
+  screenInfo?: ScreenInfo;
+  lineTo?: { object: THREE.Object3D; color: number };
+  dependants?: Record<string, THREE.Object3D>;
+};
+
+export interface InternalContinuousUpdate {
+  internalContinuousUpdate: () => void;
+}
+
+export interface Destroyable {
+  onDestroy: () => void;
+}
+
+export function isInternalContinuousUpdate(
+  object: any
+): object is InternalContinuousUpdate {
+  return 'internalContinuousUpdate' in object;
+}
+
+export function isDestroyable(object: any): object is Destroyable {
+  return 'onDestroy' in object;
+}

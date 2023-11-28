@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import type { Config } from 'src/config';
 import type { SceneObjects } from 'src/scene';
 import { Vector3 } from 'three';
+import { UserData } from 'src/types.ts';
 
 export const setConfig = (config: Config) => {
   config.cameraType = 'perspective';
@@ -24,8 +25,8 @@ export default (sceneObjects: SceneObjects) => {
     addScreenInfo,
     // changeCustomControlValue,
     // getClock,
-    getDelta,
-    getInteractiveObjects
+    getDelta
+    // getInteractiveObjects
   } = sceneObjects;
 
   const count = 100;
@@ -40,7 +41,7 @@ export default (sceneObjects: SceneObjects) => {
     );
     cube.name = `cube${i}`;
     cube.position.set(Math.random(), Math.random(), Math.random());
-    getInteractiveObjects().push(cube);
+    (cube.userData as UserData).isInteractive = true;
     scene.add(cube);
     const direction = new Vector3(Math.random(), Math.random(), Math.random());
     addScreenInfo({

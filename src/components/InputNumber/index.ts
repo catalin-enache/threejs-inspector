@@ -1,2 +1,2 @@
-import { InputNumber } from 'components/InputNumber/InputNumber.tsx';
+import { InputNumber } from 'components/InputNumber/InputNumber';
 export { InputNumber };

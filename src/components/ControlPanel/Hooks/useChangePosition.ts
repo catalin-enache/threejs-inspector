@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { useCallback } from 'react';
-import { STANDARD_CONTROL_EVENT_TYPE, EVENT_TYPE } from 'src/constants.ts';
+import { STANDARD_CONTROL_EVENT_TYPE, EVENT_TYPE } from 'src/constants';
 
 interface useChangePositionProps {
   selectedObject: THREE.Object3D<THREE.Object3DEventMap> | null;

@@ -86,6 +86,22 @@ const init = (config: Config) => {
   const scene = new THREE.Scene();
   scene.name = 'scene';
 
+  const canPostWorkerMessage = { current: true };
+  const myWorker = new Worker('worker', { type: 'module' });
+  myWorker.onmessage = function (e) {
+    const [command, data] = e.data;
+    console.log('Message received from worker', { command, data });
+    canPostWorkerMessage.current = true;
+  };
+
+  const postMessageToWorker = (data: any, force = false) => {
+    if (!force && !canPostWorkerMessage.current) return;
+    canPostWorkerMessage.current = false;
+    myWorker.postMessage(data);
+  };
+
+  postMessageToWorker(['init', { config }], true);
+
   THREE.Object3D.prototype.add = (function () {
     const originalAdd = THREE.Object3D.prototype.add;
     return function (this: THREE.Object3D, ...objects: THREE.Object3D[]) {
@@ -455,13 +471,14 @@ const init = (config: Config) => {
   };
 
   const aspectRatio = sceneSize.width / sceneSize.height;
+  const cameraPosition = new THREE.Vector3(0, 0, 12);
   const perspectiveCamera = new THREE.PerspectiveCamera(
     75,
     aspectRatio,
     0.1,
     100
   );
-  perspectiveCamera.position.set(0, 0, 12);
+  perspectiveCamera.position.copy(cameraPosition);
   perspectiveCamera.zoom = 1;
   const orthographicCamera = new THREE.OrthographicCamera(
     -0,
@@ -471,9 +488,8 @@ const init = (config: Config) => {
     0.1,
     100
   );
-  orthographicCamera.position.set(0, 0, 12);
+  orthographicCamera.position.copy(cameraPosition);
   orthographicCamera.zoom = 1;
-
   updateCameras();
 
   let camera =
@@ -546,11 +562,6 @@ const init = (config: Config) => {
     }
     return true;
   };
-  const internalContinuousTick = () => {
-    Object.values(internalContinuousUpdates).forEach((object) => {
-      object.internalContinuousUpdate();
-    });
-  };
 
   const getAxisHelper = () => axisHelper;
   const getShowScreenInfo = () => showScreenInfo;
@@ -581,6 +592,72 @@ const init = (config: Config) => {
   };
 
   const { fpsCamera } = setupFPSCamera({ getCamera, getOrbitControls });
+
+  const frustum = new THREE.Frustum();
+  const cameraViewProjectionMatrix = new THREE.Matrix4();
+  function updateFrustum() {
+    camera.updateMatrix();
+    camera.updateMatrixWorld();
+    camera.updateProjectionMatrix();
+    camera.matrixWorldInverse.copy(camera.matrixWorld).invert();
+    cameraViewProjectionMatrix.multiplyMatrices(
+      camera.projectionMatrix,
+      camera.matrixWorldInverse
+    );
+    frustum.setFromProjectionMatrix(cameraViewProjectionMatrix);
+  }
+
+  const box = new THREE.Box3();
+  const objWorldPosition = new THREE.Vector3();
+  function isObjectVisibleInFrustum(
+    obj: THREE.Object3D,
+    withBoundingBox = false
+  ) {
+    if (withBoundingBox) {
+      box.setFromObject(obj);
+      return frustum.intersectsBox(box);
+    } else {
+      obj.getWorldPosition(objWorldPosition);
+      return frustum.containsPoint(objWorldPosition);
+    }
+  }
+
+  function updateObjectsFrustumVisibility() {
+    if (config.objectsToCheckIfVisibleInCamera === 'screenInfo') {
+      // this is faster than traversing the scene (see below)
+      Object.keys(screenInfos).forEach((name) => {
+        const screenInfo = screenInfos[name];
+        const linkObject = screenInfo.linkObject;
+        if (linkObject) {
+          (linkObject.userData as UserData).isVisibleFromCamera =
+            isObjectVisibleInFrustum(
+              linkObject,
+              config.checkVisibleInFrustumUsing === 'boundingBox'
+            );
+        }
+      });
+    } else if (config.objectsToCheckIfVisibleInCamera === 'all') {
+      // this is slower than iterating through screenInfos (see before)
+      scene.traverse(function (object) {
+        if (object.isObject3D) {
+          (object.userData as UserData).isVisibleFromCamera =
+            isObjectVisibleInFrustum(
+              object,
+              config.checkVisibleInFrustumUsing === 'boundingBox'
+            );
+        }
+      });
+    }
+  }
+
+  const internalContinuousTick = () => {
+    updateFrustum();
+    updateObjectsFrustumVisibility();
+    Object.values(internalContinuousUpdates).forEach((object) => {
+      object.internalContinuousUpdate();
+    });
+  };
+
   const loop = (callback: () => void) => {
     refreshAllScreenInfoPositions();
     fpsCamera();

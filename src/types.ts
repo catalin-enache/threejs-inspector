@@ -73,6 +73,7 @@ export type ScreenInfos = Record<string, ScreenInfo>;
 export type UserData = {
   translationDistance?: THREE.Vector3;
   isInteractive?: boolean;
+  isVisibleFromCamera?: boolean;
   screenInfo?: ScreenInfo;
   lineTo?: { object: THREE.Object3D; color: number };
   dependants?: Record<string, THREE.Object3D>;

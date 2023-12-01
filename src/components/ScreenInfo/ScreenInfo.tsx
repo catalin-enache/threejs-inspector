@@ -1,4 +1,5 @@
 import { SceneObjects } from 'src/scene';
+import { UserData } from 'src/types.ts';
 import './ScreenInfo.css';
 
 export interface ScreenInfoProps {
@@ -24,25 +25,29 @@ export const ScreenInfo = (props: ScreenInfoProps) => {
           size = { width: undefined, height: undefined },
           linkObject
         } = screenInfos[key];
-
-        if (linkObject && (!linkObject.visible || !linkObject.parent)) {
+        const userData = linkObject?.userData as UserData;
+        if (
+          linkObject &&
+          (!linkObject.visible ||
+            !linkObject.parent ||
+            !userData.isVisibleFromCamera)
+        ) {
           return null;
         }
 
         return (
           <div
+            className="screenInfo"
             key={key}
             style={{
-              fontSize: '10px',
-              pointerEvents: 'none',
-              display: 'flex',
-              placeContent: 'center',
-              flexFlow: 'column',
-              userSelect: 'none',
-              position: 'fixed',
-              transform: `translate(calc(${position.x}px - 50%), calc(${position.y}px - 50%))`,
-              top: 0,
-              left: 0,
+              // less performant
+              // left: 0,
+              // top: 0,
+              // transform: `translate(calc(${position.x}px - 50%), calc(${position.y}px - 50%))`,
+              // more performant
+              left: position.x,
+              top: position.y,
+              transform: `translate(-50%, -50%)`,
               width: size.width || 'auto',
               height: size.height || 'auto',
               backgroundColor: color.bg,

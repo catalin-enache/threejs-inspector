@@ -16,7 +16,7 @@ import { Point } from 'lib/three/Point';
 export const setConfig = (config: Config) => {
   config.cameraType = 'orthographic';
   config.orthographicCameraRatio = 100;
-  config.controlPanelExpanded = false;
+  config.controlPanelExpanded = true;
   return config;
 };
 

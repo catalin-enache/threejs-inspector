@@ -22,6 +22,7 @@ export const setConfig = (config: Config) => {
   config.cameraType = 'perspective';
   config.orthographicCameraRatio = 100;
   config.controlPanelExpanded = true;
+  config.showScenarioSelect = true;
   config.objectsToCheckIfVisibleInCamera = 'screenInfo';
   config.checkVisibleInFrustumUsing = 'position';
   return config;

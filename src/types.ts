@@ -1,4 +1,6 @@
 import type THREE from 'three';
+import type { SceneObjects } from 'src/scene';
+
 // import type { SceneSize } from './config';
 export interface BaseCustomControl {
   type: 'float' | 'integer' | 'select' | 'boolean' | 'button' | 'info';
@@ -70,21 +72,45 @@ export interface ScreenInfo {
 
 export type ScreenInfos = Record<string, ScreenInfo>;
 
+export type InfoOptions = {
+  delta?: boolean;
+  distance?: boolean;
+  color?: number;
+};
+
 export type UserData = {
   translationDistance?: THREE.Vector3;
   isInteractive?: boolean;
   isVisibleFromCamera?: boolean;
   screenInfo?: ScreenInfo;
-  lineTo?: { object: THREE.Object3D; color: number };
+  lineTo?: { object: THREE.Object3D; color: number; infoOptions?: InfoOptions };
   dependants?: Record<string, THREE.Object3D>;
+  scene?: THREE.Scene;
 };
 
 export interface InternalContinuousUpdate {
   internalContinuousUpdate: () => void;
 }
 
-export interface Destroyable {
-  onDestroy: () => void;
+export interface LiveCycle {
+  onRemoved: ({
+    parent,
+    scene,
+    sceneObjects
+  }: {
+    parent: THREE.Object3D;
+    scene: THREE.Scene;
+    sceneObjects: SceneObjects;
+  }) => void;
+  onAdded: ({
+    parent,
+    scene,
+    sceneObjects
+  }: {
+    parent: THREE.Object3D;
+    scene: THREE.Scene;
+    sceneObjects: SceneObjects;
+  }) => void;
 }
 
 export function isInternalContinuousUpdate(
@@ -93,6 +119,6 @@ export function isInternalContinuousUpdate(
   return 'internalContinuousUpdate' in object;
 }
 
-export function isDestroyable(object: any): object is Destroyable {
-  return 'onDestroy' in object;
+export function hasLiveCycle(object: any): object is LiveCycle {
+  return 'onRemoved' in object;
 }

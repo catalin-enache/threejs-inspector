@@ -13,51 +13,22 @@ import type { Config, SceneSize } from './config';
 import { setupFPSCamera } from 'src/sceneModules/fpsCamera';
 import { resetCamera } from 'src/sceneModules/resetCamera';
 import { focusCamera } from 'src/sceneModules/focusCamera';
-import {
+import { project3DCoordinateOnCamera } from 'src/sceneModules/project3DCoordinateOnCamera';
+import { Line } from 'lib/three/Line';
+import type {
   CustomControl,
   CustomControls,
   ScreenInfo,
   ScreenInfos,
   UserData,
-  InternalContinuousUpdate,
-  isInternalContinuousUpdate,
-  isDestroyable
+  InternalContinuousUpdate
 } from 'src/types';
-import { Line } from 'lib/three/Line';
+import { isInternalContinuousUpdate, hasLiveCycle } from 'src/types';
 
-type getHitsParams = {
+type GetHitsParams = {
   raycaster: THREE.Raycaster;
   pointer: THREE.Vector2;
   camera: THREE.Camera;
-};
-
-const _vector = new THREE.Vector3();
-export const project3DCoordinateOnCamera = ({
-  camera,
-  sceneSize,
-  object
-}: {
-  camera: THREE.Camera;
-  sceneSize: SceneSize;
-  object: THREE.Object3D;
-}) => {
-  const widthHalf = 0.5 * sceneSize.width;
-  const heightHalf = 0.5 * sceneSize.height;
-  object.updateMatrixWorld();
-  camera.updateMatrixWorld();
-  // Get the position of the center of the object in world space
-  _vector.setFromMatrixPosition(object.matrixWorld);
-  // Project the 3D position vector onto the 2D screen using the camera
-  _vector.project(camera);
-  const x = widthHalf + _vector.x * widthHalf; // good
-  const y = heightHalf - _vector.y * heightHalf; // good
-  // const x = (_vector.x * 0.5 + 0.5) * sceneSize.width; // good
-  // const y = (_vector.y * -0.5 + 0.5) * sceneSize.height; // good
-
-  const roundedX = x.toFixed(2);
-  const roundedY = y.toFixed(2);
-
-  return { x: +roundedX, y: +roundedY };
 };
 
 const init = (config: Config) => {
@@ -107,7 +78,11 @@ const init = (config: Config) => {
     return function (this: THREE.Object3D, ...objects: THREE.Object3D[]) {
       objects.forEach((object) => {
         const userData = object.userData as UserData;
+        userData.scene = scene;
         originalAdd.call(this, object);
+        if (hasLiveCycle(object)) {
+          object.onAdded({ parent: this, scene, sceneObjects });
+        }
         if (userData.isInteractive) {
           interactiveObjects[object.uuid] = object;
         }
@@ -119,7 +94,8 @@ const init = (config: Config) => {
           const line = new Line(
             object,
             userData.lineTo.object,
-            userData.lineTo.color
+            userData.lineTo.color,
+            userData.lineTo.infoOptions
           );
           line.name = `lineTo_${userData.lineTo.object.name}_from_${object.name}`;
           scene.add(line);
@@ -140,8 +116,8 @@ const init = (config: Config) => {
         if (isInternalContinuousUpdate(object)) {
           delete internalContinuousUpdates[object.uuid];
         }
-        if (isDestroyable(object)) {
-          object.onDestroy();
+        if (hasLiveCycle(object)) {
+          object.onRemoved({ parent: this, scene, sceneObjects });
         }
         if (userData.dependants) {
           Object.values(userData.dependants).forEach((dependant) => {
@@ -172,7 +148,7 @@ const init = (config: Config) => {
     transformControls.setMode(mode);
   };
 
-  const getHits = ({ raycaster, pointer, camera }: getHitsParams) => {
+  const getHits = ({ raycaster, pointer, camera }: GetHitsParams) => {
     raycaster.setFromCamera(pointer, camera);
     _hits.length = 0;
     raycaster.intersectObjects(Object.values(interactiveObjects), false, _hits);
@@ -417,6 +393,7 @@ const init = (config: Config) => {
     // it is also updated when scene listens for this event
     // so updating here is in theory redundant
     customControls[name].value = value;
+    if (customControls[name].type === 'info') return;
     window.dispatchEvent(
       new CustomEvent(EVENT_TYPE.CUSTOM_CONTROL, {
         detail: {

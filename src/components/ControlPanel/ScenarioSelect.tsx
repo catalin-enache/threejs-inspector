@@ -10,9 +10,9 @@ import Basic, { setConfig as BasicSetConfig } from 'scenarios/Basic/Basic';
 import Project3DCoordOnCamera, {
   setConfig as Project3DCoordOnCameraSetConfig
 } from 'scenarios/Project3DCoordOnCamera/Project3DCoordOnCamera';
-import DotProduct, {
-  setConfig as DotProductSetConfig
-} from 'scenarios/DotProduct/DotProduct';
+import VectorProjOnVector, {
+  setConfig as VectorProjOnVectorSetConfig
+} from 'scenarios/VectorProjOnVector/VectorProjOnVector';
 import Asteroids, {
   setConfig as AsteroidsSetConfig
 } from 'scenarios/Asteroids/Asteroids';
@@ -26,9 +26,9 @@ const scenarioMap = {
     config: Project3DCoordOnCameraSetConfig,
     run: Project3DCoordOnCamera
   },
-  DotProduct: {
-    config: DotProductSetConfig,
-    run: DotProduct
+  VectorProjOnVector: {
+    config: VectorProjOnVectorSetConfig,
+    run: VectorProjOnVector
   },
   Asteroids: {
     config: AsteroidsSetConfig,
@@ -39,6 +39,7 @@ const scenarioMap = {
 export const ScenarioSelect = () => {
   const [, setUpdateNow] = useState(0);
   const [showControlPanel, setShowControlPanel] = useState(false);
+  const [showScenarioSelect, setShowScenarioSelect] = useState(false);
   const [sceneObjects, setSceneObjects] = useState<SceneObjects | null>(null);
   const searchParams = new URLSearchParams(window.location.search);
   const scenario = (searchParams.get('scenario') ||
@@ -82,12 +83,18 @@ export const ScenarioSelect = () => {
     setShowControlPanel((state) => !state);
   }, []);
 
+  const toggleScenarioSelect = useCallback(() => {
+    setShowScenarioSelect((state) => !state);
+  }, []);
+
   useKey({ keyCode: 'KeyT', keyDownCallback: toggleControlPanel });
+  useKey({ keyCode: 'KeyK', keyDownCallback: toggleScenarioSelect });
 
   useEffect(() => {
     console.log('scenario', scenario);
     const updatedConfig = scenarioMap[scenario].config({ ...config });
     setShowControlPanel(updatedConfig.controlPanelExpanded);
+    setShowScenarioSelect(updatedConfig.showScenarioSelect);
     const sceneObjects: SceneObjects = init(updatedConfig);
     scenarioMap[scenario].run(sceneObjects);
     setSceneObjects(sceneObjects);
@@ -96,26 +103,28 @@ export const ScenarioSelect = () => {
   return (
     <>
       {sceneObjects && <ScreenInfo scene={sceneObjects} />}
-      <div className="control">
-        <div className="controlRow">
-          <div
-            className="rowTitle"
-            style={{ cursor: 'pointer' }}
-            onClick={toggleControlPanel}
-            title="T"
-          >
-            {showControlPanel ? 'Collapse' : 'Expand'}
-          </div>
-          <div className="rowEntry">
-            <select value={scenario} onChange={handleSceneChange}>
-              {Object.keys(scenarioMap).map((scene) => (
-                <option key={scene}>{scene}</option>
-              ))}
-            </select>
+      {!showScenarioSelect ? null : (
+        <div className="control">
+          <div className="controlRow">
+            <div
+              className="rowTitle"
+              style={{ cursor: 'pointer' }}
+              onClick={toggleControlPanel}
+              title="T | K"
+            >
+              {showControlPanel ? 'Collapse' : 'Expand'}
+            </div>
+            <div className="rowEntry">
+              <select value={scenario} onChange={handleSceneChange}>
+                {Object.keys(scenarioMap).map((scene) => (
+                  <option key={scene}>{scene}</option>
+                ))}
+              </select>
+            </div>
           </div>
         </div>
-      </div>
-      {sceneObjects && showControlPanel && (
+      )}
+      {sceneObjects && showControlPanel && showScenarioSelect && (
         <ControlPanel scene={sceneObjects} />
       )}
     </>

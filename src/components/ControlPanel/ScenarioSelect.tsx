@@ -13,6 +13,9 @@ import Project3DCoordOnCamera, {
 import VectorProjOnVector, {
   setConfig as VectorProjOnVectorSetConfig
 } from 'scenarios/VectorProjOnVector/VectorProjOnVector';
+import CrossProduct, {
+  setConfig as CrossProductSetConfig
+} from 'scenarios/CrossProduct/CrossProduct';
 import Asteroids, {
   setConfig as AsteroidsSetConfig
 } from 'scenarios/Asteroids/Asteroids';
@@ -29,6 +32,10 @@ const scenarioMap = {
   VectorProjOnVector: {
     config: VectorProjOnVectorSetConfig,
     run: VectorProjOnVector
+  },
+  CrossProduct: {
+    config: CrossProductSetConfig,
+    run: CrossProduct
   },
   Asteroids: {
     config: AsteroidsSetConfig,

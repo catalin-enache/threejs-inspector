@@ -33,7 +33,7 @@
     border: 0;
     outline: 0;
     height: 14px;
-    font-size: 14px;
+    font-size: 12px;
     padding: 0 4px;
     margin: 0;
     line-height: 1;
@@ -57,7 +57,7 @@
 .rowTitle, .rowEntry {
     display: inline-flex;
     align-items: center;
-    font-size: 14px;
+    font-size: 12px;
     line-height: 14px;
     height: 14px;
     flex-wrap: nowrap;

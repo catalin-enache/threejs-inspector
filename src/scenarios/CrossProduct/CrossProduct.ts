@@ -10,7 +10,7 @@ import {
 } from 'src/constants';
 // import type { CustomInfoControl } from 'src/types';
 // import { Line } from 'lib/three/Line';
-import { CustomInfoControl, CustomSelectControl, UserData } from 'src/types';
+import { CustomInfoControl, UserData } from 'src/types';
 import { Point } from 'lib/three/Point';
 
 export const setConfig = (config: Config) => {

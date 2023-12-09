@@ -1,0 +1,6 @@
+.lil-gui .controller.info pre {
+  padding: 3px;
+  background: var(--widget-color);
+  width: 100%;
+  border-radius: var(--widget-border-radius);
+}

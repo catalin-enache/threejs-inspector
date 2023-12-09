@@ -3,6 +3,8 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 // @ts-ignore
 import { TransformControls } from 'three/examples/jsm/controls/TransformControls';
+import 'lib/lil-gui-addons';
+import GUI from 'lil-gui';
 import {
   EVENT_TYPE,
   THREE_EVENT_TYPE,
@@ -32,6 +34,10 @@ type GetHitsParams = {
 };
 
 const init = (config: Config) => {
+  const gui = new GUI({ autoPlace: true, width: 500 });
+  gui.domElement.id = 'lilGui';
+  gui.hide();
+
   const canvas = document.querySelector('canvas#webgl')!;
   const _hits: THREE.Intersection<THREE.Object3D<THREE.Object3DEventMap>>[] =
     [];
@@ -651,6 +657,7 @@ const init = (config: Config) => {
     scene,
     canvas,
     renderer,
+    gui,
     toggleAxisHelper,
     getAxisHelper,
     toggleShowScreenInfo,

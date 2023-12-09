@@ -19,6 +19,7 @@ import CrossProduct, {
 import Asteroids, {
   setConfig as AsteroidsSetConfig
 } from 'scenarios/Asteroids/Asteroids';
+import Learn, { setConfig as LearnSetConfig } from 'scenarios/Learn/Learn';
 
 const scenarioMap = {
   Basic: {
@@ -40,6 +41,10 @@ const scenarioMap = {
   Asteroids: {
     config: AsteroidsSetConfig,
     run: Asteroids
+  },
+  Learn: {
+    config: LearnSetConfig,
+    run: Learn
   }
 };
 

@@ -7,7 +7,7 @@ const isCodeSandbox =
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [react()],
-  root: 'src/',
+  root: '_src/',
   publicDir: '../public',
   base: './',
   server: {
@@ -21,11 +21,11 @@ export default defineConfig({
   },
   resolve: {
     alias: {
-      src: path.resolve(__dirname, './src'),
-      assets: path.resolve(__dirname, './src/assets'),
-      components: path.resolve(__dirname, './src/components'),
-      lib: path.resolve(__dirname, './src/lib'),
-      scenarios: path.resolve(__dirname, './src/scenarios')
+      src: path.resolve(__dirname, './_src'),
+      assets: path.resolve(__dirname, './_src/assets'),
+      components: path.resolve(__dirname, './_src/components'),
+      lib: path.resolve(__dirname, './_src/lib'),
+      scenarios: path.resolve(__dirname, './_src/scenarios')
     },
     extensions: ['.js', '.jsx', '.ts', '.tsx', '.json']
   }

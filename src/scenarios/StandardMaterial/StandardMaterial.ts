@@ -7,13 +7,7 @@ import {
   STANDARD_CONTROL_EVENT_TYPE,
   CUSTOM_CONTROL_EVENT_TYPE
 } from 'src/constants';
-
-const params = {
-  color: '#ff0000',
-  feedback: 0,
-  myString: 'lil-gui',
-  multiline: 'lil-gui\nawesome'
-};
+import type { UserData } from 'src/types.ts';
 
 export const setConfig = (config: Config) => {
   config.cameraType = 'perspective';
@@ -29,7 +23,7 @@ export default (sceneObjects: SceneObjects) => {
   const {
     scene,
     // getTransformControls,
-    loop,
+    loop
     // pointer,
     // sceneSize,
     // getCamera,
@@ -41,7 +35,7 @@ export default (sceneObjects: SceneObjects) => {
     // getClock,
     // getDelta
     // getInteractiveObjects
-    gui
+    // gui
   } = sceneObjects;
 
   window.addEventListener(EVENT_TYPE.THREE, (evt: any) => {
@@ -117,74 +111,6 @@ export default (sceneObjects: SceneObjects) => {
     // console.log(evt.key);
   });
 
-  // const geometry = new THREE.BufferGeometry();
-  // // prettier-ignore
-  // const vertices = new Float32Array([
-  //   -1.0, -1.0,  1.0, // v0
-  //   1.0, -1.0,  1.0, // v1
-  //   1.0,  1.0,  1.0, // v2
-  //
-  //   1.0,  1.0,  1.0, // v3
-  //   -1.0,  1.0,  1.0, // v4
-  //   -1.0, -1.0,  1.0  // v5
-  // ]);
-  // // itemSize = 3 because there are 3 values (components) per vertex
-  // geometry.setAttribute('position', new THREE.BufferAttribute(vertices, 3));
-  // const material = new THREE.MeshBasicMaterial({
-  //   color: 0xff0000,
-  //   wireframe: true
-  // });
-  // const mesh = new THREE.Mesh(geometry, material);
-  // scene.add(mesh);
-
-  const geometry = new THREE.BufferGeometry();
-  // prettier-ignore
-  const vertices = new Float32Array( [
-    -1.0, -1.0,  1.0, // v0
-    1.0, -1.0,  1.0, // v1
-    1.0,  1.0,  1.0, // v2
-    -1.0,  1.0,  1.0, // v3
-  ] );
-
-  const indices = [0, 1, 2, 2, 3, 0];
-  geometry.setIndex(indices);
-  geometry.setAttribute('position', new THREE.BufferAttribute(vertices, 3));
-  const material = new THREE.MeshBasicMaterial({
-    color: params.color,
-    wireframe: true
-  });
-  const mesh = new THREE.Mesh(geometry, material);
-  scene.add(mesh);
-
-  gui
-    .add(mesh.position, 'y')
-    .min(-3)
-    .max(3000000)
-    .step(0.01)
-    .name('y')
-    .decimals(2);
-  gui.add(material, 'wireframe');
-  gui.addColor(params, 'color').onChange((color: string) => {
-    material.color.set(color);
-  });
-  const feedbackController = gui
-    .add(params, 'feedback', -1, 1)
-    .listen()
-    .onChange((value: number) => {
-      mesh.position.y = value;
-    })
-    .decimals(2);
-  const textController = gui.add(params, 'myString').name('MyString').listen();
-  gui.addInfo(params, 'multiline').name('Info').listen();
-
-  // const geometry = new THREE.BoxGeometry(1, 1, 1);
-  // const wireframe = new THREE.WireframeGeometry(geometry);
-  // const line = new THREE.LineSegments(wireframe);
-  // (line.material as THREE.Material).depthTest = false;
-  // (line.material as THREE.Material).opacity = 0.25;
-  // (line.material as THREE.Material).transparent = true;
-  // scene.add(line);
-
   function handleSelectedObjectTransform(
     _evtType: EVENT_TYPE,
     _object: THREE.Object3D
@@ -194,13 +120,59 @@ export default (sceneObjects: SceneObjects) => {
     // console.log(_evtType, 'scale', _object.scale);
   }
 
-  const tick = () => {
-    // params.feedback = Math.sin(Date.now() / 1000);
-    feedbackController.setValue(Math.sin(Date.now() / 1000));
-    textController.setValue(Date.now());
-    // infoController.setValue(Date.now() + '\n' + Date.now() + '\n' + Date.now());
-    params.multiline = Date.now() + '\n' + Date.now() + '\n' + Date.now();
-    // geometry.rotateZ(getDelta());
-  };
+  const loadingManager = new THREE.LoadingManager();
+
+  // loadingManager.onLoad = function () {
+  //   console.log('Loading complete!');
+  // };
+  //
+
+  // loadingManager.onError = function (url) {
+  //   console.log('There was an error loading ' + url);
+  // };
+
+  const textureLoader = new THREE.TextureLoader(loadingManager);
+  const colorTexture = textureLoader.load('textures/door/color.jpg');
+
+  const alphaTexture = textureLoader.load('textures/door/alpha.jpg');
+  // const heightTexture = textureLoader.load('textures/door/height.jpg');
+  const normalTexture = textureLoader.load('textures/door/normal.jpg');
+  const ambientOcclusionTexture = textureLoader.load(
+    'textures/door/ambientOcclusion.jpg'
+  );
+  const metalnessTexture = textureLoader.load('textures/door/metalness.jpg');
+  const roughnessTexture = textureLoader.load('textures/door/roughness.jpg');
+
+  colorTexture.colorSpace = THREE.SRGBColorSpace;
+  // colorTexture.minFilter = THREE.NearestFilter;
+
+  const cube1 = new THREE.Mesh(
+    new THREE.BoxGeometry(1, 1, 1),
+    new THREE.MeshStandardMaterial({
+      map: colorTexture,
+      alphaMap: alphaTexture,
+      transparent: true,
+      side: THREE.DoubleSide,
+      flatShading: true,
+      metalnessMap: metalnessTexture,
+      metalness: 1,
+      roughnessMap: roughnessTexture,
+      roughness: 1,
+      aoMap: ambientOcclusionTexture,
+      aoMapIntensity: 1,
+      normalMap: normalTexture,
+      normalScale: new THREE.Vector2(1, 1)
+    })
+  );
+  console.log(cube1.geometry.attributes);
+  cube1.name = 'cube1';
+  cube1.position.set(0, 0, 0);
+  (cube1.userData as UserData).isInteractive = true;
+  scene.add(cube1);
+
+  const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+  scene.add(directionalLight);
+
+  const tick = () => {};
   loop(tick);
 };

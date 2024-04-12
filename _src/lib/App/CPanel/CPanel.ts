@@ -46,36 +46,35 @@ panelContainer.addEventListener('wheel', () => {
 
 // ----------------------- >> Allowing input control to be visible when dragged outside cPanel  >> --------------------------------
 // fixing behaviour for controlPanelContent which is a scrolling container
-panelContainer.addEventListener(
-  'pointerdown',
-  (evt) => {
-    let walker: HTMLElement = evt.target as HTMLElement;
+panelContainer.addEventListener('pointerdown', (evt) => {
+  let walker: HTMLElement = evt.target as HTMLElement;
+  if (!walker) return;
+  while (walker) {
+    walker = walker?.parentNode as HTMLElement;
     if (!walker) return;
-    while (walker) {
-      walker = walker?.parentNode as HTMLElement;
-      if (!walker) return;
-      if (walker?.classList?.contains('binding')) {
-        // resetting label size and opacity (see CSS)
-        walker.classList.add('binding-mousedown');
-      } else if (walker.id === 'controlPanelContent') {
-        // fixing cPanel hiding inner content when dragged outside
-        walker.classList.add('cPanel-mousedown');
-        // @ts-ignore
-        panelContainer.children[0].style.transform = `translateY(${-cPanelScrollTop}px)`;
-        break;
-      }
+    if (walker?.classList?.contains('binding')) {
+      // resetting label size and opacity (see CSS)
+      walker.classList.add('binding-mousedown');
+    } else if (walker.id === 'controlPanelContent') {
+      // fixing cPanel hiding inner content when dragged outside
+      walker.classList.add('cPanel-mousedown');
+      // @ts-ignore
+      panelContainer.children[0].style.transform = `translateY(${-cPanelScrollTop}px)`;
+      break;
     }
-  },
-  true
-);
+  }
+});
 document.addEventListener('pointerup', () => {
   document.querySelectorAll('.binding-mousedown').forEach((el) => {
     el.classList.remove('binding-mousedown');
   });
   document.querySelectorAll('.cPanel-mousedown').forEach((el) => {
-    el.classList.remove('cPanel-mousedown');
-    // @ts-ignore
-    panelContainer.children[0].style.transform = `translateY(${0}px)`;
+    // setTimeout is for Firefox which keeps the draggable attached to mouse
+    setTimeout(() => {
+      el.classList.remove('cPanel-mousedown');
+      // @ts-ignore
+      panelContainer.children[0].style.transform = `translateY(${0}px)`;
+    });
   });
 });
 

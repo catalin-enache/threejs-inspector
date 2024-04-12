@@ -118,23 +118,20 @@ and in charge with shifting position according with last scrollTop value
   width: 100%;
 }
 
-#controlPanelContent .binding {
-  pointer-events: all;
-
-}
-
-/* add label ellipsis */
+/* add label ellipsis and allow it be expanded even when input is disabled */
 #controlPanelContent .binding-label {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  /* allow expansion for disabled inputs */
+  pointer-events: all;
 }
 
 #controlPanelContent .binding .binding-label:hover + div {
   transition: width 0.0001s, opacity 0.0001s !important;
   transition-delay: 0.25s !important;
 }
-/* allow expanding labels for disabled elements */
+/* allow expanding labels by shrinking value containers */
 #controlPanelContent .binding:not(.binding-mousedown) .binding-label:hover + div {
   width: 0;
   opacity: 0;

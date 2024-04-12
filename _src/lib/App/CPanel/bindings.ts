@@ -19,6 +19,7 @@ export const makeRotationBinding = (binding: BindingApi) => {
 };
 
 export const tweakBindingView = (binding: BladeApi) => {
+  binding.element.classList.add('binding');
   const view = binding.controller.view as any;
   view.labelElement.classList.add('binding-label');
   view.labelElement.title = view.labelElement.textContent!;

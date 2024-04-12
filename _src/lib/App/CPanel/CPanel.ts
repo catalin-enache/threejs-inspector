@@ -44,6 +44,43 @@ panelContainer.addEventListener('wheel', () => {
 
 // ----------------------- << Remember last scroll position << --------------------------------
 
+// ----------------------- >> Allowing input control to be visible when dragged outside cPanel  >> --------------------------------
+// fixing behaviour for controlPanelContent which is a scrolling container
+panelContainer.addEventListener(
+  'pointerdown',
+  (evt) => {
+    let walker: HTMLElement = evt.target as HTMLElement;
+    if (!walker) return;
+    while (walker) {
+      walker = walker?.parentNode as HTMLElement;
+      if (!walker) return;
+      if (walker?.classList?.contains('binding')) {
+        // resetting label size and opacity (see CSS)
+        walker.classList.add('binding-mousedown');
+      } else if (walker.id === 'controlPanelContent') {
+        // fixing cPanel hiding inner content when dragged outside
+        walker.classList.add('cPanel-mousedown');
+        // @ts-ignore
+        panelContainer.children[0].style.transform = `translateY(${-cPanelScrollTop}px)`;
+        break;
+      }
+    }
+  },
+  true
+);
+document.addEventListener('pointerup', () => {
+  document.querySelectorAll('.binding-mousedown').forEach((el) => {
+    el.classList.remove('binding-mousedown');
+  });
+  document.querySelectorAll('.cPanel-mousedown').forEach((el) => {
+    el.classList.remove('cPanel-mousedown');
+    // @ts-ignore
+    panelContainer.children[0].style.transform = `translateY(${0}px)`;
+  });
+});
+
+// ----------------------- << Allowing input control to be visible when dragged outside cPanel  << --------------------------------
+
 export const CPanel = () => {
   const { camera, scene, gl, raycaster } = useThree();
   const isPlaying = useAppStore((state) => state.isPlaying);
@@ -131,13 +168,12 @@ export const CPanel = () => {
     paneRef.current.registerPlugin(KVEBundle);
     continuousUpdateRef.current = makeContinuousUpdate(paneRef.current);
     paneRef.current.hidden = !cPanelVisible;
-    paneRef.current['containerElem_'].classList.add('cpanel');
     const pane = paneRef.current;
 
     // prettier-ignore
     pane.addTab({ pages: [{ title: 'Selected' }, { title: 'Custom' }, { title: 'Global' }] });
     [...pane.children[0].element.children[0].children].forEach((tab) => {
-      tab.classList.add('cpanel-tab'); // to style them hover-able
+      tab.classList.add('cPanel-tab'); // to style them hover-able
     });
   }, [cPanelVisible, cPanelContinuousUpdate]);
 

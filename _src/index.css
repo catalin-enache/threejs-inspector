@@ -87,7 +87,21 @@ body {
   align-items: center;
   justify-content: flex-start;
   max-height: calc(100vh - 26px);
-  overflow: scroll;
+  /*
+  Using overflow-y: scroll makes this container hide children positioned outside it
+  even on x coord (browser behaviour)
+  Fixed with JS at runtime (see later in this file)
+  */
+  overflow-y: scroll;
+}
+
+/*
+Here, we allow draggable input control to be displayed when dragged outside the panel
+in combination with JS pointerdown event in charge with setting .cPanel-mousedown class
+and in charge with shifting position according with last scrollTop value
+*/
+#controlPanelContent.cPanel-mousedown {
+  overflow-y: clip;
 }
 
 /* hide scrollbar */
@@ -104,11 +118,26 @@ body {
   width: 100%;
 }
 
+#controlPanelContent .binding {
+  pointer-events: all;
+
+}
+
 /* add label ellipsis */
 #controlPanelContent .binding-label {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+#controlPanelContent .binding .binding-label:hover + div {
+  transition: width 0.0001s, opacity 0.0001s !important;
+  transition-delay: 0.25s !important;
+}
+/* allow expanding labels for disabled elements */
+#controlPanelContent .binding:not(.binding-mousedown) .binding-label:hover + div {
+  width: 0;
+  opacity: 0;
 }
 
 /* make values bigger to fit Vector4 value */
@@ -123,7 +152,7 @@ body {
 }
 
 /* hint that tabs are clickable */
-#controlPanelContent .cpanel-tab > button > div {
+#controlPanelContent .cPanel-tab > button > div {
   cursor: pointer;
 }
 

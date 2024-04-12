@@ -11,12 +11,41 @@
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   -webkit-text-size-adjust: 100%;
+
+
+  --tp-base-background-color: hsla(0, 0%, 10%, 0.4);
+  --tp-base-shadow-color: hsla(0, 0%, 0%, 0.2);
+  --tp-base-border-radius: 0px;
+  --tp-blade-border-radius: 0px;
+  --bld-br: 0px;
+  --tp-button-background-color: hsla(0, 0%, 80%, 1);
+  --tp-button-background-color-active: hsla(0, 0%, 100%, 1);
+  --tp-button-background-color-focus: hsla(0, 0%, 95%, 1);
+  --tp-button-background-color-hover: hsla(0, 0%, 85%, 1);
+  --tp-button-foreground-color: hsla(0, 0%, 0%, 0.8);
+  --tp-container-background-color: hsla(0, 0%, 0%, 0.2);
+  --tp-container-background-color-active: hsla(0, 0%, 0%, 0.2);
+  --tp-container-background-color-focus: hsla(0, 0%, 0%, 0.2);
+  --tp-container-background-color-hover: hsla(0, 0%, 0%, 0.2);
+  --tp-container-foreground-color: hsla(0, 0%, 100%, 0.8);
+  --tp-groove-foreground-color: hsla(0, 0%, 0%, 0.8);
+  --tp-input-background-color: hsla(0, 3%, 34%, 0.2);
+  --tp-input-background-color-active: hsla(0, 0%, 0%, 0.2);
+  --tp-input-background-color-focus: hsla(0, 0%, 0%, 0.2);
+  --tp-input-background-color-hover: hsla(0, 3%, 34%, 0.3);
+  --tp-input-foreground-color: hsla(0, 0%, 100%, 0.8);
+  --tp-label-foreground-color: hsla(0, 0%, 100%, 0.8);
+  --tp-monitor-background-color: hsla(0, 0%, 0%, 0.2);
+  --tp-monitor-foreground-color: hsla(0, 0%, 100%, 0.8);
 }
 
 html, body {
   margin: 0;
   padding: 0;
   overflow: hidden;
+  -webkit-user-select: none; /* Safari */
+  -ms-user-select: none; /* IE 10 and IE 11 */
+  user-select: none; /* Standard syntax */
 }
 
 body {
@@ -33,15 +62,79 @@ body {
   height: 100vh;
 }
 
+#webgl {
+  width: 100%;
+  height: 100%;
+}
+
 #controlPanel {
   position: absolute;
-  top: 0;
-  right: 0;
+  top: 10px;
+  right: 10px;
   width: 280px;
+}
+
+#dragMe {
+  background-color: var(--tp-base-background-color);
+  height: 8px
+}
+
+/* make controlPanelContent scrollable */
+#controlPanelContent {
   flex: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: flex-start;
+  max-height: calc(100vh - 26px);
+  overflow: scroll;
 }
+
+/* hide scrollbar */
+#controlPanelContent::-webkit-scrollbar {
+  display: none;
+}
+#controlPanelContent {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+
+/* make cPanel full width of container */
+#controlPanelContent > div {
+  width: 100%;
+}
+
+/* add label ellipsis */
+#controlPanelContent .binding-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* make values bigger to fit Vector4 value */
+#controlPanelContent .binding-value {
+  width: 200px;
+}
+
+
+/* fix tweakpane bug for popup control making the pane collapse (when visible) and #controlPanelContent has overflow scroll */
+#controlPanelContent .tp-popv {
+  position: static;
+}
+
+/* hint that tabs are clickable */
+#controlPanelContent .cpanel-tab > button > div {
+  cursor: pointer;
+}
+
+/*
+make panel reconstruction unobservable
+transition 0 introduces a bug which is fixed in bindings
+by dispatching transitionend event which it seams that Tweakpane relies on
+*/
+#controlPanelContent .folder-button * {
+  transition: none !important;
+}
+
+
 

@@ -8,8 +8,20 @@
   </head>
   <body>
     <div id="main">
-      <canvas id="webgl"></canvas>
-      <div id="controlPanel" />
+      <div id="webgl"></div>
+      <div id="controlPanel">
+        <div id="dragMe"></div>
+        <div id="controlPanelContent"></div>
+      </div>
+      <script type="module">
+        import { gsap } from "gsap";
+        import { Draggable } from "gsap/Draggable";
+        gsap.registerPlugin(Draggable);
+        Draggable.create("#controlPanel", {
+          trigger: "#dragMe",
+          minimumMovement: 0
+        });
+      </script>
     </div>
     <script type="module" src="index.tsx"></script>
   </body>

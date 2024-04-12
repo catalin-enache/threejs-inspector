@@ -1,0 +1,26 @@
+Put panel in a draggable container *DONE*
+Allow config for renderer and other things in the panel *DONE*
+Check to see what is going on with props defined in react vs changes from panel. *DONE* R3F does deep compare
+Add a way to hide/show separately pickers and helpers rather than all gizmos *DONE*
+Make a play/stop game loop different from editor loop *DONE*
+Improve makeHelpers *DONE*
+
+Make labels expand on hover
+See if CustomControl can be improved
+When using different camera on play we might/will need different controller
+Show scene performance and statistics
+Add top/left/bottom/right panel options
+Add plugin for radio buttons, file upload, tree view,
+Add controls for textures and materials
+Add controls for scene
+
+Get all calculations from old scene
+See how we can use labels/projections in the scene leveraging Drei
+
+Make a help button and popup with all the shortcuts and explanations
+Implement snapping
+
+Cleanup package.json
+
+
+

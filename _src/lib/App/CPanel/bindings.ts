@@ -510,7 +510,7 @@ export const CameraStoreBindings = () => ({
     }
   },
   attachDefaultControllersToPlayingCamera: {
-    label: 'Attach default controllers when Playing ( ] )',
+    label: 'Attach default controllers when Playing custom camera ( ] )',
     view: 'toggle',
     onChange: (_object: any, evt: any) => {
       useAppStore

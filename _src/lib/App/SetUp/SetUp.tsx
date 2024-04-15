@@ -216,6 +216,7 @@ THREE.Object3D.prototype.add = (function () {
         }
       }
 
+      // if multiple cameras are useOnPlay, only the last one will be considered
       if (
         (object instanceof THREE.PerspectiveCamera ||
           object instanceof THREE.OrthographicCamera) &&

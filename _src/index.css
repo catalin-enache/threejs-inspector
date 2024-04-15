@@ -129,10 +129,11 @@ and in charge with shifting position according with last scrollTop value
 
 #controlPanelContent .binding .binding-label:hover + div {
   transition: width 0.0001s, opacity 0.0001s !important;
-  transition-delay: 0.25s !important;
+  transition-delay: 0.35s !important;
 }
+
 /* allow expanding labels by shrinking value containers */
-#controlPanelContent .binding:not(.binding-mousedown) .binding-label:hover + div {
+#controlPanelContent:not(.cPanel-mousedown) .binding .binding-label:hover + div {
   width: 0;
   opacity: 0;
 }

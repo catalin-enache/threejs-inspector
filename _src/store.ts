@@ -40,7 +40,7 @@ export interface AppStore {
   setCPanelContinuousUpdate: (cPanelContinuousUpdate: boolean) => void;
   toggleCPanelContinuousUpdate: () => void;
   cPanelCustomParams: Record<string, any>;
-  setCPanelCustomParams: (name: string, customParams: any) => void;
+  setOrUpdateCPanelCustomParams: (name: string, customParams: any) => void;
   removeCPanelCustomParams: (name: string) => void;
   cPanelCustomParamsStateFake: number;
   triggerCPanelCustomParamsChanged: () => void;
@@ -139,26 +139,38 @@ export const useAppStore = create<AppStore>()(
         }));
       },
       cPanelCustomParams: {},
-      setCPanelCustomParams: (name, customParams) =>
-        set((state) => ({
-          cPanelCustomParams: {
-            ...state.cPanelCustomParams,
-            [name]: customParams
-          }
-        })),
+      // setOrUpdateCPanelCustomParams does not replace objects but mutates them
+      // in order to not make Tweakpane control stale objects.
+      setOrUpdateCPanelCustomParams: (name, customParams) => {
+        const type = typeof customParams;
+        const cPanelCustomParams = get().cPanelCustomParams;
+        if (
+          type === 'string' ||
+          type === 'number' ||
+          type === 'boolean' ||
+          customParams === null ||
+          cPanelCustomParams[name] === undefined ||
+          cPanelCustomParams[name] === null
+        ) {
+          cPanelCustomParams[name] = customParams;
+        } else {
+          Object.assign(cPanelCustomParams[name], customParams);
+        }
+      },
       removeCPanelCustomParams: (name) =>
         set((state) => {
           delete state.cPanelCustomParams[name];
           return { cPanelCustomParams: { ...state.cPanelCustomParams } };
         }),
       cPanelCustomParamsStateFake: 0,
-      triggerCPanelCustomParamsChanged: () =>
+      triggerCPanelCustomParamsChanged: () => {
         set((state) => ({
           cPanelCustomParamsStateFake:
             state.cPanelCustomParamsStateFake < 100
               ? state.cPanelCustomParamsStateFake + 1
               : 0
-        })),
+        }));
+      },
       cPanelCustomControls: {},
       setCPanelCustomControls: (name, customControls) =>
         set((state) => ({

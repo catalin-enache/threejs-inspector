@@ -4,9 +4,9 @@ Check to see what is going on with props defined in react vs changes from panel.
 Add a way to hide/show separately pickers and helpers rather than all gizmos *DONE*
 Make a play/stop game loop different from editor loop *DONE*
 Improve makeHelpers *DONE*
+Make labels expand on hover *DONE*
+See if CustomControl can be improved *DONE*
 
-Make labels expand on hover
-See if CustomControl can be improved
 When using different camera on play we might/will need different controller
 Show scene performance and statistics
 Add top/left/bottom/right panel options
@@ -21,6 +21,8 @@ Make a help button and popup with all the shortcuts and explanations
 Implement snapping
 
 Cleanup package.json
+
+Make a type for userData
 
 
 

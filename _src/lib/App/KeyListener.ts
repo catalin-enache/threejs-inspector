@@ -41,7 +41,7 @@ export function KeyListener() {
     };
 
     const handleKeyUp = (e: KeyboardEvent) => {
-      console.log('KeyListener handleKeyUp', e.code);
+      // console.log('KeyListener handleKeyUp', e.code);
       keysPressed[e.code] = false;
       switch (e.code) {
         case 'KeyP':

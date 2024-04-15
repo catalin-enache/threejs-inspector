@@ -45,8 +45,20 @@ export function Experience() {
     }
   });
   const [showPoint, setShowPoint] = useState(false);
-  const [customControlXY, setCustomControlXY] = useState({ x: 0, y: 0 });
-  // const selectedObject = useAppStore((state) => state.selectedObject);
+  const [customControlXY, setCustomControlXY] = useState({ x: 0.5, y: 0.5 });
+  const [number, setNumber] = useState(1.23);
+
+  usePlay((_state, _delta) => {
+    // setNumber((prev) => {
+    //   // console.log('Experience setting new value on play', prev + 0.01);
+    //   return prev + 0.01;
+    // });
+    // setCustomControlXY((prev) => {
+    //   return { x: prev.x + 0.01, y: prev.y };
+    // });
+  });
+
+  // console.log('Experience rendering', { number, customControlXY });
 
   useEffect(() => {
     new THREE.TextureLoader().load(
@@ -158,43 +170,47 @@ export function Experience() {
       <axesHelper args={[10]} />
 
       <CustomControl
-        name="myNumber"
-        initialValue={0}
-        control={{
-          label: 'My Number',
-          step: 0.02,
-          keyScale: 0.1,
-          pointerScale: 0.02
-        }} // view: 'counter'
-        onChange={(value) => {
-          console.log('myNumber changed', value);
-        }}
-      />
-      <CustomControl
         name="myBool"
-        initialValue={showPoint}
-        control={{ label: 'My Bool' }}
+        value={showPoint}
+        control={{ label: 'Show point' }}
         onChange={(value) => {
-          // console.log('MyBool changed', value);
           setShowPoint(value);
         }}
       />
+
+      <CustomControl
+        name="myNumber"
+        value={number}
+        control={{
+          label: 'My Number',
+          step: 0.01,
+          keyScale: 0.1,
+          pointerScale: 0.01
+        }} // view: 'counter'
+        onChange={(value) => {
+          // console.log('Experience reacting to myNumber value change', value);
+          setNumber(value);
+          setCustomControlXY({ x: value, y: customControlXY.y });
+        }}
+      />
+
       {showPoint && (
         <CustomControl
-          name="point"
-          initialValue={{ x: 0.5, y: 0.5 }}
+          name="myPoint"
+          value={customControlXY}
           control={{
             label: 'Point',
-            // keyScale: 0.01,
-            pointerScale: 0.02
-            // step: 0.02
+            step: 0.01,
+            keyScale: 0.1,
+            pointerScale: 0.01
             // picker: 'inline',
             // x: { step: 0.02 },
             // y: { step: 0.02 }
           }}
           onChange={(value) => {
-            // console.log('Point changed', value);
-            setCustomControlXY({ ...value });
+            // console.log('Experience reacting to myPoint value change', value);
+            setCustomControlXY(value);
+            setNumber(value.x);
           }}
         />
       )}

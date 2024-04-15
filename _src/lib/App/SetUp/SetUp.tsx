@@ -386,8 +386,6 @@ const SetUp = () => {
     transformControlsSpace
   ]);
 
-  console.log('Setup render');
-
   // Update ObitControls (target, camera, enabled) and TransformControls camera
   useEffect(() => {
     updateCameras();

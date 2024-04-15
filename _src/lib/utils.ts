@@ -8,14 +8,25 @@ export const isObject = (value: any) => {
 export const isArray = (value: any) => {
   return Array.isArray(value);
 };
+const scalingFactor = 100000;
+// assuming left and right are the same type
+const isEqualPrimitive = (left: any, right: any) => {
+  if (typeof left === 'number') {
+    const _left = Math.round(left * scalingFactor) / scalingFactor;
+    const _right = Math.round(right * scalingFactor) / scalingFactor;
+    return _left === _right;
+  }
+  return left === right;
+};
 
-export const isEqual = (prev: any, next: any) => {
+// assuming left and right are the same type and one level deep object
+export const isEqual = (left: any, right: any) => {
   // for primitives make a simple comparison
-  if (!isObject(prev) && !isArray(prev)) return prev === next;
-  const keys = Object.keys(prev);
+  if (!isObject(left) && !isArray(left)) return isEqualPrimitive(left, right);
+  const keys = Object.keys(left);
   for (let i = 0; i < keys.length; i++) {
     const key = keys[i];
-    if (prev[key] !== next[key]) {
+    if (!isEqualPrimitive(left[key], right[key])) {
       return false;
     }
   }

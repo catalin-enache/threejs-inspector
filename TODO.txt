@@ -6,13 +6,17 @@ Make a play/stop game loop different from editor loop *DONE*
 Improve makeHelpers *DONE*
 Make labels expand on hover *DONE*
 See if CustomControl can be improved *DONE*
+When using different camera on play we might/will need different controller *DONE*
 
-When using different camera on play we might/will need different controller
-Show scene performance and statistics
-Add top/left/bottom/right panel options
+Implement typing multiple letters as key listeners? add minimal custom controls to use in Experience for play/pause
+Make a pause button
+
 Add plugin for radio buttons, file upload, tree view,
 Add controls for textures and materials
 Add controls for scene
+Show scene performance and statistics
+Add top/left/bottom/right panel options
+
 
 Get all calculations from old scene
 See how we can use labels/projections in the scene leveraging Drei

@@ -1,6 +1,7 @@
 import { useEffect, useRef, useCallback } from 'react';
 import * as THREE from 'three';
 import { FolderApi, Pane, TabApi } from 'tweakpane';
+import * as EssentialsPlugin from '@tweakpane/plugin-essentials';
 import { useAppStore } from 'src/store';
 import { makeContinuousUpdate } from './continuousUpdate';
 import { KVEBundle } from './Plugins/KVEBundle/KVEBundle';
@@ -160,6 +161,7 @@ export const CPanel = () => {
     });
 
     paneRef.current.registerPlugin(KVEBundle);
+    paneRef.current.registerPlugin(EssentialsPlugin);
     continuousUpdateRef.current = makeContinuousUpdate(paneRef.current);
     paneRef.current.hidden = !cPanelVisible;
     const pane = paneRef.current;

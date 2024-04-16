@@ -2,6 +2,8 @@
 import { useEffect } from 'react';
 import { useAppStore } from 'src/store';
 
+// TODO: implement typing multiple letters ? add minimal custom controls to use in Experience for play/pause
+
 const getAllMetaPressed = (e: KeyboardEvent) => {
   return e.altKey && e.ctrlKey && e.shiftKey;
 };

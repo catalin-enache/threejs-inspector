@@ -63,21 +63,26 @@ export const numberCommon = {
 const ObjectStoreBindings = () => ({
   transformControlsMode: {
     label: 'TMode ( ,./ )',
-    options: {
-      Translate: 'translate',
-      Rotate: 'rotate',
-      Scale: 'scale'
-    },
+    view: 'radiogrid',
+    groupName: 'transformControlsMode',
+    size: [3, 1],
+    cells: (x: number, _y: number) => ({
+      title: x === 0 ? 'Translate' : x === 1 ? 'Rotate' : 'Scale',
+      value: x === 0 ? 'translate' : x === 1 ? 'rotate' : 'scale'
+    }),
     onChange: (_object: any, mode: any) => {
       useAppStore.getState().setTransformControlsMode(mode.value);
     }
   },
   transformControlsSpace: {
     label: "TSpace ( ;' )",
-    options: {
-      World: 'world',
-      Local: 'local'
-    },
+    view: 'radiogrid',
+    groupName: 'transformControlsSpace',
+    size: [2, 1],
+    cells: (x: number, _y: number) => ({
+      title: x === 0 ? 'World' : 'Local',
+      value: x === 0 ? 'world' : 'local'
+    }),
     onChange: (_object: any, space: any) => {
       useAppStore.getState().setTransformControlsSpace(space.value);
     }
@@ -478,10 +483,13 @@ export const PaneBindings = () => ({
   },
   angleFormat: {
     label: 'Angle Format ( [ )',
-    options: {
-      Deg: 'deg',
-      Rad: 'rad'
-    },
+    view: 'radiogrid',
+    groupName: 'angleFormat',
+    size: [2, 1],
+    cells: (x: number, _y: number) => ({
+      title: x === 0 ? 'Deg' : 'Rad',
+      value: x === 0 ? 'deg' : 'rad'
+    }),
     onChange: (_object: any, angleFormat: any) => {
       useAppStore.getState().setAngleFormat(angleFormat.value);
     }
@@ -491,22 +499,28 @@ export const PaneBindings = () => ({
 export const CameraStoreBindings = () => ({
   cameraControl: {
     label: 'Control ( N )',
-    options: {
-      Orbit: 'orbit',
-      Fly: 'fly'
-    },
-    onChange: (_object: any, control: any) => {
-      useAppStore.getState().setCameraControl(control.value);
+    view: 'radiogrid',
+    groupName: 'cameraControl',
+    size: [2, 1],
+    cells: (x: number, _y: number) => ({
+      title: x === 0 ? 'Orbit' : 'Fly',
+      value: x === 0 ? 'orbit' : 'fly'
+    }),
+    onChange: (_object: any, cameraControl: any) => {
+      useAppStore.getState().setCameraControl(cameraControl.value);
     }
   },
   cameraType: {
     label: 'Type ( C )',
-    options: {
-      Perspective: 'perspective',
-      Orthographic: 'orthographic'
-    },
-    onChange: (_object: any, type: any) => {
-      useAppStore.getState().setCameraType(type.value);
+    view: 'radiogrid',
+    groupName: 'cameraType',
+    size: [2, 1],
+    cells: (x: number, _y: number) => ({
+      title: x === 0 ? 'Perspective' : 'Orthographic',
+      value: x === 0 ? 'perspective' : 'orthographic'
+    }),
+    onChange: (_object: any, cameraType: any) => {
+      useAppStore.getState().setCameraType(cameraType.value);
     }
   },
   attachDefaultControllersToPlayingCamera: {
@@ -561,6 +575,17 @@ export const SceneButtons = ({ isPlaying }: CommonGetterParams) => [
     onClick: (_sceneObjects: SceneObjects) => {
       useAppStore.getState().togglePlaying();
     }
+    // label: 'Play State ( Space|CAS+Space )',
+    // view: 'radiogrid',
+    // groupName: 'playState',
+    // size: [2, 1],
+    // cells: (x: number, _y: number) => ({
+    //   title: x === 0 ? 'Play' : 'Stop',
+    //   value: x === 0 ? false : true
+    // }),
+    // onChange: (_object: any, playState: any) => {
+    //   useAppStore.getState().setPlaying(playState.value);
+    // }
   }
 ];
 

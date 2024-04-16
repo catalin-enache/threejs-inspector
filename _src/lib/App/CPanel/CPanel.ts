@@ -30,10 +30,12 @@ let cPanelScrollTop = 0;
 export const panelContainer = document.querySelector(
   '#controlPanelContent'
 ) as HTMLElement;
+
 function onScroll(evt: Event) {
   // @ts-ignore
   cPanelScrollTop = Math.ceil(evt.target.scrollTop);
 }
+
 // remember scroll position only when user interacting with the panel (not when automatically scrolled)
 panelContainer.addEventListener('wheel', () => {
   panelContainer.addEventListener('scroll', onScroll);
@@ -41,6 +43,13 @@ panelContainer.addEventListener('wheel', () => {
   timeoutId = setTimeout(() => {
     panelContainer.removeEventListener('scroll', onScroll);
   }, 200);
+});
+
+const resizeObserver = new ResizeObserver((entries) => {
+  for (const _entry of entries) {
+    // console.log(`Element's height: ${_entry.contentRect}px`);
+    cPanelScrollTop = panelContainer.scrollTop;
+  }
 });
 
 // ----------------------- << Remember last scroll position << --------------------------------
@@ -63,6 +72,7 @@ panelContainer.addEventListener('pointerdown', (evt) => {
     }
   }
 });
+
 document.addEventListener('pointerup', () => {
   document.querySelectorAll('.cPanel-mousedown').forEach((el) => {
     // setTimeout is for Firefox which keeps the draggable attached to mouse
@@ -150,8 +160,10 @@ export const CPanel = () => {
       paneRef.current.hidden = !cPanelVisible;
       if (!cPanelVisible) {
         continuousUpdateRef.current?.stop();
+        resizeObserver.disconnect();
       } else if (cPanelContinuousUpdate) {
         continuousUpdateRef.current?.start();
+        resizeObserver.observe(panelContainer.children[0]);
       }
       return;
     }
@@ -159,6 +171,7 @@ export const CPanel = () => {
     paneRef.current = new Pane({
       container: panelContainer
     });
+    resizeObserver.observe(panelContainer.children[0]);
 
     paneRef.current.registerPlugin(KVEBundle);
     paneRef.current.registerPlugin(EssentialsPlugin);
@@ -178,6 +191,7 @@ export const CPanel = () => {
     return () => {
       continuousUpdateRef.current?.stop();
       paneRef.current?.dispose();
+      resizeObserver.disconnect();
     };
   }, []);
 
@@ -245,6 +259,9 @@ export const CPanel = () => {
     Object.keys(cPanelCustomParams).forEach((key) => {
       const bindingParams = cPanelCustomControls[key];
       if (!bindingParams) return;
+      // Forcing all pickers inline to prevent layout issues.
+      // Not all bindings have pickers but there's no harm in setting it inline even if there's no picker
+      bindingParams.picker = 'inline';
       const binding = customParamsTab
         .addBinding(cPanelCustomParams, key, bindingParams)
         .on('change', handleCustomParamsChanges);

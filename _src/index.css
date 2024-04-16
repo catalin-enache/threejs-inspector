@@ -143,12 +143,6 @@ and in charge with shifting position according with last scrollTop value
   width: 200px;
 }
 
-
-/* fix tweakpane bug for popup control making the pane collapse (when visible) and #controlPanelContent has overflow scroll */
-#controlPanelContent .tp-popv {
-  position: static;
-}
-
 /* hint that tabs are clickable */
 #controlPanelContent .cPanel-tab > button > div {
   cursor: pointer;
@@ -157,9 +151,9 @@ and in charge with shifting position according with last scrollTop value
 /*
 make panel reconstruction unobservable
 transition 0 introduces a bug which is fixed in bindings
-by dispatching transitionend event which it seams that Tweakpane relies on
+by dispatching "transitionend" event which it seams that Tweakpane relies on
 */
-#controlPanelContent .folder-button * {
+#controlPanelContent  * {
   transition: none !important;
 }
 

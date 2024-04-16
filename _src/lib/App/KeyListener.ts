@@ -4,6 +4,19 @@ import { useAppStore } from 'src/store';
 
 // TODO: implement typing multiple letters ? add minimal custom controls to use in Experience for play/pause
 
+let isMouseDown = false;
+
+export const panelContainer = document.querySelector(
+  '#controlPanelContent'
+) as HTMLElement;
+
+panelContainer.addEventListener('pointerdown', (_evt) => {
+  isMouseDown = true;
+});
+document.addEventListener('pointerup', () => {
+  isMouseDown = false;
+});
+
 const getAllMetaPressed = (e: KeyboardEvent) => {
   return e.altKey && e.ctrlKey && e.shiftKey;
 };
@@ -17,6 +30,8 @@ export function KeyListener() {
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       // console.log('KeyListener handleKeyDown', e.code);
+      // prevent sending commands when typing in input fields
+      if (document.activeElement?.tagName === 'INPUT' || isMouseDown) return;
       switch (e.code) {
         case 'Space':
           if (!keysPressed[e.code] && (isEditorMode || getAllMetaPressed(e))) {
@@ -44,6 +59,7 @@ export function KeyListener() {
 
     const handleKeyUp = (e: KeyboardEvent) => {
       // console.log('KeyListener handleKeyUp', e.code);
+      if (document.activeElement?.tagName === 'INPUT' || isMouseDown) return;
       keysPressed[e.code] = false;
       switch (e.code) {
         case 'KeyP':

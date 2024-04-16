@@ -1,6 +1,6 @@
 import { degToRad, focusCamera, radToDegFormatter } from 'lib/utils';
 import * as THREE from 'three';
-import { BladeApi, FolderApi } from 'tweakpane';
+import { BladeApi, FolderApi, TabPageApi } from 'tweakpane';
 import { BindingApi } from '@tweakpane/core';
 import { useAppStore } from 'src/store';
 
@@ -30,27 +30,50 @@ export const tweakBindingView = (binding: BladeApi) => {
 const foldersExpandedMap = {} as Record<string, boolean>;
 
 // memoize folder expanded state
-export const tweakFolder = (folder: FolderApi, id: string) => {
+export const tweakFolder = (folder: FolderApi | TabPageApi, id: string) => {
+  if (folder instanceof TabPageApi) return;
   if (foldersExpandedMap[id] !== undefined) {
     folder.expanded = foldersExpandedMap[id];
   } else {
     foldersExpandedMap[id] = !!folder.expanded;
   }
-  const button = folder.element.children[0];
-  (button.parentNode as HTMLElement)!.classList.add('folder-button');
-  button.addEventListener('click', () => {
-    const isExpanded = [...(button.parentNode as HTMLElement)!.classList].some(
-      (c) => c.endsWith('expanded')
-    );
+  folder.element.classList.add('folder-button');
+  const folderButton = folder.element.children[0];
+
+  // Memoizing last expanded state
+  folderButton.addEventListener('click', () => {
+    const isExpanded = [
+      ...(folderButton.parentNode as HTMLElement)!.classList
+    ].some((c) => c.endsWith('expanded'));
     foldersExpandedMap[id] = !!isExpanded;
-    // Make Tweakpane believe there was a transition event, since it seems it relies on it
-    folder.element.dispatchEvent(
-      new TransitionEvent('transitionend', {
-        bubbles: true,
-        cancelable: true,
-        propertyName: 'height'
-      })
-    );
+  });
+
+  // Tweakpane assumes that changes in sizes are transitioned,
+  // and it expects transitionend event to update folder heights.
+  // We have overridden all transitions in CSS to prevent CPanel animating on every rebuild.
+  // Here we're dispatching transitionend event to fix folders heights.
+  // buttons include the folderButton
+  const buttons = folder.element.querySelectorAll('button');
+  buttons.forEach((anyButton) => {
+    // Note: tweakFolder is called recursively
+    // Last call is from root folder.
+    // Before root folder is calling tweakFolder,
+    // the inner folders have already called it (adding their own listeners on buttons).
+    // We guard with 'button' class.
+    // Returning early to prevent adding duplicated listeners.
+    if (anyButton.classList.contains('button')) return;
+    anyButton.classList.add('button');
+    anyButton.addEventListener('click', (_e) => {
+      // Dispatching from deepest to top.
+      // The event will be handled by all interested ancestors.
+      anyButton.dispatchEvent(
+        new TransitionEvent('transitionend', {
+          bubbles: true,
+          cancelable: true,
+          propertyName: 'height'
+        })
+      );
+    });
   });
 };
 
@@ -716,7 +739,6 @@ export const buildBindings = (
   bindings: any,
   sceneObjects: SceneObjects
 ) => {
-  tweakFolder(folder, `${folder.title!}-${object.uuid || 'no-id'}`);
   Object.keys(bindings).forEach((key) => {
     if (key === 'title' || object[key] === undefined || object[key] === null)
       return;
@@ -735,6 +757,9 @@ export const buildBindings = (
       return;
     }
     if (!isBinding) return;
+    // Forcing all pickers inline to prevent layout issues.
+    // Not all bindings have pickers but there's no harm in setting it inline even if there's no picker
+    candidate.picker = 'inline';
     const binding = folder.addBinding(object, key, candidate);
     if (candidate.onChange) {
       binding.on('change', candidate.onChange.bind(null, object));
@@ -744,6 +769,9 @@ export const buildBindings = (
       makeRotationBinding(binding);
     }
   });
+  // Using it at the end so that inside tweakFolder()
+  // we can access all buttons added so far by inner folders.
+  tweakFolder(folder, `${folder.title!}-${object.uuid || 'no-id'}`);
 };
 
 export const buildButtons = (

@@ -203,7 +203,6 @@ export function Experience() {
             step: 0.01,
             keyScale: 0.1,
             pointerScale: 0.01
-            // picker: 'inline',
             // x: { step: 0.02 },
             // y: { step: 0.02 }
           }}

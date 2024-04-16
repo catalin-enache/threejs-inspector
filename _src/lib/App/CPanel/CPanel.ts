@@ -25,32 +25,34 @@ import {
 
 // ----------------------- >> Remember last scroll position >> --------------------------------
 
-let timeoutId: NodeJS.Timeout | null = null;
 let cPanelScrollTop = 0;
 export const panelContainer = document.querySelector(
   '#controlPanelContent'
 ) as HTMLElement;
 
 function onScroll(evt: Event) {
-  // @ts-ignore
-  cPanelScrollTop = Math.ceil(evt.target.scrollTop);
+  cPanelScrollTop = Math.ceil((evt.target as HTMLElement)?.scrollTop);
 }
+panelContainer.addEventListener('scroll', onScroll);
 
+// Leaving the followings commented for a while until we're sure we don't need them
 // remember scroll position only when user interacting with the panel (not when automatically scrolled)
-panelContainer.addEventListener('wheel', () => {
-  panelContainer.addEventListener('scroll', onScroll);
-  timeoutId && clearTimeout(timeoutId);
-  timeoutId = setTimeout(() => {
-    panelContainer.removeEventListener('scroll', onScroll);
-  }, 200);
-});
+// const timeoutId: NodeJS.Timeout | null = null;
+// panelContainer.addEventListener('wheel', () => {
+//   panelContainer.addEventListener('scroll', onScroll);
+//   timeoutId && clearTimeout(timeoutId);
+//   timeoutId = setTimeout(() => {
+//     panelContainer.removeEventListener('scroll', onScroll);
+//   }, 200);
+// });
 
-const resizeObserver = new ResizeObserver((entries) => {
-  for (const _entry of entries) {
-    // console.log(`Element's height: ${_entry.contentRect}px`);
-    cPanelScrollTop = panelContainer.scrollTop;
-  }
-});
+// const resizeObserver = new ResizeObserver((entries) => {
+//   for (const _entry of entries) {
+//     // console.log(`Element's height: ${_entry.contentRect}px`);
+//     // cPanelScrollTop = panelContainer.scrollTop;
+//     console.log('resizeObserver', cPanelScrollTop);
+//   }
+// });
 
 // ----------------------- << Remember last scroll position << --------------------------------
 
@@ -66,6 +68,7 @@ panelContainer.addEventListener('pointerdown', (evt) => {
     if (walker.id === 'controlPanelContent') {
       // fixing cPanel hiding inner content when dragged outside
       walker.classList.add('cPanel-mousedown');
+      console.log('pointerdown', cPanelScrollTop);
       // @ts-ignore
       panelContainer.children[0].style.transform = `translateY(${-cPanelScrollTop}px)`;
       break;
@@ -160,10 +163,10 @@ export const CPanel = () => {
       paneRef.current.hidden = !cPanelVisible;
       if (!cPanelVisible) {
         continuousUpdateRef.current?.stop();
-        resizeObserver.disconnect();
+        // resizeObserver.disconnect();
       } else if (cPanelContinuousUpdate) {
         continuousUpdateRef.current?.start();
-        resizeObserver.observe(panelContainer.children[0]);
+        // resizeObserver.observe(panelContainer.children[0]);
       }
       return;
     }
@@ -171,7 +174,7 @@ export const CPanel = () => {
     paneRef.current = new Pane({
       container: panelContainer
     });
-    resizeObserver.observe(panelContainer.children[0]);
+    // resizeObserver.observe(panelContainer.children[0]);
 
     paneRef.current.registerPlugin(KVEBundle);
     paneRef.current.registerPlugin(EssentialsPlugin);
@@ -191,7 +194,7 @@ export const CPanel = () => {
     return () => {
       continuousUpdateRef.current?.stop();
       paneRef.current?.dispose();
-      resizeObserver.disconnect();
+      // resizeObserver.disconnect();
     };
   }, []);
 

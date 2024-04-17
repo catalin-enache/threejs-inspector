@@ -4,7 +4,7 @@ import { FolderApi, Pane, TabApi } from 'tweakpane';
 import * as EssentialsPlugin from '@tweakpane/plugin-essentials';
 import { useAppStore } from 'src/store';
 import { makeContinuousUpdate } from './continuousUpdate';
-import { KVEBundle } from './Plugins/KVEBundle/KVEBundle';
+import ImagePlugin from 'lib/App/CPanel/Plugins/ImagePlugin';
 import './manipulateMouseSpeed';
 import { radToDegFormatter } from 'lib/utils';
 import { useThree } from '@react-three/fiber';
@@ -68,7 +68,6 @@ panelContainer.addEventListener('pointerdown', (evt) => {
     if (walker.id === 'controlPanelContent') {
       // fixing cPanel hiding inner content when dragged outside
       walker.classList.add('cPanel-mousedown');
-      console.log('pointerdown', cPanelScrollTop);
       // @ts-ignore
       panelContainer.children[0].style.transform = `translateY(${-cPanelScrollTop}px)`;
       break;
@@ -176,7 +175,7 @@ export const CPanel = () => {
     });
     // resizeObserver.observe(panelContainer.children[0]);
 
-    paneRef.current.registerPlugin(KVEBundle);
+    paneRef.current.registerPlugin(ImagePlugin);
     paneRef.current.registerPlugin(EssentialsPlugin);
     continuousUpdateRef.current = makeContinuousUpdate(paneRef.current);
     paneRef.current.hidden = !cPanelVisible;

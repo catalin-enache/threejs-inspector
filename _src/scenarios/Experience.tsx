@@ -4,6 +4,7 @@ import { useFrame, ThreeElements, useThree } from '@react-three/fiber';
 import { CustomControl } from 'components/CustomControl/CustomControl';
 import { usePlay } from 'lib/hooks';
 import { degToRad } from 'lib/utils';
+import cloneOldTextureWithNewImage from 'lib/utils/cloneOldTextureWithNewImage';
 
 function Box(props: ThreeElements['mesh']) {
   const refMesh = useRef<THREE.Mesh>(null!);
@@ -33,6 +34,8 @@ function Box(props: ThreeElements['mesh']) {
     </mesh>
   );
 }
+// const img = new Image(50, 50);
+// img.src = 'https://threejsfundamentals.org/threejs/resources/images/wall.jpg';
 
 export function Experience() {
   const { scene } = useThree();
@@ -44,7 +47,8 @@ export function Experience() {
       // refPointLight.current.intensity = Math.sin(Date.now() / 100) + 1;
     }
   });
-  const [showPoint, setShowPoint] = useState(false);
+  // const [myImage, setMyImage] = useState<any>(null);
+  const [showOthers, setShowOthers] = useState(false);
   const [customControlXY, setCustomControlXY] = useState({ x: 0.5, y: 0.5 });
   const [number, setNumber] = useState(1.23);
 
@@ -59,20 +63,26 @@ export function Experience() {
   });
 
   // console.log('Experience rendering', { number, customControlXY });
-
+  // const _texture = new THREE.Texture();
   useEffect(() => {
     new THREE.TextureLoader().load(
       'https://threejsfundamentals.org/threejs/resources/images/wall.jpg',
       (texture) => {
-        // texture.wrapS = THREE.RepeatWrapping;
-        // texture.wrapT = THREE.RepeatWrapping;
+        // console.log(
+        //   'Experience loading texture',
+        //   texture.source.data instanceof Image
+        // );
+        texture.wrapS = THREE.RepeatWrapping;
+        texture.wrapT = THREE.RepeatWrapping;
+        // texture.wrapS = THREE.ClampToEdgeWrapping;
+        // texture.wrapT = THREE.ClampToEdgeWrapping;
         // texture.repeat.set(2, 2);
         // texture.repeat.x = 1;
         // texture.offset.x = 0.5;
         // setTexture(texture);
         scene.background = texture;
         scene.backgroundIntensity = 0.05;
-        scene.background = new THREE.Color('#000011');
+        // scene.background = new THREE.Color('#000011');
       }
     );
   }, []);
@@ -169,12 +179,31 @@ export function Experience() {
 
       <axesHelper args={[10]} />
 
+      {scene.background?.image && showOthers && (
+        <CustomControl
+          name="myImage"
+          value={scene.background.image}
+          control={{ label: 'Image', view: 'image' }} /*extensions: '.jpg'*/
+          onChange={(value) => {
+            console.log(
+              'Experience reacting to myImage value change',
+              value?.constructor
+            );
+            if (scene.background instanceof THREE.Texture) {
+              scene.background = cloneOldTextureWithNewImage(
+                scene.background,
+                value
+              );
+            }
+          }}
+        />
+      )}
       <CustomControl
         name="myBool"
-        value={showPoint}
+        value={showOthers}
         control={{ label: 'Show point' }}
         onChange={(value) => {
-          setShowPoint(value);
+          setShowOthers(value);
         }}
       />
 
@@ -186,7 +215,7 @@ export function Experience() {
           step: 0.01,
           keyScale: 0.1,
           pointerScale: 0.01
-        }} // view: 'counter'
+        }}
         onChange={(value) => {
           // console.log('Experience reacting to myNumber value change', value);
           setNumber(value);
@@ -194,7 +223,7 @@ export function Experience() {
         }}
       />
 
-      {showPoint && (
+      {showOthers && (
         <CustomControl
           name="myPoint"
           value={customControlXY}

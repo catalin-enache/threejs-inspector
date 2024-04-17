@@ -88,8 +88,8 @@ export const focusCamera = ({
   }
 };
 
-// not used // maybe implement this later
-// some transforms are irrelevant for some objects
+// TODO: not used // maybe implement this later
+// some transforms are irrelevant for some objects (like scale for camera or light)
 export const transformExcludeMap = {
   scale: [THREE.SpotLight, THREE.DirectionalLight],
   rotation: [THREE.SpotLight, THREE.DirectionalLight],

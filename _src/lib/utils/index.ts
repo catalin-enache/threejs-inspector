@@ -1,8 +1,16 @@
 import * as THREE from 'three';
 import { TransformControls, OrbitControls } from 'three-stdlib';
+import { isTextureImage, isTexture } from 'lib/types';
 
 export const isObject = (value: any) => {
-  return value && value.constructor === Object;
+  return (
+    // value !== null && typeof value === 'object' && // compatible with Tweakpane if needed
+    value &&
+    value.constructor === Object &&
+    !isArray(value) &&
+    !isTextureImage(value) &&
+    !isTexture(value)
+  );
 };
 
 export const isArray = (value: any) => {

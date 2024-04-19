@@ -111,6 +111,37 @@ const ObjectStoreBindings = () => ({
     }
   }
 });
+// TODO: continue here, find a way to have texture as binding as well as folder
+const TextureBindings = () => ({
+  uuid: {
+    label: 'UUID',
+    view: 'text',
+    disabled: true
+  },
+  name: {
+    label: 'Name',
+    view: 'text',
+    disabled: true
+  },
+  mapping: {
+    label: 'Mapping',
+    options: {
+      UVMapping: THREE.UVMapping,
+      CubeReflectionMapping: THREE.CubeReflectionMapping,
+      CubeRefractionMapping: THREE.CubeRefractionMapping,
+      EquirectangularReflectionMapping: THREE.EquirectangularReflectionMapping,
+      EquirectangularRefractionMapping: THREE.EquirectangularRefractionMapping,
+      CubeUVReflectionMapping: THREE.CubeUVReflectionMapping
+    }
+  },
+  channel: {
+    label: 'UV Channel',
+    ...numberCommon,
+    step: 1,
+    min: 0,
+    max: 3
+  }
+});
 
 const Object3DBindings = ({ angleFormat }: CommonGetterParams) => ({
   uuid: {
@@ -612,6 +643,29 @@ export const SceneButtons = ({ isPlaying }: CommonGetterParams) => [
   }
 ];
 
+export const SceneConfigBindings = ({ angleFormat }: CommonGetterParams) => ({
+  background: {
+    label: 'Background',
+    color: { type: 'float' }
+  },
+  backgroundBlurriness: {
+    label: 'BG Blurriness',
+    ...numberCommon,
+    min: 0,
+    max: 1
+  },
+  backgroundIntensity: {
+    label: 'BG Intensity',
+    ...numberCommon,
+    min: 0
+  },
+  backgroundRotation: {
+    label: `BG Rotation(${angleFormat})`,
+    ...numberCommon,
+    ...(angleFormat === 'deg' ? { format: radToDegFormatter } : {})
+  }
+});
+
 export const RaycasterParamsLineBindings = () => ({
   threshold: {
     label: 'Threshold',
@@ -708,6 +762,16 @@ export const getCameraStoreBindings = () => ({
 export const getSceneButtons = ({ isPlaying }: CommonGetterParams) => [
   ...SceneButtons({ isPlaying })
 ];
+
+export const getSceneConfigBindings = ({
+  angleFormat
+}: CommonGetterParams) => ({
+  // background: {
+  //   title: 'Background',
+  //   ...TextureBindings()
+  // },
+  ...SceneConfigBindings({ angleFormat })
+});
 
 export const getRaycasterParamsBindings = () => ({
   params: {

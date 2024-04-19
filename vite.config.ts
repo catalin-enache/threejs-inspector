@@ -12,12 +12,13 @@ export default defineConfig({
   base: './',
   server: {
     host: true,
-    open: !isCodeSandbox // Open if it's not a CodeSandbox
+    open: !isCodeSandbox
   },
   build: {
     outDir: '../dist',
     emptyOutDir: true,
-    sourcemap: true
+    sourcemap: true,
+    assetsInlineLimit: 0
   },
   resolve: {
     alias: {

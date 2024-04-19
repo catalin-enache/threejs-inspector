@@ -1,10 +1,12 @@
 import { useEffect, useRef, useCallback } from 'react';
 import * as THREE from 'three';
 import { FolderApi, Pane, TabApi } from 'tweakpane';
+// @ts-ignore
+// import { Pane } from 'lib/third_party/tweakpane.js';
 import * as EssentialsPlugin from '@tweakpane/plugin-essentials';
 import { useAppStore } from 'src/store';
 import { makeContinuousUpdate } from './continuousUpdate';
-import ImagePlugin from 'lib/App/CPanel/Plugins/ImagePlugin';
+import TexturePlugin from 'lib/App/CPanel/Plugins/TexturePlugin';
 import './manipulateMouseSpeed';
 import { radToDegFormatter } from 'lib/utils';
 import { useThree } from '@react-three/fiber';
@@ -15,6 +17,7 @@ import {
   getCameraStoreBindings,
   getObjectsStoreBindings,
   getSceneButtons,
+  getSceneConfigBindings,
   getRaycasterParamsBindings,
   buildBindings,
   makeRotationBinding,
@@ -109,7 +112,9 @@ export const CPanel = () => {
   const angleFormat = useAppStore((state) => state.angleFormat);
 
   const cPanelVisible = useAppStore((state) => state.cPanelVisible);
-  const cPanelCustomParams = useAppStore((state) => state.cPanelCustomParams);
+  const cPanelCustomParams = useAppStore((state) =>
+    state.getCPanelCustomParams()
+  );
   const triggerCPanelCustomParamsChanged = useAppStore(
     (state) => state.triggerCPanelCustomParamsChanged
   );
@@ -175,7 +180,7 @@ export const CPanel = () => {
     });
     // resizeObserver.observe(panelContainer.children[0]);
 
-    paneRef.current.registerPlugin(ImagePlugin);
+    paneRef.current.registerPlugin(TexturePlugin);
     paneRef.current.registerPlugin(EssentialsPlugin);
     continuousUpdateRef.current = makeContinuousUpdate(paneRef.current);
     paneRef.current.hidden = !cPanelVisible;
@@ -306,6 +311,22 @@ export const CPanel = () => {
       scene,
       camera
     });
+
+    const sceneConfigFolder = sceneTab.addFolder({
+      title: 'Scene Config',
+      expanded: false
+    });
+
+    // Add scene config bindings
+    buildBindings(
+      sceneConfigFolder,
+      scene,
+      getSceneConfigBindings({ angleFormat }),
+      {
+        scene,
+        camera
+      }
+    );
 
     const cameraEditorFolder = sceneTab.addFolder({
       title: 'Camera Editor',

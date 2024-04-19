@@ -4,7 +4,7 @@ import { useFrame, ThreeElements, useThree } from '@react-three/fiber';
 import { CustomControl } from 'components/CustomControl/CustomControl';
 import { usePlay } from 'lib/hooks';
 import { degToRad } from 'lib/utils';
-import cloneOldTextureWithNewImage from 'lib/utils/cloneOldTextureWithNewImage';
+import { loadImage } from 'lib/utils/imageUtils';
 
 function Box(props: ThreeElements['mesh']) {
   const refMesh = useRef<THREE.Mesh>(null!);
@@ -34,8 +34,6 @@ function Box(props: ThreeElements['mesh']) {
     </mesh>
   );
 }
-// const img = new Image(50, 50);
-// img.src = 'https://threejsfundamentals.org/threejs/resources/images/wall.jpg';
 
 export function Experience() {
   const { scene } = useThree();
@@ -62,29 +60,16 @@ export function Experience() {
     // });
   });
 
-  // console.log('Experience rendering', { number, customControlXY });
-  // const _texture = new THREE.Texture();
   useEffect(() => {
-    new THREE.TextureLoader().load(
-      'https://threejsfundamentals.org/threejs/resources/images/wall.jpg',
-      (texture) => {
-        // console.log(
-        //   'Experience loading texture',
-        //   texture.source.data instanceof Image
-        // );
-        texture.wrapS = THREE.RepeatWrapping;
-        texture.wrapT = THREE.RepeatWrapping;
-        // texture.wrapS = THREE.ClampToEdgeWrapping;
-        // texture.wrapT = THREE.ClampToEdgeWrapping;
-        // texture.repeat.set(2, 2);
-        // texture.repeat.x = 1;
-        // texture.offset.x = 0.5;
-        // setTexture(texture);
-        scene.background = texture;
-        scene.backgroundIntensity = 0.05;
-        // scene.background = new THREE.Color('#000011');
-      }
-    );
+    // 'https://threejsfundamentals.org/threejs/resources/images/wall.jpg',
+    // 'textures/file_example_TIFF_10MB.tiff',
+    // 'textures/sample_5184×3456.tga',
+    // 'textures/checkerboard-8x8.png',
+    // 'textures/castle_brick_02_red_nor_gl_4k.exr',
+    // 'textures/sikqyan_2K_Displacement.exr',
+    loadImage('textures/sample_5184×3456.tga').then((texture) => {
+      scene.background = texture;
+    });
   }, []);
 
   return (
@@ -179,25 +164,25 @@ export function Experience() {
 
       <axesHelper args={[10]} />
 
-      {scene.background?.image && showOthers && (
+      {showOthers && scene.background && (
         <CustomControl
           name="myImage"
-          value={scene.background.image}
-          control={{ label: 'Image', view: 'image' }} /*extensions: '.jpg'*/
+          value={scene.background}
+          control={{
+            label: 'Texture',
+            view: 'texture',
+            color: { type: 'float' }
+          }}
           onChange={(value) => {
             console.log(
               'Experience reacting to myImage value change',
               value?.constructor
             );
-            if (scene.background instanceof THREE.Texture) {
-              scene.background = cloneOldTextureWithNewImage(
-                scene.background,
-                value
-              );
-            }
+            scene.background = value;
           }}
         />
       )}
+
       <CustomControl
         name="myBool"
         value={showOthers}

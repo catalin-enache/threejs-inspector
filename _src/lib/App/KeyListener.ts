@@ -31,7 +31,8 @@ export function KeyListener() {
     const handleKeyDown = (e: KeyboardEvent) => {
       // console.log('KeyListener handleKeyDown', e.code);
       // prevent sending commands when typing in input fields
-      if (document.activeElement?.tagName === 'INPUT' || isMouseDown) return;
+      // @ts-ignore
+      if (document.activeElement?.type === 'text' || isMouseDown) return;
       switch (e.code) {
         case 'Space':
           if (!keysPressed[e.code] && (isEditorMode || getAllMetaPressed(e))) {

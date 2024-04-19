@@ -173,6 +173,7 @@ const makeHelpers = (object: THREE.Object3D) => {
     useAppStore.subscribe(
       (appStore) => appStore.isPlaying,
       (isPlaying) => {
+        // TODO: checkout how does it happen that default cameras do not have helpers around them so that we should remove them.
         if (object.userData.useOnPlay) {
           if (isPlaying) {
             object.remove(picker);

@@ -28,7 +28,9 @@ export const CustomControl = memo((props: CustomControlProps) => {
   const { onChange, value } = props;
   const onChangeRef = useRef(onChange);
   onChangeRef.current = onChange;
-  const cPanelCustomParams = useAppStore((state) => state.cPanelCustomParams);
+  const cPanelCustomParams = useAppStore((state) =>
+    state.getCPanelCustomParams()
+  );
   const cachedValueRef = useRef(null);
   const removeCPanelCustomParams = useAppStore(
     (state) => state.removeCPanelCustomParams
@@ -53,7 +55,7 @@ export const CustomControl = memo((props: CustomControlProps) => {
   // The copy is needed because Tweakpane updates params in place
   useEffect(() => {
     const valueFromPanel = cPanelCustomParams[props.name];
-    // if (props.name === 'myPoint') {
+    // if (props.name === 'myImage') {
     //   console.log(
     //     'CustomControl cPanelCustomParamsStateFake',
     //     props.name,
@@ -79,7 +81,7 @@ export const CustomControl = memo((props: CustomControlProps) => {
 
   // Read from value and set on store
   useEffect(() => {
-    // if (props.name === 'myPoint') {
+    // if (props.name === 'myImage') {
     //   console.log(
     //     'CustomControl value changed',
     //     props.name,

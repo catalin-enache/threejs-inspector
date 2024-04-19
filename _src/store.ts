@@ -5,6 +5,9 @@ import type {} from '@redux-devtools/extension'; // required for devtools typing
 import { BindingParams } from 'tweakpane';
 import * as THREE from 'three';
 import { setFullScreen } from 'lib/utils';
+import { isTextureImage, isTexture } from 'lib/types';
+
+const cPanelCustomParamsStore: any = {};
 
 export interface AppStore {
   isPlaying: boolean;
@@ -39,7 +42,7 @@ export interface AppStore {
   cPanelContinuousUpdate: boolean;
   setCPanelContinuousUpdate: (cPanelContinuousUpdate: boolean) => void;
   toggleCPanelContinuousUpdate: () => void;
-  cPanelCustomParams: Record<string, any>;
+  getCPanelCustomParams: () => typeof cPanelCustomParamsStore;
   setOrUpdateCPanelCustomParams: (name: string, customParams: any) => void;
   removeCPanelCustomParams: (name: string) => void;
   cPanelCustomParamsStateFake: number;
@@ -127,7 +130,7 @@ export const useAppStore = create<AppStore>()(
           cPanelVisible: !state.cPanelVisible
         }));
       },
-      cPanelContinuousUpdate: true,
+      cPanelContinuousUpdate: false,
       setCPanelContinuousUpdate: (cPanelContinuousUpdate) => {
         if (!get().cPanelVisible) return;
         set({ cPanelContinuousUpdate });
@@ -138,30 +141,29 @@ export const useAppStore = create<AppStore>()(
           cPanelContinuousUpdate: !state.cPanelContinuousUpdate
         }));
       },
-      cPanelCustomParams: {},
+      getCPanelCustomParams: () => cPanelCustomParamsStore,
       // setOrUpdateCPanelCustomParams does not replace objects but mutates them
       // in order to not make Tweakpane control stale objects.
       setOrUpdateCPanelCustomParams: (name, customParams) => {
         const type = typeof customParams;
-        const cPanelCustomParams = get().cPanelCustomParams;
         if (
           type === 'string' ||
           type === 'number' ||
           type === 'boolean' ||
           customParams === null ||
-          cPanelCustomParams[name] === undefined ||
-          cPanelCustomParams[name] === null
+          cPanelCustomParamsStore[name] === undefined ||
+          cPanelCustomParamsStore[name] === null ||
+          isTextureImage(customParams) ||
+          isTexture(customParams)
         ) {
-          cPanelCustomParams[name] = customParams;
+          cPanelCustomParamsStore[name] = customParams;
         } else {
-          Object.assign(cPanelCustomParams[name], customParams);
+          Object.assign(cPanelCustomParamsStore[name], customParams);
         }
       },
-      removeCPanelCustomParams: (name) =>
-        set((state) => {
-          delete state.cPanelCustomParams[name];
-          return { cPanelCustomParams: { ...state.cPanelCustomParams } };
-        }),
+      removeCPanelCustomParams: (name) => {
+        delete cPanelCustomParamsStore[name];
+      },
       cPanelCustomParamsStateFake: 0,
       triggerCPanelCustomParamsChanged: () => {
         set((state) => ({
@@ -172,13 +174,16 @@ export const useAppStore = create<AppStore>()(
         }));
       },
       cPanelCustomControls: {},
-      setCPanelCustomControls: (name, customControls) =>
-        set((state) => ({
-          cPanelCustomControls: {
-            ...state.cPanelCustomControls,
-            [name]: customControls
-          }
-        })),
+      setCPanelCustomControls: (name, customControls) => {
+        set((state) => {
+          return {
+            cPanelCustomControls: {
+              ...state.cPanelCustomControls,
+              [name]: customControls
+            }
+          };
+        });
+      },
       removeCPanelCustomControls: (name) =>
         set((state) => {
           delete state.cPanelCustomControls[name];

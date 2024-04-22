@@ -12,12 +12,13 @@ Bug: In continuous update in Orbit Controls the scene flickers. *DONE* (because 
 Bug: After changing texture at runtime the details subfolder does not reflect it. *DONE* (rebuilding the tree manually on change)
 Bug: After adding scene background (some large image) some commands in cPanel respond slowly (e.g. ContinuouslyUpdate, changing cameraType or controlType, play/stop) *DONE*
 it seems it happens only after change until the texture is being rebuilt.
+Bug: When the Scene gets a background from somewhere else, cPanel is not aware until some button click. *DONE*
+(in loadImage we ask cPanel to rebuild itself - triggerCPaneStateChanged())
 
-Bug: When the Scene gets a background from somewhere else, cPanel is not aware until some button click. WORK HERE (we need to autodetect it somehow and rebuild the tree again) !!!
+Bug: try playing with offset on Scene background after getting the green texture on it. It feels unresponsive.
+Bug: When hiding cPanel the cPanel draggable line is still visible.
 
 Include sceneObjects with other props rather than making it separate.
-
-Bug: When hiding cPanel the cPanel draggable line is still visible.
 
 Bug?: The scene moving is not continuous. Is it from the mouse ?
 The app has a bit of lag compared to: https://threejs.org/examples/?q=rotation#webgl_materials_texture_rotation which is instant

@@ -38,17 +38,18 @@ export function App(props: AppProps) {
   PCFSoftShadowMap and BasicShadowMap do not work with Light.shadow.radius
   * */
 
+  // R3F takes care of adding/removing the camera from the scene
+  // and propagating it to useThree hook
+  const camera =
+    isPlaying && cameraToUseOnPlay
+      ? cameraToUseOnPlay
+      : cameraType === 'perspective'
+        ? perspectiveCamera
+        : orthographicCamera;
+
   return (
     <Canvas
-      camera={
-        // R3F takes care of adding/removing the camera from the scene
-        // and propagating it to useThree hook
-        isPlaying && cameraToUseOnPlay
-          ? cameraToUseOnPlay
-          : cameraType === 'perspective'
-            ? perspectiveCamera
-            : orthographicCamera
-      }
+      camera={camera}
       scene={threeScene}
       onContextMenu={preventContextMenu}
       shadows={'soft'}

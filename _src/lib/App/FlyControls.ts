@@ -13,16 +13,16 @@ const setupFlyControls = (camera: THREE.Camera) => {
   const flyCameraEnabled = { current: false };
   const speed = { current: 0.05 };
   const euler = new THREE.Euler(0, 0, 0, 'YXZ');
+  const cameraDirection = new THREE.Vector3();
+  const rightVector = new THREE.Vector3();
 
   // move camera wasd/qe
   const flyCamera = () => {
     if (!flyCameraEnabled.current) return;
 
-    const cameraDirection = new THREE.Vector3();
     camera.getWorldDirection(cameraDirection); // Get the forward vector
     cameraDirection.normalize();
 
-    const rightVector = new THREE.Vector3();
     rightVector.crossVectors(cameraDirection, camera.up).normalize(); // Get right vector
 
     if (moveForward) {

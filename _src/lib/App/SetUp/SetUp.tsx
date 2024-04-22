@@ -345,6 +345,12 @@ const SetUp = () => {
   // orbitControlsRef.current?.enabled && orbitControlsRef.current?.update();
   // });
 
+  const render = useCallback(() => {
+    // The render is not necessarily needed because gl.render is called anyway.
+    // However, we want instant re-render so that it feels more responsive (eventually).
+    gl.render(scene, camera);
+  }, [scene, camera, gl]);
+
   // Create orbit and transform controls (singletons) and attach transform controls to scene
   useEffect(() => {
     orbitControlsRef.current = new OrbitControls(camera, gl.domElement);
@@ -352,9 +358,6 @@ const SetUp = () => {
     // orbitControlsRef.current.dampingFactor = 0.3;
     // orbitControlsRef.current.autoRotate = true;
 
-    orbitControlsRef.current.addEventListener('change', (_evt) => {
-      // console.log('orbitControlsRef change', _evt);
-    });
     // prettier-ignore
     transformControlsRef.current = new TransformControls(camera, gl.domElement);
     transformControlsRef.current.addEventListener('objectChange', (_event) => {
@@ -379,6 +382,12 @@ const SetUp = () => {
     threeScene.add(transformControlsRef.current);
     // eslint-disable-next-line
   }, []);
+
+  useEffect(() => {
+    orbitControlsRef.current?.addEventListener('change', render);
+    return () =>
+      orbitControlsRef.current?.removeEventListener('change', render);
+  }, [render]);
 
   // Update transform controls behavior
   useEffect(() => {

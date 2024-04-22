@@ -450,6 +450,7 @@ export const CPanel = () => {
     gl,
     raycaster,
     angleFormat,
+    isPlaying,
     cPanelStateFake
   ]);
 

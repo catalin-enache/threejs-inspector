@@ -116,6 +116,7 @@ export const CPanel = () => {
   const cPanelContinuousUpdate = useAppStore(
     (state) => state.cPanelContinuousUpdate
   );
+  const cPanelStateFake = useAppStore((state) => state.cPanelStateFake);
   const angleFormat = useAppStore((state) => state.angleFormat);
 
   const cPanelVisible = useAppStore((state) => state.cPanelVisible);
@@ -261,7 +262,8 @@ export const CPanel = () => {
     camera,
     gl,
     angleFormat,
-    isPlaying
+    isPlaying,
+    cPanelStateFake
   ]);
 
   // Setup bindings for custom params
@@ -287,7 +289,12 @@ export const CPanel = () => {
         makeRotationBinding(binding);
       }
     });
-  }, [cPanelCustomControls, cPanelCustomParams, handleCustomParamsChanges]);
+  }, [
+    cPanelCustomControls,
+    cPanelCustomParams,
+    handleCustomParamsChanges,
+    cPanelStateFake
+  ]);
 
   // Setup bindings for Scene/Pane
   useEffect(() => {
@@ -420,7 +427,8 @@ export const CPanel = () => {
     camera,
     scene,
     gl,
-    raycaster
+    raycaster,
+    cPanelStateFake
   ]);
 
   useEffect(() => {
@@ -441,7 +449,8 @@ export const CPanel = () => {
     scene,
     gl,
     raycaster,
-    angleFormat
+    angleFormat,
+    cPanelStateFake
   ]);
 
   return null;

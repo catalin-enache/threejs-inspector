@@ -116,15 +116,13 @@ const setupFlyControls = (camera: THREE.Camera) => {
 
   // on mouse move rotate camera
   const handleMouseMove = (evt: MouseEvent) => {
-    window.requestAnimationFrame(() => {
-      if (!flyCameraEnabled.current) return;
-      const sensitivity = 0.003;
-      euler.setFromQuaternion(camera.quaternion);
-      euler.y -= evt.movementX * sensitivity;
-      euler.x -= evt.movementY * sensitivity;
-      euler.x = Math.max(-Math.PI / 2, Math.min(Math.PI / 2, euler.x));
-      camera.quaternion.setFromEuler(euler);
-    });
+    if (!flyCameraEnabled.current) return;
+    const sensitivity = 0.003;
+    euler.setFromQuaternion(camera.quaternion);
+    euler.y -= evt.movementX * sensitivity;
+    euler.x -= evt.movementY * sensitivity;
+    euler.x = Math.max(-Math.PI / 2, Math.min(Math.PI / 2, euler.x));
+    camera.quaternion.setFromEuler(euler);
   };
 
   // on mouse wheel change speed

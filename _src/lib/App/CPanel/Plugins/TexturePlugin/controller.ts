@@ -13,11 +13,9 @@ const cleanUp = (self: TextureController) => {
 };
 
 function onRemoveHandler(this: TextureController, evt: any) {
-  if (
-    evt.detail.child.controller.valueController instanceof TextureController
-  ) {
+  if (evt.detail.child.controller.valueController === this) {
     // prettier-ignore
-    // console.log('TweakpaneRemove', evt.detail.child.controller.valueController, { this: this });
+    // console.log('TweakpaneRemove', evt.detail, { this: this });
     cleanUp(this);
   }
 }

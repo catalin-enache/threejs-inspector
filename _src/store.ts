@@ -42,6 +42,8 @@ export interface AppStore {
   cPanelContinuousUpdate: boolean;
   setCPanelContinuousUpdate: (cPanelContinuousUpdate: boolean) => void;
   toggleCPanelContinuousUpdate: () => void;
+  cPanelStateFake: number;
+  triggerCPaneStateChanged: () => void;
   getCPanelCustomParams: () => typeof cPanelCustomParamsStore;
   setOrUpdateCPanelCustomParams: (name: string, customParams: any) => void;
   removeCPanelCustomParams: (name: string) => void;
@@ -139,6 +141,13 @@ export const useAppStore = create<AppStore>()(
       if (!get().cPanelVisible) return;
       set((state) => ({
         cPanelContinuousUpdate: !state.cPanelContinuousUpdate
+      }));
+    },
+    cPanelStateFake: 0,
+    triggerCPaneStateChanged: () => {
+      set((state) => ({
+        cPanelStateFake:
+          state.cPanelStateFake < 100 ? state.cPanelStateFake + 1 : 0
       }));
     },
     getCPanelCustomParams: () => cPanelCustomParamsStore,

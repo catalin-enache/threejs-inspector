@@ -3,6 +3,7 @@ import * as THREE from 'three';
 import { EXRLoader, TGALoader } from 'three-stdlib';
 // @ts-ignore
 import { TIFFLoader } from 'three/examples/jsm/loaders/TIFFLoader';
+import { useAppStore } from 'src/store';
 
 export const FILE_EXR = 'image/x-exr';
 export const FILE_GIF = 'image/gif';
@@ -64,18 +65,30 @@ export const loadImage = async (
   texture.needsUpdate = true;
   texture.name = name;
   URL.revokeObjectURL(url);
+
   if (material && material instanceof THREE.Material) {
     // console.log('loadImage with material', { material });
     setTimeout(() => {
       material.needsUpdate = true;
+      setTimeout(() => {
+        useAppStore.getState().triggerCPaneStateChanged();
+      });
     });
   } else if (material?.current) {
     // console.log('loadImage with material ref', { material });
     setTimeout(() => {
       if (material.current) {
         material.current.needsUpdate = true;
+        setTimeout(() => {
+          useAppStore.getState().triggerCPaneStateChanged();
+        });
       }
     });
+  } else {
+    setTimeout(() => {
+      useAppStore.getState().triggerCPaneStateChanged();
+    });
   }
+
   return texture;
 };

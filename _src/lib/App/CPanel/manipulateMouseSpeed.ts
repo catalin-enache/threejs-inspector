@@ -80,6 +80,7 @@ const handleMouseUp = (e: MouseEvent) => {
 const handleMouseDown = (e: MouseEvent) => {
   if (!e.isTrusted) return e;
   e.stopPropagation();
+  if (e.button !== 0) return;
 
   document.addEventListener('mousemove', handleMouseMove, true);
   document.addEventListener('mouseup', handleMouseUp, true);

@@ -20,6 +20,7 @@ camera.updateProjectionMatrix();
 const offlineRenderer = new THREE.WebGLRenderer();
 offlineRenderer.setSize(canvasSize, canvasSize);
 
+let debugID = 1;
 const className = ClassName('texture');
 
 export interface TextureViewConfig {
@@ -32,6 +33,7 @@ export class TextureView implements View {
   public readonly input: HTMLElement;
   public readonly canvas: HTMLCanvasElement;
   public readonly ctx: CanvasRenderingContext2D;
+  public debugID = debugID++;
 
   constructor(doc: Document, config: TextureViewConfig) {
     this.element = doc.createElement('div');
@@ -50,14 +52,11 @@ export class TextureView implements View {
     this.canvas.width = canvasSize;
     this.canvas.height = canvasSize;
     this.ctx = this.canvas.getContext('2d')!;
-    // console.log('TextureView constructor', {
-    //   canvasSize,
-    //   ctx: this.ctx,
-    //   config
-    // });
     this.canvas.classList.add(className('canvas'));
     this.canvas.classList.add('texturePlugin_canvas');
     this.element.appendChild(this.canvas);
+    // prettier-ignore
+    // console.log('TextureView constructor done', { canvasSize, ctx: this.ctx, config, this: this });
   }
 
   private makeMeshFromTexture(texture: THREE.Texture) {

@@ -6,16 +6,34 @@ import { usePlay } from 'lib/hooks';
 import { degToRad } from 'lib/utils';
 import { loadImage } from 'lib/utils/imageUtils';
 
-function Box(props: ThreeElements['mesh']) {
+function Box(
+  props: ThreeElements['mesh'] & {
+    mapURL: string;
+  }
+) {
   const refMesh = useRef<THREE.Mesh>(null!);
   const [hovered, _hover] = useState(false);
   const [clicked, _click] = useState(false);
-  const { position = [0, 0, 0], ...rest } = props;
+  const [map, setMap] = useState<THREE.Texture | null>(null);
+  const meshMaterialRef = useRef<THREE.MeshStandardMaterial | null>(null);
+  const { position = [0, 0, 0], mapURL, ...rest } = props;
   usePlay((_state, _delta) => {
     refMesh.current.rotation.x += _delta;
     // refMesh.current.position.x = Math.sin(Date.now() / 1000);
     // refMesh?.current && (refMesh.current.position.z = 2);
   });
+
+  useEffect(() => {
+    // 'https://threejsfundamentals.org/threejs/resources/images/wall.jpg',
+    // 'textures/file_example_TIFF_10MB.tiff',
+    // 'textures/sample_5184×3456.tga',
+    // 'textures/checkerboard-8x8.png',
+    // 'textures/castle_brick_02_red_nor_gl_4k.exr',
+    // 'textures/sikqyan_2K_Displacement.exr',
+    loadImage(mapURL, meshMaterialRef).then((map) => {
+      setMap(map);
+    });
+  }, [mapURL]);
 
   return (
     <mesh
@@ -29,7 +47,11 @@ function Box(props: ThreeElements['mesh']) {
       position={position}
     >
       <boxGeometry args={[1, 1, 1]} />
-      <meshStandardMaterial color={hovered ? 'hotpink' : 'white'} />
+      <meshStandardMaterial
+        ref={meshMaterialRef}
+        color={hovered ? 'hotpink' : 'white'}
+        map={map}
+      />
       {props.children}
     </mesh>
   );
@@ -67,7 +89,10 @@ export function Experience() {
     // 'textures/checkerboard-8x8.png',
     // 'textures/castle_brick_02_red_nor_gl_4k.exr',
     // 'textures/sikqyan_2K_Displacement.exr',
-    loadImage('textures/sample_5184×3456.tga').then((texture) => {
+    // 'textures/castle_brick_02_red_diff_4k.jpg',
+    // 'textures/cover-1920.jpg',
+    loadImage('textures/cover-1920.jpg').then((texture) => {
+      texture.colorSpace = THREE.SRGBColorSpace;
       scene.background = texture;
     });
   }, []);
@@ -125,10 +150,12 @@ export function Experience() {
       <Box
         castShadow
         receiveShadow
+        mapURL="textures/checkerboard-8x8.png"
         position={[-1.2, customControlXY.x, customControlXY.y]}
         userData={{ isInspectable: true }}
       />
       <Box
+        mapURL="textures/checkerboard-8x8.png"
         position={[1.2, 0, 0]}
         userData={{ isInspectable: true }}
         castShadow
@@ -159,7 +186,7 @@ export function Experience() {
         args={[75, 1, 0.1, 100]} // window.innerWidth / window.innerHeight
         position={[0, 0, 5]}
         rotation={[degToRad(25.86), degToRad(-46.13), degToRad(0)]} // 25.86 , -46.13, 19.26
-        userData={{ useOnPlay: true }}
+        userData={{ useOnPlay: false }}
       />
 
       <axesHelper args={[10]} />

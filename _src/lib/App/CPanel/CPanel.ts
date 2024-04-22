@@ -1,8 +1,8 @@
 import { useEffect, useRef, useCallback } from 'react';
 import * as THREE from 'three';
-import { FolderApi, Pane, TabApi } from 'tweakpane';
+import { Pane, FolderApi, TabApi } from 'tweakpane';
 // @ts-ignore
-// import { Pane } from 'lib/third_party/tweakpane.js';
+// import { Pane, FolderApi, TabApi } from 'lib/third_party/tweakpane.js';
 import * as EssentialsPlugin from '@tweakpane/plugin-essentials';
 import { useAppStore } from 'src/store';
 import { makeContinuousUpdate } from './continuousUpdate';
@@ -25,6 +25,7 @@ import {
   buildButtons,
   cleanupContainer
 } from './bindings';
+import './CPanel.css';
 
 // ----------------------- >> Remember last scroll position >> --------------------------------
 
@@ -90,6 +91,12 @@ document.addEventListener('pointerup', () => {
 });
 
 // ----------------------- << Allowing input control to be visible when dragged outside cPanel  << --------------------------------
+
+const preventContextMenu = (evt: globalThis.MouseEvent) => {
+  evt.preventDefault();
+};
+
+panelContainer.addEventListener('contextmenu', preventContextMenu);
 
 export const CPanel = () => {
   const { camera, scene, gl, raycaster } = useThree();
@@ -225,7 +232,7 @@ export const CPanel = () => {
       objectTab as unknown as FolderApi,
       useAppStore.getState(),
       getObjectsStoreBindings(),
-      { scene, camera }
+      { scene, camera, gl }
     );
 
     const objectFolder = objectTab
@@ -238,10 +245,11 @@ export const CPanel = () => {
     buildBindings(
       objectFolder,
       selectedObject,
-      getObject3DBindings({ angleFormat }),
+      getObject3DBindings({ angleFormat, isPlaying }),
       {
         scene,
-        camera
+        camera,
+        gl
       }
     );
   }, [
@@ -251,7 +259,9 @@ export const CPanel = () => {
     transformControlsSpace,
     scene,
     camera,
-    angleFormat
+    gl,
+    angleFormat,
+    isPlaying
   ]);
 
   // Setup bindings for custom params
@@ -297,7 +307,8 @@ export const CPanel = () => {
     });
     buildBindings(paneFolder, store, getPaneBindings(), {
       scene,
-      camera
+      camera,
+      gl
     });
 
     // Add Scene folder and bindings
@@ -307,9 +318,10 @@ export const CPanel = () => {
     });
 
     // Add scene buttons
-    buildButtons(sceneFolder, getSceneButtons({ isPlaying }), {
+    buildButtons(sceneFolder, getSceneButtons({ angleFormat, isPlaying }), {
       scene,
-      camera
+      camera,
+      gl
     });
 
     const sceneConfigFolder = sceneTab.addFolder({
@@ -321,10 +333,11 @@ export const CPanel = () => {
     buildBindings(
       sceneConfigFolder,
       scene,
-      getSceneConfigBindings({ angleFormat }),
+      getSceneConfigBindings({ angleFormat, isPlaying }),
       {
         scene,
-        camera
+        camera,
+        gl
       }
     );
 
@@ -336,7 +349,8 @@ export const CPanel = () => {
     // Add camera editor store bindings
     buildBindings(cameraEditorFolder, store, getCameraStoreBindings(), {
       scene,
-      camera
+      camera,
+      gl
     });
 
     const cameraCurrentFolder = sceneTab
@@ -352,10 +366,11 @@ export const CPanel = () => {
     buildBindings(
       cameraCurrentFolder,
       camera,
-      getObject3DBindings({ angleFormat }),
+      getObject3DBindings({ angleFormat, isPlaying }),
       {
         scene,
-        camera
+        camera,
+        gl
       }
     );
 
@@ -371,7 +386,8 @@ export const CPanel = () => {
     // Add gl bindings
     buildBindings(glFolder, gl, getRendererBindings(), {
       scene,
-      camera
+      camera,
+      gl
     });
 
     // Add Raycaster Params
@@ -390,7 +406,8 @@ export const CPanel = () => {
       getRaycasterParamsBindings(),
       {
         scene,
-        camera
+        camera,
+        gl
       }
     );
   }, [
@@ -423,7 +440,8 @@ export const CPanel = () => {
     camera,
     scene,
     gl,
-    raycaster
+    raycaster,
+    angleFormat
   ]);
 
   return null;

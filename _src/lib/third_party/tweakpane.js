@@ -1,5 +1,16 @@
 /*! Tweakpane 4.0.3 (c) 2016 cocopon, licensed under the MIT license. */
-import { isObject } from 'lib/utils';
+import { isArray, isObject as ___ } from 'lib/utils';
+import { isTexture, isTextureImage } from 'lib/types';
+const isObject = (value) => {
+  return (
+    value !== null && typeof value === 'object' // && // compatible with Tweakpane if needed
+    // value &&
+    // value.constructor === Object &&
+    // !isArray(value) &&
+    // !isTextureImage(value) &&
+    // !isTexture(value)
+  );
+};
 
 function forceCast(v) {
   return v;
@@ -2237,6 +2248,7 @@ class Rack {
       ev.sender
     );
     if (!bc) {
+      console.log('dispose onChildValueChange_ !bc', ev);
       throw TpError.alreadyDisposed();
     }
     this.emitter.emit('valuechange', {
@@ -8594,6 +8606,7 @@ class Pane extends RootApi {
   }
   get document() {
     if (!this.doc_) {
+      console.log('dispose !this.doc_');
       throw TpError.alreadyDisposed();
     }
     return this.doc_;
@@ -8601,6 +8614,7 @@ class Pane extends RootApi {
   dispose() {
     const containerElem = this.containerElem_;
     if (!containerElem) {
+      console.log('dispose !containerElem');
       throw TpError.alreadyDisposed();
     }
     if (this.usesDefaultWrapper_) {

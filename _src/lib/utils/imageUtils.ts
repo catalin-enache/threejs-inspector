@@ -1,3 +1,4 @@
+import React from 'react';
 import * as THREE from 'three';
 import { EXRLoader, TGALoader } from 'three-stdlib';
 // @ts-ignore
@@ -31,11 +32,17 @@ export const getFileType = (filename: string): string => {
 };
 
 export const loadImage = async (
-  file: string | File
+  file: string | File,
+  material?:
+    | THREE.Material
+    | null
+    | React.MutableRefObject<THREE.Material | null>
 ): Promise<THREE.Texture> => {
-  const fileType = getFileType(file instanceof File ? file.name : file);
-
-  let loader = null;
+  // console.log('loadImage', { file, material });
+  const name = file instanceof File ? file.name : file;
+  const fileType = getFileType(name);
+  // TODO: maybe it is here where we should rebuild cPane
+  let loader;
   switch (fileType) {
     case FILE_EXR:
       loader = new EXRLoader();
@@ -53,6 +60,22 @@ export const loadImage = async (
 
   const url = file instanceof File ? URL.createObjectURL(file) : file;
   const texture = await loader.loadAsync(url);
+  texture.generateMipmaps = true;
+  texture.needsUpdate = true;
+  texture.name = name;
   URL.revokeObjectURL(url);
+  if (material && material instanceof THREE.Material) {
+    // console.log('loadImage with material', { material });
+    setTimeout(() => {
+      material.needsUpdate = true;
+    });
+  } else if (material?.current) {
+    // console.log('loadImage with material ref', { material });
+    setTimeout(() => {
+      if (material.current) {
+        material.current.needsUpdate = true;
+      }
+    });
+  }
   return texture;
 };

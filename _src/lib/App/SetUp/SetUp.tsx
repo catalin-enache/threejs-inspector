@@ -1,5 +1,6 @@
 import * as THREE from 'three';
-import { useThree } from '@react-three/fiber';
+// @ts-ignore
+import { useThree, useFrame } from '@react-three/fiber';
 
 import { useCallback, useEffect, useRef } from 'react';
 import {
@@ -339,10 +340,19 @@ const SetUp = () => {
     scene.transformControlsRef = transformControlsRef;
   }, [scene]);
 
+  // useFrame(() => {
+  // updating orbitControls seems to lock scene rotation when changing in cPanel
+  // orbitControlsRef.current?.enabled && orbitControlsRef.current?.update();
+  // });
+
   // Create orbit and transform controls (singletons) and attach transform controls to scene
   useEffect(() => {
     orbitControlsRef.current = new OrbitControls(camera, gl.domElement);
-    orbitControlsRef.current?.addEventListener('change', (_evt) => {
+    // orbitControlsRef.current.enableDamping = true;
+    // orbitControlsRef.current.dampingFactor = 0.3;
+    // orbitControlsRef.current.autoRotate = true;
+
+    orbitControlsRef.current.addEventListener('change', (_evt) => {
       // console.log('orbitControlsRef change', _evt);
     });
     // prettier-ignore

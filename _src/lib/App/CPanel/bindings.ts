@@ -4,6 +4,21 @@ import { BladeApi, FolderApi, TabPageApi } from 'tweakpane';
 import { BindingApi } from '@tweakpane/core';
 import { useAppStore } from 'src/store';
 
+type onChange = (
+  {
+    object,
+    folder,
+    bindings,
+    sceneObjects
+  }: {
+    object: any;
+    folder: FolderApi;
+    bindings: any;
+    sceneObjects: SceneObjects;
+  },
+  evt: { value: any }
+) => void;
+
 export function rotationHandler(this: HTMLInputElement, e: Event) {
   // @ts-ignore
   e.target.value = +degToRad(e.target.value);
@@ -77,10 +92,16 @@ export const tweakFolder = (folder: FolderApi | TabPageApi, id: string) => {
   });
 };
 
+const numberFormat = (precision: number) => (value: number) =>
+  value.toFixed(precision);
+
 export const numberCommon = {
   keyScale: 0.1,
-  pointerScale: 0.01,
-  format: (value: number) => value.toFixed(2)
+  pointerScale: 0.001,
+  // Note: this step might be doing scene flickering if not enough precision
+  // (3 decimals should be enough precision)
+  step: 0.001,
+  format: numberFormat(3)
 };
 
 const ObjectStoreBindings = () => ({
@@ -93,9 +114,9 @@ const ObjectStoreBindings = () => ({
       title: x === 0 ? 'Translate' : x === 1 ? 'Rotate' : 'Scale',
       value: x === 0 ? 'translate' : x === 1 ? 'rotate' : 'scale'
     }),
-    onChange: (_object: any, mode: any) => {
-      useAppStore.getState().setTransformControlsMode(mode.value);
-    }
+    onChange: ((_, evt: any) => {
+      useAppStore.getState().setTransformControlsMode(evt.value);
+    }) as onChange
   },
   transformControlsSpace: {
     label: "TSpace ( ;' )",
@@ -106,13 +127,13 @@ const ObjectStoreBindings = () => ({
       title: x === 0 ? 'World' : 'Local',
       value: x === 0 ? 'world' : 'local'
     }),
-    onChange: (_object: any, space: any) => {
+    onChange: ((_, space) => {
       useAppStore.getState().setTransformControlsSpace(space.value);
-    }
+    }) as onChange
   }
 });
-// TODO: continue here, find a way to have texture as binding as well as folder
-const TextureBindings = () => ({
+
+const TextureBindings = (params: CommonGetterParams) => ({
   uuid: {
     label: 'UUID',
     view: 'text',
@@ -121,6 +142,52 @@ const TextureBindings = () => ({
   name: {
     label: 'Name',
     view: 'text',
+    disabled: true
+  },
+  anisotropy: {
+    label: 'Anisotropy',
+    options: {
+      1: 1,
+      2: 2,
+      4: 4,
+      8: 8,
+      16: 16
+    }
+  },
+  format: {
+    label: 'Format',
+    options: {
+      AlphaFormat: THREE.AlphaFormat,
+      RedFormat: THREE.RedFormat,
+      RedIntegerFormat: THREE.RedIntegerFormat,
+      RGFormat: THREE.RGFormat,
+      RGIntegerFormat: THREE.RGIntegerFormat,
+      RGBAFormat: THREE.RGBAFormat,
+      RGBAIntegerFormat: THREE.RGBAIntegerFormat,
+      LuminanceFormat: THREE.LuminanceFormat,
+      LuminanceAlphaFormat: THREE.LuminanceAlphaFormat,
+      DepthFormat: THREE.DepthFormat,
+      DepthStencilFormat: THREE.DepthStencilFormat
+    }
+  },
+  type: {
+    label: 'Type',
+    options: {
+      UnsignedByteType: THREE.UnsignedByteType,
+      ByteType: THREE.ByteType,
+      ShortType: THREE.ShortType,
+      UnsignedShortType: THREE.UnsignedShortType,
+      IntType: THREE.IntType,
+      UnsignedIntType: THREE.UnsignedIntType,
+      FloatType: THREE.FloatType,
+      HalfFloatType: THREE.HalfFloatType,
+      UnsignedShort4444Type: THREE.UnsignedShort4444Type,
+      UnsignedShort5551Type: THREE.UnsignedShort5551Type,
+      UnsignedInt248Type: THREE.UnsignedInt248Type
+    }
+  },
+  internalFormat: {
+    label: 'Internal Format',
     disabled: true
   },
   mapping: {
@@ -140,9 +207,91 @@ const TextureBindings = () => ({
     step: 1,
     min: 0,
     max: 3
+  },
+  wrapS: {
+    label: 'Wrap S',
+    options: {
+      ClampToEdgeWrapping: THREE.ClampToEdgeWrapping,
+      RepeatWrapping: THREE.RepeatWrapping,
+      MirroredRepeatWrapping: THREE.MirroredRepeatWrapping
+    }
+  },
+  wrapT: {
+    label: 'Wrap T',
+    options: {
+      ClampToEdgeWrapping: THREE.ClampToEdgeWrapping,
+      RepeatWrapping: THREE.RepeatWrapping,
+      MirroredRepeatWrapping: THREE.MirroredRepeatWrapping
+    }
+  },
+  offset: {
+    label: 'Offset',
+    ...numberCommon
+  },
+  repeat: {
+    label: 'Repeat',
+    ...numberCommon
+  },
+  rotation: {
+    label: `Rotation ${params.angleFormat}`,
+    ...numberCommon,
+    ...(params.angleFormat === 'deg' ? { format: radToDegFormatter } : {})
+  },
+  center: {
+    label: 'Center',
+    ...numberCommon
+  },
+  generateMipmaps: {
+    label: 'Generate MipMaps'
+  },
+  magFilter: {
+    label: 'Mag Filter',
+    options: {
+      NearestFilter: THREE.NearestFilter,
+      LinearFilter: THREE.LinearFilter
+    }
+  },
+  minFilter: {
+    label: 'Min Filter',
+    options: {
+      NearestFilter: THREE.NearestFilter,
+      LinearFilter: THREE.LinearFilter,
+      NearestMipmapNearestFilter: THREE.NearestMipmapNearestFilter,
+      NearestMipmapLinearFilter: THREE.NearestMipmapLinearFilter,
+      LinearMipmapNearestFilter: THREE.LinearMipmapNearestFilter,
+      LinearMipmapLinearFilter: THREE.LinearMipmapLinearFilter
+    }
+  },
+  premultiplyAlpha: {
+    label: 'Premultiply Alpha'
+  },
+  flipY: {
+    label: 'Flip Y'
+  },
+  unpackAlignment: {
+    label: 'Unpack Alignment',
+    options: {
+      1: 1,
+      2: 2,
+      4: 4,
+      8: 8
+    }
+  },
+  colorSpace: {
+    label: 'Color Space',
+    options: {
+      NoColorSpace: THREE.NoColorSpace,
+      SRGBColorSpace: THREE.SRGBColorSpace,
+      LinearSRGBColorSpace: THREE.LinearSRGBColorSpace
+    }
+  },
+  onDetailsChange: (texture: THREE.Texture) => {
+    // console.log('texture changed', texture);
+    // some props won't be reflected without needsUpdate = true
+    // this is not only for the image but for other props (e.g. flipY, ...)
+    texture.needsUpdate = true;
   }
 });
-
 const Object3DBindings = ({ angleFormat }: CommonGetterParams) => ({
   uuid: {
     label: 'UUID',
@@ -168,11 +317,14 @@ const Object3DBindings = ({ angleFormat }: CommonGetterParams) => ({
     ...numberCommon,
     ...(angleFormat === 'deg' ? { format: radToDegFormatter } : {})
   },
-  quaternion: {
-    label: `Quaternion(${angleFormat})(L)`,
-    ...numberCommon,
-    ...(angleFormat === 'deg' ? { format: radToDegFormatter } : {})
-  },
+  // quaternion is not displayed because it interferes with rotation when cPanel updates
+  // TODO: make a text plugin that only reads
+  // quaternion: {
+  //   label: `Quaternion(${angleFormat})(L)`,
+  //   ...numberCommon,
+  //   ...(angleFormat === 'deg' ? { format: radToDegFormatter } : {})
+  //   disabled: true
+  // },
   scale: {
     label: 'Scale(L)',
     ...numberCommon
@@ -195,7 +347,26 @@ const Object3DBindings = ({ angleFormat }: CommonGetterParams) => ({
   }
 });
 
-const MaterialBindings = () => ({
+const MaterialBindings = (params: CommonGetterParams) => ({
+  // TODO: add a general needsUpdate on any material change
+  // TODO: add the rest of material props
+  // TODO: Add: a way to show userData
+  map: {
+    label: 'Map',
+    details: {
+      ...TextureBindings(params)
+    },
+    onChange: (({ object, folder, bindings, sceneObjects }) => {
+      // prettier-ignore
+      // console.log('map material changed', { object, folder, bindings, sceneObjects });
+      (object as THREE.Texture).needsUpdate = true;
+      setTimeout(() => {
+        // under setTimeout to prevent Teakpane to throw TpError.alreadyDisposed()
+        cleanupContainer(folder);
+        buildBindings(folder, object, bindings, sceneObjects);
+      });
+    }) as onChange
+  },
   wireframe: {
     label: 'Wireframe',
     view: 'toggle'
@@ -213,6 +384,9 @@ const MaterialBindings = () => ({
     min: 0,
     max: 1,
     ...numberCommon
+  },
+  alphaToCoverage: {
+    label: 'Alpha to coverage'
   },
   opacity: {
     label: 'Opacity',
@@ -377,12 +551,13 @@ const LightShadowBindings = () => ({
   mapSize: {
     label: 'MapSize',
     step: 1,
-    onChange: (object: any) => {
+    // TODO: maybe get rid of __parent, __sceneObjects
+    onChange: (({ object }) => {
       if (object.__parent?.shadow?.map) {
         object.__parent.shadow.map.dispose();
         object.__parent.shadow.map = null;
       }
-    }
+    }) as onChange
   },
   radius: {
     label: 'Radius',
@@ -518,22 +693,22 @@ export const RendererShadowMapBindings = () => ({
       Soft: THREE.PCFSoftShadowMap,
       Variance: THREE.VSMShadowMap
     },
-    onChange: (object: any) => {
+    onChange: (({ object }) => {
       const scene = object.__sceneObjects.scene;
       scene.traverse((child: any) => {
         if (child instanceof THREE.Mesh && child.material)
           child.material.needsUpdate = true;
       });
-    }
+    }) as onChange
   }
 });
 
 export const PaneBindings = () => ({
   cPanelContinuousUpdate: {
     label: 'Continuous Update ( U )',
-    onChange: (_object: any, continuousUpdate: any) => {
-      useAppStore.getState().setCPanelContinuousUpdate(continuousUpdate.value);
-    }
+    onChange: ((_, evt) => {
+      useAppStore.getState().setCPanelContinuousUpdate(evt.value);
+    }) as onChange
   },
   angleFormat: {
     label: 'Angle Format ( [ )',
@@ -544,9 +719,9 @@ export const PaneBindings = () => ({
       title: x === 0 ? 'Deg' : 'Rad',
       value: x === 0 ? 'deg' : 'rad'
     }),
-    onChange: (_object: any, angleFormat: any) => {
-      useAppStore.getState().setAngleFormat(angleFormat.value);
-    }
+    onChange: ((_, evt: any) => {
+      useAppStore.getState().setAngleFormat(evt.value);
+    }) as onChange
   }
 });
 
@@ -560,9 +735,9 @@ export const CameraStoreBindings = () => ({
       title: x === 0 ? 'Orbit' : 'Fly',
       value: x === 0 ? 'orbit' : 'fly'
     }),
-    onChange: (_object: any, cameraControl: any) => {
-      useAppStore.getState().setCameraControl(cameraControl.value);
-    }
+    onChange: ((_, evt: any) => {
+      useAppStore.getState().setCameraControl(evt.value);
+    }) as onChange
   },
   cameraType: {
     label: 'Type ( C )',
@@ -573,18 +748,18 @@ export const CameraStoreBindings = () => ({
       title: x === 0 ? 'Perspective' : 'Orthographic',
       value: x === 0 ? 'perspective' : 'orthographic'
     }),
-    onChange: (_object: any, cameraType: any) => {
-      useAppStore.getState().setCameraType(cameraType.value);
-    }
+    onChange: ((_, evt: any) => {
+      useAppStore.getState().setCameraType(evt.value);
+    }) as onChange
   },
   attachDefaultControllersToPlayingCamera: {
     label: 'Attach default controllers when Playing custom camera ( ] )',
     view: 'toggle',
-    onChange: (_object: any, evt: any) => {
+    onChange: ((_, evt) => {
       useAppStore
         .getState()
         .setAttachDefaultControllersToPlayingCamera(evt.value);
-    }
+    }) as onChange
   }
 });
 
@@ -629,6 +804,7 @@ export const SceneButtons = ({ isPlaying }: CommonGetterParams) => [
     onClick: (_sceneObjects: SceneObjects) => {
       useAppStore.getState().togglePlaying();
     }
+    // TODO: we need play/pause/stop state
     // label: 'Play State ( Space|CAS+Space )',
     // view: 'radiogrid',
     // groupName: 'playState',
@@ -637,16 +813,29 @@ export const SceneButtons = ({ isPlaying }: CommonGetterParams) => [
     //   title: x === 0 ? 'Play' : 'Stop',
     //   value: x === 0 ? false : true
     // }),
-    // onChange: (_object: any, playState: any) => {
-    //   useAppStore.getState().setPlaying(playState.value);
-    // }
+    // onChange: ((_, evt) => {
+    //   useAppStore.getState().setPlaying(evt.value);
+    // }) as onChange
   }
 ];
 
-export const SceneConfigBindings = ({ angleFormat }: CommonGetterParams) => ({
+export const SceneConfigBindings = (params: CommonGetterParams) => ({
   background: {
     label: 'Background',
-    color: { type: 'float' }
+    color: { type: 'float' },
+    details: {
+      ...TextureBindings(params)
+    },
+    onChange: (({ object, folder, bindings, sceneObjects }) => {
+      // prettier-ignore
+      // console.log('background material changed', { object, folder, bindings, sceneObjects });
+      // object is Scene here (not a Material that needsUpdate)
+      setTimeout(() => {
+        // under setTimeout to prevent Teakpane to throw TpError.alreadyDisposed()
+        cleanupContainer(folder);
+        buildBindings(folder, object, bindings, sceneObjects);
+      }, 0);
+    }) as onChange
   },
   backgroundBlurriness: {
     label: 'BG Blurriness',
@@ -660,9 +849,9 @@ export const SceneConfigBindings = ({ angleFormat }: CommonGetterParams) => ({
     min: 0
   },
   backgroundRotation: {
-    label: `BG Rotation(${angleFormat})`,
+    label: `BG Rotation(${params.angleFormat})`,
     ...numberCommon,
-    ...(angleFormat === 'deg' ? { format: radToDegFormatter } : {})
+    ...(params.angleFormat === 'deg' ? { format: radToDegFormatter } : {})
   }
 });
 
@@ -699,7 +888,7 @@ export const getObject3DBindings = (params: CommonGetterParams) => ({
     }
   },
   target: {
-    // DirectionalLight, SpotLight
+    // for DirectionalLight, SpotLight
     title: 'Target',
     position: {
       label: 'Position',
@@ -707,12 +896,12 @@ export const getObject3DBindings = (params: CommonGetterParams) => ({
     }
   },
   material: {
-    // Mesh
+    // for Mesh
     title: 'Material',
-    ...MaterialBindings()
+    ...MaterialBindings(params)
   },
   parent: {
-    // Object3D
+    // for Object3D
     title: 'Parent',
     uuid: {
       label: 'UUID',
@@ -766,10 +955,6 @@ export const getSceneButtons = ({ isPlaying }: CommonGetterParams) => [
 export const getSceneConfigBindings = ({
   angleFormat
 }: CommonGetterParams) => ({
-  // background: {
-  //   title: 'Background',
-  //   ...TextureBindings()
-  // },
   ...SceneConfigBindings({ angleFormat })
 });
 
@@ -790,6 +975,7 @@ export const getRaycasterParamsBindings = () => ({
 type SceneObjects = {
   scene: THREE.Scene;
   camera: THREE.Camera;
+  gl: THREE.WebGLRenderer;
 };
 
 type CommonGetterParams = {
@@ -803,33 +989,65 @@ export const buildBindings = (
   bindings: any,
   sceneObjects: SceneObjects
 ) => {
+  // console.log('buildBindings for', folder.title, { object, bindings });
   Object.keys(bindings).forEach((key) => {
     if (key === 'title' || object[key] === undefined || object[key] === null)
       return;
 
-    const candidate = bindings[key];
-    const isFolder = candidate.title;
-    const isBinding = candidate.label;
+    const bindingCandidate = bindings[key];
+    const isFolder = bindingCandidate.title;
+    const isBinding = bindingCandidate.label;
     if (isFolder) {
       const subFolder = folder.addFolder({
-        title: candidate.title,
+        title: bindingCandidate.title,
         expanded: false
       });
       object[key].__parent = object;
       object[key].__sceneObjects = sceneObjects;
-      buildBindings(subFolder, object[key], candidate, sceneObjects);
+      buildBindings(subFolder, object[key], bindingCandidate, sceneObjects);
       return;
     }
     if (!isBinding) return;
     // Forcing all pickers inline to prevent layout issues.
     // Not all bindings have pickers but there's no harm in setting it inline even if there's no picker
-    candidate.picker = 'inline';
-    const binding = folder.addBinding(object, key, candidate);
-    if (candidate.onChange) {
-      binding.on('change', candidate.onChange.bind(null, object));
+    bindingCandidate.picker = 'inline';
+    const binding = folder.addBinding(object, key, bindingCandidate);
+    if (bindingCandidate.onChange) {
+      binding.on(
+        'change',
+        bindingCandidate.onChange.bind(null, {
+          object,
+          folder,
+          bindings,
+          sceneObjects
+        })
+      );
+    }
+    if (bindingCandidate.details) {
+      const subFolder = folder.addFolder({
+        title: `${bindingCandidate.label} Details`,
+        expanded: false
+      });
+
+      if (bindingCandidate.details.onDetailsChange) {
+        // prettier-ignore
+        // console.log('candidate.details.onChange', { 'candidate.details': bindingCandidate.details, object, 'object[key]': object[key], binding });
+        // TODO: make this auto for anything that has details
+        subFolder.on(
+          'change',
+          bindingCandidate.details.onDetailsChange.bind(null, object[key])
+        );
+        delete bindingCandidate.details.onDetailsChange;
+      }
+      buildBindings(
+        subFolder,
+        object[key],
+        bindingCandidate.details,
+        sceneObjects
+      );
     }
     tweakBindingView(binding);
-    if (candidate.format === radToDegFormatter) {
+    if (bindingCandidate.format === radToDegFormatter) {
       makeRotationBinding(binding);
     }
   });
@@ -866,6 +1084,14 @@ export const cleanupContainer = (container: any) => {
     //   'cleanupContainer',
     //   child.title ? `folder ${child.title}` : `binding ${child.key}`
     // );
+    window.dispatchEvent(
+      new CustomEvent('TweakpaneRemove', {
+        detail: {
+          container,
+          child
+        }
+      })
+    );
     container.remove(child);
   });
 };

@@ -7,10 +7,23 @@ Improve makeHelpers *DONE*
 Make labels expand on hover *DONE*
 See if CustomControl can be improved *DONE*
 When using different camera on play we might/will need different controller *DONE*
+Fix keyup not firing when contextmenu in cPanel (keeps hanging fly navigation) *DONE* (preventing contextmenu on cPanel)
+Bug: In continuous update in Orbit Controls the scene flickers. *DONE* (because  numberCommon.step was lower than 3 decimals precision)
+Bug: After changing texture at runtime the details subfolder does not reflect it. *DONE* (rebuilding the tree manually on change)
 
+Bug: After adding scene background (some large image) some commands in cPanel respond slowly (e.g. ContinuouslyUpdate, changing cameraType or controlType, play/stop)
+Bug: When the Scene gets a background from somewhere else, cPanel is not aware until some button click. WORK HERE (we need to autodetect it somehow and rebuild the tree again) !!!
 
-Fix keyup not firing when contextmenu in cPanel (keeps hanging fly navigation)
+Include sceneObjects with other props rather than making it separate.
+
+Bug: When hiding cPanel the cPanel draggable line is still visible.
+
+Bug?: The scene moving is not continuous. Is it from the mouse ?
+The app has a bit of lag compared to: https://threejs.org/examples/?q=rotation#webgl_materials_texture_rotation which is instant
+Solve this along with adding FPS widget
+
 Integrate with Default LoadingManager
+Create a text display plugin; to be used in showing quaternion and other readonly fields
 Normalize all handlers to pointer instead of mouse.
 Make possible setting up cPanel opacity from itself so that it can be adjusted at runtime
 The Scene background can be a Texture or Color. Adjust the controller for that.

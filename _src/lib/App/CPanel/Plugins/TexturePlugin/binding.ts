@@ -60,6 +60,7 @@ export const TextureBindingPlugin: InputBindingPlugin<
   binding: {
     reader: (_args) => {
       // @ts-ignore
+      // eslint-disable-next-line
       const id = ++debugID;
       let lastValue: any = null;
       return (value: unknown): THREE.Texture => {
@@ -72,7 +73,8 @@ export const TextureBindingPlugin: InputBindingPlugin<
       };
     },
     writer: (_args) => (target: BindingTarget, inValue: THREE.Texture) => {
-      // console.log('TextureBindingPlugin.binding.writer', inValue);
+      // prettier-ignore
+      // console.log('TextureBindingPlugin.binding.writer', { inValue, id: debugID });
       target.write(inValue);
     }
   },

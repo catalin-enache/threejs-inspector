@@ -27,22 +27,17 @@ export const fileTypeMap: Record<string, string> = {
 };
 
 export const getFileType = (filename: string): string => {
-  return (
-    fileTypeMap[filename.split('.').pop()?.toLowerCase() || ''] || FILE_UNKNOWN
-  );
+  return fileTypeMap[filename.split('.').pop()?.toLowerCase() || ''] || FILE_UNKNOWN;
 };
 
 export const loadImage = async (
   file: string | File,
-  material?:
-    | THREE.Material
-    | null
-    | React.MutableRefObject<THREE.Material | null>
+  material?: THREE.Material | React.MutableRefObject<THREE.Material | null> | null
 ): Promise<THREE.Texture> => {
   // console.log('loadImage', { file, material });
   const name = file instanceof File ? file.name : file;
   const fileType = getFileType(name);
-  // TODO: maybe it is here where we should rebuild cPane
+
   let loader;
   switch (fileType) {
     case FILE_EXR:

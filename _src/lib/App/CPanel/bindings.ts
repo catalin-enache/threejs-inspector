@@ -25,11 +25,9 @@ export function rotationHandler(this: HTMLInputElement, e: Event) {
 }
 
 export const makeRotationBinding = (binding: BindingApi) => {
-  binding.controller.view.valueElement
-    .querySelectorAll('input')
-    .forEach((input) => {
-      input.addEventListener('change', rotationHandler, true);
-    });
+  binding.controller.view.valueElement.querySelectorAll('input').forEach((input) => {
+    input.addEventListener('change', rotationHandler, true);
+  });
   return binding;
 };
 
@@ -57,9 +55,7 @@ export const tweakFolder = (folder: FolderApi | TabPageApi, id: string) => {
 
   // Memoizing last expanded state
   folderButton.addEventListener('click', () => {
-    const isExpanded = [
-      ...(folderButton.parentNode as HTMLElement)!.classList
-    ].some((c) => c.endsWith('expanded'));
+    const isExpanded = [...(folderButton.parentNode as HTMLElement)!.classList].some((c) => c.endsWith('expanded'));
     foldersExpandedMap[id] = !!isExpanded;
   });
 
@@ -92,8 +88,7 @@ export const tweakFolder = (folder: FolderApi | TabPageApi, id: string) => {
   });
 };
 
-const numberFormat = (precision: number) => (value: number) =>
-  value.toFixed(precision);
+const numberFormat = (precision: number) => (value: number) => value.toFixed(precision);
 
 export const numberCommon = {
   keyScale: 0.1,
@@ -289,6 +284,8 @@ const TextureBindings = (params: CommonGetterParams) => ({
     // console.log('texture changed', texture);
     // some props won't be reflected without needsUpdate = true
     // this is not only for the image but for other props (e.g. flipY, ...)
+    // Warn: due to this, sliders (e.g. offset/rotation/repeat) will become less responsive for larger images.
+    // Many sliders, when changed, do not even require to update the texture, but we're gathering everything here.
     texture.needsUpdate = true;
   }
 });
@@ -348,24 +345,13 @@ const Object3DBindings = ({ angleFormat }: CommonGetterParams) => ({
 });
 
 const MaterialBindings = (params: CommonGetterParams) => ({
-  // TODO: add a general needsUpdate on any material change
   // TODO: add the rest of material props
   // TODO: Add: a way to show userData
   map: {
     label: 'Map',
     details: {
       ...TextureBindings(params)
-    },
-    onChange: (({ object, folder, bindings, sceneObjects }) => {
-      // prettier-ignore
-      // console.log('map material changed', { object, folder, bindings, sceneObjects });
-      (object as THREE.Texture).needsUpdate = true;
-      setTimeout(() => {
-        // under setTimeout to prevent Teakpane to throw TpError.alreadyDisposed()
-        cleanupContainer(folder);
-        buildBindings(folder, object, bindings, sceneObjects);
-      });
-    }) as onChange
+    }
   },
   wireframe: {
     label: 'Wireframe',
@@ -696,8 +682,7 @@ export const RendererShadowMapBindings = () => ({
     onChange: (({ object }) => {
       const scene = object.__sceneObjects.scene;
       scene.traverse((child: any) => {
-        if (child instanceof THREE.Mesh && child.material)
-          child.material.needsUpdate = true;
+        if (child instanceof THREE.Mesh && child.material) child.material.needsUpdate = true;
       });
     }) as onChange
   }
@@ -756,9 +741,7 @@ export const CameraStoreBindings = () => ({
     label: 'Attach default controllers when Playing custom camera ( ] )',
     view: 'toggle',
     onChange: ((_, evt) => {
-      useAppStore
-        .getState()
-        .setAttachDefaultControllersToPlayingCamera(evt.value);
+      useAppStore.getState().setAttachDefaultControllersToPlayingCamera(evt.value);
     }) as onChange
   }
 });
@@ -825,17 +808,7 @@ export const SceneConfigBindings = (params: CommonGetterParams) => ({
     color: { type: 'float' },
     details: {
       ...TextureBindings(params)
-    },
-    onChange: (({ object, folder, bindings, sceneObjects }) => {
-      // prettier-ignore
-      // console.log('background material changed', { object, folder, bindings, sceneObjects });
-      // object is Scene here (not a Material that needsUpdate)
-      setTimeout(() => {
-        // under setTimeout to prevent Teakpane to throw TpError.alreadyDisposed()
-        cleanupContainer(folder);
-        buildBindings(folder, object, bindings, sceneObjects);
-      }, 0);
-    }) as onChange
+    }
   },
   backgroundBlurriness: {
     label: 'BG Blurriness',
@@ -948,13 +921,9 @@ export const getCameraStoreBindings = () => ({
   ...CameraStoreBindings()
 });
 
-export const getSceneButtons = ({ isPlaying }: CommonGetterParams) => [
-  ...SceneButtons({ isPlaying })
-];
+export const getSceneButtons = ({ isPlaying }: CommonGetterParams) => [...SceneButtons({ isPlaying })];
 
-export const getSceneConfigBindings = ({
-  angleFormat
-}: CommonGetterParams) => ({
+export const getSceneConfigBindings = ({ angleFormat }: CommonGetterParams) => ({
   ...SceneConfigBindings({ angleFormat })
 });
 
@@ -983,16 +952,10 @@ type CommonGetterParams = {
   isPlaying?: boolean;
 };
 
-export const buildBindings = (
-  folder: FolderApi,
-  object: any,
-  bindings: any,
-  sceneObjects: SceneObjects
-) => {
+export const buildBindings = (folder: FolderApi, object: any, bindings: any, sceneObjects: SceneObjects) => {
   // console.log('buildBindings for', folder.title, { object, bindings });
   Object.keys(bindings).forEach((key) => {
-    if (key === 'title' || object[key] === undefined || object[key] === null)
-      return;
+    if (key === 'title' || object[key] === undefined || object[key] === null) return;
 
     const bindingCandidate = bindings[key];
     const isFolder = bindingCandidate.title;
@@ -1012,16 +975,19 @@ export const buildBindings = (
     // Not all bindings have pickers but there's no harm in setting it inline even if there's no picker
     bindingCandidate.picker = 'inline';
     const binding = folder.addBinding(object, key, bindingCandidate);
+
+    // @ts-ignore
+    if (object instanceof THREE.Material && object[key] instanceof THREE.Texture) {
+      binding.on('change', (_evt) => {
+        // @ts-ignore
+        // console.log('change', { _evt, key, object, 'object[key]': object[key] });
+        // this is not usually needed unless the shader code depends on something specific from the texture.
+        object.needsUpdate = true;
+      });
+    }
+
     if (bindingCandidate.onChange) {
-      binding.on(
-        'change',
-        bindingCandidate.onChange.bind(null, {
-          object,
-          folder,
-          bindings,
-          sceneObjects
-        })
-      );
+      binding.on('change', bindingCandidate.onChange.bind(null, { object, folder, bindings, sceneObjects }));
     }
     if (bindingCandidate.details) {
       const subFolder = folder.addFolder({
@@ -1030,21 +996,11 @@ export const buildBindings = (
       });
 
       if (bindingCandidate.details.onDetailsChange) {
-        // prettier-ignore
         // console.log('candidate.details.onChange', { 'candidate.details': bindingCandidate.details, object, 'object[key]': object[key], binding });
-        // TODO: make this auto for anything that has details
-        subFolder.on(
-          'change',
-          bindingCandidate.details.onDetailsChange.bind(null, object[key])
-        );
+        subFolder.on('change', bindingCandidate.details.onDetailsChange.bind(null, object[key]));
         delete bindingCandidate.details.onDetailsChange;
       }
-      buildBindings(
-        subFolder,
-        object[key],
-        bindingCandidate.details,
-        sceneObjects
-      );
+      buildBindings(subFolder, object[key], bindingCandidate.details, sceneObjects);
     }
     tweakBindingView(binding);
     if (bindingCandidate.format === radToDegFormatter) {

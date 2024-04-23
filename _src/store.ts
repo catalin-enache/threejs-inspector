@@ -34,6 +34,9 @@ export interface AppStore {
   showHelpers: boolean;
   setShowHelpers: (showHelpers: boolean) => void;
   toggleShowHelpers: () => void;
+  cPanelShowHelp: boolean;
+  setCPanelShowHelp: (show: boolean) => void;
+  toggleCPanelShowHelp: () => void;
   cPanelOpacity: number;
   setCPanelOpacity: (opacity: number) => void;
   cPanelVisible: boolean;
@@ -119,6 +122,13 @@ export const useAppStore = create<AppStore>()(
     toggleShowHelpers: () => {
       set((state) => ({
         showHelpers: !state.showHelpers
+      }));
+    },
+    cPanelShowHelp: false,
+    setCPanelShowHelp: (cPanelShowHelp) => set({ cPanelShowHelp }),
+    toggleCPanelShowHelp: () => {
+      set((state) => ({
+        cPanelShowHelp: !state.cPanelShowHelp
       }));
     },
     cPanelOpacity: 0,

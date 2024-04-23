@@ -91,6 +91,16 @@ export const buildBindings = (folder: FolderApi, object: any, bindings: any, sce
     const bindingCandidate = bindings[key];
     const isFolder = bindingCandidate.title;
     const isBinding = bindingCandidate.label;
+    const isButton = bindingCandidate.title && bindingCandidate.label;
+
+    if (isButton) {
+      const button = folder.addButton(bindingCandidate);
+      if (bindingCandidate.onClick) {
+        button.on('click', bindingCandidate.onClick.bind(null, { object, folder, bindings, sceneObjects }));
+      }
+      return;
+    }
+
     if (isFolder) {
       const subFolder = folder.addFolder({
         title: bindingCandidate.title,
@@ -101,6 +111,7 @@ export const buildBindings = (folder: FolderApi, object: any, bindings: any, sce
       buildBindings(subFolder, object[key], bindingCandidate, sceneObjects);
       return;
     }
+
     if (!isBinding) return;
     if (bindingCandidate.if && !bindingCandidate.if(object)) return;
     // Forcing all pickers inline to prevent layout issues.

@@ -17,6 +17,7 @@ Bug: When the Scene gets a background from somewhere else, cPanel is not aware u
 Bug: try playing with offset on Scene background after getting the green texture on it. It feels unresponsive. *DONE* (because texture is updated)
 Bug?: The scene moving is not continuous. Is it from the mouse ?
 The app has a bit of lag compared to: https://threejs.org/examples/?q=rotation#webgl_materials_texture_rotation which is instant *DONE* (re-rendering on OrbitControls change)
+Make possible setting up cPanel opacity from itself so that it can be adjusted at runtime *DONE*
 
 Bug: When hiding cPanel the cPanel draggable line is still visible.
 
@@ -26,7 +27,7 @@ Add FPS widget
 Integrate with Default LoadingManager
 Create a text display plugin; to be used in showing quaternion and other readonly fields
 Normalize all handlers to pointer instead of mouse.
-Make possible setting up cPanel opacity from itself so that it can be adjusted at runtime
+
 The Scene background can be a Texture or Color. Adjust the controller for that.
 Check what is with backgroundBlurriness and backgroundRotation. It seems they don't work. Is it required a CubeTexture ?
 Find a way to solve conflict between scene background as texture and as folder
@@ -34,7 +35,7 @@ Checkout how does it happen that default cameras do not have helpers around them
 Add loaders so that we can start the scene after everything was loaded
 
 Bug: Load Image from CParam then from SceneConfig.
-After loading from scene config binding rhe reader fires continuously.
+After loading from scene config the binding reader fires continuously.
 Not happening anymore since using correct internal lastValue.
 However, to test with multi texture bindings later
 

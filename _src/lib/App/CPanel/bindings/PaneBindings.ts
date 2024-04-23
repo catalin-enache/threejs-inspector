@@ -1,5 +1,5 @@
 import { useAppStore } from 'src/store';
-import type { onChange } from './bindingTypes';
+import type { onChange, SceneObjects } from './bindingTypes';
 import { numberCommon } from './bindingHelpers';
 
 const docStyle = document.documentElement.style;
@@ -19,6 +19,15 @@ export const PaneBindings = () => ({
     onChange: ((_, evt) => {
       docStyle.setProperty('--tp-base-background-opacity', evt.value.toFixed(2));
     }) as onChange
+  },
+  cPanelShowHelp: {
+    label: 'Help',
+    title: 'Toggle Help',
+    onClick: (_sceneObjects: SceneObjects) => {
+      useAppStore.getState().toggleCPanelShowHelp();
+      const showHelp = useAppStore.getState().cPanelShowHelp;
+      console.log('cPanelShowHelp', showHelp);
+    }
   },
   angleFormat: {
     label: 'Angle Format ( [ )',

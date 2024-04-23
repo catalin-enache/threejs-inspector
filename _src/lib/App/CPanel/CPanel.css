@@ -33,6 +33,15 @@
   width: 340px;
 }
 
+#controlPanel #help {
+  position: absolute;
+  top: 0;
+  right: 100%;
+  width: 400px;
+  height: 100%;
+  background-color: var(--tp-base-background-color);
+}
+
 
 /* make controlPanelContent scrollable */
 #controlPanelContent {

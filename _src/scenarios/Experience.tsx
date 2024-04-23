@@ -206,6 +206,7 @@ export function Experience() {
 
       <mesh name="door" rotation={[0, 0, 0]} position={[0, 0, -2]} receiveShadow userData={{ isInspectable: true }}>
         <planeGeometry args={[16, 16]} />
+        {/*@ts-ignore*/}
         <meshPhysicalMaterial ref={doorMaterialRef} side={THREE.DoubleSide} />
       </mesh>
 

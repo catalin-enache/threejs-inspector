@@ -6,14 +6,12 @@ import { useAppStore } from 'src/store';
 
 let isMouseDown = false;
 
-export const panelContainer = document.querySelector(
-  '#controlPanelContent'
-) as HTMLElement;
+export const panelContainer = document.querySelector('#controlPanelContent') as HTMLElement;
 
-panelContainer.addEventListener('pointerdown', (_evt) => {
+panelContainer.addEventListener('mousedown', (_evt) => {
   isMouseDown = true;
 });
-document.addEventListener('pointerup', () => {
+document.addEventListener('mouseup', () => {
   isMouseDown = false;
 });
 
@@ -22,9 +20,7 @@ const getAllMetaPressed = (e: KeyboardEvent) => {
 };
 
 export function KeyListener() {
-  const isEditorMode = useAppStore(
-    (state) => state.showGizmos || state.cPanelVisible
-  );
+  const isEditorMode = useAppStore((state) => state.showGizmos || state.cPanelVisible);
   const keysPressed: any = {};
 
   useEffect(() => {
@@ -46,13 +42,11 @@ export function KeyListener() {
           break;
         case 'ShiftLeft':
         case 'ShiftRight':
-          !keysPressed[e.code] &&
-            useAppStore.getState().setShiftKeyPressed(true);
+          !keysPressed[e.code] && useAppStore.getState().setShiftKeyPressed(true);
           break;
         case 'ControlLeft':
         case 'ControlRight':
-          !keysPressed[e.code] &&
-            useAppStore.getState().setControlKeyPressed(true);
+          !keysPressed[e.code] && useAppStore.getState().setControlKeyPressed(true);
           break;
       }
       keysPressed[e.code] = true;
@@ -64,8 +58,7 @@ export function KeyListener() {
       keysPressed[e.code] = false;
       switch (e.code) {
         case 'KeyP':
-          if (getAllMetaPressed(e))
-            useAppStore.getState().toggleCPanelVisibility();
+          if (getAllMetaPressed(e)) useAppStore.getState().toggleCPanelVisibility();
           break;
         case 'KeyG':
           if (getAllMetaPressed(e)) useAppStore.getState().toggleShowGizmos();
@@ -87,33 +80,25 @@ export function KeyListener() {
           break;
         // Transform Controls
         case 'Comma':
-          isEditorMode &&
-            useAppStore.getState().setTransformControlsMode('translate');
+          isEditorMode && useAppStore.getState().setTransformControlsMode('translate');
           break;
         case 'Period':
-          isEditorMode &&
-            useAppStore.getState().setTransformControlsMode('rotate');
+          isEditorMode && useAppStore.getState().setTransformControlsMode('rotate');
           break;
         case 'Slash':
-          isEditorMode &&
-            useAppStore.getState().setTransformControlsMode('scale');
+          isEditorMode && useAppStore.getState().setTransformControlsMode('scale');
           break;
         case 'Semicolon':
-          isEditorMode &&
-            useAppStore.getState().setTransformControlsSpace('world');
+          isEditorMode && useAppStore.getState().setTransformControlsSpace('world');
           break;
         case 'Quote':
-          isEditorMode &&
-            useAppStore.getState().setTransformControlsSpace('local');
+          isEditorMode && useAppStore.getState().setTransformControlsSpace('local');
           break;
         case 'KeyC':
           isEditorMode && useAppStore.getState().toggleCameraType();
           break;
         case 'BracketRight':
-          isEditorMode &&
-            useAppStore
-              .getState()
-              .toggleAttachDefaultControllersToPlayingCamera();
+          isEditorMode && useAppStore.getState().toggleAttachDefaultControllersToPlayingCamera();
           break;
         case 'BracketLeft':
           isEditorMode && useAppStore.getState().toggleAngleFormat();

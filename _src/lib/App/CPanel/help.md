@@ -63,3 +63,9 @@
   That is because some material changes (e.g. `magFilter`/`minFilter`) are not visible until the material is recompiled.
   <br /><br />
   Because of this, when adjusting some values in a texture or material the cPanel controls might not be very responsive.
+  <br /><br />
+
+- Pressing `Ctrl` or `Shift` while dragging a cPanel slider will make the slider move faster or slower, respectively.
+  <br /><br />
+  Numbers in cPanel can also be adjusted using arrow keys.  
+  While pressing `Alt`/`Option` or `Shift` the increment will be slower or faster, respectively.

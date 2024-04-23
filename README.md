@@ -1,4 +1,4 @@
-# ThreeJS Inspector - Instant Editor
+# ThreeJS Inspector
 
 ## Running the project
 

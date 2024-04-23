@@ -9,14 +9,16 @@ import { loadImage } from 'lib/utils/imageUtils';
 function Box(
   props: ThreeElements['mesh'] & {
     mapURL: string;
+    alphaMapURL?: string;
   }
 ) {
   const refMesh = useRef<THREE.Mesh>(null!);
   const [hovered, _hover] = useState(false);
   const [clicked, _click] = useState(false);
   const [map, setMap] = useState<THREE.Texture | null>(null);
+  const [alphaMap, setAlphaMap] = useState<THREE.Texture | null>(null);
   const meshMaterialRef = useRef<THREE.MeshStandardMaterial | null>(null);
-  const { position = [0, 0, 0], mapURL, ...rest } = props;
+  const { position = [0, 0, 0], mapURL, alphaMapURL, ...rest } = props;
   usePlay((_state, _delta) => {
     refMesh.current.rotation.x += _delta;
     // refMesh.current.position.x = Math.sin(Date.now() / 1000);
@@ -31,9 +33,15 @@ function Box(
     // 'textures/castle_brick_02_red_nor_gl_4k.exr',
     // 'textures/sikqyan_2K_Displacement.exr',
     loadImage(mapURL, meshMaterialRef).then((map) => {
+      console.log('setting map');
       setMap(map);
     });
-  }, [mapURL]);
+    alphaMapURL &&
+      loadImage(alphaMapURL, meshMaterialRef).then((map) => {
+        console.log('setting alphaMap');
+        setAlphaMap(map);
+      });
+  }, [mapURL, alphaMapURL]);
 
   return (
     <mesh
@@ -47,11 +55,7 @@ function Box(
       position={position}
     >
       <boxGeometry args={[1, 1, 1]} />
-      <meshStandardMaterial
-        ref={meshMaterialRef}
-        color={hovered ? 'hotpink' : 'white'}
-        map={map}
-      />
+      <meshStandardMaterial ref={meshMaterialRef} color={hovered ? 'hotpink' : 'white'} map={map} alphaMap={alphaMap} />
       {props.children}
     </mesh>
   );
@@ -62,6 +66,7 @@ export function Experience() {
 
   const refDirectionalLight = useRef<THREE.DirectionalLight>(null!);
   const refPointLight = useRef<THREE.PointLight>(null!);
+  const doorMaterialRef = useRef<THREE.MeshStandardMaterial>(null!);
   useFrame((_state, _delta) => {
     if (refPointLight.current) {
       // refPointLight.current.intensity = Math.sin(Date.now() / 100) + 1;
@@ -81,6 +86,33 @@ export function Experience() {
     //   return { x: prev.x + 0.01, y: prev.y };
     // });
   });
+
+  useEffect(() => {
+    const promises = [
+      'alpha.jpg',
+      'ambientOcclusion.jpg',
+      'color.jpg',
+      'height.jpg',
+      'metalness.jpg',
+      'normal.jpg',
+      'roughness.jpg'
+    ].map((img) => loadImage(`textures/door/${img}`));
+    Promise.all(promises).then((textures) => {
+      console.log(doorMaterialRef.current, textures);
+      doorMaterialRef.current.alphaMap = textures[0];
+      doorMaterialRef.current.aoMap = textures[1];
+      textures[2].colorSpace = THREE.SRGBColorSpace;
+      doorMaterialRef.current.map = textures[2];
+      doorMaterialRef.current.bumpMap = textures[3];
+      doorMaterialRef.current.metalnessMap = textures[4];
+      doorMaterialRef.current.normalMap = textures[5];
+      doorMaterialRef.current.roughnessMap = textures[6];
+      doorMaterialRef.current.metalness = 1;
+      doorMaterialRef.current.roughness = 0.7;
+      doorMaterialRef.current.transparent = true;
+      doorMaterialRef.current.needsUpdate = true;
+    });
+  }, []);
 
   useEffect(() => {
     // 'https://threejsfundamentals.org/threejs/resources/images/wall.jpg',
@@ -119,11 +151,7 @@ export function Experience() {
         color={new THREE.Color().setHSL(0.6, 1, 0.6)}
         groundColor={new THREE.Color().setHSL(0.095, 1, 0.75)}
       />
-      <rectAreaLight
-        color={'deepskyblue'}
-        position={[-3, 0, -8]}
-        rotation={[-2.51, 0, 0]}
-      />
+      <rectAreaLight color={'deepskyblue'} position={[-3, 0, -8]} rotation={[-2.51, 0, 0]} />
       <pointLight
         castShadow
         // shadow-mapSize={[2048, 2048]}
@@ -156,6 +184,7 @@ export function Experience() {
       />
       <Box
         mapURL="textures/checkerboard-8x8.png"
+        alphaMapURL="textures/checkerboard-8x8.png"
         position={[1.2, 0, 0]}
         userData={{ isInspectable: true }}
         castShadow
@@ -170,14 +199,14 @@ export function Experience() {
           <meshStandardMaterial />
         </mesh>
       </Box>
-      <mesh
-        rotation={[-1.5, 0, 0]}
-        position={[-5, -6, -3]}
-        receiveShadow
-        userData={{ isInspectable: true }}
-      >
+      <mesh rotation={[-1.5, 0, 0]} position={[-5, -6, -3]} receiveShadow userData={{ isInspectable: true }}>
         <planeGeometry args={[16, 16]} />
         <meshStandardMaterial color="white" side={THREE.DoubleSide} />
+      </mesh>
+
+      <mesh name="door" rotation={[0, 0, 0]} position={[0, 0, -2]} receiveShadow userData={{ isInspectable: true }}>
+        <planeGeometry args={[16, 16]} />
+        <meshPhysicalMaterial ref={doorMaterialRef} side={THREE.DoubleSide} />
       </mesh>
 
       {/*<lightProbe color={'red'} />*/}
@@ -201,10 +230,7 @@ export function Experience() {
             color: { type: 'float' }
           }}
           onChange={(value) => {
-            console.log(
-              'Experience reacting to myImage value change',
-              value?.constructor
-            );
+            console.log('Experience reacting to myImage value change', value?.constructor);
             scene.background = value;
           }}
         />

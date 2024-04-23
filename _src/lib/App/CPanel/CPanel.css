@@ -107,6 +107,11 @@ and in charge with shifting position according with last scrollTop value
   cursor: pointer;
 }
 
+#controlPanelContent input[type="checkbox"] ~ div {
+  border: 1px solid #ccc;
+  opacity: 0.2;
+}
+
 /*
 make panel reconstruction unobservable
 transition 0 introduces a bug which is fixed in bindings

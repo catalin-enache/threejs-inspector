@@ -1,15 +1,16 @@
 import { useEffect, useRef, useCallback } from 'react';
 import * as THREE from 'three';
+import { useThree } from '@react-three/fiber';
 import { Pane, FolderApi, TabApi } from 'tweakpane';
 // @ts-ignore
 // import { Pane, FolderApi, TabApi } from 'lib/third_party/tweakpane.js';
 import * as EssentialsPlugin from '@tweakpane/plugin-essentials';
 import { useAppStore } from 'src/store';
 import { makeContinuousUpdate } from './continuousUpdate';
-import TexturePlugin from 'lib/App/CPanel/Plugins/TexturePlugin';
+import TexturePlugin from './Plugins/TexturePlugin';
 import './manipulateMouseSpeed';
 import { radToDegFormatter } from 'lib/utils';
-import { useThree } from '@react-three/fiber';
+
 import {
   getObject3DBindings,
   getRendererBindings,
@@ -18,21 +19,21 @@ import {
   getObjectsStoreBindings,
   getSceneButtons,
   getSceneConfigBindings,
-  getRaycasterParamsBindings,
-  buildBindings,
+  getRaycasterParamsBindings
+} from './bindings';
+import {
   makeRotationBinding,
   tweakBindingView,
+  buildBindings,
   buildButtons,
   cleanupContainer
-} from './bindings';
+} from './bindings/bindingHelpers';
 import './CPanel.css';
 
 // ----------------------- >> Remember last scroll position >> --------------------------------
 
 let cPanelScrollTop = 0;
-export const panelContainer = document.querySelector(
-  '#controlPanelContent'
-) as HTMLElement;
+export const panelContainer = document.querySelector('#controlPanelContent') as HTMLElement;
 
 function onScroll(evt: Event) {
   cPanelScrollTop = Math.ceil((evt.target as HTMLElement)?.scrollTop);
@@ -103,41 +104,23 @@ export const CPanel = () => {
   const isPlaying = useAppStore((state) => state.isPlaying);
   const paneRef = useRef<Pane | null>(null);
   const cameraControl = useAppStore((state) => state.cameraControl);
-  const attachDefaultControllersToPlayingCamera = useAppStore(
-    (state) => state.attachDefaultControllersToPlayingCamera
-  );
+  const attachDefaultControllersToPlayingCamera = useAppStore((state) => state.attachDefaultControllersToPlayingCamera);
   const cameraType = useAppStore((state) => state.cameraType);
-  const transformControlsMode = useAppStore(
-    (state) => state.transformControlsMode
-  );
-  const transformControlsSpace = useAppStore(
-    (state) => state.transformControlsSpace
-  );
-  const cPanelContinuousUpdate = useAppStore(
-    (state) => state.cPanelContinuousUpdate
-  );
+  const transformControlsMode = useAppStore((state) => state.transformControlsMode);
+  const transformControlsSpace = useAppStore((state) => state.transformControlsSpace);
+  const cPanelContinuousUpdate = useAppStore((state) => state.cPanelContinuousUpdate);
   const cPanelStateFake = useAppStore((state) => state.cPanelStateFake);
   const angleFormat = useAppStore((state) => state.angleFormat);
 
   const cPanelVisible = useAppStore((state) => state.cPanelVisible);
-  const cPanelCustomParams = useAppStore((state) =>
-    state.getCPanelCustomParams()
-  );
-  const triggerCPanelCustomParamsChanged = useAppStore(
-    (state) => state.triggerCPanelCustomParamsChanged
-  );
-  const cPanelCustomControls = useAppStore(
-    (state) => state.cPanelCustomControls
-  );
+  const cPanelCustomParams = useAppStore((state) => state.getCPanelCustomParams());
+  const triggerCPanelCustomParamsChanged = useAppStore((state) => state.triggerCPanelCustomParamsChanged);
+  const cPanelCustomControls = useAppStore((state) => state.cPanelCustomControls);
   const selectedObject = useAppStore((state) => state.selectedObject);
   const selectedObjectRef = useRef<THREE.Object3D | null>(null);
-  const triggerSelectedObjectChanged = useAppStore(
-    (state) => state.triggerSelectedObjectChanged
-  );
+  const triggerSelectedObjectChanged = useAppStore((state) => state.triggerSelectedObjectChanged);
 
-  const continuousUpdateRef = useRef<ReturnType<
-    typeof makeContinuousUpdate
-  > | null>(null);
+  const continuousUpdateRef = useRef<ReturnType<typeof makeContinuousUpdate> | null>(null);
 
   const handleSelectedObjectChanges = useCallback(
     (_event: any) => {
@@ -229,12 +212,11 @@ export const CPanel = () => {
     cleanupContainer(objectTab);
     if (!selectedObject) return;
 
-    buildBindings(
-      objectTab as unknown as FolderApi,
-      useAppStore.getState(),
-      getObjectsStoreBindings(),
-      { scene, camera, gl }
-    );
+    buildBindings(objectTab as unknown as FolderApi, useAppStore.getState(), getObjectsStoreBindings(), {
+      scene,
+      camera,
+      gl
+    });
 
     const objectFolder = objectTab
       .addFolder({
@@ -243,16 +225,11 @@ export const CPanel = () => {
       })
       .on('change', handleSelectedObjectChanges);
 
-    buildBindings(
-      objectFolder,
-      selectedObject,
-      getObject3DBindings({ angleFormat, isPlaying }),
-      {
-        scene,
-        camera,
-        gl
-      }
-    );
+    buildBindings(objectFolder, selectedObject, getObject3DBindings({ angleFormat, isPlaying }), {
+      scene,
+      camera,
+      gl
+    });
   }, [
     selectedObject,
     handleSelectedObjectChanges,
@@ -289,12 +266,7 @@ export const CPanel = () => {
         makeRotationBinding(binding);
       }
     });
-  }, [
-    cPanelCustomControls,
-    cPanelCustomParams,
-    handleCustomParamsChanges,
-    cPanelStateFake
-  ]);
+  }, [cPanelCustomControls, cPanelCustomParams, handleCustomParamsChanges, cPanelStateFake]);
 
   // Setup bindings for Scene/Pane
   useEffect(() => {
@@ -337,16 +309,11 @@ export const CPanel = () => {
     });
 
     // Add scene config bindings
-    buildBindings(
-      sceneConfigFolder,
+    buildBindings(sceneConfigFolder, scene, getSceneConfigBindings({ angleFormat, isPlaying }), {
       scene,
-      getSceneConfigBindings({ angleFormat, isPlaying }),
-      {
-        scene,
-        camera,
-        gl
-      }
-    );
+      camera,
+      gl
+    });
 
     const cameraEditorFolder = sceneTab.addFolder({
       title: 'Camera Editor',
@@ -370,16 +337,11 @@ export const CPanel = () => {
       });
 
     // Add camera object bindings
-    buildBindings(
-      cameraCurrentFolder,
+    buildBindings(cameraCurrentFolder, camera, getObject3DBindings({ angleFormat, isPlaying }), {
+      scene,
       camera,
-      getObject3DBindings({ angleFormat, isPlaying }),
-      {
-        scene,
-        camera,
-        gl
-      }
-    );
+      gl
+    });
 
     const glFolder = sceneTab
       .addFolder({
@@ -407,16 +369,11 @@ export const CPanel = () => {
         // console.log('Raycaster Params changed', raycaster);
       });
 
-    buildBindings(
-      raycasterParamsFolder,
-      raycaster,
-      getRaycasterParamsBindings(),
-      {
-        scene,
-        camera,
-        gl
-      }
-    );
+    buildBindings(raycasterParamsFolder, raycaster, getRaycasterParamsBindings(), {
+      scene,
+      camera,
+      gl
+    });
   }, [
     cPanelContinuousUpdate,
     angleFormat,

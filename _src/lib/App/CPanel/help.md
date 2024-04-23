@@ -41,7 +41,13 @@
 - All shortcuts are mentioned in cPanel labels which are constrained to a limited width to not consume space, but are revealed on mouse hover.
   <br /><br />
 
-- Orbit and Fly camera controls are available in the scene view.
+- The cPanel has 3 main tabs.
+  - `Selected` tab is used to interact with the selected object.
+  - `Custom` tab is used to interact with custom controls (added in code).
+  - `Global` tab is used to config cPanel itself and interact with other global objects.
+    <br /><br />
+  
+- `Orbit` and `Fly` camera controls are available in the scene view.
   <br /><br />
   In `Fly` mode, the camera can be moved with `WASDQE` while right mouse button is pressed.
   <br /><br />

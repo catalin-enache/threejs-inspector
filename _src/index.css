@@ -1,5 +1,5 @@
 :root {
-  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+  font-family: 'Roboto Mono', monospace;
   line-height: 1.5;
   font-weight: 400;
 
@@ -11,6 +11,7 @@
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   -webkit-text-size-adjust: 100%;
+  -webkit-tap-highlight-color: transparent;
 }
 
 html, body {
@@ -29,6 +30,10 @@ body {
   min-height: 100vh;
 }
 
+body * {
+  box-sizing: border-box;
+}
+
 #main {
   display: block;
   position: relative;
@@ -41,7 +46,3 @@ body {
   height: 100%;
 }
 
-#dragMe {
-  background-color: var(--tp-base-background-color);
-  height: 8px
-}

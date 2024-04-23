@@ -10,7 +10,6 @@ import { makeContinuousUpdate } from './continuousUpdate';
 import TexturePlugin from './Plugins/TexturePlugin';
 import './manipulateMouseSpeed';
 import { radToDegFormatter } from 'lib/utils';
-
 import {
   getObject3DBindings,
   getRendererBindings,
@@ -28,7 +27,12 @@ import {
   buildButtons,
   cleanupContainer
 } from './bindings/bindingHelpers';
+// @ts-ignore
+import { html } from './help.md';
 import './CPanel.css';
+
+const helpContainer = document.getElementById('help')!;
+helpContainer.innerHTML = html;
 
 // ----------------------- >> Remember last scroll position >> --------------------------------
 
@@ -98,6 +102,7 @@ const preventContextMenu = (evt: globalThis.MouseEvent) => {
 };
 
 panelContainer.addEventListener('contextmenu', preventContextMenu);
+helpContainer.addEventListener('contextmenu', preventContextMenu);
 
 export const CPanel = () => {
   const { camera, scene, gl, raycaster } = useThree();
@@ -167,6 +172,7 @@ export const CPanel = () => {
       return;
     }
 
+    // The followings in current useEffect are for the first time setup
     paneRef.current = new Pane({
       container: panelContainer
     });
@@ -178,10 +184,13 @@ export const CPanel = () => {
     paneRef.current.hidden = !cPanelVisible;
     const pane = paneRef.current;
 
-    // prettier-ignore
     pane.addTab({ pages: [{ title: 'Selected' }, { title: 'Custom' }, { title: 'Global' }] });
-    [...pane.children[0].element.children[0].children].forEach((tab) => {
+    [...pane.children[0].element.children[0].children].forEach((tab, idx) => {
       tab.classList.add('cPanel-tab'); // to style them hover-able
+      if (idx === 2) {
+        // select the Global tab by default
+        tab.children[0].dispatchEvent(new Event('click'));
+      }
     });
   }, [cPanelVisible, cPanelContinuousUpdate]);
 

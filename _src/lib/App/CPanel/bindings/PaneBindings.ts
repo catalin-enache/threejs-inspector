@@ -1,8 +1,8 @@
 import { useAppStore } from 'src/store';
 import type { onChange, SceneObjects } from './bindingTypes';
 import { numberCommon } from './bindingHelpers';
-
 const docStyle = document.documentElement.style;
+const helpContainer = document.getElementById('help');
 
 export const PaneBindings = () => ({
   cPanelContinuousUpdate: {
@@ -27,6 +27,7 @@ export const PaneBindings = () => ({
       useAppStore.getState().toggleCPanelShowHelp();
       const showHelp = useAppStore.getState().cPanelShowHelp;
       console.log('cPanelShowHelp', showHelp);
+      helpContainer!.style.display = showHelp ? 'block' : 'none';
     }
   },
   angleFormat: {

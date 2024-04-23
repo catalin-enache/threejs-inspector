@@ -27,21 +27,30 @@
 }
 
 #controlPanel {
+  --cPanelWidth: 340px;
+  --cPanelRightMargin: 10px;
   position: absolute;
   top: 10px;
-  right: 10px;
-  width: 340px;
+  right: var(--cPanelRightMargin);
+  width: var(--cPanelWidth);
 }
 
-#controlPanel #help {
+#dragMe {
+  background-color: var(--tp-base-background-color);
+  height: 8px
+}
+
+#help {
   position: absolute;
   top: 0;
   right: 100%;
-  width: 400px;
+  width: calc(100vw - var(--cPanelWidth) - calc(var(--cPanelRightMargin) * 2));
   height: 100%;
   background-color: var(--tp-base-background-color);
+  display: none;
+  overflow-y: scroll;
+  padding: 16px;
 }
-
 
 /* make controlPanelContent scrollable */
 #controlPanelContent {
@@ -69,10 +78,12 @@ and in charge with shifting position according with last scrollTop value
 }
 
 /* hide scrollbar */
-#controlPanelContent::-webkit-scrollbar {
+#controlPanelContent::-webkit-scrollbar,
+#help::-webkit-scrollbar {
   display: none;
 }
-#controlPanelContent {
+#controlPanelContent,
+#help {
   -ms-overflow-style: none;  /* IE and Edge */
   scrollbar-width: none;  /* Firefox */
 }

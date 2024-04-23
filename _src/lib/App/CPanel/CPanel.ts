@@ -113,6 +113,7 @@ export const CPanel = () => {
   const angleFormat = useAppStore((state) => state.angleFormat);
 
   const cPanelVisible = useAppStore((state) => state.cPanelVisible);
+  const setCPanelOpacity = useAppStore((state) => state.setCPanelOpacity);
   const cPanelCustomParams = useAppStore((state) => state.getCPanelCustomParams());
   const triggerCPanelCustomParamsChanged = useAppStore((state) => state.triggerCPanelCustomParamsChanged);
   const cPanelCustomControls = useAppStore((state) => state.cPanelCustomControls);
@@ -186,6 +187,10 @@ export const CPanel = () => {
 
   // Dismiss Pane on unmount
   useEffect(() => {
+    const currentOpacity = +getComputedStyle(document.documentElement)
+      .getPropertyValue('--tp-base-background-opacity')
+      .trim();
+    setCPanelOpacity(currentOpacity);
     return () => {
       continuousUpdateRef.current?.stop();
       paneRef.current?.dispose();

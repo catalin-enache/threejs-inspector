@@ -51,6 +51,11 @@ export const getObject3DBindings = (params: CommonGetterParams) => ({
   parent: {
     // for Object3D
     title: 'Parent',
+    id: {
+      label: 'ID',
+      view: 'text',
+      disabled: true
+    },
     uuid: {
       label: 'UUID',
       view: 'text',

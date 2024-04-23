@@ -1,11 +1,23 @@
 import { useAppStore } from 'src/store';
 import type { onChange } from './bindingTypes';
+import { numberCommon } from './bindingHelpers';
+
+const docStyle = document.documentElement.style;
 
 export const PaneBindings = () => ({
   cPanelContinuousUpdate: {
     label: 'Continuous Update ( U )',
     onChange: ((_, evt) => {
       useAppStore.getState().setCPanelContinuousUpdate(evt.value);
+    }) as onChange
+  },
+  cPanelOpacity: {
+    label: 'Opacity',
+    ...numberCommon,
+    min: 0,
+    max: 1,
+    onChange: ((_, evt) => {
+      docStyle.setProperty('--tp-base-background-opacity', evt.value.toFixed(2));
     }) as onChange
   },
   angleFormat: {

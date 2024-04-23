@@ -27,15 +27,15 @@ export interface AppStore {
   transformControlsSpace: 'world' | 'local';
   setTransformControlsSpace: (space: 'world' | 'local') => void;
   isDraggingTransformControls: boolean;
-  setIsDraggingTransformControls: (
-    isDraggingTransformControls: boolean
-  ) => void;
+  setIsDraggingTransformControls: (isDraggingTransformControls: boolean) => void;
   showGizmos: boolean;
   setShowGizmos: (showGizmos: boolean) => void;
   toggleShowGizmos: () => void;
   showHelpers: boolean;
   setShowHelpers: (showHelpers: boolean) => void;
   toggleShowHelpers: () => void;
+  cPanelOpacity: number;
+  setCPanelOpacity: (opacity: number) => void;
   cPanelVisible: boolean;
   setCPanelVisible: (cPanelVisible: boolean) => void;
   toggleCPanelVisibility: () => void;
@@ -59,9 +59,7 @@ export interface AppStore {
   setCameraType: (type: 'perspective' | 'orthographic') => void;
   toggleCameraType: () => void;
   attachDefaultControllersToPlayingCamera: boolean;
-  setAttachDefaultControllersToPlayingCamera: (
-    attachDefaultControllersToPlayingCamera: boolean
-  ) => void;
+  setAttachDefaultControllersToPlayingCamera: (attachDefaultControllersToPlayingCamera: boolean) => void;
   toggleAttachDefaultControllersToPlayingCamera: () => void;
   selectedObject: THREE.Object3D | null;
   setSelectedObject: (object: THREE.Object3D | null) => void;
@@ -105,11 +103,9 @@ export const useAppStore = create<AppStore>()(
     transformControlsMode: 'translate',
     setTransformControlsMode: (mode) => set({ transformControlsMode: mode }),
     transformControlsSpace: 'world',
-    setTransformControlsSpace: (space) =>
-      set({ transformControlsSpace: space }),
+    setTransformControlsSpace: (space) => set({ transformControlsSpace: space }),
     isDraggingTransformControls: false,
-    setIsDraggingTransformControls: (isDraggingTransformControls) =>
-      set({ isDraggingTransformControls }),
+    setIsDraggingTransformControls: (isDraggingTransformControls) => set({ isDraggingTransformControls }),
     showGizmos: true,
     setShowGizmos: (showGizmos) => set({ showGizmos, showHelpers: showGizmos }),
     toggleShowGizmos: () => {
@@ -125,6 +121,8 @@ export const useAppStore = create<AppStore>()(
         showHelpers: !state.showHelpers
       }));
     },
+    cPanelOpacity: 0,
+    setCPanelOpacity: (cPanelOpacity) => set({ cPanelOpacity }),
     cPanelVisible: true,
     setCPanelVisible: (cPanelVisible) => set({ cPanelVisible }),
     toggleCPanelVisibility: () => {
@@ -146,8 +144,7 @@ export const useAppStore = create<AppStore>()(
     cPanelStateFake: 0,
     triggerCPaneStateChanged: () => {
       set((state) => ({
-        cPanelStateFake:
-          state.cPanelStateFake < 100 ? state.cPanelStateFake + 1 : 0
+        cPanelStateFake: state.cPanelStateFake < 100 ? state.cPanelStateFake + 1 : 0
       }));
     },
     getCPanelCustomParams: () => cPanelCustomParamsStore,
@@ -176,10 +173,7 @@ export const useAppStore = create<AppStore>()(
     cPanelCustomParamsStateFake: 0,
     triggerCPanelCustomParamsChanged: () => {
       set((state) => ({
-        cPanelCustomParamsStateFake:
-          state.cPanelCustomParamsStateFake < 100
-            ? state.cPanelCustomParamsStateFake + 1
-            : 0
+        cPanelCustomParamsStateFake: state.cPanelCustomParamsStateFake < 100 ? state.cPanelCustomParamsStateFake + 1 : 0
       }));
     },
     cPanelCustomControls: {},
@@ -217,28 +211,22 @@ export const useAppStore = create<AppStore>()(
     toggleCameraType: () => {
       if (get().isDraggingTransformControls) return;
       set((state) => ({
-        cameraType:
-          state.cameraType === 'perspective' ? 'orthographic' : 'perspective'
+        cameraType: state.cameraType === 'perspective' ? 'orthographic' : 'perspective'
       }));
     },
     attachDefaultControllersToPlayingCamera: true,
-    setAttachDefaultControllersToPlayingCamera: (
-      attachDefaultControllersToPlayingCamera
-    ) => set({ attachDefaultControllersToPlayingCamera }),
+    setAttachDefaultControllersToPlayingCamera: (attachDefaultControllersToPlayingCamera) =>
+      set({ attachDefaultControllersToPlayingCamera }),
     toggleAttachDefaultControllersToPlayingCamera: () =>
       set((state) => ({
-        attachDefaultControllersToPlayingCamera:
-          !state.attachDefaultControllersToPlayingCamera
+        attachDefaultControllersToPlayingCamera: !state.attachDefaultControllersToPlayingCamera
       })),
     selectedObject: null,
     setSelectedObject: (selectedObject) => set({ selectedObject }),
     selectedObjectStateFake: 0,
     triggerSelectedObjectChanged: () =>
       set((state) => ({
-        selectedObjectStateFake:
-          state.selectedObjectStateFake < 100
-            ? state.selectedObjectStateFake + 1
-            : 0
+        selectedObjectStateFake: state.selectedObjectStateFake < 100 ? state.selectedObjectStateFake + 1 : 0
       }))
   }))
   // )

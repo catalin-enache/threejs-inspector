@@ -28,7 +28,7 @@ import {
   cleanupContainer
 } from './bindings/bindingHelpers';
 // @ts-ignore
-import { html } from './help.md';
+import { html } from '../../../../README.md';
 import './CPanel.css';
 
 const helpContainer = document.getElementById('help')!;

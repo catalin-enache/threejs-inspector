@@ -39,6 +39,8 @@ export interface AppStore {
   toggleCPanelShowHelp: () => void;
   cPanelOpacity: number;
   setCPanelOpacity: (opacity: number) => void;
+  cPanelSize: number;
+  setCPanelSize: (size: number) => void;
   cPanelVisible: boolean;
   setCPanelVisible: (cPanelVisible: boolean) => void;
   toggleCPanelVisibility: () => void;
@@ -133,6 +135,8 @@ export const useAppStore = create<AppStore>()(
     },
     cPanelOpacity: 0,
     setCPanelOpacity: (cPanelOpacity) => set({ cPanelOpacity }),
+    cPanelSize: 0,
+    setCPanelSize: (cPanelSize) => set({ cPanelSize }),
     cPanelVisible: true,
     setCPanelVisible: (cPanelVisible) => set({ cPanelVisible }),
     toggleCPanelVisibility: () => {

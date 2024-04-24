@@ -18,6 +18,10 @@ Bug: try playing with offset on Scene background after getting the green texture
 Bug?: The scene moving is not continuous. Is it from the mouse ?
 The app has a bit of lag compared to: https://threejs.org/examples/?q=rotation#webgl_materials_texture_rotation which is instant *DONE* (re-rendering on OrbitControls change)
 Make possible setting up cPanel opacity from itself so that it can be adjusted at runtime *DONE*
+Make a help button and popup with all the shortcuts and explanations *DONE*
+Find a way to solve conflict between scene background as texture and as folder *DONE*
+The Scene background can be a Texture or Color. Adjust the controller for that. *WNF* (we show the type was has been set)
+Allow user to adjust cPanel size the same as for opacity *DONE*
 
 Bug: When hiding cPanel the cPanel draggable line is still visible.
 
@@ -28,9 +32,8 @@ Integrate with Default LoadingManager
 Create a text display plugin; to be used in showing quaternion and other readonly fields
 Normalize all handlers to pointer instead of mouse.
 
-The Scene background can be a Texture or Color. Adjust the controller for that.
 Check what is with backgroundBlurriness and backgroundRotation. It seems they don't work. Is it required a CubeTexture ?
-Find a way to solve conflict between scene background as texture and as folder
+
 Checkout how does it happen that default cameras do not have helpers around them so that we should remove them.
 Add loaders so that we can start the scene after everything was loaded
 
@@ -55,7 +58,6 @@ Add top/left/bottom/right panel options
 Get all calculations from old scene
 See how we can use labels/projections in the scene leveraging Drei
 
-Make a help button and popup with all the shortcuts and explanations
 Implement snapping
 
 Cleanup package.json

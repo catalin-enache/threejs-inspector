@@ -119,6 +119,7 @@ export const CPanel = () => {
 
   const cPanelVisible = useAppStore((state) => state.cPanelVisible);
   const setCPanelOpacity = useAppStore((state) => state.setCPanelOpacity);
+  const setCPanelSize = useAppStore((state) => state.setCPanelSize);
   const cPanelCustomParams = useAppStore((state) => state.getCPanelCustomParams());
   const triggerCPanelCustomParamsChanged = useAppStore((state) => state.triggerCPanelCustomParamsChanged);
   const cPanelCustomControls = useAppStore((state) => state.cPanelCustomControls);
@@ -200,6 +201,9 @@ export const CPanel = () => {
       .getPropertyValue('--tp-base-background-opacity')
       .trim();
     setCPanelOpacity(currentOpacity);
+    const currentSize = parseInt(getComputedStyle(document.getElementById('controlPanel')!).getPropertyValue('--cPanelWidth')
+      .trim(), 10);
+    setCPanelSize(currentSize);
     return () => {
       continuousUpdateRef.current?.stop();
       paneRef.current?.dispose();

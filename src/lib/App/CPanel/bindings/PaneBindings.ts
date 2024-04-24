@@ -2,7 +2,8 @@ import { useAppStore } from 'src/store';
 import type { onChange, SceneObjects } from './bindingTypes';
 import { numberCommon } from './bindingHelpers';
 const docStyle = document.documentElement.style;
-const helpContainer = document.getElementById('help');
+const helpContainerStyle = document.getElementById('help')!.style;
+const cPanelStyle = document.getElementById('controlPanel')!.style;
 
 export const PaneBindings = () => ({
   cPanelContinuousUpdate: {
@@ -20,14 +21,25 @@ export const PaneBindings = () => ({
       docStyle.setProperty('--tp-base-background-opacity', evt.value.toFixed(2));
     }) as onChange
   },
+  cPanelSize: {
+    label: 'Size',
+    ...numberCommon,
+    step: 1,
+    pointerScale: 1,
+    keyScale: 1,
+    min: 280, // tuned in relation with cPanel binding-value width in CSS
+    max: 800,
+    onChange: ((_, evt) => {
+      cPanelStyle.setProperty('--cPanelWidth', `${evt.value.toFixed(2)}px`);
+    }) as onChange
+  },
   cPanelShowHelp: {
     label: 'Help',
     title: 'Toggle Help',
     onClick: (_sceneObjects: SceneObjects) => {
       useAppStore.getState().toggleCPanelShowHelp();
       const showHelp = useAppStore.getState().cPanelShowHelp;
-      console.log('cPanelShowHelp', showHelp);
-      helpContainer!.style.display = showHelp ? 'block' : 'none';
+      helpContainerStyle.display = showHelp ? 'block' : 'none';
     }
   },
   angleFormat: {

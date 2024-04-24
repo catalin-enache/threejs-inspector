@@ -46,7 +46,7 @@
   or by pressing Ctrl+Alt+Shift+Space (when cPanel and Gizmos are hidden - which means `non editor mode`).
   <br /><br />
 
-- Previously mentioned shortcuts will change in the future to ensure we're not interfering at all with the main app.
+- The shortcuts will very likely change in the future to ensure we're not interfering at all with the main app.
   <br /><br />
 
 - Objects that are not visible (e.g. lights, cameras) are injected with a picker such that they can be selected in the scene view.
@@ -56,6 +56,9 @@
   <br /><br />
 
   This design choice was made in order to avoid looping through a very large list of objects when `Raycaster` looks for hits.
+  <br /><br />
+
+- To inspect an object `double click` on it in the scene view.
   <br /><br />
 
 - All shortcuts are mentioned in cPanel labels which are constrained to a limited width to not consume space, but are revealed on mouse hover.
@@ -84,6 +87,9 @@
   The provided `Orbit` and `Fly` camera controls are _opt-in_ in play mode (in cPanel checkbox and via `]` shortcut).  
   This allows us to create fully functional mini apps as well as preventing interfering with the main app.  
   It goes without saying that the main app should have its own camera controls when the default ones are not attached to the playing camera.
+  <br /><br />
+
+- To change a texture image, click on the texture image in the cPanel and select a new image from the opened file explorer.
   <br /><br />
 
 - Any change to a texture will update the texture and if the texture is inside a material it will recompile the material  

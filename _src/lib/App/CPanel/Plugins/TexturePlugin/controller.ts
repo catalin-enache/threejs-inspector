@@ -52,7 +52,7 @@ export class TextureController implements Controller<TextureView> {
     this.openFileBrowser = this.openFileBrowser.bind(this);
     this.handleValueChange = this.handleValueChange.bind(this);
     this.view.input.addEventListener('change', this.onFile);
-    this.view.canvas.addEventListener('dblclick', this.openFileBrowser);
+    this.view.canvas.addEventListener('click', this.openFileBrowser);
     // TODO: add a way to enlarge the canvas on click (on it or on some button) to see the image at better resolution
 
     this.viewProps.handleDispose(() => {

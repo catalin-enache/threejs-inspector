@@ -31,6 +31,7 @@ import {
 import { html } from '../../../../README.md';
 import './CPanel.css';
 
+const cPanelContainer = document.getElementById('controlPanel')!;
 const helpContainer = document.getElementById('help')!;
 helpContainer.innerHTML = html;
 
@@ -162,7 +163,8 @@ export const CPanel = () => {
   // Instantiate Pane and create tabs
   useEffect(() => {
     if (paneRef.current) {
-      paneRef.current.hidden = !cPanelVisible;
+      paneRef.current.hidden = !cPanelVisible; // switch at Tweakpane level
+      cPanelContainer.style.display = cPanelVisible ? 'block' : 'none'; // switch at higher node in the DOM
       if (!cPanelVisible) {
         continuousUpdateRef.current?.stop();
         // resizeObserver.disconnect();
@@ -182,7 +184,6 @@ export const CPanel = () => {
     paneRef.current.registerPlugin(TexturePlugin);
     paneRef.current.registerPlugin(EssentialsPlugin);
     continuousUpdateRef.current = makeContinuousUpdate(paneRef.current);
-    paneRef.current.hidden = !cPanelVisible;
     const pane = paneRef.current;
 
     pane.addTab({ pages: [{ title: 'Selected' }, { title: 'Custom' }, { title: 'Global' }] });

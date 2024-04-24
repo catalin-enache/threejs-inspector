@@ -4,7 +4,6 @@ export const LightShadowBindings = (_params: CommonGetterParams) => ({
   mapSize: {
     label: 'MapSize',
     step: 1,
-    // TODO: maybe get rid of __parent ?
     onChange: (({ bindings }) => {
       if (bindings.__parent?.shadow?.map) {
         bindings.__parent.shadow.map.dispose();

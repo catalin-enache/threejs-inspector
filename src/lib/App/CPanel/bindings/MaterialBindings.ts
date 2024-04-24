@@ -77,7 +77,6 @@ const blendSrcFactors = {
 };
 
 export const MaterialBindings = (params: CommonGetterParams) => ({
-  // TODO: add the rest of material props
   // TODO: Add: a way to show userData
   id: {
     label: 'ID',

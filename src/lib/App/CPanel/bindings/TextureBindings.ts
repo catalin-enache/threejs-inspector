@@ -3,6 +3,12 @@ import { radToDegFormatter } from 'lib/utils';
 import { numberCommon } from './bindingHelpers';
 import type { CommonGetterParams, onChange } from './bindingTypes';
 
+const wrapOptions = {
+  ClampToEdgeWrapping: THREE.ClampToEdgeWrapping,
+  RepeatWrapping: THREE.RepeatWrapping,
+  MirroredRepeatWrapping: THREE.MirroredRepeatWrapping
+};
+
 export const TextureBindings = (params: CommonGetterParams) => ({
   id: {
     label: 'ID',
@@ -86,17 +92,19 @@ export const TextureBindings = (params: CommonGetterParams) => ({
   wrapS: {
     label: 'Wrap S',
     options: {
-      ClampToEdgeWrapping: THREE.ClampToEdgeWrapping,
-      RepeatWrapping: THREE.RepeatWrapping,
-      MirroredRepeatWrapping: THREE.MirroredRepeatWrapping
+      ...wrapOptions
     }
   },
   wrapT: {
     label: 'Wrap T',
     options: {
-      ClampToEdgeWrapping: THREE.ClampToEdgeWrapping,
-      RepeatWrapping: THREE.RepeatWrapping,
-      MirroredRepeatWrapping: THREE.MirroredRepeatWrapping
+      ...wrapOptions
+    }
+  },
+  wrapR: {
+    label: 'Wrap R',
+    options: {
+      ...wrapOptions
     }
   },
   offset: {
@@ -143,6 +151,14 @@ export const TextureBindings = (params: CommonGetterParams) => ({
   flipY: {
     label: 'Flip Y'
   },
+  colorSpace: {
+    label: 'Color Space',
+    options: {
+      NoColorSpace: THREE.NoColorSpace,
+      SRGBColorSpace: THREE.SRGBColorSpace,
+      LinearSRGBColorSpace: THREE.LinearSRGBColorSpace
+    }
+  },
   unpackAlignment: {
     label: 'Unpack Alignment',
     options: {
@@ -152,12 +168,16 @@ export const TextureBindings = (params: CommonGetterParams) => ({
       8: 8
     }
   },
-  colorSpace: {
-    label: 'Color Space',
+  compareFunction: {
     options: {
-      NoColorSpace: THREE.NoColorSpace,
-      SRGBColorSpace: THREE.SRGBColorSpace,
-      LinearSRGBColorSpace: THREE.LinearSRGBColorSpace
+      NeverCompare: THREE.NeverCompare,
+      LessCompare: THREE.LessCompare,
+      EqualCompare: THREE.EqualCompare,
+      LessEqualCompare: THREE.LessEqualCompare,
+      GreaterCompare: THREE.GreaterCompare,
+      NotEqualCompare: THREE.NotEqualCompare,
+      GreaterEqualCompare: THREE.GreaterEqualCompare,
+      AlwaysCompare: THREE.AlwaysCompare
     }
   },
   onDetailsChange: (({ object }) => {

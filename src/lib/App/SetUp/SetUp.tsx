@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 // @ts-ignore
-import { useThree, useFrame } from '@react-three/fiber';
+import { useThree } from '@react-three/fiber';
 
 import { useCallback, useEffect, useRef } from 'react';
 import {
@@ -14,6 +14,7 @@ import {
 import { FlyControls } from 'lib/App/FlyControls';
 import { useAppStore } from 'src/store';
 import { focusCamera } from 'lib/utils';
+import { userData } from 'src/types';
 
 RectAreaLightUniformsLib.init(); // required for RectAreaLight
 
@@ -22,14 +23,7 @@ const inspectableObjects: Record<string, THREE.Object3D> = {};
 const dependantObjects: Record<string, THREE.Object3D[]> = {};
 
 const makeHelpers = (object: THREE.Object3D) => {
-  let helper:
-    | THREE.SpotLightHelper
-    | THREE.CameraHelper
-    | RectAreaLightHelper
-    | THREE.DirectionalLightHelper
-    | THREE.PointLightHelper
-    | THREE.HemisphereLightHelper
-    | LightProbeHelper;
+  let helper: userData['helper'];
 
   let picker: THREE.Mesh;
 
@@ -49,10 +43,7 @@ const makeHelpers = (object: THREE.Object3D) => {
                 ? new THREE.HemisphereLightHelper(object, helperSize)
                 : object instanceof THREE.LightProbe
                   ? new LightProbeHelper(object, helperSize)
-                  : new THREE.PointLightHelper(
-                      object as THREE.PointLight,
-                      helperSize
-                    );
+                  : new THREE.PointLightHelper(object as THREE.PointLight, helperSize);
 
     const meshGeometry =
       object instanceof THREE.DirectionalLight
@@ -71,9 +62,7 @@ const makeHelpers = (object: THREE.Object3D) => {
       new THREE.MeshBasicMaterial({
         color:
           (object as THREE.Light).color || // camera doesn't have color
-          (object instanceof THREE.Camera
-            ? new THREE.Color(0xff0000)
-            : new THREE.Color(0xcccccc)),
+          (object instanceof THREE.Camera ? new THREE.Color(0xff0000) : new THREE.Color(0xcccccc)),
         visible: true,
         side: THREE.DoubleSide,
         transparent: true,
@@ -106,15 +95,13 @@ const makeHelpers = (object: THREE.Object3D) => {
       picker.position.set(0, 0, 0);
       picker.scale.set(1, 1, 1);
     } else if (object instanceof THREE.DirectionalLight) {
-      picker.matrix = (
-        helper as THREE.DirectionalLightHelper
-      ).lightPlane.matrix; // helper.matrix is a reference to helper.light.matrixWorld
+      picker.matrix = (helper as THREE.DirectionalLightHelper).lightPlane.matrix; // helper.matrix is a reference to helper.light.matrixWorld
       picker.matrixAutoUpdate = false;
     }
-
-    object.userData.picker = picker;
-    object.userData.helper = helper;
-    picker.userData.object = object;
+    const userData = object.userData as userData;
+    userData.picker = picker;
+    userData.helper = helper;
+    userData.object = object;
 
     object.add(picker);
     if (object instanceof THREE.SpotLight) {
@@ -144,10 +131,7 @@ const makeHelpers = (object: THREE.Object3D) => {
           picker.lookAt(object.target.position);
         } else if (object instanceof THREE.RectAreaLight) {
           picker.geometry.dispose();
-          picker.geometry = new THREE.PlaneGeometry(
-            object.width,
-            object.height
-          );
+          picker.geometry = new THREE.PlaneGeometry(object.width, object.height);
         }
       }
     );
@@ -175,7 +159,7 @@ const makeHelpers = (object: THREE.Object3D) => {
       (appStore) => appStore.isPlaying,
       (isPlaying) => {
         // TODO: checkout how does it happen that default cameras do not have helpers around them so that we should remove them.
-        if (object.userData.useOnPlay) {
+        if (userData.useOnPlay) {
           if (isPlaying) {
             object.remove(picker);
             threeScene.remove(helper);
@@ -202,17 +186,12 @@ THREE.Object3D.prototype.add = (function () {
   const originalAdd = THREE.Object3D.prototype.add;
   return function (this: THREE.Object3D, ...objects: THREE.Object3D[]) {
     objects.forEach((object) => {
-      const userData = object.userData;
+      const userData = object.userData as userData;
 
-      if (
-        userData.isInspectable ||
-        (object as THREE.Light).isLight ||
-        (object as THREE.Camera).isCamera
-      ) {
+      if (userData.isInspectable || (object as THREE.Light).isLight || (object as THREE.Camera).isCamera) {
         makeHelpers(object); // will enrich object with helper and picker
-        if (object.userData.picker) {
-          inspectableObjects[object.userData.picker.uuid] =
-            object.userData.picker;
+        if (userData.picker) {
+          inspectableObjects[userData.picker.uuid] = userData.picker;
         } else {
           inspectableObjects[object.uuid] = object;
         }
@@ -220,13 +199,10 @@ THREE.Object3D.prototype.add = (function () {
 
       // if multiple cameras are useOnPlay, only the last one will be considered
       if (
-        (object instanceof THREE.PerspectiveCamera ||
-          object instanceof THREE.OrthographicCamera) &&
+        (object instanceof THREE.PerspectiveCamera || object instanceof THREE.OrthographicCamera) &&
         userData.useOnPlay
       ) {
-        cameraToUseOnPlay = object as
-          | THREE.PerspectiveCamera
-          | THREE.OrthographicCamera;
+        cameraToUseOnPlay = object as THREE.PerspectiveCamera | THREE.OrthographicCamera;
       }
 
       originalAdd.call(this, object);
@@ -252,18 +228,10 @@ THREE.Object3D.prototype.remove = (function () {
 // ----------------------------------- Cameras >> -----------------------------------
 
 // TODO: when using different camera on play we might/will need different controller
-export let cameraToUseOnPlay:
-  | THREE.PerspectiveCamera
-  | THREE.OrthographicCamera
-  | null = null;
+export let cameraToUseOnPlay: THREE.PerspectiveCamera | THREE.OrthographicCamera | null = null;
 
 const cameraPosition = new THREE.Vector3(0, 0, 12);
-const perspectiveCamera = new THREE.PerspectiveCamera(
-  75,
-  window.innerWidth / window.innerHeight,
-  0.1,
-  100
-);
+const perspectiveCamera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 100);
 perspectiveCamera.position.copy(cameraPosition);
 perspectiveCamera.zoom = 1;
 
@@ -295,37 +263,26 @@ const updateCameras = () => {
 
 updateCameras();
 
-const getIsPlayingCamera = (camera: THREE.Camera) =>
-  camera !== perspectiveCamera && camera !== orthographicCamera;
+const getIsPlayingCamera = (camera: THREE.Camera) => camera !== perspectiveCamera && camera !== orthographicCamera;
 
 // ----------------------------------- << Cameras -----------------------------------
 
 const SetUp = () => {
   const { camera, gl, raycaster, pointer, scene } = useThree();
 
-  const isEditorMode = useAppStore(
-    (state) => state.showGizmos || state.cPanelVisible
-  );
+  const isEditorMode = useAppStore((state) => state.showGizmos || state.cPanelVisible);
 
   const selectedObject = useAppStore((state) => state.selectedObject);
   const setSelectedObject = useAppStore((state) => state.setSelectedObject);
-  const triggerSelectedObjectChanged = useAppStore(
-    (state) => state.triggerSelectedObjectChanged
-  );
+  const triggerSelectedObjectChanged = useAppStore((state) => state.triggerSelectedObjectChanged);
 
   const showGizmos = useAppStore((state) => state.showGizmos);
 
   const cameraControl = useAppStore((state) => state.cameraControl);
-  const attachDefaultControllersToPlayingCamera = useAppStore(
-    (state) => state.attachDefaultControllersToPlayingCamera
-  );
+  const attachDefaultControllersToPlayingCamera = useAppStore((state) => state.attachDefaultControllersToPlayingCamera);
 
-  const transformControlsMode = useAppStore(
-    (state) => state.transformControlsMode
-  );
-  const transformControlsSpace = useAppStore(
-    (state) => state.transformControlsSpace
-  );
+  const transformControlsMode = useAppStore((state) => state.transformControlsMode);
+  const transformControlsSpace = useAppStore((state) => state.transformControlsSpace);
   const transformControlsRef = useRef<TransformControls | null>(null);
 
   const orbitControlsRef = useRef<OrbitControls | null>(null);
@@ -365,28 +322,22 @@ const SetUp = () => {
     });
     // Preventing here for orbit controls to interfere with transform controls
     let currentEnabled = false;
-    transformControlsRef.current.addEventListener(
-      'dragging-changed',
-      function (event: any) {
-        useAppStore.getState().setIsDraggingTransformControls(event.value);
-        if (event.value) {
-          currentEnabled = !!orbitControlsRef.current?.enabled;
-          orbitControlsRef.current &&
-            (orbitControlsRef.current.enabled = false);
-        } else {
-          orbitControlsRef.current &&
-            (orbitControlsRef.current.enabled = currentEnabled);
-        }
+    transformControlsRef.current.addEventListener('dragging-changed', function (event: any) {
+      useAppStore.getState().setIsDraggingTransformControls(event.value);
+      if (event.value) {
+        currentEnabled = !!orbitControlsRef.current?.enabled;
+        orbitControlsRef.current && (orbitControlsRef.current.enabled = false);
+      } else {
+        orbitControlsRef.current && (orbitControlsRef.current.enabled = currentEnabled);
       }
-    );
+    });
     threeScene.add(transformControlsRef.current);
     // eslint-disable-next-line
   }, []);
 
   useEffect(() => {
     orbitControlsRef.current?.addEventListener('change', render);
-    return () =>
-      orbitControlsRef.current?.removeEventListener('change', render);
+    return () => orbitControlsRef.current?.removeEventListener('change', render);
   }, [render]);
 
   // Update transform controls behavior
@@ -400,18 +351,12 @@ const SetUp = () => {
     } else {
       transformControls.detach();
     }
-  }, [
-    selectedObject,
-    showGizmos,
-    transformControlsMode,
-    transformControlsSpace
-  ]);
+  }, [selectedObject, showGizmos, transformControlsMode, transformControlsSpace]);
 
   // Update ObitControls (target, camera, enabled) and TransformControls camera
   useEffect(() => {
     updateCameras();
-    if (transformControlsRef.current)
-      transformControlsRef.current['camera'] = camera;
+    if (transformControlsRef.current) transformControlsRef.current['camera'] = camera;
     if (!orbitControlsRef.current) return;
 
     // We react to cameraControl too so that we can preserve the camera position
@@ -445,8 +390,7 @@ const SetUp = () => {
     // The playing camera is set by the App in the scene and received here after that
     const isPlayingCamera = getIsPlayingCamera(camera);
     if (isPlayingCamera) {
-      orbitControlsRef.current.enabled =
-        attachDefaultControllersToPlayingCamera && cameraControl === 'orbit';
+      orbitControlsRef.current.enabled = attachDefaultControllersToPlayingCamera && cameraControl === 'orbit';
     } else {
       orbitControlsRef.current.enabled = cameraControl === 'orbit';
     }
@@ -477,19 +421,11 @@ const SetUp = () => {
       hits.length = 0;
 
       raycaster.setFromCamera(pointer, camera);
-      raycaster.intersectObjects(
-        Object.values(inspectableObjects),
-        false,
-        hits
-      );
+      raycaster.intersectObjects(Object.values(inspectableObjects), false, hits);
 
       lastHitRef.current = hits[0] || null;
-
-      setSelectedObject(
-        lastHitRef.current?.object?.userData.object ||
-          lastHitRef.current?.object ||
-          null
-      );
+      const userData = lastHitRef.current?.object?.userData as userData;
+      setSelectedObject(userData.object || lastHitRef.current?.object || null);
     },
     [raycaster, pointer, camera, setSelectedObject]
   );
@@ -503,9 +439,7 @@ const SetUp = () => {
 
   const isPlayingCamera = getIsPlayingCamera(camera);
   const shouldUseFlyControls =
-    (isPlayingCamera &&
-      attachDefaultControllersToPlayingCamera &&
-      cameraControl === 'fly') ||
+    (isPlayingCamera && attachDefaultControllersToPlayingCamera && cameraControl === 'fly') ||
     (!isPlayingCamera && cameraControl === 'fly');
 
   return <>{shouldUseFlyControls && <FlyControls />}</>;

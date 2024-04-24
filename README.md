@@ -36,10 +36,10 @@
 - The cPanel can be moved around by dragging the top bar and can be toggled by pressing Ctrl+Alt+Shift+P.
   <br /><br />
 
-- Helpers can be toggled by pressing Ctrl+Alt+Shift+H.
+- Helpers can be toggled by pressing Ctrl+Alt+Shift+H. When helpers are off only the pickers are visible.
   <br /><br />
 
-- Gizmos can be toggled by pressing Ctrl+Alt+Shift+G.
+- Gizmos (which include helpers and pickers) can be toggled by pressing Ctrl+Alt+Shift+G.
   <br /><br />
 
 - Play/Stop mode can be toggled by pressing Space (when cPanel or Gizmos are visible - which means `editor mode`)  

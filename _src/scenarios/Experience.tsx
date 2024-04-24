@@ -151,7 +151,7 @@ export function Experience() {
         color={new THREE.Color().setHSL(0.6, 1, 0.6)}
         groundColor={new THREE.Color().setHSL(0.095, 1, 0.75)}
       />
-      <rectAreaLight color={'deepskyblue'} position={[-3, 0, -8]} rotation={[-2.51, 0, 0]} />
+      <rectAreaLight color={'deepskyblue'} position={[-3, 0, -8]} rotation={[-2.51, 0, 0]} intensity={6} />
       <pointLight
         castShadow
         // shadow-mapSize={[2048, 2048]}

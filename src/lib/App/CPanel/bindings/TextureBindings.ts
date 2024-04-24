@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { radToDegFormatter } from 'lib/utils';
 import { numberCommon } from './bindingHelpers';
-import type { CommonGetterParams } from './bindingTypes';
+import type { CommonGetterParams, onChange } from './bindingTypes';
 
 export const TextureBindings = (params: CommonGetterParams) => ({
   id: {
@@ -160,12 +160,12 @@ export const TextureBindings = (params: CommonGetterParams) => ({
       LinearSRGBColorSpace: THREE.LinearSRGBColorSpace
     }
   },
-  onDetailsChange: (texture: THREE.Texture) => {
-    // console.log('texture changed', texture);
+  onDetailsChange: (({ object }) => {
+    // console.log('texture changed', object);
     // some props won't be reflected without needsUpdate = true
-    // this is not only for the image but for other props (e.g. flipY, ...)
+    // this is not only for the image but for other props (e.g. flipY, minFilter ...)
     // Warn: due to this, sliders (e.g. offset/rotation/repeat) will become less responsive for larger images.
     // Many sliders, when changed, do not even require to update the texture, but we're gathering everything here.
-    texture.needsUpdate = true;
-  }
+    (object as THREE.Texture).needsUpdate = true;
+  }) as onChange
 });

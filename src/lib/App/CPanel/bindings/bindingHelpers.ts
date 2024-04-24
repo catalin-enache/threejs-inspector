@@ -139,15 +139,25 @@ export const buildBindings = (folder: FolderApi, object: any, bindings: any) => 
       binding.on('change', bindingCandidate.onChange.bind(null, { object, folder, bindings }));
     }
 
+    // Special kind of subFolder allowing a prop to be both a value and a folder.
+    // For example a texture can be handled as a value, allowing changing the image and as a folder allowing changing other texture properties.
     if (bindingCandidate.details) {
       const subFolder = folder.addFolder({
         title: `${bindingCandidate.label} Details`,
         expanded: false
       });
 
+      bindingCandidate.details.__parent = object;
       if (bindingCandidate.details.onDetailsChange) {
         // console.log('candidate.details.onChange', { 'candidate.details': bindingCandidate.details, object, 'object[key]': object[key], binding });
-        subFolder.on('change', bindingCandidate.details.onDetailsChange.bind(null, object[key]));
+        subFolder.on(
+          'change',
+          bindingCandidate.details.onDetailsChange.bind(null, {
+            object: object[key],
+            folder: subFolder,
+            bindings: bindingCandidate.details
+          })
+        );
         delete bindingCandidate.details.onDetailsChange;
       }
       buildBindings(subFolder, object[key], bindingCandidate.details);

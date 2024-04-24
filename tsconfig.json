@@ -21,13 +21,15 @@
     "noFallthroughCasesInSwitch": true,
     "baseUrl": "./",
     "paths": {
-      "src/*": ["_src/*"],
-      "assets/*": ["_src/assets/*"],
-      "components/*": ["_src/components/*"],
-      "lib/*": ["_src/lib/*"],
-      "scenarios/*": ["_src/scenarios/*"],
+      "src/*": ["src/*"],
+      "assets/*": ["src/assets/*"],
+      "components/*": ["src/components/*"],
+      "lib/*": ["src/lib/*"],
+      "scenarios/*": ["src/scenarios/*"],
     }
   },
-  "include": ["_src"],
+  "include": [
+    "src"
+  ],
   "references": [{ "path": "./tsconfig.node.json" }]
 }

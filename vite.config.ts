@@ -8,7 +8,7 @@ const isCodeSandbox = 'SANDBOX_URL' in process.env || 'CODESANDBOX_HOST' in proc
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [react(), mdPlugin({ mode: [Mode.HTML, Mode.MARKDOWN] })],
-  root: '_src/',
+  root: 'src/',
   publicDir: '../public',
   base: './',
   server: {
@@ -23,11 +23,11 @@ export default defineConfig({
   },
   resolve: {
     alias: {
-      src: path.resolve(__dirname, './_src'),
-      assets: path.resolve(__dirname, './_src/assets'),
-      components: path.resolve(__dirname, './_src/components'),
-      lib: path.resolve(__dirname, './_src/lib'),
-      scenarios: path.resolve(__dirname, './_src/scenarios')
+      src: path.resolve(__dirname, './src'),
+      assets: path.resolve(__dirname, './src/assets'),
+      components: path.resolve(__dirname, './src/components'),
+      lib: path.resolve(__dirname, './src/lib'),
+      scenarios: path.resolve(__dirname, './src/scenarios')
     },
     extensions: ['.js', '.jsx', '.ts', '.tsx', '.json']
   },

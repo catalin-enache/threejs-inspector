@@ -22,8 +22,7 @@ Make a help button and popup with all the shortcuts and explanations *DONE*
 Find a way to solve conflict between scene background as texture and as folder *DONE*
 The Scene background can be a Texture or Color. Adjust the controller for that. *WNF* (we show the type was has been set)
 Allow user to adjust cPanel size the same as for opacity *DONE*
-
-Bug: When hiding cPanel the cPanel draggable line is still visible.
+Bug: When hiding cPanel the cPanel draggable line is still visible. *DONE*
 
 Include sceneObjects with other props rather than making it separate.
 

@@ -20,13 +20,7 @@ import {
   getSceneConfigBindings,
   getRaycasterParamsBindings
 } from './bindings';
-import {
-  makeRotationBinding,
-  tweakBindingView,
-  buildBindings,
-  buildButtons,
-  cleanupContainer
-} from './bindings/bindingHelpers';
+import { makeRotationBinding, tweakBindingView, buildBindings, cleanupContainer } from './bindings/bindingHelpers';
 // @ts-ignore
 import { html } from '../../../../README.md';
 import './CPanel.css';
@@ -41,7 +35,7 @@ let cPanelScrollTop = 0;
 export const panelContainer = document.querySelector('#controlPanelContent') as HTMLElement;
 
 function onScroll(evt: Event) {
-  cPanelScrollTop = Math.ceil((evt.target as HTMLElement)?.scrollTop);
+  cPanelScrollTop = Math.round((evt.target as HTMLElement)?.scrollTop);
 }
 panelContainer.addEventListener('scroll', onScroll);
 
@@ -202,8 +196,7 @@ export const CPanel = () => {
       .getPropertyValue('--tp-base-background-opacity')
       .trim();
     setCPanelOpacity(currentOpacity);
-    const currentSize = parseInt(getComputedStyle(document.getElementById('controlPanel')!).getPropertyValue('--cPanelWidth')
-      .trim(), 10);
+    const currentSize = parseInt(getComputedStyle(cPanelContainer).getPropertyValue('--cPanelWidth').trim(), 10);
     setCPanelSize(currentSize);
     return () => {
       continuousUpdateRef.current?.stop();
@@ -316,7 +309,7 @@ export const CPanel = () => {
     });
 
     // Add scene buttons
-    buildButtons(sceneFolder, getSceneButtons({ angleFormat, isPlaying }), {
+    buildBindings(sceneFolder, {}, getSceneButtons({ angleFormat, isPlaying }), {
       scene,
       camera,
       gl

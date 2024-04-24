@@ -1,19 +1,20 @@
 import { useAppStore } from 'src/store';
 import { focusCamera } from 'lib/utils';
-import type { CommonGetterParams, SceneObjects } from './bindingTypes';
+import type { CommonGetterParams, onChange } from './bindingTypes';
 
-export const SceneButtons = ({ isPlaying }: CommonGetterParams) => [
-  {
+// keys are not relevant for buttons
+export const SceneButtons = ({ isPlaying }: CommonGetterParams) => ({
+  0: {
     label: 'Full Screen Toggle( \\ | F11(native) )',
     title: 'Toggle Full Screen',
-    onClick: (_sceneObjects: SceneObjects) => {
+    onClick: () => {
       useAppStore.getState().toggleFullscreen();
     }
   },
-  {
+  1: {
     label: 'Focus Camera ( F )',
     title: 'Focus Selected Object',
-    onClick: ({ scene, camera }: SceneObjects) => {
+    onClick: (({ sceneObjects: { scene, camera } }) => {
       focusCamera({
         camera,
         // @ts-ignore
@@ -21,26 +22,26 @@ export const SceneButtons = ({ isPlaying }: CommonGetterParams) => [
         // @ts-ignore
         transformControls: scene.transformControlsRef.current
       });
-    }
+    }) as onChange
   },
-  {
+  2: {
     label: 'Show Helpers ( CAS+H )',
     title: 'Toggle Helpers',
-    onClick: (_sceneObjects: SceneObjects) => {
+    onClick: () => {
       useAppStore.getState().toggleShowHelpers();
     }
   },
-  {
+  3: {
     label: 'Show Gizmos ( CAS+G )',
     title: 'Toggle Gizmos',
-    onClick: (_sceneObjects: SceneObjects) => {
+    onClick: () => {
       useAppStore.getState().toggleShowGizmos();
     }
   },
-  {
+  4: {
     label: 'Play/Stop ( Space|CAS+Space )',
     title: isPlaying ? 'Stop' : 'Play',
-    onClick: (_sceneObjects: SceneObjects) => {
+    onClick: () => {
       useAppStore.getState().togglePlaying();
     }
     // TODO: we need play/pause/stop state
@@ -56,4 +57,4 @@ export const SceneButtons = ({ isPlaying }: CommonGetterParams) => [
     //   useAppStore.getState().setPlaying(evt.value);
     // }) as onChange
   }
-];
+});

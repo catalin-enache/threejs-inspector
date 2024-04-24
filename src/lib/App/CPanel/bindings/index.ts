@@ -101,7 +101,7 @@ export const getCameraStoreBindings = () => ({
   ...CameraStoreBindings()
 });
 
-export const getSceneButtons = ({ isPlaying }: CommonGetterParams) => [...SceneButtons({ isPlaying })];
+export const getSceneButtons = ({ isPlaying }: CommonGetterParams) => ({...SceneButtons({ isPlaying })});
 
 export const getSceneConfigBindings = ({ angleFormat }: CommonGetterParams) => ({
   ...SceneConfigBindings({ angleFormat })

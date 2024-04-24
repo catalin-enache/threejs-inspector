@@ -29,10 +29,12 @@
 #controlPanel {
   --cPanelWidth: 340px;
   --cPanelRightMargin: 10px;
+  --leftRightMargin: calc(var(--cPanelRightMargin) * 2);
+  --cPanelFinalWidth: min(var(--cPanelWidth), 100vw - var(--leftRightMargin));
   position: absolute;
   top: 10px;
   right: var(--cPanelRightMargin);
-  width: var(--cPanelWidth);
+  width: var(--cPanelFinalWidth);
 }
 
 #dragMe {
@@ -41,15 +43,16 @@
 }
 
 #help {
+  --helpWidth: calc(100vw - var(--cPanelFinalWidth) - var(--leftRightMargin));
   position: absolute;
   top: 0;
   right: 100%;
-  width: calc(100vw - var(--cPanelWidth) - calc(var(--cPanelRightMargin) * 2));
+  width: var(--helpWidth);
   height: 100%;
   background-color: var(--tp-base-background-color);
   display: none;
   overflow-y: scroll;
-  padding: 16px;
+  padding: min(16px, calc(var(--helpWidth) * 0.035));
 }
 
 #help code {

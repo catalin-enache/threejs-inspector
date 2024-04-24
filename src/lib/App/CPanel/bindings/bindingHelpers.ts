@@ -43,15 +43,17 @@ export const tweakFolder = (folder: FolderApi | TabPageApi, id: string) => {
   if (foldersExpandedMap[id] !== undefined) {
     folder.expanded = foldersExpandedMap[id];
   } else {
-    foldersExpandedMap[id] = !!folder.expanded;
+    foldersExpandedMap[id] = folder.expanded;
   }
   folder.element.classList.add('folder-button');
   const folderButton = folder.element.children[0];
 
   // Memoizing last expanded state
   folderButton.addEventListener('click', () => {
-    const isExpanded = [...(folderButton.parentNode as HTMLElement)!.classList].some((c) => c.endsWith('expanded'));
-    foldersExpandedMap[id] = !!isExpanded;
+    // folderButton.parentNode is the same as folder.element;
+    foldersExpandedMap[id] = [...(folderButton.parentNode as HTMLElement)!.classList].some((c) =>
+      c.endsWith('expanded')
+    );
   });
 
   // Tweakpane assumes that changes in sizes are transitioned,
@@ -85,21 +87,25 @@ export const tweakFolder = (folder: FolderApi | TabPageApi, id: string) => {
 
 export const buildBindings = (folder: FolderApi, object: any, bindings: any, sceneObjects: SceneObjects) => {
   // console.log('buildBindings for', folder.title, { object, bindings });
-  Object.keys(bindings).forEach((key) => {
-    if (key === 'title' || object[key] === undefined || object[key] === null) return;
 
+  Object.keys(bindings).forEach((key) => {
     const bindingCandidate = bindings[key];
-    const isFolder = bindingCandidate.title;
-    const isBinding = bindingCandidate.label;
     const isButton = bindingCandidate.title && bindingCandidate.label;
 
     if (isButton) {
-      const button = folder.addButton(bindingCandidate);
-      if (bindingCandidate.onClick) {
-        button.on('click', bindingCandidate.onClick.bind(null, { object, folder, bindings, sceneObjects }));
-      }
+      const button = folder.addButton({
+        label: bindingCandidate.label,
+        title: bindingCandidate.title
+      });
+      button.on('click', bindingCandidate.onClick.bind(null, { object, folder, bindings, sceneObjects }));
+      tweakBindingView(button);
       return;
     }
+
+    if (key === 'title' || object[key] === undefined || object[key] === null) return;
+
+    const isFolder = bindingCandidate.title;
+    const isBinding = bindingCandidate.label;
 
     if (isFolder) {
       const subFolder = folder.addFolder({
@@ -154,26 +160,6 @@ export const buildBindings = (folder: FolderApi, object: any, bindings: any, sce
   // Using it at the end so that inside tweakFolder()
   // we can access all buttons added so far by inner folders.
   tweakFolder(folder, `${folder.title!}-${object.uuid || 'no-id'}`);
-};
-
-export const buildButtons = (
-  folder: FolderApi,
-  configs: {
-    title: string;
-    label: string;
-    onClick: (sceneObjects: SceneObjects) => void;
-  }[],
-  sceneObjects: SceneObjects
-) => {
-  tweakFolder(folder, folder.title!);
-  configs.forEach((config) => {
-    const button = folder.addButton({
-      label: config.label,
-      title: config.title
-    });
-    tweakBindingView(button);
-    button.on('click', config.onClick.bind(null, sceneObjects));
-  });
 };
 
 export const cleanupContainer = (container: any) => {

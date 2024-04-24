@@ -36,14 +36,14 @@
 - The cPanel can be moved around by dragging the top bar and can be toggled by pressing Ctrl+Alt+Shift+P.
   <br /><br />
 
-- Helpers can be toggled by pressing Ctrl+Alt+Shift+H. When helpers are off only the pickers are visible.
+- `Helpers` can be toggled by pressing Ctrl+Alt+Shift+H. When `helpers` are off only the `pickers` are visible.
   <br /><br />
 
-- Gizmos (which include helpers and pickers) can be toggled by pressing Ctrl+Alt+Shift+G.
+- `Gizmos` (which include `helpers` and `pickers`) can be toggled by pressing Ctrl+Alt+Shift+G.
   <br /><br />
 
-- Play/Stop mode can be toggled by pressing Space (when cPanel or Gizmos are visible - which means `editor mode`)  
-  or by pressing Ctrl+Alt+Shift+Space (when cPanel and Gizmos are hidden - which means `non editor mode`).
+- Play/Stop mode can be toggled by pressing Space (when `cPanel` or `Gizmos` are visible - which means `editor mode`)  
+  or by pressing Ctrl+Alt+Shift+Space (when `cPanel` and `Gizmos` are hidden - which means `non editor mode`).
   <br /><br />
 
 - The shortcuts will very likely change in the future to ensure we're not interfering at all with the main app.

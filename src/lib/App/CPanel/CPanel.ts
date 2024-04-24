@@ -224,11 +224,11 @@ export const CPanel = () => {
     cleanupContainer(objectTab);
     if (!selectedObject) return;
 
-    buildBindings(objectTab as unknown as FolderApi, useAppStore.getState(), getObjectsStoreBindings(), {
-      scene,
-      camera,
-      gl
-    });
+    buildBindings(
+      objectTab as unknown as FolderApi,
+      useAppStore.getState(),
+      getObjectsStoreBindings({ sceneObjects: { scene, camera, gl } })
+    );
 
     const objectFolder = objectTab
       .addFolder({
@@ -237,11 +237,19 @@ export const CPanel = () => {
       })
       .on('change', handleSelectedObjectChanges);
 
-    buildBindings(objectFolder, selectedObject, getObject3DBindings({ angleFormat, isPlaying }), {
-      scene,
-      camera,
-      gl
-    });
+    buildBindings(
+      objectFolder,
+      selectedObject,
+      getObject3DBindings({
+        angleFormat,
+        isPlaying,
+        sceneObjects: {
+          scene,
+          camera,
+          gl
+        }
+      })
+    );
   }, [
     selectedObject,
     handleSelectedObjectChanges,
@@ -296,11 +304,17 @@ export const CPanel = () => {
       title: 'Pane',
       expanded: true
     });
-    buildBindings(paneFolder, store, getPaneBindings(), {
-      scene,
-      camera,
-      gl
-    });
+    buildBindings(
+      paneFolder,
+      store,
+      getPaneBindings({
+        sceneObjects: {
+          scene,
+          camera,
+          gl
+        }
+      })
+    );
 
     // Add Scene folder and bindings
     const sceneFolder = sceneTab.addFolder({
@@ -309,11 +323,19 @@ export const CPanel = () => {
     });
 
     // Add scene buttons
-    buildBindings(sceneFolder, {}, getSceneButtons({ angleFormat, isPlaying }), {
-      scene,
-      camera,
-      gl
-    });
+    buildBindings(
+      sceneFolder,
+      {},
+      getSceneButtons({
+        angleFormat,
+        isPlaying,
+        sceneObjects: {
+          scene,
+          camera,
+          gl
+        }
+      })
+    );
 
     const sceneConfigFolder = sceneTab.addFolder({
       title: 'Scene Config',
@@ -321,11 +343,19 @@ export const CPanel = () => {
     });
 
     // Add scene config bindings
-    buildBindings(sceneConfigFolder, scene, getSceneConfigBindings({ angleFormat, isPlaying }), {
+    buildBindings(
+      sceneConfigFolder,
       scene,
-      camera,
-      gl
-    });
+      getSceneConfigBindings({
+        angleFormat,
+        isPlaying,
+        sceneObjects: {
+          scene,
+          camera,
+          gl
+        }
+      })
+    );
 
     const cameraEditorFolder = sceneTab.addFolder({
       title: 'Camera Editor',
@@ -333,11 +363,17 @@ export const CPanel = () => {
     });
 
     // Add camera editor store bindings
-    buildBindings(cameraEditorFolder, store, getCameraStoreBindings(), {
-      scene,
-      camera,
-      gl
-    });
+    buildBindings(
+      cameraEditorFolder,
+      store,
+      getCameraStoreBindings({
+        sceneObjects: {
+          scene,
+          camera,
+          gl
+        }
+      })
+    );
 
     const cameraCurrentFolder = sceneTab
       .addFolder({
@@ -349,11 +385,19 @@ export const CPanel = () => {
       });
 
     // Add camera object bindings
-    buildBindings(cameraCurrentFolder, camera, getObject3DBindings({ angleFormat, isPlaying }), {
-      scene,
+    buildBindings(
+      cameraCurrentFolder,
       camera,
-      gl
-    });
+      getObject3DBindings({
+        angleFormat,
+        isPlaying,
+        sceneObjects: {
+          scene,
+          camera,
+          gl
+        }
+      })
+    );
 
     const glFolder = sceneTab
       .addFolder({
@@ -365,11 +409,17 @@ export const CPanel = () => {
       });
 
     // Add gl bindings
-    buildBindings(glFolder, gl, getRendererBindings(), {
-      scene,
-      camera,
-      gl
-    });
+    buildBindings(
+      glFolder,
+      gl,
+      getRendererBindings({
+        sceneObjects: {
+          scene,
+          camera,
+          gl
+        }
+      })
+    );
 
     // Add Raycaster Params
     const raycasterParamsFolder = sceneTab
@@ -381,11 +431,17 @@ export const CPanel = () => {
         // console.log('Raycaster Params changed', raycaster);
       });
 
-    buildBindings(raycasterParamsFolder, raycaster, getRaycasterParamsBindings(), {
-      scene,
-      camera,
-      gl
-    });
+    buildBindings(
+      raycasterParamsFolder,
+      raycaster,
+      getRaycasterParamsBindings({
+        sceneObjects: {
+          scene,
+          camera,
+          gl
+        }
+      })
+    );
   }, [
     cPanelContinuousUpdate,
     angleFormat,

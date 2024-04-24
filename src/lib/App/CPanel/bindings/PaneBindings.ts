@@ -1,11 +1,11 @@
 import { useAppStore } from 'src/store';
-import type { onChange, SceneObjects } from './bindingTypes';
+import type { onChange, CommonGetterParams } from './bindingTypes';
 import { numberCommon } from './bindingHelpers';
 const docStyle = document.documentElement.style;
 const helpContainerStyle = document.getElementById('help')!.style;
 const cPanelStyle = document.getElementById('controlPanel')!.style;
 
-export const PaneBindings = () => ({
+export const PaneBindings = (_params: CommonGetterParams) => ({
   cPanelContinuousUpdate: {
     label: 'Continuous Update ( U )',
     onChange: ((_, evt) => {
@@ -36,11 +36,11 @@ export const PaneBindings = () => ({
   cPanelShowHelp: {
     label: 'Help',
     title: 'Toggle Help',
-    onClick: (_sceneObjects: SceneObjects) => {
+    onClick: (() => {
       useAppStore.getState().toggleCPanelShowHelp();
       const showHelp = useAppStore.getState().cPanelShowHelp;
       helpContainerStyle.display = showHelp ? 'block' : 'none';
-    }
+    }) as onChange
   },
   angleFormat: {
     label: 'Angle Format ( [ )',

@@ -1,14 +1,14 @@
-import type { onChange } from './bindingTypes';
+import type { onChange, CommonGetterParams } from './bindingTypes';
 
-export const LightShadowBindings = () => ({
+export const LightShadowBindings = (_params: CommonGetterParams) => ({
   mapSize: {
     label: 'MapSize',
     step: 1,
-    // TODO: maybe get rid of __parent, __sceneObjects
-    onChange: (({ object }) => {
-      if (object.__parent?.shadow?.map) {
-        object.__parent.shadow.map.dispose();
-        object.__parent.shadow.map = null;
+    // TODO: maybe get rid of __parent ?
+    onChange: (({ bindings }) => {
+      if (bindings.__parent?.shadow?.map) {
+        bindings.__parent.shadow.map.dispose();
+        bindings.__parent.shadow.map = null;
       }
     }) as onChange
   },

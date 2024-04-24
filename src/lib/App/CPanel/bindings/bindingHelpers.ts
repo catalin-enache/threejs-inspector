@@ -1,7 +1,6 @@
 import { degToRad, radToDegFormatter } from 'lib/utils';
 import { BindingApi } from '@tweakpane/core';
 import { FolderApi, TabPageApi, BladeApi } from 'tweakpane';
-import type { SceneObjects } from './bindingTypes';
 import * as THREE from 'three';
 
 export const numberFormat = (precision: number) => (value: number) => value.toFixed(precision);
@@ -85,11 +84,12 @@ export const tweakFolder = (folder: FolderApi | TabPageApi, id: string) => {
   });
 };
 
-export const buildBindings = (folder: FolderApi, object: any, bindings: any, sceneObjects: SceneObjects) => {
+export const buildBindings = (folder: FolderApi, object: any, bindings: any) => {
   // console.log('buildBindings for', folder.title, { object, bindings });
 
   Object.keys(bindings).forEach((key) => {
     const bindingCandidate = bindings[key];
+
     const isButton = bindingCandidate.title && bindingCandidate.label;
 
     if (isButton) {
@@ -97,7 +97,7 @@ export const buildBindings = (folder: FolderApi, object: any, bindings: any, sce
         label: bindingCandidate.label,
         title: bindingCandidate.title
       });
-      button.on('click', bindingCandidate.onClick.bind(null, { object, folder, bindings, sceneObjects }));
+      button.on('click', bindingCandidate.onClick.bind(null, { object, folder, bindings }));
       tweakBindingView(button);
       return;
     }
@@ -112,9 +112,8 @@ export const buildBindings = (folder: FolderApi, object: any, bindings: any, sce
         title: bindingCandidate.title,
         expanded: false
       });
-      object[key].__parent = object;
-      object[key].__sceneObjects = sceneObjects;
-      buildBindings(subFolder, object[key], bindingCandidate, sceneObjects);
+      bindingCandidate.__parent = object;
+      buildBindings(subFolder, object[key], bindingCandidate);
       return;
     }
 
@@ -137,8 +136,9 @@ export const buildBindings = (folder: FolderApi, object: any, bindings: any, sce
     }
 
     if (bindingCandidate.onChange) {
-      binding.on('change', bindingCandidate.onChange.bind(null, { object, folder, bindings, sceneObjects }));
+      binding.on('change', bindingCandidate.onChange.bind(null, { object, folder, bindings }));
     }
+
     if (bindingCandidate.details) {
       const subFolder = folder.addFolder({
         title: `${bindingCandidate.label} Details`,
@@ -150,7 +150,7 @@ export const buildBindings = (folder: FolderApi, object: any, bindings: any, sce
         subFolder.on('change', bindingCandidate.details.onDetailsChange.bind(null, object[key]));
         delete bindingCandidate.details.onDetailsChange;
       }
-      buildBindings(subFolder, object[key], bindingCandidate.details, sceneObjects);
+      buildBindings(subFolder, object[key], bindingCandidate.details);
     }
     tweakBindingView(binding);
     if (bindingCandidate.format === radToDegFormatter) {

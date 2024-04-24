@@ -1,7 +1,7 @@
 import { useAppStore } from 'src/store';
-import type { onChange } from './bindingTypes';
+import type { onChange, CommonGetterParams } from './bindingTypes';
 
-export const ObjectStoreBindings = () => ({
+export const ObjectStoreBindings = (_params: CommonGetterParams) => ({
   transformControlsMode: {
     label: 'TMode ( ,./ )',
     view: 'radiogrid',

@@ -1,7 +1,7 @@
 import * as THREE from 'three';
-import type { onChange } from './bindingTypes';
+import type { onChange, CommonGetterParams } from './bindingTypes';
 
-export const RendererInfoMemoryBindings = () => ({
+export const RendererInfoMemoryBindings = (_params: CommonGetterParams) => ({
   geometries: {
     label: 'Geometries',
     disabled: true
@@ -12,7 +12,7 @@ export const RendererInfoMemoryBindings = () => ({
   }
 });
 
-export const RendererInfoRenderBindings = () => ({
+export const RendererInfoRenderBindings = (_params: CommonGetterParams) => ({
   calls: {
     label: 'Calls',
     disabled: true
@@ -35,7 +35,7 @@ export const RendererInfoRenderBindings = () => ({
   }
 });
 
-export const RendererBindings = () => ({
+export const RendererBindings = (_params: CommonGetterParams) => ({
   toneMapping: {
     label: 'Tone Mapping',
     options: {
@@ -51,7 +51,7 @@ export const RendererBindings = () => ({
   }
 });
 
-export const RendererShadowMapBindings = () => ({
+export const RendererShadowMapBindings = ({ sceneObjects: { scene } }: CommonGetterParams) => ({
   type: {
     label: 'Type',
     options: {
@@ -60,8 +60,7 @@ export const RendererShadowMapBindings = () => ({
       Soft: THREE.PCFSoftShadowMap,
       Variance: THREE.VSMShadowMap
     },
-    onChange: (({ object }) => {
-      const scene = object.__sceneObjects.scene;
+    onChange: (() => {
       scene.traverse((child: any) => {
         if (child instanceof THREE.Mesh && child.material) child.material.needsUpdate = true;
       });

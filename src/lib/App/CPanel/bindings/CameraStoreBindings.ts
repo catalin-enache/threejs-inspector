@@ -1,7 +1,7 @@
 import { useAppStore } from 'src/store';
-import type { onChange } from './bindingTypes';
+import type { onChange, CommonGetterParams } from './bindingTypes';
 
-export const CameraStoreBindings = () => ({
+export const CameraStoreBindings = (_params: CommonGetterParams) => ({
   cameraControl: {
     label: 'Control ( N )',
     view: 'radiogrid',

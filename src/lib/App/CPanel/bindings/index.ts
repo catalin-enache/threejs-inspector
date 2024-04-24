@@ -18,21 +18,21 @@ import { SceneConfigBindings } from './SceneConfigBindings';
 import { RaycasterParamsLineBindings, RaycasterParamsPointsBindings } from './RaycasterBindings';
 import type { CommonGetterParams } from './bindingTypes';
 
-export const getObjectsStoreBindings = () => ({
-  ...ObjectStoreBindings()
+export const getObjectsStoreBindings = (params: CommonGetterParams) => ({
+  ...ObjectStoreBindings(params)
 });
 
 export const getObject3DBindings = (params: CommonGetterParams) => ({
   ...Object3DBindings(params),
-  ...CameraBindings(),
-  ...LightBindings(),
+  ...CameraBindings(params),
+  ...LightBindings(params),
   shadow: {
     // Some lights have shadow
     title: 'Shadow',
-    ...LightShadowBindings(),
+    ...LightShadowBindings(params),
     camera: {
       title: 'Camera',
-      ...CameraBindings()
+      ...CameraBindings(params)
     }
   },
   target: {
@@ -74,49 +74,49 @@ export const getObject3DBindings = (params: CommonGetterParams) => ({
   }
 });
 
-export const getRendererBindings = () => ({
-  ...RendererBindings(),
+export const getRendererBindings = (params: CommonGetterParams) => ({
+  ...RendererBindings(params),
   shadowMap: {
     title: 'Shadow Map',
-    ...RendererShadowMapBindings()
+    ...RendererShadowMapBindings(params)
   },
   info: {
     title: 'Info',
     memory: {
       title: 'Memory (Geometries,Textures)',
-      ...RendererInfoMemoryBindings()
+      ...RendererInfoMemoryBindings(params)
     },
     render: {
       title: 'Render (Calls,Tris,Pnts,Lns,Frm)',
-      ...RendererInfoRenderBindings()
+      ...RendererInfoRenderBindings(params)
     }
   }
 });
 
-export const getPaneBindings = () => ({
-  ...PaneBindings()
+export const getPaneBindings = (params: CommonGetterParams) => ({
+  ...PaneBindings(params)
 });
 
-export const getCameraStoreBindings = () => ({
-  ...CameraStoreBindings()
+export const getCameraStoreBindings = (params: CommonGetterParams) => ({
+  ...CameraStoreBindings(params)
 });
 
-export const getSceneButtons = ({ isPlaying }: CommonGetterParams) => ({...SceneButtons({ isPlaying })});
+export const getSceneButtons = (params: CommonGetterParams) => ({ ...SceneButtons(params) });
 
-export const getSceneConfigBindings = ({ angleFormat }: CommonGetterParams) => ({
-  ...SceneConfigBindings({ angleFormat })
+export const getSceneConfigBindings = (params: CommonGetterParams) => ({
+  ...SceneConfigBindings(params)
 });
 
-export const getRaycasterParamsBindings = () => ({
+export const getRaycasterParamsBindings = (params: CommonGetterParams) => ({
   params: {
     title: 'Params',
     Line: {
       title: 'Line',
-      ...RaycasterParamsLineBindings()
+      ...RaycasterParamsLineBindings(params)
     },
     Points: {
       title: 'Points',
-      ...RaycasterParamsPointsBindings()
+      ...RaycasterParamsPointsBindings(params)
     }
   }
 });

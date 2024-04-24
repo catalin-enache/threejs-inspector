@@ -1,6 +1,7 @@
 import { numberCommon } from './bindingHelpers';
+import type { CommonGetterParams } from './bindingTypes';
 
-export const LightBindings = () => ({
+export const LightBindings = (_params: CommonGetterParams) => ({
   intensity: {
     label: 'Intensity',
     min: 0,

@@ -3,18 +3,18 @@ import { focusCamera } from 'lib/utils';
 import type { CommonGetterParams, onChange } from './bindingTypes';
 
 // keys are not relevant for buttons
-export const SceneButtons = ({ isPlaying }: CommonGetterParams) => ({
+export const SceneButtons = ({ isPlaying, sceneObjects: { camera, scene } }: CommonGetterParams) => ({
   0: {
     label: 'Full Screen Toggle( \\ | F11(native) )',
     title: 'Toggle Full Screen',
-    onClick: () => {
+    onClick: (() => {
       useAppStore.getState().toggleFullscreen();
-    }
+    }) as onChange
   },
   1: {
     label: 'Focus Camera ( F )',
     title: 'Focus Selected Object',
-    onClick: (({ sceneObjects: { scene, camera } }) => {
+    onClick: (() => {
       focusCamera({
         camera,
         // @ts-ignore
@@ -27,23 +27,23 @@ export const SceneButtons = ({ isPlaying }: CommonGetterParams) => ({
   2: {
     label: 'Show Helpers ( CAS+H )',
     title: 'Toggle Helpers',
-    onClick: () => {
+    onClick: (() => {
       useAppStore.getState().toggleShowHelpers();
-    }
+    }) as onChange
   },
   3: {
     label: 'Show Gizmos ( CAS+G )',
     title: 'Toggle Gizmos',
-    onClick: () => {
+    onClick: (() => {
       useAppStore.getState().toggleShowGizmos();
-    }
+    }) as onChange
   },
   4: {
     label: 'Play/Stop ( Space|CAS+Space )',
     title: isPlaying ? 'Stop' : 'Play',
-    onClick: () => {
+    onClick: (() => {
       useAppStore.getState().togglePlaying();
-    }
+    }) as onChange
     // TODO: we need play/pause/stop state
     // label: 'Play State ( Space|CAS+Space )',
     // view: 'radiogrid',

@@ -10,19 +10,18 @@ export type SceneObjects = {
 export type CommonGetterParams = {
   angleFormat?: 'deg' | 'rad';
   isPlaying?: boolean;
+  sceneObjects: SceneObjects;
 };
 
 export type onChange = (
   {
     object,
     folder,
-    bindings,
-    sceneObjects
+    bindings
   }: {
     object: any;
     folder: FolderApi;
     bindings: any;
-    sceneObjects: SceneObjects;
   },
   evt: { value: any }
 ) => void;

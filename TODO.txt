@@ -24,6 +24,7 @@ The Scene background can be a Texture or Color. Adjust the controller for that. 
 Allow user to adjust cPanel size the same as for opacity *DONE*
 Bug: When hiding cPanel the cPanel draggable line is still visible. *DONE*
 
+Type userData
 Include sceneObjects with other props rather than making it separate.
 
 Add FPS widget

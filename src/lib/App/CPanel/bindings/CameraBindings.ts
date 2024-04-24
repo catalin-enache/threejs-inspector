@@ -1,6 +1,7 @@
 import { numberCommon } from './bindingHelpers';
+import type { CommonGetterParams } from './bindingTypes';
 
-export const PerspectiveCameraBindings = () => ({
+export const PerspectiveCameraBindings = (_params: CommonGetterParams) => ({
   aspect: {
     label: 'Aspect',
     ...numberCommon
@@ -19,7 +20,7 @@ export const PerspectiveCameraBindings = () => ({
   }
 });
 
-export const OrthographicCameraBindings = () => ({
+export const OrthographicCameraBindings = (_params: CommonGetterParams) => ({
   left: {
     label: 'Left',
     ...numberCommon
@@ -38,7 +39,7 @@ export const OrthographicCameraBindings = () => ({
   }
 });
 
-export const CameraBindings = () => ({
+export const CameraBindings = (params: CommonGetterParams) => ({
   near: {
     label: 'Near',
     ...numberCommon,
@@ -53,6 +54,6 @@ export const CameraBindings = () => ({
     ...numberCommon,
     min: 0
   },
-  ...PerspectiveCameraBindings(),
-  ...OrthographicCameraBindings()
+  ...PerspectiveCameraBindings(params),
+  ...OrthographicCameraBindings(params)
 });

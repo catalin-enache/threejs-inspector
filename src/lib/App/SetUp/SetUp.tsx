@@ -27,7 +27,8 @@ const makeHelpers = (object: THREE.Object3D) => {
 
   let picker: THREE.Mesh;
 
-  if (object instanceof THREE.Light || object instanceof THREE.Camera) {
+  // TODO: return early here (in a separate commit)
+  if (object instanceof THREE.Light || object instanceof THREE.Camera || object instanceof THREE.CubeCamera) {
     const helperSize = 0.25;
 
     helper =
@@ -43,7 +44,11 @@ const makeHelpers = (object: THREE.Object3D) => {
                 ? new THREE.HemisphereLightHelper(object, helperSize)
                 : object instanceof THREE.LightProbe
                   ? new LightProbeHelper(object, helperSize)
-                  : new THREE.PointLightHelper(object as THREE.PointLight, helperSize);
+                  : object instanceof THREE.PointLight
+                    ? new THREE.PointLightHelper(object as THREE.PointLight, helperSize)
+                    : object instanceof THREE.CubeCamera
+                      ? new THREE.Mesh()
+                      : new THREE.Mesh(); // meaningless helper
 
     const meshGeometry =
       object instanceof THREE.DirectionalLight
@@ -54,7 +59,12 @@ const makeHelpers = (object: THREE.Object3D) => {
             ? new THREE.ConeGeometry(helperSize * 2, 1, 4)
             : object instanceof THREE.Camera
               ? new THREE.ConeGeometry(helperSize * 2, 1, 8)
-              : new THREE.SphereGeometry(helperSize, 4, 1);
+              : object instanceof THREE.PointLight
+                ? new THREE.SphereGeometry(helperSize, 4, 1)
+                : object instanceof THREE.CubeCamera
+                  ? new THREE.BoxGeometry(helperSize, helperSize, helperSize)
+                  : new THREE.BoxGeometry(helperSize, helperSize, helperSize); // generic mesh geometry
+
     helper.name = 'helper';
 
     picker = new THREE.Mesh(
@@ -72,6 +82,7 @@ const makeHelpers = (object: THREE.Object3D) => {
         wireframe: true
       })
     );
+
     picker.name = `picker for ${object.name || object.type || ''} ${object.uuid}`;
 
     if (object instanceof THREE.SpotLight) {
@@ -98,10 +109,11 @@ const makeHelpers = (object: THREE.Object3D) => {
       picker.matrix = (helper as THREE.DirectionalLightHelper).lightPlane.matrix; // helper.matrix is a reference to helper.light.matrixWorld
       picker.matrixAutoUpdate = false;
     }
-    const userData = object.userData as userData;
-    userData.picker = picker;
-    userData.helper = helper;
-    userData.object = object;
+    const objectUserData = object.userData as userData;
+    const pickerUserData = picker.userData as userData;
+    objectUserData.picker = picker;
+    objectUserData.helper = helper;
+    pickerUserData.object = object;
 
     object.add(picker);
     if (object instanceof THREE.SpotLight) {
@@ -119,7 +131,9 @@ const makeHelpers = (object: THREE.Object3D) => {
             ? helper.updateMatrixWorld
             : helper instanceof LightProbeHelper
               ? helper.onBeforeRender
-              : helper.update; // updates object.matrixWorld
+              : 'update' in helper
+                ? helper.update
+                : () => {}; // updates object.matrixWorld
 
         // @ts-ignore
         update.call(helper);
@@ -155,11 +169,12 @@ const makeHelpers = (object: THREE.Object3D) => {
         helper.visible = showHelpers;
       }
     );
+
     useAppStore.subscribe(
       (appStore) => appStore.isPlaying,
       (isPlaying) => {
-        // TODO: checkout how does it happen that default cameras do not have helpers around them so that we should remove them.
-        if (userData.useOnPlay) {
+        // we don't need to remove helpers for default cameras since R3F does not add them to scene
+        if (objectUserData.useOnPlay) {
           if (isPlaying) {
             object.remove(picker);
             threeScene.remove(helper);
@@ -185,11 +200,24 @@ const removeHelpers = (object: THREE.Object3D) => {
 THREE.Object3D.prototype.add = (function () {
   const originalAdd = THREE.Object3D.prototype.add;
   return function (this: THREE.Object3D, ...objects: THREE.Object3D[]) {
+    // things to skip
+    if (this instanceof THREE.CubeCamera) {
+      // skip children cameras of a cubeCamera
+      return originalAdd.call(this, ...objects);
+    }
     objects.forEach((object) => {
       const userData = object.userData as userData;
-
-      if (userData.isInspectable || (object as THREE.Light).isLight || (object as THREE.Camera).isCamera) {
-        makeHelpers(object); // will enrich object with helper and picker
+      if (
+        userData.isInspectable ||
+        (object as THREE.Light).isLight ||
+        (object as THREE.Camera).isCamera ||
+        object instanceof THREE.CubeCamera
+      ) {
+        // R3F does not add cameras to scene, so this check is not needed, but checking just in case
+        if (object !== perspectiveCamera && object !== orthographicCamera) {
+          makeHelpers(object); // will enrich object with helper and picker
+        }
+        // picker appears in userData after makeHelpers
         if (userData.picker) {
           inspectableObjects[userData.picker.uuid] = userData.picker;
         } else {
@@ -214,6 +242,11 @@ THREE.Object3D.prototype.add = (function () {
 THREE.Object3D.prototype.remove = (function () {
   const originalRemove = THREE.Object3D.prototype.remove;
   return function (this: THREE.Object3D, ...objects: THREE.Object3D[]) {
+    // things to skip
+    if (this instanceof THREE.CubeCamera) {
+      // skip children cameras of a cubeCamera
+      return originalRemove.call(this, ...objects);
+    }
     objects.forEach((object) => {
       removeHelpers(object);
       if (object === useAppStore.getState().selectedObject) {
@@ -234,10 +267,12 @@ const cameraPosition = new THREE.Vector3(0, 0, 12);
 const perspectiveCamera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 100);
 perspectiveCamera.position.copy(cameraPosition);
 perspectiveCamera.zoom = 1;
+perspectiveCamera.name = 'DefaultPerspectiveCamera';
 
 const orthographicCamera = new THREE.OrthographicCamera(-0, 0, 0, -0, 0.1, 100);
 orthographicCamera.position.copy(cameraPosition);
 orthographicCamera.zoom = 45;
+orthographicCamera.name = 'DefaultOrthographicCamera';
 
 const updateCameras = () => {
   perspectiveCamera.aspect = window.innerWidth / window.innerHeight;
@@ -425,7 +460,8 @@ const SetUp = () => {
 
       lastHitRef.current = hits[0] || null;
       const userData = lastHitRef.current?.object?.userData as userData;
-      setSelectedObject(userData.object || lastHitRef.current?.object || null);
+      // if we hit a picker, select the object it represents else select the object itself
+      setSelectedObject(userData?.object || lastHitRef.current?.object || null);
     },
     [raycaster, pointer, camera, setSelectedObject]
   );

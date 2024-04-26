@@ -11,7 +11,8 @@ export type userData = {
     | THREE.DirectionalLightHelper
     | THREE.PointLightHelper
     | THREE.HemisphereLightHelper
-    | LightProbeHelper;
+    | LightProbeHelper
+    | THREE.Mesh; // fallback meaningless helper
   isInspectable: boolean;
   useOnPlay: boolean;
 };

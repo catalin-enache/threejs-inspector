@@ -25,18 +25,36 @@ Allow user to adjust cPanel size the same as for opacity *DONE*
 Bug: When hiding cPanel the cPanel draggable line is still visible. *DONE*
 Make a type for userData *DONE*
 Add controls for textures and materials *DONE*
+Include sceneObjects with other props rather than making it separate. *DONE*
 
-Include sceneObjects with other props rather than making it separate.
+Bug: spruit_sunrise_4k.hdr.jpg not working as cubemap (might need handling like here: webgl_loader_texture_hdrjpg.html)
 
-Add FPS widget
-Integrate with Default LoadingManager
-Create a text display plugin; to be used in showing quaternion, userData and other readonly fields
+Test matcap
+
+Write doc about loading textures and cubeMaps
+
+Be able to load complete materials from folder based on name
+
+Allow cors for loaders (can this be done with default load  manager ?)
 
 
-Check what is with backgroundBlurriness and backgroundRotation. It seems they don't work. Is it required a CubeTexture ?
+
+Check Threejs repo for code formatting.
+
+Se where kandao3_depthmap.jpg is used in threejs examples
+
+Bug: Changing rotation 90deg does not make it 90 but 90.012
+
+Can we make an approach to share textures between objects? (this is good for sharing envMap)
 
 Checkout how does it happen that default cameras do not have helpers around them so that we should remove them.
 Add loaders so that we can start the scene after everything was loaded
+
+Do experiment with scene background reflection and object material reflection/refraction
+// https://threejs.org/examples/#webgl_materials_cubemap_refraction
+
+Add FPS widget // https://threejs.org/examples/#webgl_materials_cubemap_refraction
+Integrate with Default LoadingManager
 
 Bug: Load Image from CParam then from SceneConfig.
 After loading from scene config the binding reader fires continuously.
@@ -49,6 +67,7 @@ Make a pause button
 Add plugin for radio buttons
 Add plugin for file upload (Texture, CubeTexture and Mesh and everything)
 Add plugin for tree view,
+Add text display plugin; to be used in showing quaternion, userData and other readonly fields
 
 Add controls for scene
 Show scene performance and statistics

@@ -4,7 +4,7 @@ import { useFrame, ThreeElements, useThree } from '@react-three/fiber';
 import { CustomControl } from 'components/CustomControl/CustomControl';
 import { usePlay } from 'lib/hooks';
 import { degToRad } from 'lib/utils';
-import { loadImage } from 'lib/utils/imageUtils';
+import { createTexturesFromImages } from 'lib/utils/imageUtils';
 
 function Box(
   props: ThreeElements['mesh'] & {
@@ -32,13 +32,15 @@ function Box(
     // 'textures/checkerboard-8x8.png',
     // 'textures/castle_brick_02_red_nor_gl_4k.exr',
     // 'textures/sikqyan_2K_Displacement.exr',
-    loadImage(mapURL, meshMaterialRef).then((map) => {
-      console.log('setting map');
+    createTexturesFromImages(mapURL, meshMaterialRef).then((textures) => {
+      const map = textures[0];
+      // console.log('setting map');
       setMap(map);
     });
     alphaMapURL &&
-      loadImage(alphaMapURL, meshMaterialRef).then((map) => {
-        console.log('setting alphaMap');
+      createTexturesFromImages(alphaMapURL, meshMaterialRef).then((textures) => {
+        const map = textures[0];
+        // console.log('setting alphaMap');
         setAlphaMap(map);
       });
   }, [mapURL, alphaMapURL]);
@@ -88,17 +90,12 @@ export function Experience() {
   });
 
   useEffect(() => {
-    const promises = [
-      'alpha.jpg',
-      'ambientOcclusion.jpg',
-      'color.jpg',
-      'height.jpg',
-      'metalness.jpg',
-      'normal.jpg',
-      'roughness.jpg'
-    ].map((img) => loadImage(`textures/door/${img}`));
-    Promise.all(promises).then((textures) => {
-      console.log(doorMaterialRef.current, textures);
+    createTexturesFromImages(
+      ['alpha.jpg', 'ao.jpg', 'color.jpg', 'height.jpg', 'metalness.jpg', 'normal.jpg', 'roughness.jpg'].map(
+        (img) => `textures/pbr/door/${img}`
+      )
+    ).then((textures) => {
+      // console.log(doorMaterialRef.current, textures);
       doorMaterialRef.current.alphaMap = textures[0];
       doorMaterialRef.current.aoMap = textures[1];
       textures[2].colorSpace = THREE.SRGBColorSpace;
@@ -123,34 +120,49 @@ export function Experience() {
     // 'textures/sikqyan_2K_Displacement.exr',
     // 'textures/castle_brick_02_red_diff_4k.jpg',
     // 'textures/cover-1920.jpg',
-    loadImage('textures/cover-1920.jpg').then((texture) => {
-      texture.colorSpace = THREE.SRGBColorSpace;
+    // createTexturesFromImages('https://threejsfundamentals.org/threejs/resources/images/wall.jpg').then((textures) => {
+    //   const texture = textures[0];
+    //   texture.colorSpace = THREE.SRGBColorSpace;
+    //   scene.background = texture;
+    // });
+    // ['px', 'nx', 'py', 'ny', 'pz', 'nz'].map((t) => `textures/cube/MilkyWay/dark-s_${t}.jpg`)
+    // ['px', 'nx', 'py', 'ny', 'pz', 'nz'].map((t) => `textures/cube/Park3Med/${t}.jpg`)
+    // ['px', 'nx', 'py', 'ny', 'pz', 'nz'].map((t) => `textures/makeItFail/1/${t}.exr`)
+    // ['px', 'nx', 'py', 'ny', 'pz', 'nz'].map((t) => `textures/makeItFail/3/${t}.tiff`)
+    // ['px', 'nx', 'py', 'ny', 'pz', 'nz'].map((t) => `textures/cube/skyboxsun25deg/${t}.jpg`)
+    createTexturesFromImages(
+      ['px', 'nx', 'py', 'ny', 'pz', 'nz'].map((t) => `textures/background/cube/MilkyWay/dark-s_${t}.jpg`)
+    ).then((textures) => {
+      const texture = textures[0];
+      // texture.colorSpace = THREE.SRGBColorSpace;
+      // texture.needsUpdate = true;
+      // console.log('createTextureFromImages', texture);
       scene.background = texture;
     });
   }, []);
 
   return (
     <>
-      <directionalLight
-        shadow-mapSize-width={2048}
-        shadow-mapSize-height={2048}
-        shadow-radius={4}
-        // shadow-bias={-0.001}
-        shadow-blurSamples={8}
-        castShadow
-        position={[2, 2, 2]}
-        scale={1}
-        intensity={4.5}
-        ref={refDirectionalLight}
-        color={'white'}
-        userData={{ isInspectable: false }}
-      ></directionalLight>
-      <hemisphereLight
-        // args={[0xffffff, 0xffffff, 2]}
-        intensity={2}
-        color={new THREE.Color().setHSL(0.6, 1, 0.6)}
-        groundColor={new THREE.Color().setHSL(0.095, 1, 0.75)}
-      />
+      {/*<directionalLight*/}
+      {/*  shadow-mapSize-width={2048}*/}
+      {/*  shadow-mapSize-height={2048}*/}
+      {/*  shadow-radius={4}*/}
+      {/*  // shadow-bias={-0.001}*/}
+      {/*  shadow-blurSamples={8}*/}
+      {/*  castShadow*/}
+      {/*  position={[2, 2, 2]}*/}
+      {/*  scale={1}*/}
+      {/*  intensity={4.5}*/}
+      {/*  ref={refDirectionalLight}*/}
+      {/*  color={'white'}*/}
+      {/*  userData={{ isInspectable: false }}*/}
+      {/*></directionalLight>*/}
+      {/*<hemisphereLight*/}
+      {/*  // args={[0xffffff, 0xffffff, 2]}*/}
+      {/*  intensity={2}*/}
+      {/*  color={new THREE.Color().setHSL(0.6, 1, 0.6)}*/}
+      {/*  groundColor={new THREE.Color().setHSL(0.095, 1, 0.75)}*/}
+      {/*/>*/}
       <rectAreaLight color={'deepskyblue'} position={[-3, 0, -8]} rotation={[-2.51, 0, 0]} intensity={6} />
       <pointLight
         castShadow
@@ -178,13 +190,13 @@ export function Experience() {
       <Box
         castShadow
         receiveShadow
-        mapURL="textures/checkerboard-8x8.png"
+        mapURL="textures/utils/checkerboard-8x8.png"
         position={[-1.2, customControlXY.x, customControlXY.y]}
         userData={{ isInspectable: true }}
       />
       <Box
-        mapURL="textures/checkerboard-8x8.png"
-        alphaMapURL="textures/checkerboard-8x8.png"
+        mapURL="textures/utils/checkerboard-8x8.png"
+        alphaMapURL="textures/utils/checkerboard-8x8.png"
         position={[1.2, 0, 0]}
         userData={{ isInspectable: true }}
         castShadow

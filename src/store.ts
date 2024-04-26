@@ -217,7 +217,7 @@ export const useAppStore = create<AppStore>()(
         cameraControl: state.cameraControl === 'fly' ? 'orbit' : 'fly'
       }));
     },
-    cameraType: 'orthographic',
+    cameraType: 'perspective', // Warning: orthographic camera does not work with CubeTexture for Scene.background
     setCameraType: (cameraType) => {
       if (get().isDraggingTransformControls) return;
       set({ cameraType });

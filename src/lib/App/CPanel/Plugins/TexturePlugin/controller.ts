@@ -1,6 +1,6 @@
 import { Controller, Value, ViewProps } from '@tweakpane/core';
 import { TextureView } from './view';
-import { loadImage } from 'lib/utils/imageUtils';
+import { createTexturesFromImages } from 'lib/utils/imageUtils';
 import * as THREE from 'three';
 
 const cleanUp = (self: TextureController) => {
@@ -79,13 +79,12 @@ export class TextureController implements Controller<TextureView> {
     const files = (event?.target as HTMLInputElement).files;
     if (!files || !files.length) return;
 
-    const file = files[0];
-
     this.setIsLoading(true);
     // For UX to not allow choosing another file while loading
     this.view.canvas.removeEventListener('dblclick', this.openFileBrowser);
-    loadImage(file)
-      .then((texture) => {
+    createTexturesFromImages(files)
+      .then((textures) => {
+        const texture = textures[0];
         if (!this.isMounted) return;
         // prettier-ignore
         // console.log('TexturePlugin TextureController texture loaded', { texture, 'this.isMounted': this.isMounted});

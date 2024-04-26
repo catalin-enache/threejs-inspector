@@ -1,16 +1,12 @@
 import { ViewProps, View, ClassName } from '@tweakpane/core';
 import * as THREE from 'three';
 import './texturePlugin.css';
+import { getWidthHeightFromTexture } from 'lib/utils/imageUtils';
 
 export const canvasSize = 512;
 
 const offlineScene = new THREE.Scene();
-const camera = new THREE.OrthographicCamera(
-  canvasSize / -2,
-  canvasSize / 2,
-  canvasSize / 2,
-  canvasSize / -2
-);
+const camera = new THREE.OrthographicCamera(canvasSize / -2, canvasSize / 2, canvasSize / 2, canvasSize / -2);
 
 camera.near = 0.0001;
 camera.far = 2;
@@ -42,6 +38,7 @@ export class TextureView implements View {
     config.viewProps.bindClassModifiers(this.element);
 
     this.input = doc.createElement('input');
+    this.input.setAttribute('multiple', 'multiple');
     this.input.classList.add(className('input'));
     this.input.classList.add('texturePlugin_input');
     this.input.setAttribute('type', 'file');
@@ -60,13 +57,18 @@ export class TextureView implements View {
   }
 
   private makeMeshFromTexture(texture: THREE.Texture) {
-    const width = texture.source.data.width;
-    const height = texture.source.data.height;
+    const { width, height } = getWidthHeightFromTexture(texture);
+    const isCubeTexture = texture instanceof THREE.CubeTexture;
     const ratio = height / width;
     const geometry = new THREE.PlaneGeometry(canvasSize, canvasSize * ratio);
-    const material = new THREE.MeshBasicMaterial({ map: texture });
-    const mesh = new THREE.Mesh(geometry, material);
-    return mesh;
+    const mapTexture = !isCubeTexture
+      ? texture
+      : texture.images[0] instanceof THREE.DataTexture
+        ? texture.images[0] // if CubeTexture already contains Textures get the first one
+        : new THREE.Texture(texture.images[0]); // else make a new Texture from the first image
+    mapTexture.needsUpdate = true;
+    const material = new THREE.MeshBasicMaterial({ map: mapTexture });
+    return new THREE.Mesh(geometry, material);
   }
 
   changeImage(texture: THREE.Texture) {
@@ -77,6 +79,7 @@ export class TextureView implements View {
     this.ctx.drawImage(offlineRenderer.domElement, 0, 0);
     offlineScene.remove(mesh);
     mesh.geometry.dispose();
+    mesh.material.map?.dispose();
     mesh.material.dispose();
   }
 

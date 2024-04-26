@@ -264,6 +264,7 @@ export const MaterialBindings = (params: CommonGetterParams) => ({
     }
   },
   envMapRotation: {
+    // Euler: MeshStandardMaterial
     label: 'Env Map Rotation',
     ...numberCommon,
     ...(params.angleFormat === 'deg' ? { format: radToDegFormatter } : {}),
@@ -363,6 +364,7 @@ export const MaterialBindings = (params: CommonGetterParams) => ({
     }
   },
   anisotropyRotation: {
+    // float: MeshPhysicalMaterial
     label: 'Anisotropy Rotation',
     ...(params.angleFormat === 'deg' ? { format: radToDegFormatter } : {})
   },
@@ -504,6 +506,7 @@ export const MaterialBindings = (params: CommonGetterParams) => ({
   },
 
   rotation: {
+    // float: SpriteMaterial
     label: 'Rotation',
     ...numberCommon,
     ...(params.angleFormat === 'deg' ? { format: radToDegFormatter } : {})

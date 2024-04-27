@@ -124,13 +124,14 @@ export const buildBindings = (folder: FolderApi, object: any, bindings: any) => 
     bindingCandidate.picker = 'inline';
 
     const binding = folder.addBinding(object, key, bindingCandidate);
-
     // @ts-ignore
     if (object instanceof THREE.Material && object[key] instanceof THREE.Texture) {
       binding.on('change', (_evt) => {
         // @ts-ignore
         // console.log('change', { _evt, key, object, 'object[key]': object[key] });
-        // this is not usually needed unless the shader code depends on something specific from the texture.
+        // This is not usually needed unless the shader code depends on something specific from the texture.
+        // It targets the change of texture as a field in material (e.g. map, envMap, etc.).
+        // When a texture prop changes the material is also updated but not with this handler. It is done in MaterialBindings onDetailsChange.
         object.needsUpdate = true;
       });
     }

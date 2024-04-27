@@ -26,6 +26,10 @@ Bug: When hiding cPanel the cPanel draggable line is still visible. *DONE*
 Make a type for userData *DONE*
 Add controls for textures and materials *DONE*
 Include sceneObjects with other props rather than making it separate. *DONE*
+Checkout how does it happen that default cameras do not have helpers around them so that we should remove them. *DONE* (default cameras are not added to the scene)
+Investigate the cameras being added when changing scene background mapping to rectangular
+After they are added why they do  not move when dragged, or at least why the helpers do not move ?
+*DONE* (added sub-cameras of CubeCamera to the skip list - it is not useful to have pickers for them. Also note that CubeCamera is not actually added to the scene)
 
 Bug: spruit_sunrise_4k.hdr.jpg not working as cubemap (might need handling like here: webgl_loader_texture_hdrjpg.html)
 
@@ -35,10 +39,6 @@ Write doc about loading textures and cubeMaps
 
 Be able to load complete materials from folder based on name
 
-Allow cors for loaders (can this be done with default load  manager ?)
-
-
-
 Check Threejs repo for code formatting.
 
 Se where kandao3_depthmap.jpg is used in threejs examples
@@ -47,14 +47,14 @@ Bug: Changing rotation 90deg does not make it 90 but 90.012
 
 Can we make an approach to share textures between objects? (this is good for sharing envMap)
 
-Checkout how does it happen that default cameras do not have helpers around them so that we should remove them.
 Add loaders so that we can start the scene after everything was loaded
 
 Do experiment with scene background reflection and object material reflection/refraction
 // https://threejs.org/examples/#webgl_materials_cubemap_refraction
 
 Add FPS widget // https://threejs.org/examples/#webgl_materials_cubemap_refraction
-Integrate with Default LoadingManager
+Integrate with Default LoadingManager.
+Allow cors for loaders (can this be done with default load  manager ?)
 
 Bug: Load Image from CParam then from SceneConfig.
 After loading from scene config the binding reader fires continuously.

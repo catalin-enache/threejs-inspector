@@ -4,6 +4,13 @@ import { TextureBindings } from './TextureBindings';
 import { numberCommon } from './bindingHelpers';
 
 export const SceneConfigBindings = (params: CommonGetterParams) => ({
+  environment: {
+    label: 'Environment',
+    color: { type: 'float' },
+    details: {
+      ...TextureBindings(params)
+    }
+  },
   background: {
     label: 'Background',
     color: { type: 'float' },

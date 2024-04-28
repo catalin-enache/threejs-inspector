@@ -318,7 +318,7 @@ export const CPanel = () => {
 
     // Add Scene folder and bindings
     const sceneFolder = sceneTab.addFolder({
-      title: 'Scene',
+      title: 'Scene Config & Actions',
       expanded: true
     });
 
@@ -337,8 +337,26 @@ export const CPanel = () => {
       })
     );
 
+    const cameraEditorFolder = sceneTab.addFolder({
+      title: 'Camera Control',
+      expanded: true
+    });
+
+    // Add camera editor store bindings
+    buildBindings(
+      cameraEditorFolder,
+      store,
+      getCameraStoreBindings({
+        sceneObjects: {
+          scene,
+          camera,
+          gl
+        }
+      })
+    );
+
     const sceneConfigFolder = sceneTab.addFolder({
-      title: 'Scene Config',
+      title: 'Scene',
       expanded: false
     });
 
@@ -349,24 +367,6 @@ export const CPanel = () => {
       getSceneConfigBindings({
         angleFormat,
         isPlaying,
-        sceneObjects: {
-          scene,
-          camera,
-          gl
-        }
-      })
-    );
-
-    const cameraEditorFolder = sceneTab.addFolder({
-      title: 'Camera Editor',
-      expanded: true
-    });
-
-    // Add camera editor store bindings
-    buildBindings(
-      cameraEditorFolder,
-      store,
-      getCameraStoreBindings({
         sceneObjects: {
           scene,
           camera,

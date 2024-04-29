@@ -24,6 +24,7 @@ export interface TextureControllerConfig {
   value: Value<THREE.Texture>;
   extensions: string[];
   viewProps: ViewProps;
+  gl?: THREE.WebGLRenderer;
 }
 let debugID = 1;
 export class TextureController implements Controller<TextureView> {
@@ -34,11 +35,12 @@ export class TextureController implements Controller<TextureView> {
   public debugID = debugID++;
   public objectURL?: ReturnType<typeof URL.createObjectURL>;
   public onRemoveHandler: (this: TextureController, evt: any) => void;
+  public gl?: THREE.WebGLRenderer | null;
 
   constructor(doc: Document, config: TextureControllerConfig) {
     this.value = config.value;
     this.viewProps = config.viewProps;
-
+    this.gl = config.gl;
     this.view = new TextureView(doc, {
       viewProps: this.viewProps,
       extensions: config.extensions
@@ -82,7 +84,7 @@ export class TextureController implements Controller<TextureView> {
     this.setIsLoading(true);
     // For UX to not allow choosing another file while loading
     this.view.canvas.removeEventListener('dblclick', this.openFileBrowser);
-    createTexturesFromImages(files)
+    createTexturesFromImages(files, null, this.gl)
       .then((textures) => {
         const texture = textures[0];
         if (!this.isMounted) return;

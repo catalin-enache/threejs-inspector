@@ -181,7 +181,6 @@ export const TextureBindings = (params: CommonGetterParams) => ({
     }
   },
   onDetailsChange: (({ object }) => {
-    // console.log('texture changed', object);
     // some props won't be reflected without needsUpdate = true
     // this is not only for the image but for other props (e.g. flipY, minFilter ...)
     // Warn: due to this, sliders (e.g. offset/rotation/repeat) will become less responsive for larger images.

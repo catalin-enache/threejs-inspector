@@ -126,6 +126,7 @@ export const MaterialBindings = (params: CommonGetterParams) => {
     },
     map: {
       label: 'Color Map',
+      gl: params.sceneObjects.gl,
       details: {
         ...TextureBindings(params)
       }
@@ -137,6 +138,7 @@ export const MaterialBindings = (params: CommonGetterParams) => {
     },
     emissiveMap: {
       label: 'Emissive Map',
+      gl: params.sceneObjects.gl,
       details: {
         ...TextureBindings(params)
       }
@@ -148,6 +150,7 @@ export const MaterialBindings = (params: CommonGetterParams) => {
     },
     aoMap: {
       label: 'AO Map',
+      gl: params.sceneObjects.gl,
       details: {
         ...TextureBindings(params)
       }
@@ -166,6 +169,7 @@ export const MaterialBindings = (params: CommonGetterParams) => {
     },
     roughnessMap: {
       label: 'Roughness Map',
+      gl: params.sceneObjects.gl,
       details: {
         ...TextureBindings(params)
       }
@@ -177,6 +181,7 @@ export const MaterialBindings = (params: CommonGetterParams) => {
     },
     specularMap: {
       label: 'Specular Map',
+      gl: params.sceneObjects.gl,
       details: {
         ...TextureBindings(params)
       }
@@ -189,6 +194,7 @@ export const MaterialBindings = (params: CommonGetterParams) => {
     },
     specularIntensityMap: {
       label: 'Specular Intensity Map',
+      gl: params.sceneObjects.gl,
       details: {
         ...TextureBindings(params)
       }
@@ -200,6 +206,7 @@ export const MaterialBindings = (params: CommonGetterParams) => {
     },
     specularColorMap: {
       label: 'Specular Color Map',
+      gl: params.sceneObjects.gl,
       details: {
         ...TextureBindings(params)
       }
@@ -212,12 +219,14 @@ export const MaterialBindings = (params: CommonGetterParams) => {
     },
     metalnessMap: {
       label: 'Metalness Map',
+      gl: params.sceneObjects.gl,
       details: {
         ...TextureBindings(params)
       }
     },
     normalMap: {
       label: 'Normal Map',
+      gl: params.sceneObjects.gl,
       details: {
         ...TextureBindings(params)
       }
@@ -237,6 +246,7 @@ export const MaterialBindings = (params: CommonGetterParams) => {
     },
     bumpMap: {
       label: 'Bump Map',
+      gl: params.sceneObjects.gl,
       details: {
         ...TextureBindings(params)
       }
@@ -248,6 +258,7 @@ export const MaterialBindings = (params: CommonGetterParams) => {
     },
     displacementMap: {
       label: 'Displacement Map',
+      gl: params.sceneObjects.gl,
       details: {
         ...TextureBindings(params)
       }
@@ -264,6 +275,7 @@ export const MaterialBindings = (params: CommonGetterParams) => {
     },
     envMap: {
       label: 'Env Map',
+      gl: params.sceneObjects.gl,
       details: {
         ...TextureBindings(params)
       }
@@ -282,6 +294,7 @@ export const MaterialBindings = (params: CommonGetterParams) => {
     },
     lightMap: {
       label: 'Light Map',
+      gl: params.sceneObjects.gl,
       details: {
         ...TextureBindings(params)
       }
@@ -294,6 +307,7 @@ export const MaterialBindings = (params: CommonGetterParams) => {
     },
     matcap: {
       label: 'Matcap',
+      gl: params.sceneObjects.gl,
       details: {
         ...TextureBindings(params)
       }
@@ -305,6 +319,7 @@ export const MaterialBindings = (params: CommonGetterParams) => {
     },
     thicknessMap: {
       label: 'Thickness Map',
+      gl: params.sceneObjects.gl,
       details: {
         ...TextureBindings(params)
       }
@@ -317,18 +332,21 @@ export const MaterialBindings = (params: CommonGetterParams) => {
     },
     transmissionMap: {
       label: 'Transmission Map',
+      gl: params.sceneObjects.gl,
       details: {
         ...TextureBindings(params)
       }
     },
     gradientMap: {
       label: 'Gradient Map',
+      gl: params.sceneObjects.gl,
       details: {
         ...TextureBindings(params)
       }
     },
     alphaMap: {
       label: 'Alpha Map',
+      gl: params.sceneObjects.gl,
       details: {
         ...TextureBindings(params)
       }
@@ -364,6 +382,7 @@ export const MaterialBindings = (params: CommonGetterParams) => {
     },
     anisotropyMap: {
       label: 'Anisotropy Map',
+      gl: params.sceneObjects.gl,
       details: {
         ...TextureBindings(params)
       }
@@ -389,12 +408,14 @@ export const MaterialBindings = (params: CommonGetterParams) => {
     },
     clearcoatMap: {
       label: 'Clearcoat Map',
+      gl: params.sceneObjects.gl,
       details: {
         ...TextureBindings(params)
       }
     },
     clearcoatNormalMap: {
       label: 'Clearcoat Normal Map',
+      gl: params.sceneObjects.gl,
       details: {
         ...TextureBindings(params)
       }
@@ -414,6 +435,7 @@ export const MaterialBindings = (params: CommonGetterParams) => {
     },
     clearcoatRoughnessMap: {
       label: 'Clearcoat Roughness Map',
+      gl: params.sceneObjects.gl,
       details: {
         ...TextureBindings(params)
       }
@@ -432,6 +454,7 @@ export const MaterialBindings = (params: CommonGetterParams) => {
     },
     iridescenceMap: {
       label: 'Iridescence Map',
+      gl: params.sceneObjects.gl,
       details: {
         ...TextureBindings(params)
       }
@@ -448,6 +471,7 @@ export const MaterialBindings = (params: CommonGetterParams) => {
     // } // Tweakpane has no matching controller,
     iridescenceThicknessMap: {
       label: 'Iridescence Thickness Map',
+      gl: params.sceneObjects.gl,
       details: {
         ...TextureBindings(params)
       }
@@ -465,6 +489,7 @@ export const MaterialBindings = (params: CommonGetterParams) => {
     },
     sheenColorMap: {
       label: 'Sheen Color Map',
+      gl: params.sceneObjects.gl,
       details: {
         ...TextureBindings(params)
       }
@@ -477,6 +502,7 @@ export const MaterialBindings = (params: CommonGetterParams) => {
     },
     sheenRoughnessMap: {
       label: 'Sheen Roughness Map',
+      gl: params.sceneObjects.gl,
       details: {
         ...TextureBindings(params)
       }

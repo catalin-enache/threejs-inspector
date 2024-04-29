@@ -3,6 +3,7 @@ import * as THREE from 'three';
 import { EXRLoader, TGALoader, RGBELoader } from 'three-stdlib';
 // @ts-ignore
 import { TIFFLoader } from 'three/examples/jsm/loaders/TIFFLoader';
+import { HDRJPGLoader } from '@monogrid/gainmap-js'; // see ThreeJS example: webgl_loader_texture_hdrjpg.html
 import { useAppStore } from 'src/store';
 
 export const FILE_EXR = 'image/x-exr';
@@ -30,7 +31,7 @@ export const fileTypeMap: Record<string, string> = {
 
 export const isPowerOf2Texture = (texture: THREE.Texture): boolean => {
   const { width, height } = getWidthHeightFromTexture(texture);
-  return width === height && (width & (width - 1)) === 0; // thanks copilot !! smart
+  return (width & (width - 1)) === 0 && (height & (height - 1)) === 0; // thanks copilot !! smart
 };
 
 export const getWidthHeightFromTexture = (texture: THREE.Texture): { width: number; height: number } => {
@@ -85,7 +86,7 @@ const sortFiles = (files: (File | string)[]): (File | string)[] => {
   });
 };
 
-export function getLoader(fileType: string) {
+export function getLoader(fileType: string, fileName: string, gl?: THREE.WebGLRenderer | null) {
   switch (fileType) {
     case FILE_EXR:
       return new EXRLoader();
@@ -95,22 +96,31 @@ export function getLoader(fileType: string) {
       return new TGALoader();
     case FILE_TIFF:
       return new TIFFLoader();
+    case FILE_JPEG:
+      if (gl && fileName.toLowerCase().endsWith('.hdr.jpg')) {
+        return new HDRJPGLoader(gl);
+      } else {
+        return new THREE.TextureLoader();
+      }
     default:
       return new THREE.TextureLoader();
   }
 }
 
 // Assuming all textures have the same characteristics (extension, size, colorSpace, etc.)
-export const cubeTextureLoader = async (files: (File | string)[]): Promise<THREE.CubeTexture> => {
+export const cubeTextureLoader = async (
+  files: (File | string)[],
+  gl?: THREE.WebGLRenderer | null
+): Promise<THREE.CubeTexture> => {
   const texture = new THREE.CubeTexture();
   const sortedFiles = sortFiles(files);
   const revokableUrls: string[] = [];
   const textures = await Promise.all(
     sortedFiles.map((file) => {
-      const { fileType } = getNameAndType(file);
+      const { fileType, name } = getNameAndType(file);
       const url = file instanceof File ? URL.createObjectURL(file) : file;
       revokableUrls.push(url);
-      const loader = getLoader(fileType);
+      const loader = getLoader(fileType, name, gl);
       return loader.loadAsync(url);
     })
   );
@@ -130,7 +140,7 @@ export const cubeTextureLoader = async (files: (File | string)[]): Promise<THREE
   texture.colorSpace = textures[0].colorSpace || (isLinear ? THREE.LinearSRGBColorSpace : THREE.SRGBColorSpace);
   texture.minFilter = THREE.LinearFilter;
   texture.magFilter = THREE.LinearFilter;
-  texture.generateMipmaps = false;
+  texture.generateMipmaps = true; // assuming all textures are power of 2 squares (proper cube textures)
   texture.needsUpdate = true;
 
   return texture;
@@ -155,12 +165,14 @@ const shouldMakeCubeTexture = (files: (File | string)[]): boolean => {
 
 type createTexturesFromImagesType = (
   fileOrFiles: string | string[] | File | FileList,
-  material?: THREE.Material | React.MutableRefObject<THREE.Material | null>
+  material?: THREE.Material | React.MutableRefObject<THREE.Material | null> | null,
+  gl?: THREE.WebGLRenderer | null
 ) => Promise<THREE.Texture[]>;
 
 export const createTexturesFromImages: createTexturesFromImagesType = async (
   fileOrFiles,
-  material
+  material,
+  gl
 ): Promise<THREE.Texture[]> => {
   const files = typeof fileOrFiles === 'string' || fileOrFiles instanceof File ? [fileOrFiles] : [...fileOrFiles];
   const needsCubeTexture = shouldMakeCubeTexture(files);
@@ -171,13 +183,13 @@ export const createTexturesFromImages: createTexturesFromImagesType = async (
   } else {
     textures = await Promise.all(
       files.map(async (file) => {
-        // const file = files[0];
         const isFileType = file instanceof File;
         const name = isFileType ? file.name : file;
         const fileType = getFileType(name); // assuming they all have the same extension
-        const loader = getLoader(fileType);
+        const loader = getLoader(fileType, name, gl);
         const url = file instanceof File ? URL.createObjectURL(file) : file;
-        const texture = await loader.loadAsync(url);
+        const result = await loader.loadAsync(url);
+        const texture = !(loader instanceof HDRJPGLoader) ? result : result.renderTarget.texture;
         texture.generateMipmaps = isPowerOf2Texture(texture);
         texture.needsUpdate = true;
         texture.name = name;

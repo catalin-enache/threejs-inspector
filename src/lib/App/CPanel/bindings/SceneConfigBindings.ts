@@ -7,6 +7,7 @@ export const SceneConfigBindings = (params: CommonGetterParams) => ({
   environment: {
     label: 'Environment',
     color: { type: 'float' },
+    gl: params.sceneObjects.gl,
     details: {
       ...TextureBindings(params)
     }
@@ -14,6 +15,7 @@ export const SceneConfigBindings = (params: CommonGetterParams) => ({
   background: {
     label: 'Background',
     color: { type: 'float' },
+    gl: params.sceneObjects.gl,
     details: {
       ...TextureBindings(params)
     }

@@ -7,6 +7,7 @@ const DEFAULT_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.tif', '.
 
 export interface TexturePluginConfig extends BaseInputParams {
   extensions?: string[];
+  gl?: THREE.WebGLRenderer;
 }
 
 let debugID = 1;
@@ -65,6 +66,7 @@ export const TextureBindingPlugin: InputBindingPlugin<THREE.Texture, THREE.Textu
       return new TextureController(args.document, {
         value: args.value,
         extensions: args.params.extensions ?? DEFAULT_EXTENSIONS,
+        gl: args.params.gl,
         viewProps: args.viewProps
       });
     }

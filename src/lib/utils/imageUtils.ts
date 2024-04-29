@@ -190,6 +190,9 @@ export const createTexturesFromImages: createTexturesFromImagesType = async (
         const url = file instanceof File ? URL.createObjectURL(file) : file;
         const result = await loader.loadAsync(url);
         const texture = !(loader instanceof HDRJPGLoader) ? result : result.renderTarget.texture;
+        // result.material is undefined unless loader instanceof HDRJPGLoader.
+        // Saving this on texture instance for use in TexturePlugin view to generate thumbnail.
+        texture.__hdrJpgMaterial = result.material;
         texture.generateMipmaps = isPowerOf2Texture(texture);
         texture.needsUpdate = true;
         texture.name = name;
@@ -218,6 +221,7 @@ export const createTexturesFromImages: createTexturesFromImagesType = async (
       }
     });
   } else {
+    // the scene case for background/environment
     setTimeout(() => {
       useAppStore.getState().triggerCPaneStateChanged();
     });

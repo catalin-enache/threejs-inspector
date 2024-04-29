@@ -61,13 +61,17 @@ export class TextureView implements View {
     const isCubeTexture = texture instanceof THREE.CubeTexture;
     const ratio = height / width;
     const geometry = new THREE.PlaneGeometry(canvasSize, canvasSize * ratio);
+
+    // @ts-ignore
+    const hdrJpgMaterial = texture.__hdrJpgMaterial; // handling HDRJPGLoader
     const mapTexture = !isCubeTexture
       ? texture
       : texture.images[0] instanceof THREE.DataTexture
         ? texture.images[0] // if CubeTexture already contains Textures get the first one
         : new THREE.Texture(texture.images[0]); // else make a new Texture from the first image
+
     mapTexture.needsUpdate = true;
-    const material = new THREE.MeshBasicMaterial({ map: mapTexture });
+    const material = hdrJpgMaterial || new THREE.MeshBasicMaterial({ map: mapTexture });
     return new THREE.Mesh(geometry, material);
   }
 

@@ -27,7 +27,7 @@ import './CPanel.css';
 
 const cPanelContainer = document.getElementById('controlPanel')!;
 const helpContainer = document.getElementById('help')!;
-helpContainer.innerHTML = html;
+helpContainer.innerHTML = html.replaceAll('public/textures', 'textures');
 
 // ----------------------- >> Remember last scroll position >> --------------------------------
 

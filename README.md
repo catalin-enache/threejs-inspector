@@ -89,7 +89,16 @@
   It goes without saying that the main app should have its own camera controls when the default ones are not attached to the playing camera.
   <br /><br />
 
-- To change a texture image, click on the texture image in the cPanel and select a new image from the opened file explorer.
+- To change a texture image, click on the texture image in the cPanel and select a new image (or 6 images for cube texture) from the opened file explorer.  
+  Allowed extensions are `.jpg`, `.jpeg`, `.png`, `.gif`, `.tif`, `.tiff`, `.webp`, `.tga`, `.exr`, `.hdr`, `.hdr.jpg` (see: <a href="https://github.com/MONOGRID/gainmap-js/" target="_blank">HDR-JPG</a>).  
+  For scene background/environment
+  - if the texture is equirectangular (ratio 2:1 - see examples in `textures/background/equirectangular`) it can be used with `EquirectanguarReflectionMapping` and `EquirectangularRefractionMapping`.  
+    <img src="public/textures/_docs/texture_mapping.png" width="250" />
+  - if the texture is cube (6 images allowed to be uploaded simultaneously) it can be used with `CubeReflectionMapping` and `CubeRefractionMapping`.
+    The 6 images must have their name ending with `px`, `nx`, `py`, `ny`, `pz`, `nz` (e.g. `skybox_px.jpg`, `skybox_nx.jpg`, etc. or just `px.jpg`, `py.jpg` etc.).  
+    or ending with `posx`, `negx`, `posy`, `negy`, `posz`, `negz` (e.g. `skybox_posx.jpg`, `skybox_negx.jpg`, etc. or just `posx.jpg`, `negx.jpg` etc.).  
+    <img src="public/textures/_docs/multi_img_upload.png" width="350" />
+  - if the texture is a simple image (for 2d background) it can be used with `UVMapping`.
   <br /><br />
 
 - Any change to a texture will update the texture and if the texture is inside a material it will recompile the material  

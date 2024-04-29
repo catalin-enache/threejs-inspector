@@ -165,14 +165,15 @@ const shouldMakeCubeTexture = (files: (File | string)[]): boolean => {
 
 type createTexturesFromImagesType = (
   fileOrFiles: string | string[] | File | FileList,
-  material?: THREE.Material | React.MutableRefObject<THREE.Material | null> | null,
-  gl?: THREE.WebGLRenderer | null
+  extra?: {
+    material?: THREE.Material | React.MutableRefObject<THREE.Material | null> | null;
+    gl?: THREE.WebGLRenderer | null;
+  }
 ) => Promise<THREE.Texture[]>;
 
 export const createTexturesFromImages: createTexturesFromImagesType = async (
   fileOrFiles,
-  material,
-  gl
+  { material, gl } = {}
 ): Promise<THREE.Texture[]> => {
   const files = typeof fileOrFiles === 'string' || fileOrFiles instanceof File ? [fileOrFiles] : [...fileOrFiles];
   const needsCubeTexture = shouldMakeCubeTexture(files);

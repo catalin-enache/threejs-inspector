@@ -84,7 +84,7 @@ export class TextureController implements Controller<TextureView> {
     this.setIsLoading(true);
     // For UX to not allow choosing another file while loading
     this.view.canvas.removeEventListener('dblclick', this.openFileBrowser);
-    createTexturesFromImages(files, null, this.gl)
+    createTexturesFromImages(files, { material: null, gl: this.gl })
       .then((textures) => {
         const texture = textures[0];
         if (!this.isMounted) return;

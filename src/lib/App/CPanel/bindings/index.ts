@@ -1,9 +1,6 @@
-import { numberCommon } from './bindingHelpers';
-import { MaterialBindings } from './MaterialBindings';
 import { Object3DBindings } from './Object3DBindings';
 import { ObjectStoreBindings } from './ObjectStoreBindings';
 import { LightBindings } from './LightBindings';
-import { LightShadowBindings } from './LightShadowBindings';
 import { CameraBindings } from './CameraBindings';
 import { CameraStoreBindings } from './CameraStoreBindings';
 import { SceneButtons } from './SceneButtons';
@@ -25,53 +22,7 @@ export const getObjectsStoreBindings = (params: CommonGetterParams) => ({
 export const getObject3DBindings = (params: CommonGetterParams) => ({
   ...Object3DBindings(params),
   ...CameraBindings(params),
-  ...LightBindings(params),
-  shadow: {
-    // Some lights have shadow
-    title: 'Shadow',
-    ...LightShadowBindings(params),
-    camera: {
-      title: 'Camera',
-      ...CameraBindings(params)
-    }
-  },
-  target: {
-    // for DirectionalLight, SpotLight
-    title: 'Target',
-    position: {
-      label: 'Position',
-      ...numberCommon
-    }
-  },
-  material: {
-    // for Mesh
-    title: 'Material',
-    ...MaterialBindings(params)
-  },
-  parent: {
-    // for Object3D
-    title: 'Parent',
-    id: {
-      label: 'ID',
-      view: 'text',
-      disabled: true
-    },
-    uuid: {
-      label: 'UUID',
-      view: 'text',
-      disabled: true
-    },
-    name: {
-      label: 'Name',
-      view: 'text',
-      disabled: true
-    },
-    type: {
-      label: 'Type',
-      view: 'text',
-      disabled: true
-    }
-  }
+  ...LightBindings(params)
 });
 
 export const getRendererBindings = (params: CommonGetterParams) => ({

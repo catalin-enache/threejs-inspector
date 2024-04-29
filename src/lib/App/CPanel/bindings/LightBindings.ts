@@ -1,7 +1,9 @@
 import { numberCommon } from './bindingHelpers';
 import type { CommonGetterParams } from './bindingTypes';
+import { LightShadowBindings } from './LightShadowBindings';
+import { CameraBindings } from './CameraBindings';
 
-export const LightBindings = (_params: CommonGetterParams) => ({
+export const LightBindings = (params: CommonGetterParams) => ({
   intensity: {
     label: 'Intensity',
     min: 0,
@@ -55,5 +57,22 @@ export const LightBindings = (_params: CommonGetterParams) => ({
     // RectAreaLight
     label: 'Height',
     ...numberCommon
+  },
+  shadow: {
+    // Some lights have shadow
+    title: 'Shadow',
+    ...LightShadowBindings(params),
+    camera: {
+      title: 'Camera',
+      ...CameraBindings(params)
+    }
+  },
+  target: {
+    // for DirectionalLight, SpotLight
+    title: 'Target',
+    position: {
+      label: 'Position',
+      ...numberCommon
+    }
   }
 });

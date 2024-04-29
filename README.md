@@ -93,11 +93,11 @@
   Allowed extensions are `.jpg`, `.jpeg`, `.png`, `.gif`, `.tif`, `.tiff`, `.webp`, `.tga`, `.exr`, `.hdr`, `.hdr.jpg` (see: <a href="https://github.com/MONOGRID/gainmap-js/" target="_blank">HDR-JPG</a>).  
   For scene background/environment
   - if the texture is equirectangular (ratio 2:1 - see examples in `textures/background/equirectangular`) it can be used with `EquirectanguarReflectionMapping` and `EquirectangularRefractionMapping`.  
-    <img src="public/textures/_docs/texture_mapping.png" width="250" />
+    <img src="public/textures/docs/texture_mapping.png" width="250" />
   - if the texture is cube (6 images allowed to be uploaded simultaneously) it can be used with `CubeReflectionMapping` and `CubeRefractionMapping`.
     The 6 images must have their name ending with `px`, `nx`, `py`, `ny`, `pz`, `nz` (e.g. `skybox_px.jpg`, `skybox_nx.jpg`, etc. or just `px.jpg`, `py.jpg` etc.).  
     or ending with `posx`, `negx`, `posy`, `negy`, `posz`, `negz` (e.g. `skybox_posx.jpg`, `skybox_negx.jpg`, etc. or just `posx.jpg`, `negx.jpg` etc.).  
-    <img src="public/textures/_docs/multi_img_upload.png" width="350" />
+    <img src="public/textures/docs/multi_img_upload.png" width="350" />
   - if the texture is a simple image (for 2d background) it can be used with `UVMapping`.
   <br /><br />
 

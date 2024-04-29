@@ -30,7 +30,7 @@ const makeHelpers = (object: THREE.Object3D) => {
   // TODO: return early here (in a separate commit)
   if (object instanceof THREE.Light || object instanceof THREE.Camera || object instanceof THREE.CubeCamera) {
     const helperSize = 0.25;
-
+    // TODO: check other included helpers (e.g. LightProbeHelper)
     helper =
       object instanceof THREE.Camera
         ? new THREE.CameraHelper(object)

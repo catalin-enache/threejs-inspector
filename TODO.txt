@@ -31,11 +31,13 @@ Investigate the cameras being added when changing scene background mapping to re
 After they are added why they do  not move when dragged, or at least why the helpers do not move ?
 *DONE* (added sub-cameras of CubeCamera to the skip list - it is not useful to have pickers for them. Also note that CubeCamera is not actually added to the scene)
 
-Bug: spruit_sunrise_4k.hdr.jpg not working as cubemap (might need handling like here: webgl_loader_texture_hdrjpg.html)
+Bug: spruit_sunrise_4k.hdr.jpg not working as cubemap (might need handling like here: webgl_loader_texture_hdrjpg.html) *DONE* (using HDR-JPG loader)
+
+Write doc about loading textures and cubeMaps *DONE*
+
+Could we add a use_pmremGenerator bool to inspector ?
 
 Test matcap
-
-Write doc about loading textures and cubeMaps
 
 Be able to load complete materials from folder based on name
 

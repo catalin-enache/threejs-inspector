@@ -5,6 +5,7 @@ import { EXRLoader, TGALoader, RGBELoader } from 'three-stdlib';
 import { TIFFLoader } from 'three/examples/jsm/loaders/TIFFLoader';
 import { HDRJPGLoader } from '@monogrid/gainmap-js'; // see ThreeJS example: webgl_loader_texture_hdrjpg.html
 import { useAppStore } from 'src/store';
+import { getNameAndType, getFileType } from '.';
 
 export const FILE_EXR = 'image/x-exr';
 export const FILE_HDR = 'image/hdr';
@@ -14,7 +15,6 @@ export const FILE_PNG = 'image/png';
 export const FILE_TIFF = 'image/tiff';
 export const FILE_WEBP = 'image/webp';
 export const FILE_TGA = 'image/tga';
-export const FILE_UNKNOWN = 'unknown';
 
 export const fileTypeMap: Record<string, string> = {
   jpg: FILE_JPEG,
@@ -50,17 +50,6 @@ export const getWidthHeightFromTexture = (texture: THREE.Texture): { width: numb
       ? texture.images[0].image.height
       : texture.images[0].height;
   return { width, height };
-};
-
-export const getFileType = (filename: string): string => {
-  return fileTypeMap[filename.split('.').pop()?.toLowerCase() || ''] || FILE_UNKNOWN;
-};
-
-export const getNameAndType = (file: File | string): { name: string; fileType: string } => {
-  const isFileType = file instanceof File;
-  const name = isFileType ? file.name : file;
-  const fileType = getFileType(name);
-  return { name, fileType };
 };
 
 // returns the last 2 characters before the last dot (expecting basically: px, nx, py, ny, pz, nz)
@@ -117,7 +106,7 @@ export const cubeTextureLoader = async (
   const revokableUrls: string[] = [];
   const textures = await Promise.all(
     sortedFiles.map((file) => {
-      const { fileType, name } = getNameAndType(file);
+      const { fileType, name } = getNameAndType(file, fileTypeMap);
       const url = file instanceof File ? URL.createObjectURL(file) : file;
       revokableUrls.push(url);
       const loader = getLoader(fileType, name, gl);
@@ -131,7 +120,7 @@ export const cubeTextureLoader = async (
 
   revokableUrls.forEach((url) => URL.revokeObjectURL(url));
 
-  const { fileType } = getNameAndType(sortedFiles[0]);
+  const { fileType } = getNameAndType(sortedFiles[0], fileTypeMap);
   const isLinear = fileType === FILE_EXR || fileType === FILE_HDR;
 
   texture.name = sortedFiles[0] instanceof File ? (sortedFiles[0] as File).name : (sortedFiles[0] as string);
@@ -151,12 +140,12 @@ const posNegXYXSet = new Set(['posx', 'posy', 'posz', 'negx', 'negy', 'negz']);
 
 const shouldMakeCubeTexture = (files: (File | string)[]): boolean => {
   const allPX = files.every((file) => {
-    const { name } = getNameAndType(file);
+    const { name } = getNameAndType(file, fileTypeMap);
     const coords = getCubeCoords(name);
     return pnXYZSet.has(coords);
   });
   const allSX = files.every((file) => {
-    const { name } = getNameAndType(file);
+    const { name } = getNameAndType(file, fileTypeMap);
     const coords = getCubeCoords(name, 4);
     return posNegXYXSet.has(coords);
   });
@@ -186,7 +175,7 @@ export const createTexturesFromImages: createTexturesFromImagesType = async (
       files.map(async (file) => {
         const isFileType = file instanceof File;
         const name = isFileType ? file.name : file;
-        const fileType = getFileType(name); // assuming they all have the same extension
+        const fileType = getFileType(name, fileTypeMap); // assuming they all have the same extension
         const loader = getLoader(fileType, name, gl);
         const url = file instanceof File ? URL.createObjectURL(file) : file;
         const result = await loader.loadAsync(url);

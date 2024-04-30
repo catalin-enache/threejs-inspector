@@ -1,4 +1,4 @@
-import { useEffect, useRef, useCallback } from 'react';
+import { useEffect, useRef, useCallback, useMemo } from 'react';
 import * as THREE from 'three';
 import { useThree } from '@react-three/fiber';
 import { Pane, FolderApi, TabApi } from 'tweakpane';
@@ -24,6 +24,7 @@ import { makeRotationBinding, tweakBindingView, buildBindings, cleanupContainer 
 // @ts-ignore
 import { html } from '../../../../README.md';
 import './CPanel.css';
+import { CommonGetterParams } from 'lib/App/CPanel/bindings/bindingTypes';
 
 const cPanelContainer = document.getElementById('controlPanel')!;
 const helpContainer = document.getElementById('help')!;
@@ -125,6 +126,13 @@ export const CPanel = () => {
   const triggerSelectedObjectChanged = useAppStore((state) => state.triggerSelectedObjectChanged);
 
   const continuousUpdateRef = useRef<ReturnType<typeof makeContinuousUpdate> | null>(null);
+
+  // In later useEffects the dependencies are already the ones used here.
+  // No need to add commonGetterParams as a dependency.
+  const commonGetterParams: CommonGetterParams = useMemo(
+    () => ({ angleFormat, isPlaying, sceneObjects: { scene, camera, gl } }),
+    [angleFormat, isPlaying, scene, camera, gl]
+  );
 
   const handleSelectedObjectChanges = useCallback(
     (_event: any) => {
@@ -229,7 +237,8 @@ export const CPanel = () => {
     buildBindings(
       objectTab as unknown as FolderApi,
       useAppStore.getState(),
-      getObjectsStoreBindings({ sceneObjects: { scene, camera, gl } })
+      getObjectsStoreBindings(commonGetterParams),
+      commonGetterParams
     );
 
     const objectFolder = objectTab
@@ -239,19 +248,7 @@ export const CPanel = () => {
       })
       .on('change', handleSelectedObjectChanges);
 
-    buildBindings(
-      objectFolder,
-      selectedObject,
-      getObject3DBindings({
-        angleFormat,
-        isPlaying,
-        sceneObjects: {
-          scene,
-          camera,
-          gl
-        }
-      })
-    );
+    buildBindings(objectFolder, selectedObject, getObject3DBindings(commonGetterParams), commonGetterParams);
   }, [
     selectedObject,
     handleSelectedObjectChanges,
@@ -306,17 +303,7 @@ export const CPanel = () => {
       title: 'Pane',
       expanded: true
     });
-    buildBindings(
-      paneFolder,
-      store,
-      getPaneBindings({
-        sceneObjects: {
-          scene,
-          camera,
-          gl
-        }
-      })
-    );
+    buildBindings(paneFolder, store, getPaneBindings(commonGetterParams), commonGetterParams);
 
     // Add Scene folder and bindings
     const sceneFolder = sceneTab.addFolder({
@@ -325,19 +312,7 @@ export const CPanel = () => {
     });
 
     // Add scene buttons
-    buildBindings(
-      sceneFolder,
-      {},
-      getSceneButtons({
-        angleFormat,
-        isPlaying,
-        sceneObjects: {
-          scene,
-          camera,
-          gl
-        }
-      })
-    );
+    buildBindings(sceneFolder, {}, getSceneButtons(commonGetterParams), commonGetterParams);
 
     const cameraEditorFolder = sceneTab.addFolder({
       title: 'Camera Control',
@@ -345,17 +320,7 @@ export const CPanel = () => {
     });
 
     // Add camera editor store bindings
-    buildBindings(
-      cameraEditorFolder,
-      store,
-      getCameraStoreBindings({
-        sceneObjects: {
-          scene,
-          camera,
-          gl
-        }
-      })
-    );
+    buildBindings(cameraEditorFolder, store, getCameraStoreBindings(commonGetterParams), commonGetterParams);
 
     const sceneConfigFolder = sceneTab.addFolder({
       title: 'Scene',
@@ -363,19 +328,7 @@ export const CPanel = () => {
     });
 
     // Add scene config bindings
-    buildBindings(
-      sceneConfigFolder,
-      scene,
-      getSceneConfigBindings({
-        angleFormat,
-        isPlaying,
-        sceneObjects: {
-          scene,
-          camera,
-          gl
-        }
-      })
-    );
+    buildBindings(sceneConfigFolder, scene, getSceneConfigBindings(commonGetterParams), commonGetterParams);
 
     const cameraCurrentFolder = sceneTab
       .addFolder({
@@ -387,19 +340,7 @@ export const CPanel = () => {
       });
 
     // Add camera object bindings
-    buildBindings(
-      cameraCurrentFolder,
-      camera,
-      getObject3DBindings({
-        angleFormat,
-        isPlaying,
-        sceneObjects: {
-          scene,
-          camera,
-          gl
-        }
-      })
-    );
+    buildBindings(cameraCurrentFolder, camera, getObject3DBindings(commonGetterParams), commonGetterParams);
 
     const glFolder = sceneTab
       .addFolder({
@@ -411,17 +352,7 @@ export const CPanel = () => {
       });
 
     // Add gl bindings
-    buildBindings(
-      glFolder,
-      gl,
-      getRendererBindings({
-        sceneObjects: {
-          scene,
-          camera,
-          gl
-        }
-      })
-    );
+    buildBindings(glFolder, gl, getRendererBindings(commonGetterParams), commonGetterParams);
 
     // Add Raycaster Params
     const raycasterParamsFolder = sceneTab
@@ -433,17 +364,7 @@ export const CPanel = () => {
         // console.log('Raycaster Params changed', raycaster);
       });
 
-    buildBindings(
-      raycasterParamsFolder,
-      raycaster,
-      getRaycasterParamsBindings({
-        sceneObjects: {
-          scene,
-          camera,
-          gl
-        }
-      })
-    );
+    buildBindings(raycasterParamsFolder, raycaster, getRaycasterParamsBindings(commonGetterParams), commonGetterParams);
   }, [
     cPanelContinuousUpdate,
     angleFormat,

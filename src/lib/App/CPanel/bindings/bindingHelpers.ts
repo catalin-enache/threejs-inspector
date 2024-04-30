@@ -1,7 +1,9 @@
-import { degToRad, radToDegFormatter } from 'lib/utils';
+import * as THREE from 'three';
 import { BindingApi } from '@tweakpane/core';
 import { FolderApi, TabPageApi, BladeApi } from 'tweakpane';
-import * as THREE from 'three';
+import { degToRad, radToDegFormatter } from 'lib/utils';
+import { Object3DBindings } from './Object3DBindings';
+import { CommonGetterParams } from 'lib/App/CPanel/bindings/bindingTypes';
 
 export const numberFormat = (precision: number) => (value: number) => value.toFixed(precision);
 
@@ -84,7 +86,7 @@ export const tweakFolder = (folder: FolderApi | TabPageApi, id: string) => {
   });
 };
 
-export const buildBindings = (folder: FolderApi, object: any, bindings: any) => {
+export const buildBindings = (folder: FolderApi, object: any, bindings: any, params: CommonGetterParams) => {
   // console.log('buildBindings for', folder.title, { object, bindings });
 
   Object.keys(bindings).forEach((key) => {
@@ -113,7 +115,7 @@ export const buildBindings = (folder: FolderApi, object: any, bindings: any) => 
         expanded: false
       });
       bindingCandidate.__parent = object;
-      buildBindings(subFolder, object[key], bindingCandidate);
+      buildBindings(subFolder, object[key], bindingCandidate, params);
       return;
     }
 
@@ -161,13 +163,31 @@ export const buildBindings = (folder: FolderApi, object: any, bindings: any) => 
         );
         delete bindingCandidate.details.onDetailsChange;
       }
-      buildBindings(subFolder, object[key], bindingCandidate.details);
+      buildBindings(subFolder, object[key], bindingCandidate.details, params);
     }
+
     tweakBindingView(binding);
+
     if (bindingCandidate.format === radToDegFormatter) {
       makeRotationBinding(binding);
     }
   });
+
+  if (object instanceof THREE.Mesh || object instanceof THREE.Group) {
+    object.children.forEach(function (child) {
+      if (child instanceof THREE.Mesh) {
+        const subFolder = folder.addFolder({
+          title: `${child.name || child.uuid}`,
+          expanded: false
+        });
+        const newBindings = Object3DBindings(params);
+        // @ts-ignore
+        delete newBindings.parent; // prevents infinite loop
+        buildBindings(subFolder, child, newBindings, params);
+      }
+    });
+  }
+
   // Using it at the end so that inside tweakFolder()
   // we can access all buttons added so far by inner folders.
   tweakFolder(folder, `${folder.title!}-${object.uuid || 'no-id'}`);

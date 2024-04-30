@@ -3,13 +3,13 @@ import { FolderApi } from 'tweakpane';
 
 export type SceneObjects = {
   scene: THREE.Scene;
-  camera: THREE.Camera;
+  camera: THREE.Camera & { manual?: boolean | undefined };
   gl: THREE.WebGLRenderer;
 };
 
 export type CommonGetterParams = {
-  angleFormat?: 'deg' | 'rad';
-  isPlaying?: boolean;
+  angleFormat: 'deg' | 'rad';
+  isPlaying: boolean;
   sceneObjects: SceneObjects;
 };
 

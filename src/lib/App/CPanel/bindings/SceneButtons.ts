@@ -1,6 +1,23 @@
 import { useAppStore } from 'src/store';
 import { focusCamera } from 'lib/utils';
 import type { CommonGetterParams, onChange } from './bindingTypes';
+import { loadModel } from 'lib/utils/loadModel';
+
+const rootExtensions = ['.glb', '.gltf', '.obj', '.fbx', '.dae', '.3ds', '.stl', '.ply', '.vtk'];
+const allowedExtensions = [
+  ...rootExtensions,
+  '.bin',
+  '.jpg',
+  '.jpeg',
+  '.png',
+  '.gif',
+  '.webp',
+  '.tif',
+  '.tiff',
+  '.exr',
+  '.hdr',
+  '.tga'
+];
 
 // keys are not relevant for buttons
 export const SceneButtons = ({ isPlaying, sceneObjects: { camera, scene } }: CommonGetterParams) => ({
@@ -56,5 +73,24 @@ export const SceneButtons = ({ isPlaying, sceneObjects: { camera, scene } }: Com
     // onChange: ((_, evt) => {
     //   useAppStore.getState().setPlaying(evt.value);
     // }) as onChange
+  },
+  5: {
+    label: 'Load Model',
+    title: 'Load Model',
+    onClick: (() => {
+      const input = document.createElement('input');
+      input.type = 'file';
+      input.accept = allowedExtensions.join(','); // TODO: add images formats here
+      input.multiple = true;
+      input.onchange = (e) => {
+        const files = (e.target as HTMLInputElement).files;
+        if (!files || !files.length) return;
+        const filesArray = Array.from(files);
+        const rootFile = filesArray.find((file) => rootExtensions.some((ext) => file.name.endsWith(ext)));
+        if (!rootFile) return;
+        void loadModel(rootFile, scene, filesArray);
+      };
+      input.click();
+    }) as onChange
   }
 });

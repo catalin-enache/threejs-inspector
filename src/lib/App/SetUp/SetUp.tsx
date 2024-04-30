@@ -21,6 +21,8 @@ RectAreaLightUniformsLib.init(); // required for RectAreaLight
 const threeScene = new THREE.Scene();
 const inspectableObjects: Record<string, THREE.Object3D> = {};
 const dependantObjects: Record<string, THREE.Object3D[]> = {};
+threeScene.userData.inspectableObjects = inspectableObjects;
+threeScene.userData.dependantObjects = dependantObjects;
 
 const makeHelpers = (object: THREE.Object3D) => {
   let helper: userData['helper'];
@@ -207,6 +209,7 @@ THREE.Object3D.prototype.add = (function () {
     }
     objects.forEach((object) => {
       const userData = object.userData as userData;
+
       if (
         userData.isInspectable ||
         (object as THREE.Light).isLight ||

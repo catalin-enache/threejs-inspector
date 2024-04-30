@@ -5,11 +5,7 @@ import { isTextureImage, isTexture } from 'lib/types';
 export const isObject = (value: any) => {
   return (
     // value !== null && typeof value === 'object' && // compatible with Tweakpane if needed
-    value &&
-    value.constructor === Object &&
-    !isArray(value) &&
-    !isTextureImage(value) &&
-    !isTexture(value)
+    value && value.constructor === Object && !isArray(value) && !isTextureImage(value) && !isTexture(value)
   );
 };
 
@@ -74,8 +70,7 @@ export const setFullScreen = (isFullScreen: boolean) => {
 };
 
 export const degToRad = (deg: number) => (deg / 180) * Math.PI;
-export const radToDegFormatter = (rad: number) =>
-  ((rad / Math.PI) * 180).toFixed(3);
+export const radToDegFormatter = (rad: number) => ((rad / Math.PI) * 180).toFixed(3);
 
 export const focusCamera = ({
   transformControls,
@@ -94,6 +89,22 @@ export const focusCamera = ({
   } else {
     camera.lookAt(focusOn);
   }
+};
+
+export const FILE_UNKNOWN = 'unknown';
+
+export const getFileType = (filename: string, fileTypeMap: Record<string, any>): string => {
+  return fileTypeMap[filename.split('.').pop()?.toLowerCase() || ''] || FILE_UNKNOWN;
+};
+
+export const getNameAndType = (
+  file: File | string,
+  fileTypeMap: Record<string, any>
+): { name: string; fileType: string } => {
+  const isFileType = file instanceof File;
+  const name = isFileType ? file.name : file;
+  const fileType = getFileType(name, fileTypeMap);
+  return { name, fileType };
 };
 
 // TODO: not used // maybe implement this later

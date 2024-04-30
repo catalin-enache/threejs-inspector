@@ -8,6 +8,7 @@ import { setFullScreen } from 'lib/utils';
 import { isTextureImage, isTexture } from 'lib/types';
 
 const cPanelCustomParamsStore: any = {};
+let selectedObject: THREE.Object3D | null = null;
 
 export interface AppStore {
   isPlaying: boolean;
@@ -66,7 +67,8 @@ export interface AppStore {
   attachDefaultControllersToPlayingCamera: boolean;
   setAttachDefaultControllersToPlayingCamera: (attachDefaultControllersToPlayingCamera: boolean) => void;
   toggleAttachDefaultControllersToPlayingCamera: () => void;
-  selectedObject: THREE.Object3D | null;
+  selectedObjectUUID: string;
+  getSelectedObject: () => THREE.Object3D | null;
   setSelectedObject: (object: THREE.Object3D | null) => void;
   selectedObjectStateFake: number;
   triggerSelectedObjectChanged: () => void;
@@ -235,8 +237,14 @@ export const useAppStore = create<AppStore>()(
       set((state) => ({
         attachDefaultControllersToPlayingCamera: !state.attachDefaultControllersToPlayingCamera
       })),
-    selectedObject: null,
-    setSelectedObject: (selectedObject) => set({ selectedObject }),
+    selectedObjectUUID: '',
+    getSelectedObject: () => selectedObject,
+    setSelectedObject: (_selectedObject) => {
+      selectedObject = _selectedObject;
+      set({
+        selectedObjectUUID: _selectedObject?.uuid ?? ''
+      });
+    },
     selectedObjectStateFake: 0,
     triggerSelectedObjectChanged: () =>
       set((state) => ({

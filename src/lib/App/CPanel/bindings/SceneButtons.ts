@@ -7,6 +7,7 @@ const rootExtensions = ['.glb', '.gltf', '.obj', '.fbx', '.dae', '.3ds', '.stl',
 const allowedExtensions = [
   ...rootExtensions,
   '.bin',
+  '.mtl',
   '.jpg',
   '.jpeg',
   '.png',
@@ -88,7 +89,9 @@ export const SceneButtons = ({ isPlaying, sceneObjects: { camera, scene } }: Com
         const filesArray = Array.from(files);
         const rootFile = filesArray.find((file) => rootExtensions.some((ext) => file.name.endsWith(ext)));
         if (!rootFile) return;
-        void loadModel(rootFile, scene, filesArray);
+        loadModel(rootFile, scene, filesArray).then((mesh) => {
+          mesh && scene.add(mesh);
+        });
       };
       input.click();
     }) as onChange

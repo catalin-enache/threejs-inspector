@@ -121,7 +121,7 @@ export const CPanel = () => {
   const cPanelCustomParams = useAppStore((state) => state.getCPanelCustomParams());
   const triggerCPanelCustomParamsChanged = useAppStore((state) => state.triggerCPanelCustomParamsChanged);
   const cPanelCustomControls = useAppStore((state) => state.cPanelCustomControls);
-  const selectedObject = useAppStore((state) => state.selectedObject);
+  const selectedObjectUUID = useAppStore((state) => state.selectedObjectUUID);
   const selectedObjectRef = useRef<THREE.Object3D | null>(null);
   const triggerSelectedObjectChanged = useAppStore((state) => state.triggerSelectedObjectChanged);
 
@@ -134,6 +134,7 @@ export const CPanel = () => {
     [angleFormat, isPlaying, scene, camera, gl]
   );
 
+  // TODO: move these into bindings
   const handleSelectedObjectChanges = useCallback(
     (_event: any) => {
       if (selectedObjectRef.current) {
@@ -161,8 +162,8 @@ export const CPanel = () => {
 
   // Set selectedObject
   useEffect(() => {
-    selectedObjectRef.current = selectedObject;
-  }, [selectedObject]);
+    selectedObjectRef.current = useAppStore.getState().getSelectedObject();
+  }, [selectedObjectUUID]);
 
   // Instantiate Pane and create tabs
   useEffect(() => {
@@ -224,7 +225,7 @@ export const CPanel = () => {
 
   // Create folders and bindings for selectedObject
   useEffect(() => {
-    if (!paneRef.current) return;
+    if (!paneRef.current || paneRef.current.hidden) return;
     const pane = paneRef.current;
 
     const tabs = pane.children[0] as TabApi;
@@ -232,7 +233,8 @@ export const CPanel = () => {
 
     // Cleanup prev folders and their bindings
     cleanupContainer(objectTab);
-    if (!selectedObject) return;
+    if (!selectedObjectUUID) return;
+    const selectedObject = useAppStore.getState().getSelectedObject();
 
     buildBindings(
       objectTab as unknown as FolderApi,
@@ -250,7 +252,7 @@ export const CPanel = () => {
 
     buildBindings(objectFolder, selectedObject, getObject3DBindings(commonGetterParams), commonGetterParams);
   }, [
-    selectedObject,
+    selectedObjectUUID,
     handleSelectedObjectChanges,
     transformControlsMode,
     transformControlsSpace,
@@ -264,7 +266,7 @@ export const CPanel = () => {
 
   // Setup bindings for custom params
   useEffect(() => {
-    if (!paneRef.current) return;
+    if (!paneRef.current || paneRef.current.hidden) return;
     const pane = paneRef.current;
     const tabs = pane.children[0] as TabApi;
     const customParamsTab = tabs.pages[1];
@@ -289,7 +291,7 @@ export const CPanel = () => {
 
   // Setup bindings for Scene/Pane
   useEffect(() => {
-    if (!paneRef.current) return;
+    if (!paneRef.current || paneRef.current.hidden) return;
     const pane = paneRef.current;
     const tabs = pane.children[0] as TabApi;
     const sceneTab = tabs.pages[2];
@@ -383,7 +385,7 @@ export const CPanel = () => {
     panelContainer.scrollTop = cPanelScrollTop;
   }, [
     // everything is a dependency here excluding cPanelVisible
-    selectedObject,
+    selectedObjectUUID,
     transformControlsMode,
     transformControlsSpace,
     cPanelCustomControls,

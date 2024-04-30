@@ -209,7 +209,6 @@ THREE.Object3D.prototype.add = (function () {
     }
     objects.forEach((object) => {
       const userData = object.userData as userData;
-
       if (
         userData.isInspectable ||
         (object as THREE.Light).isLight ||
@@ -252,7 +251,7 @@ THREE.Object3D.prototype.remove = (function () {
     }
     objects.forEach((object) => {
       removeHelpers(object);
-      if (object === useAppStore.getState().selectedObject) {
+      if (object === useAppStore.getState().getSelectedObject()) {
         useAppStore.getState().setSelectedObject(null);
       }
     });
@@ -310,7 +309,7 @@ const SetUp = () => {
 
   const isEditorMode = useAppStore((state) => state.showGizmos || state.cPanelVisible);
 
-  const selectedObject = useAppStore((state) => state.selectedObject);
+  const selectedObjectUUID = useAppStore((state) => state.selectedObjectUUID);
   const setSelectedObject = useAppStore((state) => state.setSelectedObject);
   const triggerSelectedObjectChanged = useAppStore((state) => state.triggerSelectedObjectChanged);
 
@@ -382,14 +381,15 @@ const SetUp = () => {
   useEffect(() => {
     if (!transformControlsRef.current) return;
     const transformControls = transformControlsRef.current;
-    if (selectedObject && showGizmos) {
+    if (selectedObjectUUID && showGizmos) {
+      const selectedObject = useAppStore.getState().getSelectedObject()!;
       transformControls.attach(selectedObject);
       transformControls.setMode(transformControlsMode); // translate | rotate | scale
       transformControls.setSpace(transformControlsSpace); // local | world
     } else {
       transformControls.detach();
     }
-  }, [selectedObject, showGizmos, transformControlsMode, transformControlsSpace]);
+  }, [selectedObjectUUID, showGizmos, transformControlsMode, transformControlsSpace]);
 
   // Update ObitControls (target, camera, enabled) and TransformControls camera
   useEffect(() => {

@@ -173,18 +173,18 @@ export const buildBindings = (folder: FolderApi, object: any, bindings: any, par
     }
   });
 
-  if (object instanceof THREE.Mesh || object instanceof THREE.Group) {
-    object.children.forEach(function (child) {
-      if (child instanceof THREE.Mesh) {
-        const subFolder = folder.addFolder({
-          title: `${child.name || child.uuid}`,
-          expanded: false
-        });
-        const newBindings = Object3DBindings(params);
-        // @ts-ignore
-        delete newBindings.parent; // prevents infinite loop
-        buildBindings(subFolder, child, newBindings, params);
-      }
+  if (!(object instanceof THREE.Scene) && object.children) {
+    object.children.forEach(function (child: any) {
+      // I don't think a child - in this context (leaving in children collection) - could not be an Object3D but just in case
+      if (!(child instanceof THREE.Object3D)) return;
+      const subFolder = folder.addFolder({
+        title: `${child.name || child.uuid}`,
+        expanded: false
+      });
+      const newBindings = Object3DBindings(params);
+      // @ts-ignore
+      delete newBindings.parent; // prevents infinite loop
+      buildBindings(subFolder, child, newBindings, params);
     });
   }
 

@@ -2,6 +2,9 @@ import type { CommonGetterParams } from './bindingTypes';
 import { numberCommon } from './bindingHelpers';
 import { radToDegFormatter } from 'lib/utils';
 import { MaterialBindings } from 'lib/App/CPanel/bindings/MaterialBindings';
+import * as THREE from 'three';
+
+const isSkinnedMesh = (object: THREE.Object3D) => object instanceof THREE.SkinnedMesh;
 
 export const Object3DBindings = (params: CommonGetterParams) => ({
   id: {
@@ -49,12 +52,14 @@ export const Object3DBindings = (params: CommonGetterParams) => ({
   },
   position: {
     label: 'Position(L)',
-    ...numberCommon
+    ...numberCommon,
+    if: (object: THREE.Object3D) => !isSkinnedMesh(object)
   },
   rotation: {
     label: `Rotation(${params.angleFormat})(L)`,
     ...numberCommon,
-    ...(params.angleFormat === 'deg' ? { format: radToDegFormatter } : {})
+    ...(params.angleFormat === 'deg' ? { format: radToDegFormatter } : {}),
+    if: (object: THREE.Object3D) => !isSkinnedMesh(object)
   },
   // quaternion is not displayed because it interferes with rotation when cPanel updates
   // TODO: make a text plugin that only reads
@@ -66,11 +71,13 @@ export const Object3DBindings = (params: CommonGetterParams) => ({
   // },
   scale: {
     label: 'Scale(L)',
-    ...numberCommon
+    ...numberCommon,
+    if: (object: THREE.Object3D) => !isSkinnedMesh(object)
   },
   up: {
     label: 'Up',
-    ...numberCommon
+    ...numberCommon,
+    if: (object: THREE.Object3D) => !isSkinnedMesh(object)
   },
   castShadow: {
     label: 'Cast Shadow',

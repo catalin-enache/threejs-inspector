@@ -80,7 +80,7 @@ export const SceneButtons = ({ isPlaying, sceneObjects: { camera, scene } }: Com
     onClick: (() => {
       const input = document.createElement('input');
       input.type = 'file';
-      input.accept = allowedExtensions.join(','); // TODO: add images formats here
+      input.accept = allowedExtensions.join(',');
       input.multiple = true;
       input.onchange = (e) => {
         const files = (e.target as HTMLInputElement).files;

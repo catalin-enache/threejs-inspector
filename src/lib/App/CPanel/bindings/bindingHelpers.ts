@@ -176,7 +176,7 @@ export const buildBindings = (folder: FolderApi, object: any, bindings: any, par
   if (!(object instanceof THREE.Scene) && object.children) {
     object.children.forEach(function (child: any) {
       // I don't think a child - in this context (leaving in children collection) - could not be an Object3D but just in case
-      if (!(child instanceof THREE.Object3D)) return;
+      if (!(child instanceof THREE.Object3D) || child.userData.isPicker) return;
       const subFolder = folder.addFolder({
         title: `${child.name || child.uuid}`,
         expanded: false

@@ -114,6 +114,7 @@ const makeHelpers = (object: THREE.Object3D) => {
     objectUserData.picker = picker;
     objectUserData.helper = helper;
     pickerUserData.object = object;
+    pickerUserData.isPicker = true;
 
     object.add(picker);
     if (object instanceof THREE.SpotLight) {

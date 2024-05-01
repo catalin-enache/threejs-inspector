@@ -16,4 +16,5 @@ export type userData = {
     | THREE.Mesh; // fallback meaningless helper
   isInspectable: boolean;
   useOnPlay: boolean;
+  isPicker: boolean;
 };

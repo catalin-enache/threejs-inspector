@@ -1,7 +1,7 @@
 import { ViewProps, View, ClassName } from '@tweakpane/core';
 import * as THREE from 'three';
 import './texturePlugin.css';
-import { getWidthHeightFromTexture } from 'lib/utils/imageUtils';
+import { getWidthHeightFromTexture, thumbnailMaterial } from 'lib/utils/imageUtils';
 
 export const canvasSize = 512;
 
@@ -70,8 +70,10 @@ export class TextureView implements View {
         ? texture.images[0] // if CubeTexture already contains Textures get the first one
         : new THREE.Texture(texture.images[0]); // else make a new Texture from the first image
 
+    thumbnailMaterial.uniforms.map.value = mapTexture;
+
     mapTexture.needsUpdate = true;
-    const material = hdrJpgMaterial || new THREE.MeshBasicMaterial({ map: mapTexture });
+    const material = hdrJpgMaterial || thumbnailMaterial;
     return new THREE.Mesh(geometry, material);
   }
 

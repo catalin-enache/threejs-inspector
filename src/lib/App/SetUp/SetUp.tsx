@@ -27,166 +27,165 @@ const makeHelpers = (object: THREE.Object3D) => {
 
   let picker: THREE.Mesh;
 
-  // TODO: return early here (in a separate commit)
-  if (object instanceof THREE.Light || object instanceof THREE.Camera || object instanceof THREE.CubeCamera) {
-    const helperSize = 0.25;
-    // TODO: check other included helpers (e.g. LightProbeHelper)
-    helper =
-      object instanceof THREE.Camera
-        ? new THREE.CameraHelper(object)
-        : object instanceof THREE.RectAreaLight
-          ? new RectAreaLightHelper(object)
-          : object instanceof THREE.DirectionalLight
-            ? new THREE.DirectionalLightHelper(object, helperSize * 2)
-            : object instanceof THREE.SpotLight
-              ? new THREE.SpotLightHelper(object)
-              : object instanceof THREE.HemisphereLight
-                ? new THREE.HemisphereLightHelper(object, helperSize)
-                : object instanceof THREE.LightProbe
-                  ? new LightProbeHelper(object, helperSize)
-                  : object instanceof THREE.PointLight
-                    ? new THREE.PointLightHelper(object as THREE.PointLight, helperSize)
-                    : object instanceof THREE.CubeCamera
-                      ? new THREE.Mesh()
-                      : new THREE.Mesh(); // meaningless helper
+  if (!(object instanceof THREE.Light || object instanceof THREE.Camera || object instanceof THREE.CubeCamera)) return;
 
-    const meshGeometry =
-      object instanceof THREE.DirectionalLight
-        ? new THREE.PlaneGeometry(helperSize * 4, helperSize * 4)
-        : object instanceof THREE.RectAreaLight
-          ? new THREE.PlaneGeometry(object.width, object.height)
+  const helperSize = 0.25;
+  // TODO: check other included helpers (e.g. LightProbeHelper)
+  helper =
+    object instanceof THREE.Camera
+      ? new THREE.CameraHelper(object)
+      : object instanceof THREE.RectAreaLight
+        ? new RectAreaLightHelper(object)
+        : object instanceof THREE.DirectionalLight
+          ? new THREE.DirectionalLightHelper(object, helperSize * 2)
           : object instanceof THREE.SpotLight
-            ? new THREE.ConeGeometry(helperSize * 2, 1, 4)
-            : object instanceof THREE.Camera
-              ? new THREE.ConeGeometry(helperSize * 2, 1, 8)
-              : object instanceof THREE.PointLight
-                ? new THREE.SphereGeometry(helperSize, 4, 1)
-                : object instanceof THREE.CubeCamera
-                  ? new THREE.BoxGeometry(helperSize, helperSize, helperSize)
-                  : new THREE.BoxGeometry(helperSize, helperSize, helperSize); // generic mesh geometry
+            ? new THREE.SpotLightHelper(object)
+            : object instanceof THREE.HemisphereLight
+              ? new THREE.HemisphereLightHelper(object, helperSize)
+              : object instanceof THREE.LightProbe
+                ? new LightProbeHelper(object, helperSize)
+                : object instanceof THREE.PointLight
+                  ? new THREE.PointLightHelper(object as THREE.PointLight, helperSize)
+                  : object instanceof THREE.CubeCamera
+                    ? new THREE.Mesh()
+                    : new THREE.Mesh(); // meaningless helper
 
-    helper.name = 'helper';
+  const meshGeometry =
+    object instanceof THREE.DirectionalLight
+      ? new THREE.PlaneGeometry(helperSize * 4, helperSize * 4)
+      : object instanceof THREE.RectAreaLight
+        ? new THREE.PlaneGeometry(object.width, object.height)
+        : object instanceof THREE.SpotLight
+          ? new THREE.ConeGeometry(helperSize * 2, 1, 4)
+          : object instanceof THREE.Camera
+            ? new THREE.ConeGeometry(helperSize * 2, 1, 8)
+            : object instanceof THREE.PointLight
+              ? new THREE.SphereGeometry(helperSize, 4, 1)
+              : object instanceof THREE.CubeCamera
+                ? new THREE.BoxGeometry(helperSize, helperSize, helperSize)
+                : new THREE.BoxGeometry(helperSize, helperSize, helperSize); // generic mesh geometry
 
-    picker = new THREE.Mesh(
-      meshGeometry,
-      new THREE.MeshBasicMaterial({
-        color:
-          (object as THREE.Light).color || // camera doesn't have color
-          (object instanceof THREE.Camera ? new THREE.Color(0xff0000) : new THREE.Color(0xcccccc)),
-        visible: true,
-        side: THREE.DoubleSide,
-        transparent: true,
-        opacity: 0.1,
-        fog: false,
-        toneMapped: false,
-        wireframe: true
-      })
-    );
+  helper.name = 'helper';
 
-    picker.name = `picker for ${object.name || object.type || ''} ${object.uuid}`;
+  picker = new THREE.Mesh(
+    meshGeometry,
+    new THREE.MeshBasicMaterial({
+      color:
+        (object as THREE.Light).color || // camera doesn't have color
+        (object instanceof THREE.Camera ? new THREE.Color(0xff0000) : new THREE.Color(0xcccccc)),
+      visible: true,
+      side: THREE.DoubleSide,
+      transparent: true,
+      opacity: 0.1,
+      fog: false,
+      toneMapped: false,
+      wireframe: true
+    })
+  );
 
-    if (object instanceof THREE.SpotLight) {
-      // Temporarily adjust picker transform and bake that in geometry since original cone geometry is not aligned as needed
-      picker.rotateX(-Math.PI / 2);
-      picker.updateMatrix();
-      picker.translateY(-0.5);
-      picker.updateMatrix();
-      picker.geometry.applyMatrix4(picker.matrix);
-      picker.rotation.set(0, 0, 0);
-      picker.position.set(0, 0, 0);
-      picker.scale.set(1, 1, 1);
-    } else if (object instanceof THREE.Camera) {
-      // Temporarily adjust picker transform and bake that in geometry since original cone geometry is not aligned as needed
-      picker.rotateX(Math.PI / 2);
-      picker.updateMatrix();
-      picker.translateY(-0.5);
-      picker.updateMatrix();
-      picker.geometry.applyMatrix4(picker.matrix);
-      picker.rotation.set(0, 0, 0);
-      picker.position.set(0, 0, 0);
-      picker.scale.set(1, 1, 1);
-    } else if (object instanceof THREE.DirectionalLight) {
-      picker.matrix = (helper as THREE.DirectionalLightHelper).lightPlane.matrix; // helper.matrix is a reference to helper.light.matrixWorld
-      picker.matrixAutoUpdate = false;
-    }
-    const objectUserData = object.userData as userData;
-    const pickerUserData = picker.userData as userData;
-    objectUserData.picker = picker;
-    objectUserData.helper = helper;
-    pickerUserData.object = object;
-    pickerUserData.isPicker = true;
+  picker.name = `picker for ${object.name || object.type || ''} ${object.uuid}`;
 
-    object.add(picker);
-    if (object instanceof THREE.SpotLight) {
-      picker.lookAt(object.target.position);
-    }
-
-    dependantObjects[object.uuid] = [helper];
-    threeScene.add(helper);
-
-    useAppStore.subscribe(
-      (appStore) => appStore.selectedObjectStateFake,
-      () => {
-        const update =
-          helper instanceof RectAreaLightHelper
-            ? helper.updateMatrixWorld
-            : helper instanceof LightProbeHelper
-              ? helper.onBeforeRender
-              : 'update' in helper
-                ? helper.update
-                : () => {}; // updates object.matrixWorld
-
-        // @ts-ignore
-        update.call(helper);
-        if (object instanceof THREE.Light) {
-          // @ts-ignore
-          object.color && picker.material.color.copy(object.color);
-        }
-        if (object instanceof THREE.SpotLight) {
-          picker.lookAt(object.target.position);
-        } else if (object instanceof THREE.RectAreaLight) {
-          picker.geometry.dispose();
-          picker.geometry = new THREE.PlaneGeometry(object.width, object.height);
-        }
-      }
-    );
-
-    const showHelpers = useAppStore.getState().showHelpers;
-    const showGizmos = useAppStore.getState().showGizmos;
-    helper.visible = showGizmos && showHelpers;
-    picker.visible = showGizmos;
-
-    useAppStore.subscribe(
-      (appStore) => appStore.showGizmos,
-      (showGizmos) => {
-        helper.visible = showGizmos;
-        picker.visible = showGizmos;
-      }
-    );
-
-    useAppStore.subscribe(
-      (appStore) => appStore.showHelpers && appStore.showGizmos,
-      (showHelpers) => {
-        helper.visible = showHelpers;
-      }
-    );
-
-    useAppStore.subscribe(
-      (appStore) => appStore.isPlaying,
-      (isPlaying) => {
-        // we don't need to remove helpers for default cameras since R3F does not add them to scene
-        if (objectUserData.useOnPlay) {
-          if (isPlaying) {
-            object.remove(picker);
-            threeScene.remove(helper);
-          } else {
-            object.add(picker);
-            threeScene.add(helper);
-          }
-        }
-      }
-    );
+  if (object instanceof THREE.SpotLight) {
+    // Temporarily adjust picker transform and bake that in geometry since original cone geometry is not aligned as needed
+    picker.rotateX(-Math.PI / 2);
+    picker.updateMatrix();
+    picker.translateY(-0.5);
+    picker.updateMatrix();
+    picker.geometry.applyMatrix4(picker.matrix);
+    picker.rotation.set(0, 0, 0);
+    picker.position.set(0, 0, 0);
+    picker.scale.set(1, 1, 1);
+  } else if (object instanceof THREE.Camera) {
+    // Temporarily adjust picker transform and bake that in geometry since original cone geometry is not aligned as needed
+    picker.rotateX(Math.PI / 2);
+    picker.updateMatrix();
+    picker.translateY(-0.5);
+    picker.updateMatrix();
+    picker.geometry.applyMatrix4(picker.matrix);
+    picker.rotation.set(0, 0, 0);
+    picker.position.set(0, 0, 0);
+    picker.scale.set(1, 1, 1);
+  } else if (object instanceof THREE.DirectionalLight) {
+    picker.matrix = (helper as THREE.DirectionalLightHelper).lightPlane.matrix; // helper.matrix is a reference to helper.light.matrixWorld
+    picker.matrixAutoUpdate = false;
   }
+  const objectUserData = object.userData as userData;
+  const pickerUserData = picker.userData as userData;
+  objectUserData.picker = picker;
+  objectUserData.helper = helper;
+  pickerUserData.object = object;
+  pickerUserData.isPicker = true;
+
+  object.add(picker);
+  if (object instanceof THREE.SpotLight) {
+    picker.lookAt(object.target.position);
+  }
+
+  dependantObjects[object.uuid] = [helper];
+  threeScene.add(helper);
+
+  useAppStore.subscribe(
+    (appStore) => appStore.selectedObjectStateFake,
+    () => {
+      const update =
+        helper instanceof RectAreaLightHelper
+          ? helper.updateMatrixWorld
+          : helper instanceof LightProbeHelper
+            ? helper.onBeforeRender
+            : 'update' in helper
+              ? helper.update
+              : () => {}; // updates object.matrixWorld
+
+      // @ts-ignore
+      update.call(helper);
+      if (object instanceof THREE.Light) {
+        // @ts-ignore
+        object.color && picker.material.color.copy(object.color);
+      }
+      if (object instanceof THREE.SpotLight) {
+        picker.lookAt(object.target.position);
+      } else if (object instanceof THREE.RectAreaLight) {
+        picker.geometry.dispose();
+        picker.geometry = new THREE.PlaneGeometry(object.width, object.height);
+      }
+    }
+  );
+
+  const showHelpers = useAppStore.getState().showHelpers;
+  const showGizmos = useAppStore.getState().showGizmos;
+  helper.visible = showGizmos && showHelpers;
+  picker.visible = showGizmos;
+
+  useAppStore.subscribe(
+    (appStore) => appStore.showGizmos,
+    (showGizmos) => {
+      helper.visible = showGizmos;
+      picker.visible = showGizmos;
+    }
+  );
+
+  useAppStore.subscribe(
+    (appStore) => appStore.showHelpers && appStore.showGizmos,
+    (showHelpers) => {
+      helper.visible = showHelpers;
+    }
+  );
+
+  useAppStore.subscribe(
+    (appStore) => appStore.isPlaying,
+    (isPlaying) => {
+      // we don't need to remove helpers for default cameras since R3F does not add them to scene
+      if (objectUserData.useOnPlay) {
+        if (isPlaying) {
+          object.remove(picker);
+          threeScene.remove(helper);
+        } else {
+          object.add(picker);
+          threeScene.add(helper);
+        }
+      }
+    }
+  );
 };
 
 const removeHelpers = (object: THREE.Object3D) => {

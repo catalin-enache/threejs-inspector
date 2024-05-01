@@ -474,6 +474,11 @@ const SetUp = () => {
     };
   }, [gl, onSceneDblClick]);
 
+  useEffect(() => {
+    // console.log('THREE.ColorManagement.enabled', THREE.ColorManagement.enabled);
+    // console.log('gl.outputColorSpace', gl.outputColorSpace);
+  }, []);
+
   const isPlayingCamera = getIsPlayingCamera(camera);
   const shouldUseFlyControls =
     (isPlayingCamera && attachDefaultControllersToPlayingCamera && cameraControl === 'fly') ||

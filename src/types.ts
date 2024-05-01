@@ -1,5 +1,6 @@
 import * as THREE from 'three';
-import { LightProbeHelper, RectAreaLightHelper } from 'three-stdlib';
+import type { LightProbeHelper } from 'three/examples/jsm/helpers/LightProbeHelper';
+import type { RectAreaLightHelper } from 'three/examples/jsm/helpers/RectAreaLightHelper';
 
 export type userData = {
   object: THREE.Object3D;

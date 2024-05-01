@@ -15,11 +15,22 @@ export default defineConfig({
     host: true,
     open: !isCodeSandbox
   },
+  optimizeDeps: {
+    esbuildOptions: {
+      target: 'esnext'
+    }
+  },
+  esbuild: {
+    supported: {
+      'top-level-await': true
+    }
+  },
   build: {
     outDir: '../dist',
     emptyOutDir: true,
     sourcemap: true,
-    assetsInlineLimit: 0
+    assetsInlineLimit: 0,
+    target: 'esnext'
   },
   resolve: {
     alias: {

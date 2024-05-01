@@ -3,11 +3,11 @@ import * as THREE from 'three';
 import { useThree } from '@react-three/fiber';
 
 import { useCallback, useEffect, useRef } from 'react';
-import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
-import { TransformControls } from 'three/examples/jsm/controls/TransformControls.js';
-import { RectAreaLightHelper } from 'three/examples/jsm/helpers/RectAreaLightHelper.js';
-import { RectAreaLightUniformsLib } from 'three/examples/jsm/lights/RectAreaLightUniformsLib.js';
-import { LightProbeHelper } from 'three/examples/jsm/helpers/LightProbeHelper.js';
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
+import { TransformControls } from 'three/examples/jsm/controls/TransformControls';
+import { RectAreaLightHelper } from 'three/examples/jsm/helpers/RectAreaLightHelper';
+import { RectAreaLightUniformsLib } from 'three/examples/jsm/lights/RectAreaLightUniformsLib';
+import { LightProbeHelper } from 'three/examples/jsm/helpers/LightProbeHelper';
 
 import { FlyControls } from 'lib/App/FlyControls';
 import { useAppStore } from 'src/store';

@@ -2,8 +2,7 @@ import { useEffect, useRef, useCallback, useMemo } from 'react';
 import * as THREE from 'three';
 import { useThree } from '@react-three/fiber';
 import { Pane, FolderApi, TabApi } from 'tweakpane';
-// @ts-ignore
-// import { Pane, FolderApi, TabApi } from 'lib/third_party/tweakpane.js';
+// import { Pane, FolderApi, TabApi } from 'lib/third_party/tweakpane';
 import * as EssentialsPlugin from '@tweakpane/plugin-essentials';
 import { useAppStore } from 'src/store';
 import { makeContinuousUpdate } from './continuousUpdate';

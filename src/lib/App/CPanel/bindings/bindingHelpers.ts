@@ -173,6 +173,7 @@ export const buildBindings = (folder: FolderApi, object: any, bindings: any, par
     }
   });
 
+  // TODO: due to this, on double clicking on coffeemat.glb it turns full metallic
   if (!(object instanceof THREE.Scene) && object.children) {
     object.children.forEach(function (child: any) {
       // I don't think a child - in this context (leaving in children collection) - could not be an Object3D but just in case

@@ -32,8 +32,18 @@ After they are added why they do  not move when dragged, or at least why the hel
 *DONE* (added sub-cameras of CubeCamera to the skip list - it is not useful to have pickers for them. Also note that CubeCamera is not actually added to the scene)
 
 Bug: spruit_sunrise_4k.hdr.jpg not working as cubemap (might need handling like here: webgl_loader_texture_hdrjpg.html) *DONE* (using HDR-JPG loader)
-
 Write doc about loading textures and cubeMaps *DONE*
+
+Bug: on inspecting coffeemat.glb it turns full metallic (WebGL: INVALID_ENUM: compressedTexSubImage2D)
+Only happens when in binding helpers we're adding bindings for children.
+*DONE* (we were missing a lot of texture format constants for compressed textures)
+
+Write doc about loading models.
+
+Handle the case where gltf comes with lights (LightsPunctualLamp.glb)
+Handle the case where gltf comes with animations
+
+Some imported objects are too big. We need to scale them down generically compared to the scene.
 
 Could we add a use_pmremGenerator bool to inspector ?
 
@@ -66,6 +76,8 @@ However, to test with multi texture bindings later
 Implement typing multiple letters as key listeners? add minimal custom controls to use in Experience for play/pause
 Make a pause button
 
+Add plugin for Animations
+Add plugin for Layers
 Add plugin for radio buttons
 Add plugin for file upload (Texture, CubeTexture and Mesh and everything)
 Add plugin for tree view,

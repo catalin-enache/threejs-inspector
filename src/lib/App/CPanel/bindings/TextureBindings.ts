@@ -43,12 +43,45 @@ export const TextureBindings = (params: CommonGetterParams) => ({
       RedIntegerFormat: THREE.RedIntegerFormat,
       RGFormat: THREE.RGFormat,
       RGIntegerFormat: THREE.RGIntegerFormat,
+      RGBFormat: THREE.RGBFormat,
       RGBAFormat: THREE.RGBAFormat,
       RGBAIntegerFormat: THREE.RGBAIntegerFormat,
       LuminanceFormat: THREE.LuminanceFormat,
       LuminanceAlphaFormat: THREE.LuminanceAlphaFormat,
       DepthFormat: THREE.DepthFormat,
-      DepthStencilFormat: THREE.DepthStencilFormat
+      DepthStencilFormat: THREE.DepthStencilFormat,
+      RGB_S3TC_DXT1_Format: THREE.RGB_S3TC_DXT1_Format,
+      RGBA_S3TC_DXT1_Format: THREE.RGBA_S3TC_DXT1_Format,
+      RGBA_S3TC_DXT3_Format: THREE.RGBA_S3TC_DXT3_Format,
+      RGBA_S3TC_DXT5_Format: THREE.RGBA_S3TC_DXT5_Format,
+      RGB_PVRTC_4BPPV1_Format: THREE.RGB_PVRTC_4BPPV1_Format,
+      RGB_PVRTC_2BPPV1_Format: THREE.RGB_PVRTC_2BPPV1_Format,
+      RGBA_PVRTC_4BPPV1_Format: THREE.RGBA_PVRTC_4BPPV1_Format,
+      RGBA_PVRTC_2BPPV1_Format: THREE.RGBA_PVRTC_2BPPV1_Format,
+      RGB_ETC1_Format: THREE.RGB_ETC1_Format,
+      RGB_ETC2_Format: THREE.RGB_ETC2_Format,
+      RGBA_ETC2_EAC_Format: THREE.RGBA_ETC2_EAC_Format,
+      RGBA_ASTC_4x4_Format: THREE.RGBA_ASTC_4x4_Format,
+      RGBA_ASTC_5x4_Format: THREE.RGBA_ASTC_5x4_Format,
+      RGBA_ASTC_5x5_Format: THREE.RGBA_ASTC_5x5_Format,
+      RGBA_ASTC_6x5_Format: THREE.RGBA_ASTC_6x5_Format,
+      RGBA_ASTC_6x6_Format: THREE.RGBA_ASTC_6x6_Format,
+      RGBA_ASTC_8x5_Format: THREE.RGBA_ASTC_8x5_Format,
+      RGBA_ASTC_8x6_Format: THREE.RGBA_ASTC_8x6_Format,
+      RGBA_ASTC_8x8_Format: THREE.RGBA_ASTC_8x8_Format,
+      RGBA_ASTC_10x5_Format: THREE.RGBA_ASTC_10x5_Format,
+      RGBA_ASTC_10x6_Format: THREE.RGBA_ASTC_10x6_Format,
+      RGBA_ASTC_10x8_Format: THREE.RGBA_ASTC_10x8_Format,
+      RGBA_ASTC_10x10_Format: THREE.RGBA_ASTC_10x10_Format,
+      RGBA_ASTC_12x10_Format: THREE.RGBA_ASTC_12x10_Format,
+      RGBA_ASTC_12x12_Format: THREE.RGBA_ASTC_12x12_Format,
+      RGBA_BPTC_Format: THREE.RGBA_BPTC_Format,
+      RGB_BPTC_SIGNED_Format: THREE.RGB_BPTC_SIGNED_Format,
+      RGB_BPTC_UNSIGNED_Format: THREE.RGB_BPTC_UNSIGNED_Format,
+      RED_RGTC1_Format: THREE.RED_RGTC1_Format,
+      SIGNED_RED_RGTC1_Format: THREE.SIGNED_RED_RGTC1_Format,
+      RED_GREEN_RGTC2_Format: THREE.RED_GREEN_RGTC2_Format,
+      SIGNED_RED_GREEN_RGTC2_Format: THREE.SIGNED_RED_GREEN_RGTC2_Format
     }
   },
   type: {
@@ -156,7 +189,9 @@ export const TextureBindings = (params: CommonGetterParams) => ({
     options: {
       NoColorSpace: THREE.NoColorSpace,
       SRGBColorSpace: THREE.SRGBColorSpace,
-      LinearSRGBColorSpace: THREE.LinearSRGBColorSpace
+      LinearSRGBColorSpace: THREE.LinearSRGBColorSpace,
+      DisplayP3ColorSpace: THREE.DisplayP3ColorSpace,
+      LinearDisplayP3ColorSpace: THREE.LinearDisplayP3ColorSpace
     }
   },
   unpackAlignment: {

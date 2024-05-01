@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import { BindingApi } from '@tweakpane/core';
 import { FolderApi, TabPageApi, BladeApi } from 'tweakpane';
 import { degToRad, radToDegFormatter } from 'lib/utils';
-import { Object3DBindings } from './Object3DBindings';
+import { getObject3DBindings } from './getBindings';
 import { CommonGetterParams } from 'lib/App/CPanel/bindings/bindingTypes';
 
 export const numberFormat = (precision: number) => (value: number) => value.toFixed(precision);
@@ -111,7 +111,7 @@ export const buildBindings = (folder: FolderApi, object: any, bindings: any, par
 
     if (isFolder) {
       const subFolder = folder.addFolder({
-        title: bindingCandidate.title,
+        title: `${bindingCandidate.title}`,
         expanded: false
       });
       bindingCandidate.__parent = object;
@@ -146,7 +146,7 @@ export const buildBindings = (folder: FolderApi, object: any, bindings: any, par
     // For example a texture can be handled as a value, allowing changing the image and as a folder allowing changing other texture properties.
     if (bindingCandidate.details) {
       const subFolder = folder.addFolder({
-        title: `${bindingCandidate.label} Details`,
+        title: `${bindingCandidate.label} Details ${object.uuid.split('-')[0]}-${object.id}`,
         expanded: false
       });
 
@@ -173,7 +173,6 @@ export const buildBindings = (folder: FolderApi, object: any, bindings: any, par
     }
   });
 
-  // TODO: due to this, on double clicking on coffeemat.glb it turns full metallic
   if (!(object instanceof THREE.Scene) && object.children) {
     object.children.forEach(function (child: any) {
       // I don't think a child - in this context (leaving in children collection) - could not be an Object3D but just in case
@@ -182,7 +181,7 @@ export const buildBindings = (folder: FolderApi, object: any, bindings: any, par
         title: `${child.name || child.uuid}`,
         expanded: false
       });
-      const newBindings = Object3DBindings(params);
+      const newBindings = getObject3DBindings(params);
       // @ts-ignore
       delete newBindings.parent; // prevents infinite loop
       buildBindings(subFolder, child, newBindings, params);

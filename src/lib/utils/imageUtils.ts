@@ -1,8 +1,9 @@
 import React from 'react';
 import * as THREE from 'three';
-import { EXRLoader, TGALoader, RGBELoader } from 'three-stdlib';
-// @ts-ignore
 import { TIFFLoader } from 'three/examples/jsm/loaders/TIFFLoader';
+import { EXRLoader } from 'three/examples/jsm/loaders/EXRLoader';
+import { TGALoader } from 'three/examples/jsm/loaders/TGALoader';
+import { RGBELoader } from 'three/examples/jsm/loaders/RGBELoader';
 import { HDRJPGLoader } from '@monogrid/gainmap-js'; // see ThreeJS example: webgl_loader_texture_hdrjpg.html
 import { useAppStore } from 'src/store';
 import { getNameAndType, getFileType } from '.';
@@ -104,7 +105,7 @@ export const cubeTextureLoader = async (
   const texture = new THREE.CubeTexture();
   const sortedFiles = sortFiles(files);
   const revokableUrls: string[] = [];
-  const textures = await Promise.all(
+  const textures = (await Promise.all(
     sortedFiles.map((file) => {
       const { fileType, name } = getNameAndType(file, fileTypeMap);
       const url = file instanceof File ? URL.createObjectURL(file) : file;
@@ -112,7 +113,7 @@ export const cubeTextureLoader = async (
       const loader = getLoader(fileType, name, gl);
       return loader.loadAsync(url);
     })
-  );
+  )) as THREE.Texture[];
 
   textures.forEach((tempTexture: THREE.Texture, index) => {
     texture.images[index] = tempTexture instanceof THREE.DataTexture ? tempTexture : tempTexture.image;
@@ -178,7 +179,7 @@ export const createTexturesFromImages: createTexturesFromImagesType = async (
         const fileType = getFileType(name, fileTypeMap); // assuming they all have the same extension
         const loader = getLoader(fileType, name, gl);
         const url = file instanceof File ? URL.createObjectURL(file) : file;
-        const result = await loader.loadAsync(url);
+        const result = (await loader.loadAsync(url)) as any;
         const texture = !(loader instanceof HDRJPGLoader) ? result : result.renderTarget.texture;
         // result.material is undefined unless loader instanceof HDRJPGLoader.
         // Saving this on texture instance for use in TexturePlugin view to generate thumbnail.

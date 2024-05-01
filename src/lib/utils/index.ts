@@ -1,5 +1,6 @@
 import * as THREE from 'three';
-import { TransformControls, OrbitControls } from 'three-stdlib';
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
+import { TransformControls } from 'three/examples/jsm/controls/TransformControls';
 import { isTextureImage, isTexture } from 'lib/types';
 
 export const isObject = (value: any) => {

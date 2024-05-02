@@ -75,7 +75,7 @@ const sortFiles = (files: (File | string)[]): (File | string)[] => {
   });
 };
 
-export function getLoader(fileType: string, fileName: string) {
+export function getLoader(fileType: string, fileName: string, gl?: THREE.WebGLRenderer | null) {
   switch (fileType) {
     case FILE_EXR:
       return exrLoader;
@@ -89,7 +89,8 @@ export function getLoader(fileType: string, fileName: string) {
       return ktx2Loader;
     case FILE_JPEG:
       if (fileName.toLowerCase().endsWith('.hdr.jpg')) {
-        return hdrJpgLoader;
+        if (!gl) throw new Error('HDRJPGLoader requires a WebGLRenderer instance');
+        return hdrJpgLoader.setRenderer(gl);
       } else {
         return textureLoader;
       }
@@ -99,7 +100,10 @@ export function getLoader(fileType: string, fileName: string) {
 }
 
 // Assuming all textures have the same characteristics (extension, size, colorSpace, etc.)
-export const cubeTextureLoader = async (files: (File | string)[]): Promise<THREE.CubeTexture> => {
+export const cubeTextureLoader = async (
+  files: (File | string)[],
+  gl?: THREE.WebGLRenderer
+): Promise<THREE.CubeTexture> => {
   const texture = new THREE.CubeTexture();
   const sortedFiles = sortFiles(files);
   const revokableUrls: string[] = [];
@@ -108,7 +112,7 @@ export const cubeTextureLoader = async (files: (File | string)[]): Promise<THREE
       const { fileType, name } = getNameAndType(file, fileTypeMap);
       const url = file instanceof File ? URL.createObjectURL(file) : file;
       revokableUrls.push(url);
-      const loader = getLoader(fileType, name);
+      const loader = getLoader(fileType, name, gl);
       return loader.loadAsync(url);
     })
   )) as THREE.Texture[];
@@ -155,26 +159,27 @@ type createTexturesFromImagesType = (
   fileOrFiles: string | string[] | File | FileList,
   extra?: {
     material?: THREE.Material | React.MutableRefObject<THREE.Material | null> | null;
+    gl?: THREE.WebGLRenderer;
   }
 ) => Promise<THREE.Texture[]>;
 
 export const createTexturesFromImages: createTexturesFromImagesType = async (
   fileOrFiles,
-  { material } = {}
+  { material, gl } = {}
 ): Promise<THREE.Texture[]> => {
   const files = typeof fileOrFiles === 'string' || fileOrFiles instanceof File ? [fileOrFiles] : [...fileOrFiles];
   const needsCubeTexture = shouldMakeCubeTexture(files);
   // TODO: add cors support for images. Can this be integrated with default load manager  ?
   let textures: THREE.Texture[] = [];
   if (needsCubeTexture) {
-    textures[0] = await cubeTextureLoader(files);
+    textures[0] = await cubeTextureLoader(files, gl);
   } else {
     textures = await Promise.all(
       files.map(async (file) => {
         const isFileType = file instanceof File;
         const name = isFileType ? file.name : file;
         const fileType = getFileType(name, fileTypeMap); // assuming they all have the same extension
-        const loader = getLoader(fileType, name);
+        const loader = getLoader(fileType, name, gl);
         const url = file instanceof File ? URL.createObjectURL(file) : file;
         const result = (await loader.loadAsync(url)) as any;
         const texture = !(loader instanceof HDRJPGLoader) ? result : result.renderTarget.texture;

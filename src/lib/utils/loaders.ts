@@ -17,5 +17,7 @@ export const rgbeLoader = new RGBELoader(defaultLoadingManager);
 export const tgaLoader = new TGALoader(defaultLoadingManager);
 export const tiffLoader = new TIFFLoader(defaultLoadingManager);
 export const ktx2Loader = new KTX2Loader(defaultLoadingManager).setTranscoderPath('libs/basis/').detectSupport(gl);
-export const hdrJpgLoader = new HDRJPGLoader(gl, defaultLoadingManager);
+// The gl renderer will be set to the actual scene renderer where the loader is used (currently imageUtils.ts).
+// An ad-hoc renderer like the gl before doesn't work as it works for ktx2Loader.
+export const hdrJpgLoader = new HDRJPGLoader(undefined, defaultLoadingManager);
 export const textureLoader = new THREE.TextureLoader(defaultLoadingManager);

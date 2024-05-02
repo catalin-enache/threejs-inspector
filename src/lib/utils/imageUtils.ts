@@ -1,13 +1,9 @@
 import React from 'react';
 import * as THREE from 'three';
-import { TIFFLoader } from 'three/examples/jsm/loaders/TIFFLoader';
-import { EXRLoader } from 'three/examples/jsm/loaders/EXRLoader';
-import { TGALoader } from 'three/examples/jsm/loaders/TGALoader';
-import { RGBELoader } from 'three/examples/jsm/loaders/RGBELoader';
-import { KTX2Loader } from 'three/examples/jsm/loaders/KTX2Loader.js';
 import { HDRJPGLoader } from '@monogrid/gainmap-js'; // see ThreeJS example: webgl_loader_texture_hdrjpg.html
 import { useAppStore } from 'src/store';
 import { getNameAndType, getFileType } from '.';
+import { tiffLoader, exrLoader, textureLoader, hdrJpgLoader, rgbeLoader, tgaLoader, ktx2Loader } from './loaders';
 
 export const FILE_EXR = 'image/x-exr';
 export const FILE_HDR = 'image/hdr';
@@ -78,15 +74,6 @@ const sortFiles = (files: (File | string)[]): (File | string)[] => {
     return b_coord[0].charCodeAt(0) - a_coord[0].charCodeAt(0); // sorting by p/n  or s/g
   });
 };
-
-const gl = new THREE.WebGLRenderer({ antialias: true });
-const exrLoader = new EXRLoader();
-const rgbeLoader = new RGBELoader();
-const tgaLoader = new TGALoader();
-const tiffLoader = new TIFFLoader();
-const ktx2Loader = new KTX2Loader().setTranscoderPath('libs/basis/').detectSupport(gl);
-const hdrJpgLoader = new HDRJPGLoader(gl);
-const textureLoader = new THREE.TextureLoader();
 
 export function getLoader(fileType: string, fileName: string) {
   switch (fileType) {

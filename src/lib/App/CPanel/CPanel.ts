@@ -252,15 +252,15 @@ export const CPanel = () => {
     buildBindings(objectFolder, selectedObject, getObject3DBindings(commonGetterParams), commonGetterParams);
   }, [
     selectedObjectUUID,
-    handleSelectedObjectChanges,
-    transformControlsMode,
-    transformControlsSpace,
-    scene,
-    camera,
-    gl,
-    angleFormat,
-    isPlaying,
-    cPanelStateFake
+    // handleSelectedObjectChanges,
+    // transformControlsMode,
+    // transformControlsSpace,
+    // scene,
+    // camera,
+    // gl,
+    angleFormat
+    // isPlaying,
+    // cPanelStateFake
   ]);
 
   // Setup bindings for custom params

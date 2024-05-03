@@ -14,7 +14,6 @@ import {
   FBXLoader,
   STLLoader,
   OBJLoader,
-  MTLLoader,
   PLYLoader,
   ColladaLoader
 } from './loaders';

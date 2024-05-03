@@ -3,7 +3,8 @@ import { BindingApi } from '@tweakpane/core';
 import { FolderApi, TabPageApi, BladeApi } from 'tweakpane';
 import { degToRad, radToDegFormatter } from 'lib/utils';
 import { getObject3DBindings } from './getBindings';
-import { CommonGetterParams } from 'lib/App/CPanel/bindings/bindingTypes';
+import { CommonGetterParams } from './bindingTypes';
+import { animate } from 'lib/utils/animate';
 
 export const numberFormat = (precision: number) => (value: number) => value.toFixed(precision);
 
@@ -172,6 +173,55 @@ export const buildBindings = (folder: FolderApi, object: any, bindings: any, par
       makeRotationBinding(binding);
     }
   });
+
+  // TODO: Later on add more capabilities to animations (blending, editing, ...)
+  if (object.userData?.animations && object.userData.animations.length) {
+    const animationsFolder = folder.addFolder({
+      title: 'Animations',
+      expanded: false
+    });
+    const mixer = new THREE.AnimationMixer(object);
+    const { start, stop } = animate((delta) => {
+      mixer.update(delta);
+    });
+
+    let currentPlayingAction: THREE.AnimationAction | null = null;
+    object.userData.animations.forEach((animation: THREE.AnimationClip) => {
+      const actionID = animation.name || animation.uuid;
+      const action = mixer.clipAction(animation);
+      const button = animationsFolder.addButton({
+        label: actionID,
+        title: actionID
+      });
+      button.on('click', () => {
+        if (action.isRunning()) {
+          action.paused = true;
+          stop();
+        } else {
+          if (currentPlayingAction === action) {
+            action.paused = false;
+            start();
+          } else {
+            mixer.stopAllAction();
+            currentPlayingAction = action;
+            action.play();
+            start();
+          }
+        }
+      });
+      tweakBindingView(button);
+    });
+    const button = animationsFolder.addButton({
+      label: 'Reset',
+      title: 'Reset'
+    });
+    button.on('click', () => {
+      mixer.stopAllAction();
+      currentPlayingAction = null;
+      stop();
+    });
+    tweakBindingView(button);
+  }
 
   if (!(object instanceof THREE.Scene) && object.children) {
     object.children.forEach(function (child: any) {

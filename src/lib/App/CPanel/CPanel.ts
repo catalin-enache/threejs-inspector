@@ -133,19 +133,9 @@ export const CPanel = () => {
     [angleFormat, isPlaying, scene, camera, gl]
   );
 
-  // TODO: move these into bindings
   const handleSelectedObjectChanges = useCallback(
     (_event: any) => {
       if (selectedObjectRef.current) {
-        if (
-          selectedObjectRef.current instanceof THREE.OrthographicCamera ||
-          selectedObjectRef.current instanceof THREE.PerspectiveCamera
-        ) {
-          selectedObjectRef.current.updateProjectionMatrix();
-        }
-        if (selectedObjectRef.current instanceof THREE.Light) {
-          selectedObjectRef.current.shadow?.camera?.updateProjectionMatrix();
-        }
         triggerSelectedObjectChanged();
       }
     },
@@ -337,7 +327,7 @@ export const CPanel = () => {
         expanded: true
       })
       .on('change', () => {
-        camera.updateProjectionMatrix();
+        // console.log('Camera Current changed');
       });
 
     // Add camera object bindings

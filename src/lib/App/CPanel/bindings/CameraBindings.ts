@@ -1,5 +1,6 @@
 import { numberCommon } from './bindingHelpers';
-import type { CommonGetterParams } from './bindingTypes';
+import type { CommonGetterParams, onChange } from './bindingTypes';
+import * as THREE from 'three';
 
 export const PerspectiveCameraBindings = (_params: CommonGetterParams) => ({
   aspect: {
@@ -39,21 +40,35 @@ export const OrthographicCameraBindings = (_params: CommonGetterParams) => ({
   }
 });
 
-export const CameraBindings = (params: CommonGetterParams) => ({
-  near: {
-    label: 'Near',
-    ...numberCommon,
-    min: 0
-  },
-  far: {
-    label: 'Far',
-    ...numberCommon
-  },
-  zoom: {
-    label: 'Zoom',
-    ...numberCommon,
-    min: 0
-  },
-  ...PerspectiveCameraBindings(params),
-  ...OrthographicCameraBindings(params)
-});
+export const CameraBindings = (params: CommonGetterParams) => {
+  const cameraBindings = {
+    near: {
+      label: 'Near',
+      ...numberCommon,
+      min: 0
+    },
+    far: {
+      label: 'Far',
+      ...numberCommon
+    },
+    zoom: {
+      label: 'Zoom',
+      ...numberCommon,
+      min: 0
+    },
+    ...PerspectiveCameraBindings(params),
+    ...OrthographicCameraBindings(params)
+  };
+  Object.keys(cameraBindings).forEach((key) => {
+    // @ts-ignore
+    const binding = cameraBindings[key];
+    const existingOnChange = binding.onChange;
+    binding.onChange = (({ object, bindings, folder }) => {
+      existingOnChange?.({ object, bindings, folder });
+      if (object instanceof THREE.PerspectiveCamera || object instanceof THREE.OrthographicCamera) {
+        object.updateProjectionMatrix();
+      }
+    }) as onChange;
+  });
+  return cameraBindings;
+};

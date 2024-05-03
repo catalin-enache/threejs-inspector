@@ -38,6 +38,8 @@ Bug: on inspecting coffeemat.glb it turns full metallic (WebGL: INVALID_ENUM: co
 Only happens when in binding helpers we're adding bindings for children.
 *DONE* (we were missing a lot of texture format constants for compressed textures)
 
+We should not rebuild the Panel for selected object when playing or changing stuff from Global tab *DONE*
+
 Write doc about loading models.
 
 Handle the case where gltf comes with lights (LightsPunctualLamp.glb)
@@ -52,6 +54,11 @@ Test matcap
 Be able to load complete materials from folder based on name
 
 Check Threejs repo for code formatting.
+https://www.npmjs.com/package/eslint-config-mdcs
+"extends": [
+    "mdcs",
+    "plugin:compat/recommended"
+  ],
 
 Se where kandao3_depthmap.jpg is used in threejs examples
 

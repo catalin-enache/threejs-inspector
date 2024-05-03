@@ -40,6 +40,8 @@ Only happens when in binding helpers we're adding bindings for children.
 
 We should not rebuild the Panel for selected object when playing or changing stuff from Global tab *DONE*
 
+Let's not crash CPanel when selecting an object and textures are missing from materials *DONE*
+
 Add default textures for non mesh imports and make it a PhysicalMaterial
 
 Write doc about loading models.

@@ -188,12 +188,24 @@ const makeHelpers = (object: THREE.Object3D) => {
   );
 };
 
+const destroy = (object: any) => {
+  if (object instanceof THREE.Mesh) {
+    const materials = Array.isArray(object.material) ? object.material : [object.material];
+    materials.forEach((mat: THREE.Material) => {
+      Object.keys(mat).forEach((key) => {
+        if ((mat as any)[key] instanceof THREE.Texture) {
+          (mat as any)[key].dispose(); // texture dispose
+        }
+      });
+      mat.dispose(); // material dispose
+    });
+    object.geometry?.dispose(); // geometry dispose
+  }
+};
+
 const removeHelpers = (object: THREE.Object3D) => {
   object.traverse((child) => {
-    if (child instanceof THREE.Mesh) {
-      child.geometry?.dispose();
-      child.material?.dispose();
-    }
+    destroy(child);
     delete inspectableObjects[child.uuid];
   });
   delete inspectableObjects[object.uuid];

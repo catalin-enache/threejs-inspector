@@ -87,8 +87,8 @@ export const tweakFolder = (folder: FolderApi | TabPageApi, id: string) => {
   });
 };
 
-export const buildBindings = (folder: FolderApi, object: any, bindings: any, params: CommonGetterParams) => {
-  // console.log('buildBindings for', folder.title, { object, bindings });
+const _buildBindings = (folder: FolderApi, object: any, bindings: any, params: CommonGetterParams) => {
+  // console.log('_buildBindings for', folder.title, { object, bindings });
 
   Object.keys(bindings).forEach((key) => {
     const bindingCandidate = bindings[key];
@@ -107,6 +107,22 @@ export const buildBindings = (folder: FolderApi, object: any, bindings: any, par
 
     if (key === 'title' || object[key] === undefined || object[key] === null) return;
 
+    // handle material case which can be a Material or an array of Materials
+    if (Array.isArray(object[key])) {
+      object[key].forEach((item: any, index: number) => {
+        const subFolder = folder.addFolder({
+          title: `${key} ${index}`,
+          expanded: false
+        });
+        try {
+          _buildBindings(subFolder, item, bindingCandidate, params);
+        } catch (error) {
+          console.error('Error building bindings for', key, { error });
+        }
+      });
+      return;
+    }
+
     const isFolder = bindingCandidate.title;
     const isBinding = bindingCandidate.label;
 
@@ -116,7 +132,12 @@ export const buildBindings = (folder: FolderApi, object: any, bindings: any, par
         expanded: false
       });
       bindingCandidate.__parent = object;
-      buildBindings(subFolder, object[key], bindingCandidate, params);
+      try {
+        _buildBindings(subFolder, object[key], bindingCandidate, params);
+      } catch (error) {
+        console.error('Error building bindings for', key, { error });
+      }
+
       return;
     }
 
@@ -164,7 +185,11 @@ export const buildBindings = (folder: FolderApi, object: any, bindings: any, par
         );
         delete bindingCandidate.details.onDetailsChange;
       }
-      buildBindings(subFolder, object[key], bindingCandidate.details, params);
+      try {
+        _buildBindings(subFolder, object[key], bindingCandidate.details, params);
+      } catch (error) {
+        console.error('Error building bindings for', key, { error });
+      }
     }
 
     tweakBindingView(binding);
@@ -234,13 +259,25 @@ export const buildBindings = (folder: FolderApi, object: any, bindings: any, par
       const newBindings = getObject3DBindings(params);
       // @ts-ignore
       delete newBindings.parent; // prevents infinite loop
-      buildBindings(subFolder, child, newBindings, params);
+      try {
+        _buildBindings(subFolder, child, newBindings, params);
+      } catch (error) {
+        console.error('Error building bindings for', child.name || child.uuid, { error });
+      }
     });
   }
 
   // Using it at the end so that inside tweakFolder()
   // we can access all buttons added so far by inner folders.
   tweakFolder(folder, `${folder.title!}-${object.uuid || 'no-id'}`);
+};
+
+export const buildBindings = (folder: FolderApi, object: any, bindings: any, params: CommonGetterParams) => {
+  try {
+    return _buildBindings(folder, object, bindings, params);
+  } catch (error) {
+    console.error('Error building bindings', { folder, object, bindings, error });
+  }
 };
 
 export const cleanupContainer = (container: any) => {

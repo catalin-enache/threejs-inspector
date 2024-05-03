@@ -12,6 +12,7 @@ import { GLTFLoader, GLTF } from 'three/examples/jsm/loaders/GLTFLoader';
 import { FBXLoader } from 'three/examples/jsm/loaders/FBXLoader';
 import { PLYLoader } from 'three/examples/jsm/loaders/PLYLoader';
 import { OBJLoader } from 'three/examples/jsm/loaders/OBJLoader';
+import { MTLLoader } from 'three/examples/jsm/loaders/MTLLoader';
 import { STLLoader } from 'three/examples/jsm/loaders/STLLoader';
 import { ColladaLoader, Collada } from 'three/examples/jsm/loaders/ColladaLoader';
 
@@ -28,6 +29,7 @@ export {
   FBXLoader,
   PLYLoader,
   OBJLoader,
+  MTLLoader,
   STLLoader,
   ColladaLoader
 };
@@ -94,5 +96,6 @@ export const gltfLoader = new GLTFLoader(defaultLoadingManager)
 export const fbxLoader = new FBXLoader(defaultLoadingManager).setCrossOrigin('anonymous');
 export const plyLoader = new PLYLoader(defaultLoadingManager).setCrossOrigin('anonymous');
 export const objLoader = new OBJLoader(defaultLoadingManager).setCrossOrigin('anonymous');
+export const mtlLoader = new MTLLoader(defaultLoadingManager).setCrossOrigin('anonymous');
 export const stlLoader = new STLLoader(defaultLoadingManager).setCrossOrigin('anonymous');
 export const colladaLoader = new ColladaLoader(defaultLoadingManager).setCrossOrigin('anonymous');

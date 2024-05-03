@@ -7,12 +7,14 @@ import {
   fbxLoader,
   plyLoader,
   objLoader,
+  mtlLoader,
   stlLoader,
   colladaLoader,
   GLTFLoader,
   FBXLoader,
   STLLoader,
   OBJLoader,
+  MTLLoader,
   PLYLoader,
   ColladaLoader
 } from './loaders';
@@ -99,6 +101,18 @@ export const loadModel = async (
   if (!loader) return null;
 
   registerFiles(filesArray);
+
+  if (filesArray.length > 1) {
+    const mtlFile = filesArray.find((file) => (file instanceof File ? file.name : file).endsWith('.mtl'));
+    if (mtlFile) {
+      const url = mtlFile instanceof File ? URL.createObjectURL(mtlFile) : mtlFile;
+      const objMaterials = await mtlLoader.loadAsync(url);
+      objMaterials.preload();
+      if (loader instanceof OBJLoader) {
+        loader.setMaterials(objMaterials);
+      }
+    }
+  }
 
   const result = await loader.loadAsync(resource);
   // console.log('loadModel start', { name, fileType, result });

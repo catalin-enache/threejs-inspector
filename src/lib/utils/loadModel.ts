@@ -63,6 +63,26 @@ const registerMesh = (child: THREE.Mesh, mesh: THREE.Object3D | null, scene: THR
   scene.userData.inspectableObjects[child.uuid] = child;
 };
 
+const collectAnimationsAndRegisterMesh = (
+  mesh: THREE.Object3D,
+  result: THREE.Group<THREE.Object3DEventMap> | THREE.BufferGeometry<THREE.NormalBufferAttributes> | GLTF | Collada,
+  scene: THREE.Scene
+) => {
+  mesh.userData.animations = [...((result as GLTF).animations || [])];
+  mesh.traverse(function (child) {
+    if (child === mesh) return; // for fbx
+    if (child.animations && child.animations.length) {
+      // did not encounter so far animations on the mesh itself, only in the root. Logging just in case for awareness.
+      console.log('animation found while traversing mesh', { child, animations: child.animations });
+      // @ts-ignore -- how could the mesh be null here ?
+      mesh.userData.animations.push(...child.animations);
+    }
+    if (child instanceof THREE.Mesh) {
+      registerMesh(child, mesh, scene);
+    }
+  });
+};
+
 // to copy a model locally and ensure it is well constructed example:
 // gltf-transform cp https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/main/Models/AnisotropyBarnLamp/glTF-KTX-BasisU/AnisotropyBarnLamp.gltf out/lamp.gltf --allow-http
 // https://github.com/mrdoob/three.js/issues/28258
@@ -85,19 +105,11 @@ export const loadModel = async (
   let mesh: THREE.Object3D | THREE.Group | null = null;
   if (loader instanceof GLTFLoader) {
     mesh = (result as GLTF).scene;
-    mesh.userData.animations = [...((result as GLTF).animations || [])];
-    mesh.traverse(function (child) {
-      if (child.animations && child.animations.length) {
-        // did not encounter so far animations on the mesh itself, only in the root. Logging just in case for awareness.
-        console.log('animation found while traversing mesh', { child, animations: child.animations });
-        // @ts-ignore -- how could the mesh be null here ?
-        mesh.userData.animations.push(...child.animations);
-      }
-      if (child instanceof THREE.Mesh) {
-        registerMesh(child, mesh, scene);
-      }
-    });
-  } else if (loader instanceof FBXLoader || loader instanceof OBJLoader) {
+    collectAnimationsAndRegisterMesh(mesh, result, scene);
+  } else if (loader instanceof FBXLoader) {
+    mesh = result as THREE.Group<THREE.Object3DEventMap>;
+    collectAnimationsAndRegisterMesh(mesh, result, scene);
+  } else if (loader instanceof OBJLoader) {
     mesh = result as THREE.Group<THREE.Object3DEventMap>;
     mesh.traverse(function (child) {
       if (child instanceof THREE.Mesh) {
@@ -130,9 +142,9 @@ export const loadModel = async (
   }
 
   if (!mesh) return null;
-
+  console.log('loadModel done', { name, fileType, mesh });
   mesh.name = name;
-  // mesh.scale.set(0.01, 0.01, 0.01);
+  mesh.scale.set(0.001, 0.001, 0.001);
   mesh.userData.fullData = result;
   return mesh;
 };

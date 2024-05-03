@@ -41,25 +41,6 @@ function onScroll(evt: Event) {
 }
 panelContainer.addEventListener('scroll', onScroll);
 
-// Leaving the followings commented for a while until we're sure we don't need them
-// remember scroll position only when user interacting with the panel (not when automatically scrolled)
-// const timeoutId: NodeJS.Timeout | null = null;
-// panelContainer.addEventListener('wheel', () => {
-//   panelContainer.addEventListener('scroll', onScroll);
-//   timeoutId && clearTimeout(timeoutId);
-//   timeoutId = setTimeout(() => {
-//     panelContainer.removeEventListener('scroll', onScroll);
-//   }, 200);
-// });
-
-// const resizeObserver = new ResizeObserver((entries) => {
-//   for (const _entry of entries) {
-//     // console.log(`Element's height: ${_entry.contentRect}px`);
-//     // cPanelScrollTop = panelContainer.scrollTop;
-//     console.log('resizeObserver', cPanelScrollTop);
-//   }
-// });
-
 // ----------------------- << Remember last scroll position << --------------------------------
 
 // ----------------------- >> Allowing input control to be visible when dragged outside cPanel  >> --------------------------------
@@ -161,10 +142,8 @@ export const CPanel = () => {
       cPanelContainer.style.display = cPanelVisible ? 'block' : 'none'; // switch at higher node in the DOM
       if (!cPanelVisible) {
         continuousUpdateRef.current?.stop();
-        // resizeObserver.disconnect();
       } else if (cPanelContinuousUpdate) {
         continuousUpdateRef.current?.start();
-        // resizeObserver.observe(panelContainer.children[0]);
       }
       return;
     }
@@ -173,7 +152,6 @@ export const CPanel = () => {
     paneRef.current = new Pane({
       container: panelContainer
     });
-    // resizeObserver.observe(panelContainer.children[0]);
 
     paneRef.current.registerPlugin(TexturePlugin);
     paneRef.current.registerPlugin(EssentialsPlugin);
@@ -201,7 +179,6 @@ export const CPanel = () => {
     return () => {
       continuousUpdateRef.current?.stop();
       paneRef.current?.dispose();
-      // resizeObserver.disconnect();
     };
   }, []);
 

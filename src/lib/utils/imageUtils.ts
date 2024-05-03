@@ -102,7 +102,7 @@ export function getLoader(fileType: string, fileName: string, gl?: THREE.WebGLRe
 // Assuming all textures have the same characteristics (extension, size, colorSpace, etc.)
 export const cubeTextureLoader = async (
   files: (File | string)[],
-  gl?: THREE.WebGLRenderer
+  gl?: THREE.WebGLRenderer | null
 ): Promise<THREE.CubeTexture> => {
   const texture = new THREE.CubeTexture();
   const sortedFiles = sortFiles(files);
@@ -159,7 +159,7 @@ type createTexturesFromImagesType = (
   fileOrFiles: string | string[] | File | FileList,
   extra?: {
     material?: THREE.Material | React.MutableRefObject<THREE.Material | null> | null;
-    gl?: THREE.WebGLRenderer;
+    gl?: THREE.WebGLRenderer | null;
   }
 ) => Promise<THREE.Texture[]>;
 

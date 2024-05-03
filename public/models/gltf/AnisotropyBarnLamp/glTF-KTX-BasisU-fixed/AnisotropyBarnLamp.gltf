@@ -1,0 +1,375 @@
+{
+  "asset": {
+    "generator": "glTF-Transform v3.10.1",
+    "version": "2.0",
+    "copyright": "(c) 2023 Wayfair, model and textures by Eric Chadwick, CC BY 4.0."
+  },
+  "accessors": [
+    {
+      "name": "accessorIndices",
+      "type": "SCALAR",
+      "componentType": 5123,
+      "count": 25257,
+      "bufferView": 0,
+      "byteOffset": 0
+    },
+    {
+      "name": "accessorIndices",
+      "type": "SCALAR",
+      "componentType": 5123,
+      "count": 840,
+      "bufferView": 0,
+      "byteOffset": 50516
+    },
+    {
+      "name": "accessorIndices",
+      "type": "SCALAR",
+      "componentType": 5123,
+      "count": 4512,
+      "bufferView": 0,
+      "byteOffset": 52196
+    },
+    {
+      "name": "accessorPositions",
+      "type": "VEC3",
+      "componentType": 5126,
+      "count": 6803,
+      "max": [
+        0.08619006723165512,
+        0.056946706026792526,
+        0.2265387922525406
+      ],
+      "min": [
+        -0.10461914539337158,
+        -0.17230147123336792,
+        -0.000002435958322166698
+      ],
+      "bufferView": 1,
+      "byteOffset": 0
+    },
+    {
+      "name": "accessorTangents",
+      "type": "VEC4",
+      "componentType": 5126,
+      "count": 6803,
+      "bufferView": 1,
+      "byteOffset": 12
+    },
+    {
+      "name": "accessorNormals",
+      "type": "VEC3",
+      "componentType": 5126,
+      "count": 6803,
+      "bufferView": 1,
+      "byteOffset": 28
+    },
+    {
+      "name": "accessorUVs",
+      "type": "VEC2",
+      "componentType": 5126,
+      "count": 6803,
+      "bufferView": 1,
+      "byteOffset": 40
+    },
+    {
+      "name": "accessorPositions",
+      "type": "VEC3",
+      "componentType": 5126,
+      "count": 140,
+      "max": [
+        0.00008701397746335715,
+        -0.12128905951976776,
+        0.14243972301483154
+      ],
+      "min": [
+        -0.019377514719963074,
+        -0.170719176530838,
+        0.12256425619125366
+      ],
+      "bufferView": 2,
+      "byteOffset": 0
+    },
+    {
+      "name": "accessorNormals",
+      "type": "VEC3",
+      "componentType": 5126,
+      "count": 140,
+      "bufferView": 2,
+      "byteOffset": 12
+    },
+    {
+      "name": "accessorPositions",
+      "type": "VEC3",
+      "componentType": 5126,
+      "count": 769,
+      "max": [
+        0.017259739339351654,
+        -0.0980222150683403,
+        0.15841878950595856
+      ],
+      "min": [
+        -0.03568878024816513,
+        -0.19829203188419342,
+        0.10609572380781174
+      ],
+      "bufferView": 3,
+      "byteOffset": 0
+    },
+    {
+      "name": "accessorNormals",
+      "type": "VEC3",
+      "componentType": 5126,
+      "count": 769,
+      "bufferView": 3,
+      "byteOffset": 12
+    }
+  ],
+  "bufferViews": [
+    {
+      "buffer": 0,
+      "byteOffset": 0,
+      "byteLength": 61220,
+      "target": 34963
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 61220,
+      "byteLength": 326544,
+      "byteStride": 48,
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 387764,
+      "byteLength": 3360,
+      "byteStride": 24,
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 391124,
+      "byteLength": 18456,
+      "byteStride": 24,
+      "target": 34962
+    }
+  ],
+  "samplers": [
+    {
+      "magFilter": 9729,
+      "minFilter": 9987,
+      "wrapS": 10497,
+      "wrapT": 10497
+    }
+  ],
+  "textures": [
+    {
+      "sampler": 0,
+      "extensions": {
+        "KHR_texture_basisu": {
+          "source": 2
+        }
+      }
+    },
+    {
+      "sampler": 0,
+      "extensions": {
+        "KHR_texture_basisu": {
+          "source": 0
+        }
+      }
+    },
+    {
+      "sampler": 0,
+      "extensions": {
+        "KHR_texture_basisu": {
+          "source": 1
+        }
+      }
+    },
+    {
+      "sampler": 0,
+      "extensions": {
+        "KHR_texture_basisu": {
+          "source": 3
+        }
+      }
+    }
+  ],
+  "images": [
+    {
+      "mimeType": "image/ktx2",
+      "uri": "AnisotropyBarnLamp_normalbump.ktx2"
+    },
+    {
+      "mimeType": "image/ktx2",
+      "uri": "AnisotropyBarnLamp_occlusionroughnessmetal.ktx2"
+    },
+    {
+      "mimeType": "image/ktx2",
+      "uri": "AnisotropyBarnLamp_basecolor.ktx2"
+    },
+    {
+      "mimeType": "image/ktx2",
+      "uri": "AnisotropyBarnLamp_anisotropy.ktx2"
+    }
+  ],
+  "buffers": [
+    {
+      "uri": "AnisotropyBarnLamp.bin",
+      "byteLength": 409580
+    }
+  ],
+  "materials": [
+    {
+      "name": "Lamp Metal",
+      "pbrMetallicRoughness": {
+        "baseColorTexture": {
+          "index": 0
+        },
+        "metallicRoughnessTexture": {
+          "index": 2
+        }
+      },
+      "normalTexture": {
+        "index": 1
+      },
+      "occlusionTexture": {
+        "index": 2
+      },
+      "extensions": {
+        "KHR_materials_anisotropy": {
+          "anisotropyStrength": 1,
+          "anisotropyTexture": {
+            "index": 3
+          }
+        },
+        "KHR_materials_clearcoat": {
+          "clearcoatFactor": 0.25,
+          "clearcoatRoughnessFactor": 0.15,
+          "clearcoatNormalTexture": {
+            "index": 1
+          }
+        }
+      }
+    },
+    {
+      "name": "Lamp Filament",
+      "pbrMetallicRoughness": {
+        "baseColorFactor": [
+          0.09,
+          0.09,
+          0.09,
+          1
+        ],
+        "roughnessFactor": 0.7,
+        "metallicFactor": 0
+      },
+      "emissiveFactor": [
+        1,
+        0.5,
+        0.25
+      ],
+      "extensions": {
+        "KHR_materials_emissive_strength": {
+          "emissiveStrength": 25
+        }
+      }
+    },
+    {
+      "name": "Lamp Glass",
+      "pbrMetallicRoughness": {
+        "roughnessFactor": 0,
+        "metallicFactor": 0
+      },
+      "extensions": {
+        "KHR_materials_transmission": {
+          "transmissionFactor": 1
+        },
+        "KHR_materials_volume": {
+          "thicknessFactor": 0.01
+        }
+      }
+    }
+  ],
+  "meshes": [
+    {
+      "name": "Lamp Metal",
+      "primitives": [
+        {
+          "attributes": {
+            "POSITION": 3,
+            "TANGENT": 4,
+            "NORMAL": 5,
+            "TEXCOORD_0": 6
+          },
+          "mode": 4,
+          "material": 0,
+          "indices": 0
+        }
+      ]
+    },
+    {
+      "name": "Lamp Filament",
+      "primitives": [
+        {
+          "attributes": {
+            "POSITION": 7,
+            "NORMAL": 8
+          },
+          "mode": 4,
+          "material": 1,
+          "indices": 1
+        }
+      ]
+    },
+    {
+      "name": "Lamp Glass",
+      "primitives": [
+        {
+          "attributes": {
+            "POSITION": 9,
+            "NORMAL": 10
+          },
+          "mode": 4,
+          "material": 2,
+          "indices": 2
+        }
+      ]
+    }
+  ],
+  "nodes": [
+    {
+      "name": "Lamp Metal",
+      "mesh": 0
+    },
+    {
+      "name": "Lamp Filament",
+      "mesh": 1
+    },
+    {
+      "name": "Lamp Glass",
+      "mesh": 2
+    }
+  ],
+  "scenes": [
+    {
+      "nodes": [
+        0,
+        1,
+        2
+      ]
+    }
+  ],
+  "scene": 0,
+  "extensionsUsed": [
+    "KHR_materials_anisotropy",
+    "KHR_materials_clearcoat",
+    "KHR_materials_emissive_strength",
+    "KHR_materials_transmission",
+    "KHR_materials_volume",
+    "KHR_texture_basisu"
+  ],
+  "extensionsRequired": [
+    "KHR_texture_basisu"
+  ]
+}

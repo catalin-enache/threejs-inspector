@@ -1,4 +1,4 @@
-import type { CommonGetterParams } from './bindingTypes';
+import type { CommonGetterParams, onChange } from './bindingTypes';
 import { numberCommon } from './bindingHelpers';
 import { radToDegFormatter } from 'lib/utils';
 import { MaterialBindings } from 'lib/App/CPanel/bindings/MaterialBindings';
@@ -25,6 +25,16 @@ export const Object3DBindings = (params: CommonGetterParams) => ({
     label: 'Type',
     view: 'text',
     disabled: true
+  },
+  removeModel: {
+    label: 'Remove',
+    title: 'Remove',
+    onClick: (({ object }) => {
+      // @ts-ignore
+      params.sceneObjects.scene.transformControlsRef?.current?.detach();
+      object.parent?.remove(object);
+      // inspectable objects should be cleaned up already
+    }) as onChange
   },
   parent: {
     // for Object3D

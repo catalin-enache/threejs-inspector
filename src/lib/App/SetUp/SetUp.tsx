@@ -189,6 +189,13 @@ const makeHelpers = (object: THREE.Object3D) => {
 };
 
 const removeHelpers = (object: THREE.Object3D) => {
+  object.traverse((child) => {
+    if (child instanceof THREE.Mesh) {
+      child.geometry?.dispose();
+      child.material?.dispose();
+    }
+    delete inspectableObjects[child.uuid];
+  });
   delete inspectableObjects[object.uuid];
   (dependantObjects[object.uuid] || []).forEach((dependantObject) => {
     dependantObject.parent?.remove(dependantObject);

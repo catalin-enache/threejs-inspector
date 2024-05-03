@@ -17,7 +17,8 @@ const allowedExtensions = [
   '.tiff',
   '.exr',
   '.hdr',
-  '.tga'
+  '.tga',
+  '.ktx2'
 ];
 
 // keys are not relevant for buttons
@@ -89,7 +90,9 @@ export const SceneButtons = ({ isPlaying, sceneObjects: { camera, scene } }: Com
         const filesArray = Array.from(files);
         const rootFile = filesArray.find((file) => rootExtensions.some((ext) => file.name.endsWith(ext)));
         if (!rootFile) return;
-        loadModel(rootFile, scene, filesArray).then((mesh) => {
+        // inspired from https://github.com/donmccurdy/three-gltf-viewer/blob/main/src/viewer.js#L159-L191
+        // https://gltf-viewer.donmccurdy.com/
+        loadModel(rootFile, scene, { filesArray }).then((mesh) => {
           mesh && scene.add(mesh);
         });
       };

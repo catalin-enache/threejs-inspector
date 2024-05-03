@@ -5,6 +5,7 @@ import { CustomControl } from 'components/CustomControl/CustomControl';
 import { usePlay } from 'lib/hooks';
 import { degToRad } from 'lib/utils';
 import { createTexturesFromImages } from 'lib/utils/imageUtils';
+import { loadModel } from 'lib/utils/loadModel';
 
 function Box(
   props: ThreeElements['mesh'] & {
@@ -32,13 +33,13 @@ function Box(
     // 'textures/checkerboard-8x8.png',
     // 'textures/castle_brick_02_red_nor_gl_4k.exr',
     // 'textures/sikqyan_2K_Displacement.exr',
-    createTexturesFromImages(mapURL, meshMaterialRef).then((textures) => {
+    createTexturesFromImages(mapURL, { material: meshMaterialRef }).then((textures) => {
       const map = textures[0];
       // console.log('setting map');
       setMap(map);
     });
     alphaMapURL &&
-      createTexturesFromImages(alphaMapURL, meshMaterialRef).then((textures) => {
+      createTexturesFromImages(alphaMapURL, { material: meshMaterialRef }).then((textures) => {
         const map = textures[0];
         // console.log('setting alphaMap');
         setAlphaMap(map);
@@ -57,18 +58,28 @@ function Box(
       position={position}
     >
       <boxGeometry args={[1, 1, 1]} />
-      <meshStandardMaterial ref={meshMaterialRef} color={hovered ? 'hotpink' : 'white'} map={map} alphaMap={alphaMap} />
+      <meshStandardMaterial
+        ref={meshMaterialRef}
+        color={hovered ? 'hotpink' : 'white'}
+        map={map}
+        alphaMap={alphaMap}
+        roughness={0}
+        metalness={1}
+      />
       {props.children}
     </mesh>
   );
 }
 
 export function Experience() {
-  const { scene } = useThree();
+  // @ts-ignore
+  const { scene, gl, clock } = useThree();
 
   const refDirectionalLight = useRef<THREE.DirectionalLight>(null!);
   const refPointLight = useRef<THREE.PointLight>(null!);
   const doorMaterialRef = useRef<THREE.MeshStandardMaterial>(null!);
+  // const cubeCameraRef = useRef<THREE.CubeCamera>(null!);
+  // const webGLCubeRenderTargetRef = useRef(new THREE.WebGLCubeRenderTarget(128));
   useFrame((_state, _delta) => {
     if (refPointLight.current) {
       // refPointLight.current.intensity = Math.sin(Date.now() / 100) + 1;
@@ -113,61 +124,124 @@ export function Experience() {
 
   useEffect(() => {
     // 'https://threejsfundamentals.org/threejs/resources/images/wall.jpg',
-    // 'textures/file_example_TIFF_10MB.tiff',
-    // 'textures/sample_5184×3456.tga',
-    // 'textures/checkerboard-8x8.png',
-    // 'textures/castle_brick_02_red_nor_gl_4k.exr',
-    // 'textures/sikqyan_2K_Displacement.exr',
-    // 'textures/castle_brick_02_red_diff_4k.jpg',
-    // 'textures/cover-1920.jpg',
-    // createTexturesFromImages('https://threejsfundamentals.org/threejs/resources/images/wall.jpg').then((textures) => {
-    //   const texture = textures[0];
-    //   texture.colorSpace = THREE.SRGBColorSpace;
-    //   scene.background = texture;
-    // });
-    // ['px', 'nx', 'py', 'ny', 'pz', 'nz'].map((t) => `textures/cube/MilkyWay/dark-s_${t}.jpg`)
-    // ['px', 'nx', 'py', 'ny', 'pz', 'nz'].map((t) => `textures/cube/Park3Med/${t}.jpg`)
-    // ['px', 'nx', 'py', 'ny', 'pz', 'nz'].map((t) => `textures/makeItFail/1/${t}.exr`)
-    // ['px', 'nx', 'py', 'ny', 'pz', 'nz'].map((t) => `textures/makeItFail/3/${t}.tiff`)
-    // ['px', 'nx', 'py', 'ny', 'pz', 'nz'].map((t) => `textures/cube/skyboxsun25deg/${t}.jpg`)
-    createTexturesFromImages(
-      ['px', 'nx', 'py', 'ny', 'pz', 'nz'].map((t) => `textures/background/cube/MilkyWay/dark-s_${t}.jpg`)
-    ).then((textures) => {
-      const texture = textures[0];
-      // texture.colorSpace = THREE.SRGBColorSpace;
-      // texture.needsUpdate = true;
-      // console.log('createTextureFromImages', texture);
-      scene.background = texture;
-    });
+    // 'textures/test/file_example_TIFF_1MB.tiff',
+    // 'textures/test/one_gray_channel.exr',
+    // 'textures/background/2d/cover-1920.jpg',
+    // 'textures/background/equirectangular/2294472375_24a3b8ef46_o.jpg',
+    // 'textures/background/equirectangular/TCom_NorwayForest_4K_hdri_sphere.exr'
+    // 'textures/background/equirectangular/kloofendal_48d_partly_cloudy_puresky_4k.hdr'
+    // 'textures/background/equirectangular/spruit_sunrise_4k.hdr.jpg'
+    // ['px', 'nx', 'py', 'ny', 'pz', 'nz'].map((t) => `textures/background/cube/MilkyWay/dark-s_${t}.jpg`)
+    // ['px', 'nx', 'py', 'ny', 'pz', 'nz'].map((t) => `textures/background/cube/Park3Med/${t}.jpg`)
+    // ['px', 'nx', 'py', 'ny', 'pz', 'nz'].map((t) => `textures/background/cube/skyboxsun25deg/${t}.jpg`)
+    createTexturesFromImages('textures/background/equirectangular/spruit_sunrise_4k.hdr.jpg', { gl }).then(
+      (textures) => {
+        // console.log('createTextureFromImages', textures);
+        const texture = textures[0];
+        texture.mapping =
+          texture instanceof THREE.CubeTexture
+            ? THREE.CubeRefractionMapping
+            : texture.image.width / texture.image.height === 2
+              ? THREE.EquirectangularRefractionMapping
+              : THREE.UVMapping;
+        // texture.mapping = THREE.EquirectangularReflectionMapping;
+        texture.needsUpdate = true;
+        // texture.colorSpace = THREE.SRGBColorSpace;
+
+        // const pmremGenerator = new THREE.PMREMGenerator(gl);
+
+        // pmremGenerator.compileEquirectangularShader();
+        // pmremGenerator.compileCubemapShader();
+
+        // const PMREMRenderTarget = pmremGenerator.fromCubemap(texture as THREE.CubeTexture);
+        // const PMREMRenderTarget = pmremGenerator.fromEquirectangular(texture);
+        // const PMREMRenderTarget = pmremGenerator.fromScene(scene);
+        // PMREMRenderTarget.texture.mapping = THREE.CubeUVReflectionMapping;
+        // texture.colorSpace = THREE.SRGBColorSpace;
+        // texture.copy(PMREMRenderTarget.texture);
+        // texture.source = PMREMRenderTarget.texture.source;
+        // texture.image = PMREMRenderTarget.texture.image;
+        // console.log('createTextureFromImages', {
+        //   texture,
+        //   PMREMRenderTarget,
+        //   'PMREMRenderTarget.texture': PMREMRenderTarget.texture
+        // });
+        // scene.background = PMREMRenderTarget.texture;
+        // scene.environment = PMREMRenderTarget.texture;
+        // texture.mapping = THREE.EquirectangularReflectionMapping;
+        scene.background = texture;
+        scene.environment = texture;
+        // texture.needsPMREMUpdate = true;
+        // texture.needsUpdate = true;
+
+        loadModel('models/ply/binary/Lucy100k.ply', scene).then((mesh) => {
+          if (!mesh) return;
+
+          const phongMaterial = new THREE.MeshPhongMaterial({
+            color: 0xffffff,
+            envMap: scene.background as THREE.Texture,
+            refractionRatio: 0.98
+          });
+
+          const s = 0.001;
+          (mesh as THREE.Mesh).material = phongMaterial;
+          mesh.position.set(1, 0, 2);
+          mesh.userData.isInspectable = true;
+          mesh.scale.x = mesh.scale.y = mesh.scale.z = s;
+
+          scene.add(mesh);
+        });
+
+        // models/gltf/IridescentDishWithOlives.glb
+        // models/ply/binary/Lucy100k.ply
+        // models/gltf/Flower/Flower.glb
+        // models/gltf/ferrari.glb requires draco
+        // models/gltf/DamagedHelmet/glTF/DamagedHelmet.gltf
+        // models/gltf/coffeemat.glb
+        // models/gltf/DamagedHelmet/glTF-instancing/DamagedHelmetGpuInstancing.gltf
+        // models/gltf/LeePerrySmith/LeePerrySmith.glb
+        // models/gltf/RobotExpressive/RobotExpressive.glb
+        // models/gltf/AnisotropyBarnLamp/glTF-KTX-BasisU/AnisotropyBarnLamp.gltf
+        // models/gltf/AnisotropyBarnLamp/glTF-KTX-BasisU-fixed/AnisotropyBarnLamp.gltf
+        // models/gltf/RobotExpressive/RobotExpressive.glb
+        // https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/main/Models/AnisotropyBarnLamp/glTF-KTX-BasisU/AnisotropyBarnLamp.gltf
+        loadModel('models/gltf/RobotExpressive/RobotExpressive.glb', scene).then((mesh) => {
+          if (!mesh) return;
+          console.log('loadedModel', { mesh });
+          scene.add(mesh);
+        });
+      }
+    );
   }, []);
 
   return (
     <>
-      {/*<directionalLight*/}
-      {/*  shadow-mapSize-width={2048}*/}
-      {/*  shadow-mapSize-height={2048}*/}
-      {/*  shadow-radius={4}*/}
-      {/*  // shadow-bias={-0.001}*/}
-      {/*  shadow-blurSamples={8}*/}
-      {/*  castShadow*/}
-      {/*  position={[2, 2, 2]}*/}
-      {/*  scale={1}*/}
-      {/*  intensity={4.5}*/}
-      {/*  ref={refDirectionalLight}*/}
-      {/*  color={'white'}*/}
-      {/*  userData={{ isInspectable: false }}*/}
-      {/*></directionalLight>*/}
+      <directionalLight
+        shadow-mapSize-width={2048}
+        shadow-mapSize-height={2048}
+        shadow-radius={4}
+        // shadow-bias={-0.001}
+        shadow-blurSamples={8}
+        castShadow
+        position={[2, 2, 2]}
+        scale={1}
+        intensity={4.5}
+        ref={refDirectionalLight}
+        color={'white'}
+        userData={{ isInspectable: false }}
+      ></directionalLight>
       {/*<hemisphereLight*/}
       {/*  // args={[0xffffff, 0xffffff, 2]}*/}
       {/*  intensity={2}*/}
       {/*  color={new THREE.Color().setHSL(0.6, 1, 0.6)}*/}
       {/*  groundColor={new THREE.Color().setHSL(0.095, 1, 0.75)}*/}
       {/*/>*/}
+      <ambientLight color={'#ffffff'} intensity={3.5} position={[0, 1, 0]} />
       <rectAreaLight color={'deepskyblue'} position={[-3, 0, -8]} rotation={[-2.51, 0, 0]} intensity={6} />
       <pointLight
         castShadow
         // shadow-mapSize={[2048, 2048]}
-        position={[0, 0, 0]}
+        position={[0, -2, 0]}
         color={'orange'}
         // decay={0}
         scale={1}
@@ -227,9 +301,17 @@ export function Experience() {
       <perspectiveCamera
         args={[75, 1, 0.1, 100]} // window.innerWidth / window.innerHeight
         position={[0, 0, 5]}
+        name="myPerspectiveCamera"
         rotation={[degToRad(25.86), degToRad(-46.13), degToRad(0)]} // 25.86 , -46.13, 19.26
         userData={{ useOnPlay: false }}
       />
+
+      {/*<cubeCamera*/}
+      {/*  ref={cubeCameraRef}*/}
+      {/*  name="myCubeCamera"*/}
+      {/*  args={[0, 1000, webGLCubeRenderTargetRef.current]}*/}
+      {/*  position={[-3, 0, 0]}*/}
+      {/*/>*/}
 
       <axesHelper args={[10]} />
 

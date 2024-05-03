@@ -3,6 +3,8 @@ import type { LightProbeHelper } from 'three/examples/jsm/helpers/LightProbeHelp
 import type { RectAreaLightHelper } from 'three/examples/jsm/helpers/RectAreaLightHelper';
 
 export type userData = {
+  fullData: any;
+  animations: THREE.AnimationClip[];
   object: THREE.Object3D;
   picker: THREE.Mesh;
   helper:

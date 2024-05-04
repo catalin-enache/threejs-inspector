@@ -142,6 +142,11 @@ and in charge with shifting position according with last scrollTop value
   opacity: 0.2;
 }
 
+/* adjusting separator color */
+#controlPanelContent div > hr {
+  background-color: var(--tp-container-background-color);
+}
+
 /*
 make panel reconstruction unobservable
 transition 0 introduces a bug which is fixed in bindings

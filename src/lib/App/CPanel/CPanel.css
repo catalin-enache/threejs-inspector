@@ -127,6 +127,15 @@ and in charge with shifting position according with last scrollTop value
   width: 240px;
 }
 
+/* prevent animation buttons text being ugly displayed */
+#controlPanelContent .binding-value button > div {
+  padding-left: 6px;
+  padding-right: 6px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 #controlPanelContent .binding-value input:disabled {
   /* so that we can click on it, then shift the text with keyboard left/right arrows */
   pointer-events: all;

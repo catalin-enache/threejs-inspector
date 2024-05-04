@@ -4,6 +4,7 @@ import { FolderApi, TabPageApi, BladeApi } from 'tweakpane';
 import { degToRad, radToDegFormatter } from 'lib/utils';
 import { getObject3DBindings } from './getBindings';
 import { CommonGetterParams } from './bindingTypes';
+import { MaterialBindings } from './MaterialBindings';
 import { animate } from 'lib/utils/animate';
 
 export const numberFormat = (precision: number) => (value: number) => value.toFixed(precision);
@@ -109,6 +110,7 @@ const _buildBindings = (folder: FolderApi, object: any, bindings: any, params: C
 
     // handle material case which can be a Material or an array of Materials
     if (Array.isArray(object[key])) {
+      // We do not need a Set here because we want to show everything as is.
       object[key].forEach((item: any, index: number) => {
         const subFolder = folder.addFolder({
           title: `${key} ${index}`,
@@ -246,6 +248,49 @@ const _buildBindings = (folder: FolderApi, object: any, bindings: any, params: C
       stop();
     });
     tweakBindingView(button);
+  }
+
+  //  Collecting materials from all children
+  if (folder.title === 'Object3D' && object.traverse) {
+    // console.log('Extracting materials');
+    // root object
+    const materials = new Set<THREE.Material>();
+    object.traverse((child: any) => {
+      if (child === object) return;
+      if (child instanceof THREE.Mesh && child.material) {
+        // console.log('Material found', child.material);
+        const matArray = Array.isArray(child.material) ? child.material : [child.material];
+        matArray.forEach((material) => {
+          materials.add(material);
+        });
+      }
+    });
+    const materialsArray = Array.from(materials);
+
+    if (materialsArray.length) {
+      folder.addBlade({
+        view: 'separator'
+      });
+      const materialsFolder = folder.addFolder({
+        title: 'Materials Inventory',
+        expanded: false
+      });
+      materialsArray.forEach((material, index) => {
+        const subFolder = materialsFolder.addFolder({
+          title: material.name || `Material ${index}`,
+          expanded: false
+        });
+        try {
+          _buildBindings(subFolder, material, MaterialBindings(params), params);
+        } catch (error) {
+          console.error('Error building bindings for', material.name || material.uuid, { material, error });
+        }
+      });
+      object.children.length &&
+        folder.addBlade({
+          view: 'separator'
+        });
+    }
   }
 
   if (!(object instanceof THREE.Scene) && object.children) {

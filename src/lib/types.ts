@@ -14,5 +14,7 @@ export const isTextureImage = (obj: any): obj is TextureImage => {
 };
 
 export const isValidTexture = (obj: any): obj is THREE.Texture => {
-  return obj instanceof THREE.Texture && obj.image;
+  // ImageTexture or DataTexture or CubeTexture
+  // @ts-ignore
+  return obj instanceof THREE.Texture && (obj.image?.width || obj.images?.[0]?.image?.width || obj.images?.[0]?.width);
 };

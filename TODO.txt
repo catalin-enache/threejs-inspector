@@ -42,7 +42,12 @@ We should not rebuild the Panel for selected object when playing or changing stu
 
 Let's not crash CPanel when selecting an object and textures are missing from materials *DONE*
 
-Not all textures have image(s). We should handle that
+Not all textures have image(s). We should handle that *Done* in bindingHelpers we're preventing invalid textures now.
+
+See why it takes that long to select a complex object in the scene. Can cPanel be optimised or is it normal?
+
+I think we should implement => manager.addHandler( /\.tga$/i, new TGALoader() );
+Try to load a fbx file with external (non default supported) textures (tga/tiff/exr) and see if it works.
 
 Add default textures for non mesh imports and make it a PhysicalMaterial
 

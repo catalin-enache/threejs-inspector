@@ -6,6 +6,7 @@ import { getObject3DBindings } from './getBindings';
 import { CommonGetterParams } from './bindingTypes';
 import { MaterialBindings } from './MaterialBindings';
 import { animate } from 'lib/utils/animate';
+import { isValidTexture } from 'lib/types';
 
 export const numberFormat = (precision: number) => (value: number) => value.toFixed(precision);
 
@@ -106,7 +107,13 @@ const _buildBindings = (folder: FolderApi, object: any, bindings: any, params: C
       return;
     }
 
-    if (key === 'title' || object[key] === undefined || object[key] === null) return;
+    if (
+      key === 'title' ||
+      object[key] === undefined ||
+      object[key] === null ||
+      (object[key] instanceof THREE.Texture && !isValidTexture(object[key]))
+    )
+      return;
 
     // handle material case which can be a Material or an array of Materials
     if (Array.isArray(object[key])) {

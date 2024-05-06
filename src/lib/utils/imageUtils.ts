@@ -4,6 +4,7 @@ import { HDRJPGLoader } from '@monogrid/gainmap-js'; // see ThreeJS example: web
 import { useAppStore } from 'src/store';
 import { getNameAndType, getFileType } from '.';
 import { tiffLoader, exrLoader, textureLoader, hdrJpgLoader, rgbeLoader, tgaLoader, ktx2Loader } from './loaders';
+import { isValidTexture } from 'lib/types';
 
 export const FILE_EXR = 'image/x-exr';
 export const FILE_HDR = 'image/hdr';
@@ -35,6 +36,10 @@ export const isPowerOf2Texture = (texture: THREE.Texture): boolean => {
 };
 
 export const getWidthHeightFromTexture = (texture: THREE.Texture): { width: number; height: number } => {
+  if (!isValidTexture(texture)) {
+    console.error('Invalid texture', texture);
+    throw new Error('Invalid texture');
+  }
   const isCubeTexture = texture instanceof THREE.CubeTexture;
   // texture.image is alias for texture.source.data,
   // source.data can be an image or a buffer having width/height properties
@@ -75,7 +80,7 @@ const sortFiles = (files: (File | string)[]): (File | string)[] => {
   });
 };
 
-export function getLoader(fileType: string, fileName: string, gl?: THREE.WebGLRenderer | null) {
+export function getImageLoader(fileType: string, fileName: string, gl?: THREE.WebGLRenderer | null) {
   switch (fileType) {
     case FILE_EXR:
       return exrLoader;
@@ -110,9 +115,10 @@ export const cubeTextureLoader = async (
   const textures = (await Promise.all(
     sortedFiles.map((file) => {
       const { fileType, name } = getNameAndType(file, fileTypeMap);
+      // TODO: reuse default loading manager setURLModifier here
       const url = file instanceof File ? URL.createObjectURL(file) : file;
       revokableUrls.push(url);
-      const loader = getLoader(fileType, name, gl);
+      const loader = getImageLoader(fileType, name, gl);
       return loader.loadAsync(url);
     })
   )) as THREE.Texture[];
@@ -179,7 +185,7 @@ export const createTexturesFromImages: createTexturesFromImagesType = async (
         const isFileType = file instanceof File;
         const name = isFileType ? file.name : file;
         const fileType = getFileType(name, fileTypeMap); // assuming they all have the same extension
-        const loader = getLoader(fileType, name, gl);
+        const loader = getImageLoader(fileType, name, gl);
         const url = file instanceof File ? URL.createObjectURL(file) : file;
         const result = (await loader.loadAsync(url)) as any;
         const texture = !(loader instanceof HDRJPGLoader) ? result : result.renderTarget.texture;

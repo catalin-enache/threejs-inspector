@@ -1,7 +1,7 @@
 import { BaseInputParams, BindingTarget, createPlugin, InputBindingPlugin, parseRecord } from '@tweakpane/core';
 import * as THREE from 'three';
 import { TextureController } from './controller';
-import { isTexture } from 'lib/types';
+import { isValidTexture } from 'lib/types';
 
 const DEFAULT_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.tif', '.tiff', '.exr', '.hdr', '.tga', '.ktx2'];
 
@@ -20,7 +20,7 @@ export const TextureBindingPlugin: InputBindingPlugin<THREE.Texture, THREE.Textu
 
     accept: (exValue: unknown, params: Record<string, unknown>) => {
       // console.log('TextureBindingPlugin.accept ?', { params, exValue });
-      if (!isTexture(exValue)) {
+      if (!isValidTexture(exValue)) {
         return null;
       }
 

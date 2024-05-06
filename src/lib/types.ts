@@ -7,14 +7,12 @@ export type TextureImage =
 export const isTextureImage = (obj: any): obj is TextureImage => {
   if (!obj) return false;
   return (
-    (obj instanceof HTMLImageElement ||
-      obj.data instanceof Uint8Array ||
-      obj.data instanceof Uint16Array) &&
+    (obj instanceof HTMLImageElement || obj.data instanceof Uint8Array || obj.data instanceof Uint16Array) &&
     typeof obj.width === 'number' &&
     typeof obj.height === 'number'
   );
 };
 
-export const isTexture = (obj: any): obj is THREE.Texture => {
-  return obj instanceof THREE.Texture;
+export const isValidTexture = (obj: any): obj is THREE.Texture => {
+  return obj instanceof THREE.Texture && obj.image;
 };

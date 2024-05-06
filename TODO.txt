@@ -42,9 +42,17 @@ We should not rebuild the Panel for selected object when playing or changing stu
 
 Let's not crash CPanel when selecting an object and textures are missing from materials *DONE*
 
+Not all textures have image(s). We should handle that
+
 Add default textures for non mesh imports and make it a PhysicalMaterial
 
 Write doc about loading models.
+Allow with ctrl + dblclick to select inside object
+
+See why solider fbx slows down rendering
+
+Handle multiple fbx/gltf imports (when animations or other things are separated) and merge them.
+Implement a deep merge.
 
 Handle the case where gltf comes with lights (LightsPunctualLamp.glb)
 Handle the case where gltf comes with animations
@@ -54,6 +62,8 @@ Some imported objects are too big. We need to scale them down generically compar
 Could we add a use_pmremGenerator bool to inspector ?
 
 Test matcap
+
+Show loaders when loading stuff as well as when building bindings
 
 Be able to load complete materials from folder based on name
 
@@ -68,7 +78,7 @@ Se where kandao3_depthmap.jpg is used in threejs examples
 
 Bug: Changing rotation 90deg does not make it 90 but 90.012
 
-Can we make an approach to share textures between objects? (this is good for sharing envMap)
+Can we make an approach to share textures and materials between objects? (this is good for sharing envMap)
 
 Add loaders so that we can start the scene after everything was loaded
 

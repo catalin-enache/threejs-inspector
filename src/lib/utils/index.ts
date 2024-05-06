@@ -1,12 +1,12 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import { TransformControls } from 'three/examples/jsm/controls/TransformControls';
-import { isTextureImage, isTexture } from 'lib/types';
+import { isTextureImage, isValidTexture } from 'lib/types';
 
 export const isObject = (value: any) => {
   return (
     // value !== null && typeof value === 'object' && // compatible with Tweakpane if needed
-    value && value.constructor === Object && !isArray(value) && !isTextureImage(value) && !isTexture(value)
+    value && value.constructor === Object && !isArray(value) && !isTextureImage(value) && !isValidTexture(value)
   );
 };
 

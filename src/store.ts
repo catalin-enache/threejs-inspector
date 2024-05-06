@@ -5,7 +5,7 @@ import { subscribeWithSelector } from 'zustand/middleware';
 import { BindingParams } from 'tweakpane';
 import * as THREE from 'three';
 import { setFullScreen } from 'lib/utils';
-import { isTextureImage, isTexture } from 'lib/types';
+import { isTextureImage, isValidTexture } from 'lib/types';
 
 const cPanelCustomParamsStore: any = {};
 let selectedObject: THREE.Object3D | null = null;
@@ -176,7 +176,7 @@ export const useAppStore = create<AppStore>()(
         cPanelCustomParamsStore[name] === undefined ||
         cPanelCustomParamsStore[name] === null ||
         isTextureImage(customParams) ||
-        isTexture(customParams)
+        isValidTexture(customParams)
       ) {
         cPanelCustomParamsStore[name] = customParams;
       } else {

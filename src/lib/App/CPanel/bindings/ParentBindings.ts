@@ -3,7 +3,6 @@ import type { CommonGetterParams } from './bindingTypes';
 export const ParentBindings = (_params: CommonGetterParams) => ({
   parent: {
     // for Object3D
-    // title: 'Parent',
     id: {
       label: 'ID',
       view: 'text',

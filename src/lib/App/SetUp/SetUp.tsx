@@ -229,11 +229,20 @@ const removeHelpers = (object: THREE.Object3D) => {
   delete dependantObjects[object.uuid];
 };
 
+const isSceneObject = (object: THREE.Object3D) => {
+  // traverse up to the scene
+  let parent = object.parent;
+  while (parent && !(parent instanceof THREE.Scene)) {
+    parent = parent.parent;
+  }
+  return parent !== null;
+};
+
 THREE.Object3D.prototype.add = (function () {
   const originalAdd = THREE.Object3D.prototype.add;
   return function (this: THREE.Object3D, ...objects: THREE.Object3D[]) {
     // things to skip
-    if (this instanceof THREE.CubeCamera) {
+    if (this instanceof THREE.CubeCamera || !isSceneObject(this)) {
       // skip children cameras of a cubeCamera
       return originalAdd.call(this, ...objects);
     }

@@ -4,6 +4,7 @@ import { RGBELoader } from 'three/examples/jsm/loaders/RGBELoader';
 import { TGALoader } from 'three/examples/jsm/loaders/TGALoader';
 import { TIFFLoader } from 'three/examples/jsm/loaders/TIFFLoader';
 import { KTX2Loader } from 'three/examples/jsm/loaders/KTX2Loader';
+import { DDSLoader } from 'three/examples/jsm/loaders/DDSLoader';
 import { HDRJPGLoader } from '@monogrid/gainmap-js';
 import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader';
 import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module';
@@ -15,6 +16,9 @@ import { OBJLoader } from 'three/examples/jsm/loaders/OBJLoader';
 import { MTLLoader } from 'three/examples/jsm/loaders/MTLLoader';
 import { STLLoader } from 'three/examples/jsm/loaders/STLLoader';
 import { ColladaLoader, Collada } from 'three/examples/jsm/loaders/ColladaLoader';
+
+// @ts-ignore
+// import { FBXLoader } from 'lib/third_party/FBXLoader.js';
 
 export {
   MeshoptDecoder,
@@ -79,12 +83,16 @@ const gl = new THREE.WebGLRenderer({ antialias: true });
 export const exrLoader = new EXRLoader(defaultLoadingManager);
 export const rgbeLoader = new RGBELoader(defaultLoadingManager);
 export const tgaLoader = new TGALoader(defaultLoadingManager);
+export const ddsLoader = new DDSLoader(defaultLoadingManager);
 export const tiffLoader = new TIFFLoader(defaultLoadingManager);
 export const ktx2Loader = new KTX2Loader(defaultLoadingManager).setTranscoderPath('libs/basis/').detectSupport(gl);
 // The gl renderer will be set to the actual scene renderer where the loader is used (currently imageUtils.ts).
 // An ad-hoc renderer like the gl before doesn't work as it works for ktx2Loader.
 export const hdrJpgLoader = new HDRJPGLoader(undefined, defaultLoadingManager);
 export const textureLoader = new THREE.TextureLoader(defaultLoadingManager);
+
+defaultLoadingManager.addHandler(/\.tga$/i, tgaLoader);
+defaultLoadingManager.addHandler(/\.dds$/i, ddsLoader);
 
 // Model loaders
 export const dracoLoader = new DRACOLoader(defaultLoadingManager).setDecoderPath('libs/draco/gltf/');

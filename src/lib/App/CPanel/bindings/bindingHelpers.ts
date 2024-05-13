@@ -3,6 +3,7 @@ import { BindingApi } from '@tweakpane/core';
 import { FolderApi, TabPageApi, BladeApi } from 'tweakpane';
 import { degToRad, radToDegFormatter } from 'lib/utils';
 import { getObject3DBindings } from './getBindings';
+import { ParentBindings } from './ParentBindings';
 import { CommonGetterParams } from './bindingTypes';
 import { MaterialBindings } from './MaterialBindings';
 import { animate } from 'lib/utils/animate';
@@ -89,8 +90,26 @@ export const tweakFolder = (folder: FolderApi | TabPageApi, id: string) => {
   });
 };
 
+const _buildParentBindings = (folder: FolderApi, object: any, params: CommonGetterParams) => {
+  if (object.parent) {
+    const parentFolder = folder.addFolder({
+      title: 'Parent',
+      expanded: false
+    });
+    const parentBindings = ParentBindings(params);
+    Object.keys(parentBindings.parent).forEach((key) => {
+      // @ts-ignore
+      const bindingCandidate = parentBindings.parent[key];
+      const binding = parentFolder.addBinding(object.parent, key, bindingCandidate);
+      tweakBindingView(binding);
+    });
+  }
+};
+
 const _buildBindings = (folder: FolderApi, object: any, bindings: any, params: CommonGetterParams) => {
   // console.log('_buildBindings for', folder.title, { object, bindings });
+
+  _buildParentBindings(folder, object, params);
 
   Object.keys(bindings).forEach((key) => {
     const bindingCandidate = bindings[key];
@@ -208,8 +227,9 @@ const _buildBindings = (folder: FolderApi, object: any, bindings: any, params: C
     }
   });
 
+  // Collecting animations
   // TODO: Later on add more capabilities to animations (blending, editing, ...)
-  if (object.userData?.animations && object.userData.animations.length) {
+  if (object.__inspectorData?.animations && object.__inspectorData.animations.length) {
     const animationsFolder = folder.addFolder({
       title: 'Animations',
       expanded: false
@@ -220,7 +240,7 @@ const _buildBindings = (folder: FolderApi, object: any, bindings: any, params: C
     });
 
     let currentPlayingAction: THREE.AnimationAction | null = null;
-    object.userData.animations.forEach((animation: THREE.AnimationClip) => {
+    object.__inspectorData.animations.forEach((animation: THREE.AnimationClip) => {
       const actionID = animation.name || animation.uuid;
       const action = mixer.clipAction(animation);
       const button = animationsFolder.addButton({
@@ -300,22 +320,32 @@ const _buildBindings = (folder: FolderApi, object: any, bindings: any, params: C
     }
   }
 
-  if (!(object instanceof THREE.Scene) && object.children) {
+  // children bindings
+  if (!(object instanceof THREE.Scene) && object.children?.length) {
+    const childrenFolder = folder.addFolder({
+      title: 'Children',
+      expanded: false
+    });
     object.children.forEach(function (child: any) {
       // I don't think a child - in this context (leaving in children collection) - could not be an Object3D but just in case
-      if (!(child instanceof THREE.Object3D) || child.userData.isPicker) return;
-      const subFolder = folder.addFolder({
+      if (!(child instanceof THREE.Object3D) || child.__inspectorData.isPicker) return;
+      const childFolder = childrenFolder.addFolder({
         title: `${child.name || child.uuid}`,
         expanded: false
       });
-      const newBindings = getObject3DBindings(params);
-      // @ts-ignore
-      delete newBindings.parent; // prevents infinite loop
-      try {
-        _buildBindings(subFolder, child, newBindings, params);
-      } catch (error) {
-        console.error('Error building bindings for', child.name || child.uuid, { error });
-      }
+      let hasBinding = false;
+      childFolder.on('fold', (evt) => {
+        if (evt.expanded && !hasBinding) {
+          try {
+            const newBindings = getObject3DBindings(params);
+            // lazy building bindings for children
+            _buildBindings(childFolder, child, newBindings, params);
+            hasBinding = true;
+          } catch (error) {
+            console.error('Error building bindings for', child.name || child.uuid, { error });
+          }
+        }
+      });
     });
   }
 

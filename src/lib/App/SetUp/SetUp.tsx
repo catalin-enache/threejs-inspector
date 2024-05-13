@@ -12,25 +12,38 @@ import { LightProbeHelper } from 'three/examples/jsm/helpers/LightProbeHelper';
 import { FlyControls } from 'lib/App/FlyControls';
 import { useAppStore } from 'src/store';
 import { focusCamera } from 'lib/utils';
-import { userData } from 'src/types';
+import { __inspectorData } from 'src/types';
+
+Object.defineProperty(THREE.Object3D.prototype, '__inspectorData', {
+  get: function () {
+    if (!this._innerUserData) {
+      this._innerUserData = {};
+    }
+    return this._innerUserData;
+  },
+  set: function (value) {
+    this._innerUserData = value;
+  },
+  configurable: true
+});
 
 RectAreaLightUniformsLib.init(); // required for RectAreaLight
 
 const threeScene = new THREE.Scene();
 const inspectableObjects: Record<string, THREE.Object3D> = {};
 const dependantObjects: Record<string, THREE.Object3D[]> = {};
-threeScene.userData.inspectableObjects = inspectableObjects;
-threeScene.userData.dependantObjects = dependantObjects;
+threeScene.__inspectorData.inspectableObjects = inspectableObjects;
+threeScene.__inspectorData.dependantObjects = dependantObjects;
 
 const makeHelpers = (object: THREE.Object3D) => {
-  let helper: userData['helper'];
+  let helper: __inspectorData['helper'];
 
   let picker: THREE.Mesh;
 
   if (!(object instanceof THREE.Light || object instanceof THREE.Camera || object instanceof THREE.CubeCamera)) return;
 
   const helperSize = 0.25;
-  // TODO: check other included helpers (e.g. LightProbeHelper)
+  // TODO: check other included helpers (e.g. LightProbeHelper, SkeletonHelper)
   helper =
     object instanceof THREE.Camera
       ? new THREE.CameraHelper(object)
@@ -109,8 +122,8 @@ const makeHelpers = (object: THREE.Object3D) => {
     picker.matrix = (helper as THREE.DirectionalLightHelper).lightPlane.matrix; // helper.matrix is a reference to helper.light.matrixWorld
     picker.matrixAutoUpdate = false;
   }
-  const objectUserData = object.userData as userData;
-  const pickerUserData = picker.userData as userData;
+  const objectUserData = object.__inspectorData as __inspectorData;
+  const pickerUserData = picker.__inspectorData as __inspectorData;
   objectUserData.picker = picker;
   objectUserData.helper = helper;
   pickerUserData.object = object;
@@ -225,9 +238,9 @@ THREE.Object3D.prototype.add = (function () {
       return originalAdd.call(this, ...objects);
     }
     objects.forEach((object) => {
-      const userData = object.userData as userData;
+      const __inspectorData = object.__inspectorData as __inspectorData;
       if (
-        userData.isInspectable ||
+        __inspectorData.isInspectable ||
         (object as THREE.Light).isLight ||
         (object as THREE.Camera).isCamera ||
         object instanceof THREE.CubeCamera
@@ -236,9 +249,9 @@ THREE.Object3D.prototype.add = (function () {
         if (object !== perspectiveCamera && object !== orthographicCamera) {
           makeHelpers(object); // will enrich object with helper and picker
         }
-        // picker appears in userData after makeHelpers
-        if (userData.picker) {
-          inspectableObjects[userData.picker.uuid] = userData.picker;
+        // picker appears in __inspectorData after makeHelpers
+        if (__inspectorData.picker) {
+          inspectableObjects[__inspectorData.picker.uuid] = __inspectorData.picker;
         } else {
           inspectableObjects[object.uuid] = object;
         }
@@ -247,7 +260,7 @@ THREE.Object3D.prototype.add = (function () {
       // if multiple cameras are useOnPlay, only the last one will be considered
       if (
         (object instanceof THREE.PerspectiveCamera || object instanceof THREE.OrthographicCamera) &&
-        userData.useOnPlay
+        __inspectorData.useOnPlay
       ) {
         cameraToUseOnPlay = object as THREE.PerspectiveCamera | THREE.OrthographicCamera;
       }
@@ -479,9 +492,9 @@ const SetUp = () => {
       raycaster.intersectObjects(Object.values(inspectableObjects), false, hits);
 
       lastHitRef.current = hits[0] || null;
-      const userData = lastHitRef.current?.object?.userData as userData;
-      // if we hit a picker, select the object it represents else select the object itself
-      setSelectedObject(userData?.object || lastHitRef.current?.object || null);
+      const __inspectorData = lastHitRef.current?.object?.__inspectorData as __inspectorData;
+      // if we hit a picker or an inner mesh proxy, select the object it represents else select the object itself
+      setSelectedObject(__inspectorData?.object || lastHitRef.current?.object || null);
     },
     [raycaster, pointer, camera, setSelectedObject]
   );

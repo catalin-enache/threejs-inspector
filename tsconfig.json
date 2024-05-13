@@ -30,7 +30,7 @@
     }
   },
   "include": [
-    "src"
+    "src", "./tsExtensions.ts"
   ],
   "references": [{ "path": "./tsconfig.node.json" }]
 }

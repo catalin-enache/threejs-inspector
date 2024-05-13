@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import type { LightProbeHelper } from 'three/examples/jsm/helpers/LightProbeHelper';
 import type { RectAreaLightHelper } from 'three/examples/jsm/helpers/RectAreaLightHelper';
 
-export type userData = {
+export type __inspectorData = {
   fullData: any;
   animations: THREE.AnimationClip[];
   object: THREE.Object3D;

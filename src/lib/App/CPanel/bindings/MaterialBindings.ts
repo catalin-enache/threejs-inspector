@@ -78,7 +78,7 @@ const blendSrcFactors = {
 
 export const MaterialBindings = (params: CommonGetterParams) => {
   const materialBindings = {
-    // TODO: Add: a way to show userData
+    // TODO: Add: a way to show __inspectorData, userData
     id: {
       label: 'ID',
       disabled: true

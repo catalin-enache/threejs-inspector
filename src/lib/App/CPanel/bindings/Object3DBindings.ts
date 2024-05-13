@@ -36,30 +36,6 @@ export const Object3DBindings = (params: CommonGetterParams) => ({
       // inspectable objects should be cleaned up already
     }) as onChange
   },
-  parent: {
-    // for Object3D
-    title: 'Parent',
-    id: {
-      label: 'ID',
-      view: 'text',
-      disabled: true
-    },
-    uuid: {
-      label: 'UUID',
-      view: 'text',
-      disabled: true
-    },
-    name: {
-      label: 'Name',
-      view: 'text',
-      disabled: true
-    },
-    type: {
-      label: 'Type',
-      view: 'text',
-      disabled: true
-    }
-  },
   position: {
     label: 'Position(L)',
     ...numberCommon,

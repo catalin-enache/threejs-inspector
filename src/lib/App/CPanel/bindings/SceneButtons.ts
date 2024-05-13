@@ -18,7 +18,8 @@ const allowedExtensions = [
   '.exr',
   '.hdr',
   '.tga',
-  '.ktx2'
+  '.ktx2',
+  '.dds'
 ];
 
 // keys are not relevant for buttons

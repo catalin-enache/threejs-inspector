@@ -191,7 +191,12 @@ export const createTexturesFromImages: createTexturesFromImagesType = async (
         const texture = !(loader instanceof HDRJPGLoader) ? result : result.renderTarget.texture;
         // result.material is undefined unless loader instanceof HDRJPGLoader.
         // Saving this on texture instance for use in TexturePlugin view to generate thumbnail.
-        texture.__hdrJpgMaterial = result.material;
+
+        if (loader instanceof HDRJPGLoader) {
+          result._quad && (result._quad.name = 'QuadRendererMesh');
+          texture.__hdrJpgMaterial = result.material;
+        }
+
         texture.generateMipmaps = isPowerOf2Texture(texture);
         texture.needsUpdate = true;
         texture.name = name;

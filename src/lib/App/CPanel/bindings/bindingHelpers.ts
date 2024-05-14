@@ -283,7 +283,7 @@ const _buildBindings = (folder: FolderApi, object: any, bindings: any, params: C
     // root object
     const materials = new Set<THREE.Material>();
     object.traverse((child: any) => {
-      if (child === object) return;
+      if (child === object || child.__inspectorData.isPicker) return;
       if (child instanceof THREE.Mesh && child.material) {
         // console.log('Material found', child.material);
         const matArray = Array.isArray(child.material) ? child.material : [child.material];
@@ -320,15 +320,17 @@ const _buildBindings = (folder: FolderApi, object: any, bindings: any, params: C
     }
   }
 
-  // children bindings
-  if (!(object instanceof THREE.Scene) && object.children?.length) {
+  // build descendants tree excluding the scene
+  const objectChildren =
+    object instanceof THREE.Scene
+      ? []
+      : object.children?.map((child: any) => !child.__inspectorData.isPicker && child).filter(Boolean) || [];
+  if (objectChildren.length) {
     const childrenFolder = folder.addFolder({
       title: 'Children',
       expanded: false
     });
-    object.children.forEach(function (child: any) {
-      // I don't think a child - in this context (leaving in children collection) - could not be an Object3D but just in case
-      if (!(child instanceof THREE.Object3D) || child.__inspectorData.isPicker) return;
+    objectChildren.forEach(function (child: any) {
       const childFolder = childrenFolder.addFolder({
         title: `${child.name || child.uuid}`,
         expanded: false

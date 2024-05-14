@@ -5,7 +5,7 @@ import type { RectAreaLightHelper } from 'three/examples/jsm/helpers/RectAreaLig
 export type __inspectorData = {
   fullData: any;
   animations: THREE.AnimationClip[];
-  object: THREE.Object3D;
+  hitRedirect: THREE.Object3D;
   picker: THREE.Mesh;
   helper:
     | THREE.SpotLightHelper

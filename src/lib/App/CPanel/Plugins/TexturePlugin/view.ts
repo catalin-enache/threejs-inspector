@@ -74,7 +74,9 @@ export class TextureView implements View {
 
     mapTexture.needsUpdate = true;
     const material = hdrJpgMaterial || thumbnailMaterial;
-    return new THREE.Mesh(geometry, material);
+    const newMesh = new THREE.Mesh(geometry, material);
+    newMesh.name = 'TexturePluginMesh';
+    return newMesh;
   }
 
   changeImage(texture: THREE.Texture) {

@@ -16,13 +16,13 @@ import { __inspectorData } from 'src/types';
 
 Object.defineProperty(THREE.Object3D.prototype, '__inspectorData', {
   get: function () {
-    if (!this._innerUserData) {
-      this._innerUserData = {};
+    if (!this._innerInspectorData) {
+      this._innerInspectorData = {};
     }
-    return this._innerUserData;
+    return this._innerInspectorData;
   },
   set: function (value) {
-    this._innerUserData = value;
+    this._innerInspectorData = value;
   },
   configurable: true
 });
@@ -41,6 +41,7 @@ const makeHelpers = (object: THREE.Object3D) => {
   let picker: THREE.Mesh;
 
   if (!(object instanceof THREE.Light || object instanceof THREE.Camera || object instanceof THREE.CubeCamera)) return;
+  // console.log('Making helpers for', object.name || object.type || object.uuid, object);
 
   const helperSize = 0.25;
   // TODO: check other included helpers (e.g. LightProbeHelper, SkeletonHelper)
@@ -78,7 +79,7 @@ const makeHelpers = (object: THREE.Object3D) => {
                 ? new THREE.BoxGeometry(helperSize, helperSize, helperSize)
                 : new THREE.BoxGeometry(helperSize, helperSize, helperSize); // generic mesh geometry
 
-  helper.name = 'helper';
+  helper.name = `helper for ${object.name || object.type || ''} ${object.uuid}`;
 
   picker = new THREE.Mesh(
     meshGeometry,
@@ -122,20 +123,18 @@ const makeHelpers = (object: THREE.Object3D) => {
     picker.matrix = (helper as THREE.DirectionalLightHelper).lightPlane.matrix; // helper.matrix is a reference to helper.light.matrixWorld
     picker.matrixAutoUpdate = false;
   }
-  const objectUserData = object.__inspectorData as __inspectorData;
-  const pickerUserData = picker.__inspectorData as __inspectorData;
-  objectUserData.picker = picker;
-  objectUserData.helper = helper;
-  pickerUserData.object = object;
-  pickerUserData.isPicker = true;
+  const objectInspectorData = object.__inspectorData as __inspectorData;
+  const pickerInspectorData = picker.__inspectorData as __inspectorData;
+  objectInspectorData.picker = picker;
+  objectInspectorData.helper = helper;
+  pickerInspectorData.hitRedirect = object;
+  pickerInspectorData.isPicker = true;
 
   object.add(picker);
   if (object instanceof THREE.SpotLight) {
     picker.lookAt(object.target.position);
   }
-
-  dependantObjects[object.uuid] = [helper];
-  threeScene.add(helper);
+  // helper is added to the scene in handleObjectAdded function
 
   useAppStore.subscribe(
     (appStore) => appStore.selectedObjectStateFake,
@@ -188,7 +187,7 @@ const makeHelpers = (object: THREE.Object3D) => {
     (appStore) => appStore.isPlaying,
     (isPlaying) => {
       // we don't need to remove helpers for default cameras since R3F does not add them to scene
-      if (objectUserData.useOnPlay) {
+      if (objectInspectorData.useOnPlay) {
         if (isPlaying) {
           object.remove(picker);
           threeScene.remove(helper);
@@ -216,7 +215,7 @@ const destroy = (object: any) => {
   }
 };
 
-const removeHelpers = (object: THREE.Object3D) => {
+const cleanupAfterRemovedObject = (object: THREE.Object3D) => {
   object.traverse((child) => {
     destroy(child);
     delete inspectableObjects[child.uuid];
@@ -238,43 +237,59 @@ const isSceneObject = (object: THREE.Object3D) => {
   return parent !== null;
 };
 
+const handleObjectAdded = (object: THREE.Object3D) => {
+  const __inspectorData = object.__inspectorData as __inspectorData;
+  if (
+    __inspectorData.isInspectable ||
+    (object as THREE.Light).isLight ||
+    (object as THREE.Camera).isCamera ||
+    object instanceof THREE.CubeCamera
+  ) {
+    // R3F does not add cameras to scene, so this check is not needed, but checking just in case
+    if (object !== perspectiveCamera && object !== orthographicCamera) {
+      makeHelpers(object); // will enrich object with helper and picker
+    } else if (
+      (object instanceof THREE.PerspectiveCamera || object instanceof THREE.OrthographicCamera) &&
+      __inspectorData.useOnPlay
+    ) {
+      // if multiple cameras are useOnPlay, only the last one will be considered
+      cameraToUseOnPlay = object as THREE.PerspectiveCamera | THREE.OrthographicCamera;
+    }
+    // picker appears in __inspectorData after makeHelpers
+    if (__inspectorData.picker) {
+      inspectableObjects[__inspectorData.picker.uuid] = __inspectorData.picker;
+    } else {
+      inspectableObjects[object.uuid] = object;
+    }
+    if (__inspectorData.helper) {
+      dependantObjects[object.uuid] = [__inspectorData.helper];
+      threeScene.add(__inspectorData.helper);
+    }
+  }
+};
+
 THREE.Object3D.prototype.add = (function () {
   const originalAdd = THREE.Object3D.prototype.add;
   return function (this: THREE.Object3D, ...objects: THREE.Object3D[]) {
     // things to skip
-    if (this instanceof THREE.CubeCamera || !isSceneObject(this)) {
+    if (this instanceof THREE.CubeCamera) {
       // skip children cameras of a cubeCamera
       return originalAdd.call(this, ...objects);
     }
+    originalAdd.call(this, ...objects);
     objects.forEach((object) => {
-      const __inspectorData = object.__inspectorData as __inspectorData;
-      if (
-        __inspectorData.isInspectable ||
-        (object as THREE.Light).isLight ||
-        (object as THREE.Camera).isCamera ||
-        object instanceof THREE.CubeCamera
-      ) {
-        // R3F does not add cameras to scene, so this check is not needed, but checking just in case
-        if (object !== perspectiveCamera && object !== orthographicCamera) {
-          makeHelpers(object); // will enrich object with helper and picker
-        }
-        // picker appears in __inspectorData after makeHelpers
-        if (__inspectorData.picker) {
-          inspectableObjects[__inspectorData.picker.uuid] = __inspectorData.picker;
-        } else {
-          inspectableObjects[object.uuid] = object;
-        }
+      if (isSceneObject(this)) {
+        // console.log('Is scene object already', this.name || this.type || this.uuid, this);
+        handleObjectAdded(object);
+      } else if (this instanceof THREE.Scene) {
+        // console.log('Adding to scene', object.name || object.type || object.uuid, object);
+        object.traverse((descendant) => {
+          handleObjectAdded(descendant);
+        });
       }
-
-      // if multiple cameras are useOnPlay, only the last one will be considered
-      if (
-        (object instanceof THREE.PerspectiveCamera || object instanceof THREE.OrthographicCamera) &&
-        __inspectorData.useOnPlay
-      ) {
-        cameraToUseOnPlay = object as THREE.PerspectiveCamera | THREE.OrthographicCamera;
-      }
-
-      originalAdd.call(this, object);
+      // The last branch here would be if we add to a non-scene object.
+      // In that case, we don't need to do anything.
+      // It will be handled when it gets added to the scene in the second branch.
     });
     return this;
   };
@@ -289,7 +304,7 @@ THREE.Object3D.prototype.remove = (function () {
       return originalRemove.call(this, ...objects);
     }
     objects.forEach((object) => {
-      removeHelpers(object);
+      cleanupAfterRemovedObject(object);
       if (object === useAppStore.getState().getSelectedObject()) {
         useAppStore.getState().setSelectedObject(null);
       }
@@ -393,6 +408,7 @@ const SetUp = () => {
 
     // prettier-ignore
     transformControlsRef.current = new TransformControls(camera, gl.domElement);
+    transformControlsRef.current.name = 'TransformControls';
     transformControlsRef.current.addEventListener('objectChange', (_event) => {
       triggerSelectedObjectChanged();
     });
@@ -503,7 +519,7 @@ const SetUp = () => {
       lastHitRef.current = hits[0] || null;
       const __inspectorData = lastHitRef.current?.object?.__inspectorData as __inspectorData;
       // if we hit a picker or an inner mesh proxy, select the object it represents else select the object itself
-      setSelectedObject(__inspectorData?.object || lastHitRef.current?.object || null);
+      setSelectedObject(__inspectorData?.hitRedirect || lastHitRef.current?.object || null);
     },
     [raycaster, pointer, camera, setSelectedObject]
   );

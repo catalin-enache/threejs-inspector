@@ -277,6 +277,49 @@ const _buildBindings = (folder: FolderApi, object: any, bindings: any, params: C
     tweakBindingView(button);
   }
 
+  // Collecting all morph targets from all meshes grouped by name.
+  // As an edge case if 2 original meshes (before optimization done by loadModel) had the same morph target name
+  // they will be grouped together
+  if (folder.title === 'Object3D' && object.traverse) {
+    const morphInfluences: Record<string, number[][]> = {};
+    const fakeParams: Record<string, number> = {};
+    object.traverse((child: any) => {
+      if (child instanceof THREE.Mesh) {
+        Object.keys(child.morphTargetDictionary || {}).forEach((key) => {
+          if (!morphInfluences[key]) {
+            morphInfluences[key] = [];
+            fakeParams[key] = 0;
+          }
+          morphInfluences[key].push(child.morphTargetInfluences!); // morphTargetDictionary implies morphTargetInfluences
+        });
+      }
+    });
+    if (Object.keys(morphInfluences).length) {
+      folder.addBlade({
+        view: 'separator'
+      });
+      const morphFolder = folder.addFolder({
+        title: 'Morph Targets',
+        expanded: false
+      });
+      Object.keys(morphInfluences).forEach((key: string, index: number) => {
+        const binding = morphFolder
+          .addBinding(fakeParams, key, {
+            label: key,
+            min: 0,
+            max: 1,
+            ...numberCommon
+          })
+          .on('change', (evt) => {
+            morphInfluences[key].forEach((influence) => {
+              influence[index] = evt.value;
+            });
+          });
+        tweakBindingView(binding);
+      });
+    }
+  }
+
   //  Collecting materials from all children
   if (folder.title === 'Object3D' && object.traverse) {
     // console.log('Extracting materials');
@@ -318,6 +361,24 @@ const _buildBindings = (folder: FolderApi, object: any, bindings: any, params: C
           view: 'separator'
         });
     }
+  }
+
+  // TODO: try to put this in Object3DBindings, same for other sections in this function (we need some new logic for that)
+  // morphTargetInfluences
+  if (Object.keys(object.morphTargetDictionary || {})?.length) {
+    const morphFolder = folder.addFolder({
+      title: 'Morph Targets',
+      expanded: false
+    });
+    Object.keys(object.morphTargetDictionary).forEach((key: string, index: number) => {
+      const binding = morphFolder.addBinding(object.morphTargetInfluences, index, {
+        label: key,
+        min: 0,
+        max: 1,
+        ...numberCommon
+      });
+      tweakBindingView(binding);
+    });
   }
 
   // build descendants tree excluding the scene

@@ -1,4 +1,4 @@
-import { ReactNode, MouseEvent } from 'react';
+import { ReactNode, MouseEvent, useState, useEffect } from 'react';
 import { Canvas } from '@react-three/fiber';
 
 import { useAppStore } from './store';
@@ -6,13 +6,7 @@ import { useAppStore } from './store';
 import { CPanel } from 'lib/App/CPanel/CPanel';
 import { KeyListener } from 'lib/App/KeyListener';
 
-import {
-  SetUp,
-  orthographicCamera,
-  perspectiveCamera,
-  cameraToUseOnPlay, // this is s let variable that is updated at runtime, the new value is propagated here
-  threeScene
-} from 'lib/App/SetUp/SetUp';
+import { SetUp, threeScene } from 'lib/App/SetUp/SetUp';
 
 interface AppProps {
   children: ReactNode;
@@ -22,8 +16,12 @@ const preventContextMenu = (evt: MouseEvent) => {
 };
 
 export function App(props: AppProps) {
-  const cameraType = useAppStore((state) => state.cameraType);
-  const isPlaying = useAppStore((state) => state.isPlaying);
+  const currentCameraStateFake = useAppStore((state) => state.currentCameraStateFake);
+  const [camera, setCamera] = useState(threeScene.__inspectorData.currentCamera);
+
+  useEffect(() => {
+    setCamera(threeScene.__inspectorData.currentCamera);
+  }, [currentCameraStateFake]);
 
   /*
   shadow types
@@ -40,12 +38,6 @@ export function App(props: AppProps) {
 
   // R3F takes care of adding/removing the camera from the scene
   // and propagating it to useThree hook
-  const camera =
-    isPlaying && cameraToUseOnPlay
-      ? cameraToUseOnPlay
-      : cameraType === 'perspective'
-        ? perspectiveCamera
-        : orthographicCamera;
 
   return (
     <Canvas

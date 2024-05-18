@@ -19,4 +19,8 @@ export type __inspectorData = {
   isInspectable: boolean;
   useOnPlay: boolean;
   isPicker: boolean;
+  defaultPerspectiveCamera: THREE.PerspectiveCamera;
+  defaultOrthographicCamera: THREE.OrthographicCamera;
+  currentCamera: THREE.Camera;
+  cameraToUseOnPlay: THREE.Camera;
 };

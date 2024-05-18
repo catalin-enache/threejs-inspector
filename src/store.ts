@@ -64,6 +64,8 @@ export interface AppStore {
   cameraType: 'perspective' | 'orthographic';
   setCameraType: (type: 'perspective' | 'orthographic') => void;
   toggleCameraType: () => void;
+  currentCameraStateFake: number;
+  triggerCurrentCameraChanged: () => void;
   attachDefaultControllersToPlayingCamera: boolean;
   setAttachDefaultControllersToPlayingCamera: (attachDefaultControllersToPlayingCamera: boolean) => void;
   toggleAttachDefaultControllersToPlayingCamera: () => void;
@@ -228,6 +230,12 @@ export const useAppStore = create<AppStore>()(
       if (get().isDraggingTransformControls) return;
       set((state) => ({
         cameraType: state.cameraType === 'perspective' ? 'orthographic' : 'perspective'
+      }));
+    },
+    currentCameraStateFake: 0,
+    triggerCurrentCameraChanged: () => {
+      set((state) => ({
+        currentCameraStateFake: state.currentCameraStateFake < 100 ? state.currentCameraStateFake + 1 : 0
       }));
     },
     attachDefaultControllersToPlayingCamera: true,

@@ -248,12 +248,13 @@ const handleObjectAdded = (object: THREE.Object3D) => {
     // R3F does not add cameras to scene, so this check is not needed, but checking just in case
     if (object !== perspectiveCamera && object !== orthographicCamera) {
       makeHelpers(object); // will enrich object with helper and picker
-    } else if (
+    }
+    if (
       (object instanceof THREE.PerspectiveCamera || object instanceof THREE.OrthographicCamera) &&
       __inspectorData.useOnPlay
     ) {
       // if multiple cameras are useOnPlay, only the last one will be considered
-      cameraToUseOnPlay = object as THREE.PerspectiveCamera | THREE.OrthographicCamera;
+      threeScene.__inspectorData.cameraToUseOnPlay = object as THREE.PerspectiveCamera | THREE.OrthographicCamera;
     }
     // picker appears in __inspectorData after makeHelpers
     if (__inspectorData.picker) {
@@ -317,7 +318,6 @@ THREE.Object3D.prototype.remove = (function () {
 // ----------------------------------- Cameras >> -----------------------------------
 
 // TODO: when using different camera on play we might/will need different controller
-export let cameraToUseOnPlay: THREE.PerspectiveCamera | THREE.OrthographicCamera | null = null;
 
 const cameraPosition = new THREE.Vector3(0, 0, 12);
 const perspectiveCamera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 100);
@@ -330,7 +330,14 @@ orthographicCamera.position.copy(cameraPosition);
 orthographicCamera.zoom = 45;
 orthographicCamera.name = 'DefaultOrthographicCamera';
 
+threeScene.__inspectorData.defaultPerspectiveCamera = perspectiveCamera;
+threeScene.__inspectorData.defaultOrthographicCamera = orthographicCamera;
+threeScene.__inspectorData.currentCamera =
+  useAppStore.getState().cameraType === 'perspective' ? perspectiveCamera : orthographicCamera;
+threeScene.__inspectorData.cameraToUseOnPlay = null;
+
 const updateCameras = () => {
+  const cameraToUseOnPlay = threeScene.__inspectorData.cameraToUseOnPlay;
   perspectiveCamera.aspect = window.innerWidth / window.innerHeight;
   perspectiveCamera.updateProjectionMatrix();
 
@@ -362,6 +369,8 @@ const SetUp = () => {
   const { camera, gl, raycaster, pointer, scene } = useThree();
 
   const isEditorMode = useAppStore((state) => state.showGizmos || state.cPanelVisible);
+  const isPlaying = useAppStore((state) => state.isPlaying);
+  const cameraType = useAppStore((state) => state.cameraType);
 
   const selectedObjectUUID = useAppStore((state) => state.selectedObjectUUID);
   const setSelectedObject = useAppStore((state) => state.setSelectedObject);
@@ -380,6 +389,20 @@ const SetUp = () => {
   const hitsRef = useRef<THREE.Intersection<THREE.Object3D>[]>([]);
   const lastHitRef = useRef<THREE.Intersection<THREE.Object3D> | null>(null);
   const targetPositionRef = useRef<THREE.Vector3>(new THREE.Vector3());
+
+  useEffect(() => {
+    const sceneInspectorData = threeScene.__inspectorData;
+    if (isPlaying) {
+      sceneInspectorData.currentCamera = sceneInspectorData.cameraToUseOnPlay || sceneInspectorData.currentCamera;
+    } else {
+      sceneInspectorData.currentCamera =
+        cameraType === 'perspective'
+          ? sceneInspectorData.defaultPerspectiveCamera
+          : sceneInspectorData.defaultOrthographicCamera;
+    }
+    // notify main App to re-render and send new camera into canvas
+    useAppStore.getState().triggerCurrentCameraChanged();
+  }, [isPlaying, cameraType]);
 
   useEffect(() => {
     // @ts-ignore - just attach them for referencing elsewhere

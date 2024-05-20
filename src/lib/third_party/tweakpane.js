@@ -1,6 +1,6 @@
 /*! Tweakpane 4.0.3 (c) 2016 cocopon, licensed under the MIT license. */
 import { isArray, isObject as ___ } from 'lib/utils';
-import { isTexture, isTextureImage } from 'lib/types';
+import { isTexture, isTextureImage } from 'src/types';
 const isObject = (value) => {
   return (
     value !== null && typeof value === 'object' // && // compatible with Tweakpane if needed
@@ -64,10 +64,8 @@ function isBinding(value) {
 const CREATE_MESSAGE_MAP = {
   alreadydisposed: () => 'View has been already disposed',
   invalidparams: (context) => `Invalid parameters for '${context.name}'`,
-  nomatchingcontroller: (context) =>
-    `No matching controller for '${context.key}'`,
-  nomatchingview: (context) =>
-    `No matching view for '${JSON.stringify(context.params)}'`,
+  nomatchingcontroller: (context) => `No matching controller for '${context.key}'`,
+  nomatchingview: (context) => `No matching view for '${JSON.stringify(context.params)}'`,
   notbindable: () => `Value is not bindable`,
   notcompatible: (context) => `Not compatible with  plugin '${context.id}'`,
   propertynotfound: (context) => `Property '${context.name}' not found`,
@@ -104,8 +102,7 @@ class TpError {
   constructor(config) {
     var _a;
     this.message =
-      (_a = CREATE_MESSAGE_MAP[config.type](forceCast(config.context))) !==
-        null && _a !== void 0
+      (_a = CREATE_MESSAGE_MAP[config.type](forceCast(config.context))) !== null && _a !== void 0
         ? _a
         : 'Unexpected error';
     this.name = this.constructor.name;
@@ -162,10 +159,7 @@ class Emitter {
     observers.push({
       handler: handler,
       key:
-        (_a =
-          opt_options === null || opt_options === void 0
-            ? void 0
-            : opt_options.key) !== null && _a !== void 0
+        (_a = opt_options === null || opt_options === void 0 ? void 0 : opt_options.key) !== null && _a !== void 0
           ? _a
           : handler
     });
@@ -194,11 +188,9 @@ class Emitter {
 class ComplexValue {
   constructor(initialValue, config) {
     var _a;
-    this.constraint_ =
-      config === null || config === void 0 ? void 0 : config.constraint;
+    this.constraint_ = config === null || config === void 0 ? void 0 : config.constraint;
     this.equals_ =
-      (_a = config === null || config === void 0 ? void 0 : config.equals) !==
-        null && _a !== void 0
+      (_a = config === null || config === void 0 ? void 0 : config.equals) !== null && _a !== void 0
         ? _a
         : (v1, v2) => v1 === v2;
     this.emitter = new Emitter();
@@ -224,9 +216,7 @@ class ComplexValue {
             forceEmit: false,
             last: true
           };
-    const constrainedValue = this.constraint_
-      ? this.constraint_.constrain(rawValue)
-      : rawValue;
+    const constrainedValue = this.constraint_ ? this.constraint_.constrain(rawValue) : rawValue;
     const prevValue = this.rawValue_;
     const changed = !this.equals_(prevValue, constrainedValue);
     if (!changed && !opts.forceEmit) {
@@ -297,22 +287,15 @@ class ReadonlyPrimitiveValue {
     return this.value_.rawValue;
   }
   onValueBeforeChange_(ev) {
-    this.emitter.emit(
-      'beforechange',
-      Object.assign(Object.assign({}, ev), { sender: this })
-    );
+    this.emitter.emit('beforechange', Object.assign(Object.assign({}, ev), { sender: this }));
   }
   onValueChange_(ev) {
-    this.emitter.emit(
-      'change',
-      Object.assign(Object.assign({}, ev), { sender: this })
-    );
+    this.emitter.emit('change', Object.assign(Object.assign({}, ev), { sender: this }));
   }
 }
 
 function createValue(initialValue, config) {
-  const constraint =
-    config === null || config === void 0 ? void 0 : config.constraint;
+  const constraint = config === null || config === void 0 ? void 0 : config.constraint;
   const equals = config === null || config === void 0 ? void 0 : config.equals;
   if (!constraint && !equals) {
     return new PrimitiveValue(initialValue);
@@ -451,13 +434,7 @@ class BinaryOperationNode {
     return op(this.left.evaluate(), this.right.evaluate());
   }
   toString() {
-    return [
-      'b(',
-      this.left.toString(),
-      this.operator,
-      this.right.toString(),
-      ')'
-    ].join(' ');
+    return ['b(', this.left.toString(), this.operator, this.right.toString(), ')'].join(' ');
   }
 }
 const UNARY_OPERATION_MAP = {
@@ -583,11 +560,7 @@ function readDecimalLiteral3(text, cursor) {
   }
   return dil + readExponentPart(text, cursor);
 }
-const readDecimalLiteral = combineReader([
-  readDecimalLiteral1,
-  readDecimalLiteral2,
-  readDecimalLiteral3
-]);
+const readDecimalLiteral = combineReader([readDecimalLiteral1, readDecimalLiteral2, readDecimalLiteral3]);
 function parseBinaryDigits(text, cursor) {
   var _a;
   const m = text.substr(cursor).match(/^[01]+/);
@@ -644,10 +617,7 @@ const readNonDecimalIntegerLiteral = combineReader([
   readOctalIntegerLiteral,
   readHexIntegerLiteral
 ]);
-const readNumericLiteral = combineReader([
-  readNonDecimalIntegerLiteral,
-  readDecimalLiteral
-]);
+const readNumericLiteral = combineReader([readNonDecimalIntegerLiteral, readDecimalLiteral]);
 
 function parseLiteral(text, cursor) {
   const num = readNumericLiteral(text, cursor);
@@ -684,9 +654,7 @@ function parseParenthesizedExpression(text, cursor) {
 }
 function parsePrimaryExpression(text, cursor) {
   var _a;
-  return (_a = parseLiteral(text, cursor)) !== null && _a !== void 0
-    ? _a
-    : parseParenthesizedExpression(text, cursor);
+  return (_a = parseLiteral(text, cursor)) !== null && _a !== void 0 ? _a : parseParenthesizedExpression(text, cursor);
 }
 function parseUnaryExpression(text, cursor) {
   const expr = parsePrimaryExpression(text, cursor);
@@ -780,10 +748,7 @@ function parseEcmaNumberExpression(text) {
 function parseNumber(text) {
   var _a;
   const r = parseEcmaNumberExpression(text);
-  return (_a = r === null || r === void 0 ? void 0 : r.evaluate()) !== null &&
-    _a !== void 0
-    ? _a
-    : null;
+  return (_a = r === null || r === void 0 ? void 0 : r.evaluate()) !== null && _a !== void 0 ? _a : null;
 }
 function numberFromUnknown(value) {
   if (typeof value === 'number') {
@@ -822,9 +787,7 @@ function loopRange(value, max) {
   return ((value % max) + max) % max;
 }
 function getSuitableDecimalDigits(params, rawValue) {
-  return !isEmpty(params.step)
-    ? getDecimalDigits(params.step)
-    : Math.max(getDecimalDigits(rawValue), 2);
+  return !isEmpty(params.step) ? getDecimalDigits(params.step) : Math.max(getDecimalDigits(rawValue), 2);
 }
 function getSuitableKeyScale(params) {
   var _a;
@@ -832,9 +795,7 @@ function getSuitableKeyScale(params) {
 }
 function getSuitablePointerScale(params, rawValue) {
   var _a;
-  const base = Math.abs(
-    (_a = params.step) !== null && _a !== void 0 ? _a : rawValue
-  );
+  const base = Math.abs((_a = params.step) !== null && _a !== void 0 ? _a : rawValue);
   return base === 0 ? 0.1 : Math.pow(10, Math.floor(Math.log10(base)) - 1);
 }
 function createStepConstraint(params, initialValue) {
@@ -865,14 +826,9 @@ function createNumberTextPropsObject(params, initialValue) {
       (_a = params.format) !== null && _a !== void 0
         ? _a
         : createNumberFormatter(getSuitableDecimalDigits(params, initialValue)),
-    keyScale:
-      (_b = params.keyScale) !== null && _b !== void 0
-        ? _b
-        : getSuitableKeyScale(params),
+    keyScale: (_b = params.keyScale) !== null && _b !== void 0 ? _b : getSuitableKeyScale(params),
     pointerScale:
-      (_c = params.pointerScale) !== null && _c !== void 0
-        ? _c
-        : getSuitablePointerScale(params, initialValue)
+      (_c = params.pointerScale) !== null && _c !== void 0 ? _c : getSuitablePointerScale(params, initialValue)
   };
 }
 function createNumberTextInputParamsParser(p) {
@@ -889,9 +845,7 @@ function createNumberTextInputParamsParser(p) {
 function createPointAxis(config) {
   return {
     constraint: config.constraint,
-    textProps: ValueMap.fromObject(
-      createNumberTextPropsObject(config.params, config.initialValue)
-    )
+    textProps: ValueMap.fromObject(createNumberTextPropsObject(config.params, config.initialValue))
   };
 }
 
@@ -1000,14 +954,7 @@ class BindingApi extends BladeApi {
   }
   onValueChange_(ev) {
     const value = this.controller.value;
-    this.emitter_.emit(
-      'change',
-      new TpChangeEvent(
-        this,
-        forceCast(value.binding.target.read()),
-        ev.options.last
-      )
-    );
+    this.emitter_.emit('change', new TpChangeEvent(this, forceCast(value.binding.target.read()), ev.options.last));
   }
 }
 
@@ -1037,17 +984,11 @@ class InputBindingValue {
     this.binding.write(this.value_.rawValue);
   }
   onValueBeforeChange_(ev) {
-    this.emitter.emit(
-      'beforechange',
-      Object.assign(Object.assign({}, ev), { sender: this })
-    );
+    this.emitter.emit('beforechange', Object.assign(Object.assign({}, ev), { sender: this }));
   }
   onValueChange_(ev) {
     this.push();
-    this.emitter.emit(
-      'change',
-      Object.assign(Object.assign({}, ev), { sender: this })
-    );
+    this.emitter.emit('change', Object.assign(Object.assign({}, ev), { sender: this }));
   }
 }
 function isInputBindingValue(v) {
@@ -1066,9 +1007,7 @@ function parseObject(value, keyToParserMap) {
     }
     const parser = keyToParserMap[key];
     const result = parser(value[key]);
-    return result.succeeded
-      ? Object.assign(Object.assign({}, tmp), { [key]: result.value })
-      : undefined;
+    return result.succeeded ? Object.assign(Object.assign({}, tmp), { [key]: result.value }) : undefined;
   }, {});
   return forceCast(result);
 }
@@ -1119,22 +1058,11 @@ function createMicroParserBuilder(parse) {
 function createMicroParserBuilders(optional) {
   return {
     custom: (parse) => createMicroParserBuilder(parse)(optional),
-    boolean: createMicroParserBuilder((v) =>
-      typeof v === 'boolean' ? v : undefined
-    )(optional),
-    number: createMicroParserBuilder((v) =>
-      typeof v === 'number' ? v : undefined
-    )(optional),
-    string: createMicroParserBuilder((v) =>
-      typeof v === 'string' ? v : undefined
-    )(optional),
-    function: createMicroParserBuilder((v) =>
-      typeof v === 'function' ? v : undefined
-    )(optional),
-    constant: (value) =>
-      createMicroParserBuilder((v) => (v === value ? value : undefined))(
-        optional
-      ),
+    boolean: createMicroParserBuilder((v) => (typeof v === 'boolean' ? v : undefined))(optional),
+    number: createMicroParserBuilder((v) => (typeof v === 'number' ? v : undefined))(optional),
+    string: createMicroParserBuilder((v) => (typeof v === 'string' ? v : undefined))(optional),
+    function: createMicroParserBuilder((v) => (typeof v === 'function' ? v : undefined))(optional),
+    constant: (value) => createMicroParserBuilder((v) => (v === value ? value : undefined))(optional),
     raw: createMicroParserBuilder((v) => v)(optional),
     object: (keyToParserMap) =>
       createMicroParserBuilder((v) => {
@@ -1172,12 +1100,7 @@ function importBladeState(state, superImport, parser, callback) {
 function exportBladeState(superExport, thisState) {
   var _a;
   return deepMerge(
-    (_a =
-      superExport === null || superExport === void 0
-        ? void 0
-        : superExport()) !== null && _a !== void 0
-      ? _a
-      : {},
+    (_a = superExport === null || superExport === void 0 ? void 0 : superExport()) !== null && _a !== void 0 ? _a : {},
     thisState
   );
 }
@@ -1229,8 +1152,7 @@ function getCanvasContext(canvasElement) {
 const ICON_ID_TO_INNER_HTML_MAP = {
   check: '<path d="M2 8l4 4l8 -8"/>',
   dropdown: '<path d="M5 7h6l-3 3 z"/>',
-  p2dpad:
-    '<path d="M8 4v8"/><path d="M4 8h8"/><circle cx="12" cy="12" r="1.2"/>'
+  p2dpad: '<path d="M8 4v8"/><path d="M4 8h8"/><circle cx="12" cy="12" r="1.2"/>'
 };
 function createSvgIconElement(document, iconId) {
   const elem = document.createElementNS(SVG_NS, 'svg');
@@ -1412,10 +1334,7 @@ class BladeController {
     );
   }
   exportState() {
-    return exportBladeState(
-      null,
-      Object.assign({}, this.viewProps.exportState())
-    );
+    return exportBladeState(null, Object.assign({}, this.viewProps.exportState()));
   }
 }
 
@@ -1453,10 +1372,8 @@ class LabeledValueBladeController extends BladeController {
           super.importState(s) &&
           this.labelController.importProps(s) &&
           ((_c =
-            (_b = (_a = this.valueController).importProps) === null ||
-            _b === void 0
-              ? void 0
-              : _b.call(_a, state)) !== null && _c !== void 0
+            (_b = (_a = this.valueController).importProps) === null || _b === void 0 ? void 0 : _b.call(_a, state)) !==
+            null && _c !== void 0
             ? _c
             : true)
         );
@@ -1477,15 +1394,9 @@ class LabeledValueBladeController extends BladeController {
     return exportBladeState(
       () => super.exportState(),
       Object.assign(
-        Object.assign(
-          { value: this.value.rawValue },
-          this.labelController.exportProps()
-        ),
-        (_c =
-          (_b = (_a = this.valueController).exportProps) === null ||
-          _b === void 0
-            ? void 0
-            : _b.call(_a)) !== null && _c !== void 0
+        Object.assign({ value: this.value.rawValue }, this.labelController.exportProps()),
+        (_c = (_b = (_a = this.valueController).exportProps) === null || _b === void 0 ? void 0 : _b.call(_a)) !==
+          null && _c !== void 0
           ? _c
           : {}
       )
@@ -1600,25 +1511,16 @@ class MonitorBindingValue {
     this.value_.setRawValue(rawValue, options);
   }
   fetch() {
-    this.value_.rawValue = createPushedBuffer(
-      this.value_.rawValue,
-      this.binding.read()
-    );
+    this.value_.rawValue = createPushedBuffer(this.value_.rawValue, this.binding.read());
   }
   onTick_() {
     this.fetch();
   }
   onValueBeforeChange_(ev) {
-    this.emitter.emit(
-      'beforechange',
-      Object.assign(Object.assign({}, ev), { sender: this })
-    );
+    this.emitter.emit('beforechange', Object.assign(Object.assign({}, ev), { sender: this }));
   }
   onValueChange_(ev) {
-    this.emitter.emit(
-      'change',
-      Object.assign(Object.assign({}, ev), { sender: this })
-    );
+    this.emitter.emit('change', Object.assign(Object.assign({}, ev), { sender: this }));
   }
 }
 function isMonitorBindingValue(v) {
@@ -1651,10 +1553,7 @@ class ButtonApi extends BladeApi {
   }
   get title() {
     var _a;
-    return (_a = this.controller.buttonController.props.get('title')) !==
-      null && _a !== void 0
-      ? _a
-      : '';
+    return (_a = this.controller.buttonController.props.get('title')) !== null && _a !== void 0 ? _a : '';
   }
   set title(title) {
     this.controller.buttonController.props.set('title', title);
@@ -1770,10 +1669,7 @@ class ButtonBladeController extends BladeController {
   importState(state) {
     return importBladeState(
       state,
-      (s) =>
-        super.importState(s) &&
-        this.buttonController.importProps(s) &&
-        this.labelController.importProps(s),
+      (s) => super.importState(s) && this.buttonController.importProps(s) && this.labelController.importProps(s),
       () => ({}),
       () => true
     );
@@ -1781,10 +1677,7 @@ class ButtonBladeController extends BladeController {
   exportState() {
     return exportBladeState(
       () => super.exportState(),
-      Object.assign(
-        Object.assign({}, this.buttonController.exportProps()),
-        this.labelController.exportProps()
-      )
+      Object.assign(Object.assign({}, this.buttonController.exportProps()), this.labelController.exportProps())
     );
   }
 }
@@ -1796,8 +1689,7 @@ class Semver {
     this.major = parseInt(coreComps[0], 10);
     this.minor = parseInt(coreComps[1], 10);
     this.patch = parseInt(coreComps[2], 10);
-    this.prerelease =
-      prerelease !== null && prerelease !== void 0 ? prerelease : null;
+    this.prerelease = prerelease !== null && prerelease !== void 0 ? prerelease : null;
   }
   toString() {
     const core = [this.major, this.minor, this.patch].join('.');
@@ -1843,19 +1735,13 @@ const ButtonBladePlugin = createPlugin({
 });
 
 function addButtonAsBlade(api, params) {
-  return api.addBlade(
-    Object.assign(Object.assign({}, params), { view: 'button' })
-  );
+  return api.addBlade(Object.assign(Object.assign({}, params), { view: 'button' }));
 }
 function addFolderAsBlade(api, params) {
-  return api.addBlade(
-    Object.assign(Object.assign({}, params), { view: 'folder' })
-  );
+  return api.addBlade(Object.assign(Object.assign({}, params), { view: 'folder' }));
 }
 function addTabAsBlade(api, params) {
-  return api.addBlade(
-    Object.assign(Object.assign({}, params), { view: 'tab' })
-  );
+  return api.addBlade(Object.assign(Object.assign({}, params), { view: 'tab' }));
 }
 
 function isRefreshable(value) {
@@ -1884,14 +1770,9 @@ class RackApi {
     return this.controller_.rack.children.map((bc) => this.pool_.createApi(bc));
   }
   addBinding(object, key, opt_params) {
-    const params =
-      opt_params !== null && opt_params !== void 0 ? opt_params : {};
+    const params = opt_params !== null && opt_params !== void 0 ? opt_params : {};
     const doc = this.controller_.element.ownerDocument;
-    const bc = this.pool_.createBinding(
-      doc,
-      createBindingTarget(object, key),
-      params
-    );
+    const bc = this.pool_.createBinding(doc, createBindingTarget(object, key), params);
     const api = this.pool_.createBindingApi(bc);
     return this.add(api, params.index);
   }
@@ -1948,11 +1829,7 @@ class RackApi {
     const binding = isBindingValue(bc.value) ? bc.value.binding : null;
     this.emitter_.emit(
       'change',
-      new TpChangeEvent(
-        api,
-        binding ? binding.target.read() : bc.value.rawValue,
-        ev.options.last
-      )
+      new TpChangeEvent(api, binding ? binding.target.read() : bc.value.rawValue, ev.options.last)
     );
   }
 }
@@ -2100,9 +1977,7 @@ function findValueBladeController(bcs, v) {
   return null;
 }
 function findSubBladeControllerSet(bc) {
-  return isContainerBladeController(bc)
-    ? bc.rackController.rack['bcSet_']
-    : null;
+  return isContainerBladeController(bc) ? bc.rackController.rack['bcSet_'] : null;
 }
 class Rack {
   constructor(config) {
@@ -2120,9 +1995,7 @@ class Rack {
     this.blade_ = (_a = config.blade) !== null && _a !== void 0 ? _a : null;
     (_b = this.blade_) === null || _b === void 0
       ? void 0
-      : _b
-          .value('positions')
-          .emitter.on('change', this.onBladePositionsChange_);
+      : _b.value('positions').emitter.on('change', this.onBladePositionsChange_);
     this.viewProps = config.viewProps;
     this.bcSet_ = new NestedOrderedSet(findSubBladeControllerSet);
     this.bcSet_.emitter.on('add', this.onSetAdd_);
@@ -2158,9 +2031,7 @@ class Rack {
     }
     const bc = ev.item;
     bc.viewProps.emitter.on('change', this.onChildViewPropsChange_);
-    bc.blade
-      .value('positions')
-      .emitter.on('change', this.onChildPositionsChange_);
+    bc.blade.value('positions').emitter.on('change', this.onChildPositionsChange_);
     bc.viewProps.handleDispose(this.onChildDispose_);
     if (isValueBladeController(bc)) {
       bc.value.emitter.on('change', this.onChildValueChange_);
@@ -2197,19 +2068,14 @@ class Rack {
     }
   }
   updatePositions_() {
-    const visibleItems = this.bcSet_.items.filter(
-      (bc) => !bc.viewProps.get('hidden')
-    );
+    const visibleItems = this.bcSet_.items.filter((bc) => !bc.viewProps.get('hidden'));
     const firstVisibleItem = visibleItems[0];
     const lastVisibleItem = visibleItems[visibleItems.length - 1];
     this.bcSet_.items.forEach((bc) => {
       const ps = [];
       if (bc === firstVisibleItem) {
         ps.push('first');
-        if (
-          !this.blade_ ||
-          this.blade_.get('positions').includes('veryfirst')
-        ) {
+        if (!this.blade_ || this.blade_.get('positions').includes('veryfirst')) {
           ps.push('veryfirst');
         }
       }
@@ -2243,10 +2109,7 @@ class Rack {
     });
   }
   onChildValueChange_(ev) {
-    const bc = findValueBladeController(
-      this.find(isValueBladeController),
-      ev.sender
-    );
+    const bc = findValueBladeController(this.find(isValueBladeController), ev.sender);
     if (!bc) {
       console.log('dispose onChildValueChange_ !bc', ev);
       throw TpError.alreadyDisposed();
@@ -2334,9 +2197,7 @@ class Foldable extends ValueMap {
   }
   get styleExpanded() {
     var _a;
-    return (_a = this.get('temporaryExpanded')) !== null && _a !== void 0
-      ? _a
-      : this.get('expanded');
+    return (_a = this.get('temporaryExpanded')) !== null && _a !== void 0 ? _a : this.get('expanded');
   }
   get styleHeight() {
     if (!this.styleExpanded) {
@@ -2476,22 +2337,13 @@ const bladeContainerClassName = ClassName('cnt');
 class FolderView {
   constructor(doc, config) {
     var _a;
-    this.className_ = ClassName(
-      (_a = config.viewName) !== null && _a !== void 0 ? _a : 'fld'
-    );
+    this.className_ = ClassName((_a = config.viewName) !== null && _a !== void 0 ? _a : 'fld');
     this.element = doc.createElement('div');
     this.element.classList.add(this.className_(), bladeContainerClassName());
     config.viewProps.bindClassModifiers(this.element);
     this.foldable_ = config.foldable;
-    this.foldable_.bindExpandedClass(
-      this.element,
-      this.className_(undefined, 'expanded')
-    );
-    bindValueMap(
-      this.foldable_,
-      'completed',
-      valueToClassName(this.element, this.className_(undefined, 'cpl'))
-    );
+    this.foldable_.bindExpandedClass(this.element, this.className_(undefined, 'expanded'));
+    bindValueMap(this.foldable_, 'completed', valueToClassName(this.element, this.className_(undefined, 'cpl')));
     const buttonElem = doc.createElement('button');
     buttonElem.classList.add(this.className_('b'));
     bindValueMap(config.props, 'title', (title) => {
@@ -2525,9 +2377,7 @@ class FolderView {
 class FolderController extends ContainerBladeController {
   constructor(doc, config) {
     var _a;
-    const foldable = Foldable.create(
-      (_a = config.expanded) !== null && _a !== void 0 ? _a : true
-    );
+    const foldable = Foldable.create((_a = config.expanded) !== null && _a !== void 0 ? _a : true);
     const view = new FolderView(doc, {
       foldable: foldable,
       props: config.props,
@@ -2625,33 +2475,22 @@ class ViewProps extends ValueMap {
     super(valueMap);
     this.onDisabledChange_ = this.onDisabledChange_.bind(this);
     this.onParentChange_ = this.onParentChange_.bind(this);
-    this.onParentGlobalDisabledChange_ =
-      this.onParentGlobalDisabledChange_.bind(this);
-    [this.globalDisabled_, this.setGlobalDisabled_] = createReadonlyValue(
-      createValue(this.getGlobalDisabled_())
-    );
+    this.onParentGlobalDisabledChange_ = this.onParentGlobalDisabledChange_.bind(this);
+    [this.globalDisabled_, this.setGlobalDisabled_] = createReadonlyValue(createValue(this.getGlobalDisabled_()));
     this.value('disabled').emitter.on('change', this.onDisabledChange_);
     this.value('parent').emitter.on('change', this.onParentChange_);
     (_a = this.get('parent')) === null || _a === void 0
       ? void 0
-      : _a.globalDisabled.emitter.on(
-          'change',
-          this.onParentGlobalDisabledChange_
-        );
+      : _a.globalDisabled.emitter.on('change', this.onParentGlobalDisabledChange_);
   }
   static create(opt_initialValue) {
     var _a, _b, _c;
-    const initialValue =
-      opt_initialValue !== null && opt_initialValue !== void 0
-        ? opt_initialValue
-        : {};
+    const initialValue = opt_initialValue !== null && opt_initialValue !== void 0 ? opt_initialValue : {};
     return new ViewProps(
       ValueMap.createCore({
-        disabled:
-          (_a = initialValue.disabled) !== null && _a !== void 0 ? _a : false,
+        disabled: (_a = initialValue.disabled) !== null && _a !== void 0 ? _a : false,
         disposed: false,
-        hidden:
-          (_b = initialValue.hidden) !== null && _b !== void 0 ? _b : false,
+        hidden: (_b = initialValue.hidden) !== null && _b !== void 0 ? _b : false,
         parent: (_c = initialValue.parent) !== null && _c !== void 0 ? _c : null
       })
     );
@@ -2709,16 +2548,10 @@ class ViewProps extends ValueMap {
     const prevParent = ev.previousRawValue;
     prevParent === null || prevParent === void 0
       ? void 0
-      : prevParent.globalDisabled.emitter.off(
-          'change',
-          this.onParentGlobalDisabledChange_
-        );
+      : prevParent.globalDisabled.emitter.off('change', this.onParentGlobalDisabledChange_);
     (_a = this.get('parent')) === null || _a === void 0
       ? void 0
-      : _a.globalDisabled.emitter.on(
-          'change',
-          this.onParentGlobalDisabledChange_
-        );
+      : _a.globalDisabled.emitter.on('change', this.onParentGlobalDisabledChange_);
     this.updateGlobalDisabled_();
   }
 }
@@ -2895,10 +2728,7 @@ class TabApi extends ContainerBladeApi {
 class TabPageApi extends ContainerBladeApi {
   get title() {
     var _a;
-    return (_a = this.controller.itemController.props.get('title')) !== null &&
-      _a !== void 0
-      ? _a
-      : '';
+    return (_a = this.controller.itemController.props.get('title')) !== null && _a !== void 0 ? _a : '';
   }
   set title(title) {
     this.controller.itemController.props.set('title', title);
@@ -2944,10 +2774,7 @@ class Tab {
     this.items_ = [];
   }
   add(item, opt_index) {
-    const index =
-      opt_index !== null && opt_index !== void 0
-        ? opt_index
-        : this.items_.length;
+    const index = opt_index !== null && opt_index !== void 0 ? opt_index : this.items_.length;
     this.items_.splice(index, 0, item);
     item.emitter.on('change', this.onItemSelectedChange_);
     this.keepSelection_();
@@ -3000,10 +2827,7 @@ class TabView {
     this.element = doc.createElement('div');
     this.element.classList.add(cn$l(), bladeContainerClassName());
     config.viewProps.bindClassModifiers(this.element);
-    bindValue(
-      config.empty,
-      valueToClassName(this.element, cn$l(undefined, 'nop'))
-    );
+    bindValue(config.empty, valueToClassName(this.element, cn$l(undefined, 'nop')));
     const titleElem = doc.createElement('div');
     titleElem.classList.add(cn$l('t'));
     this.element.appendChild(titleElem);
@@ -3052,11 +2876,7 @@ class TabController extends ContainerBladeController {
       return;
     }
     const pc = ev.bladeController;
-    insertElementAt(
-      this.view.itemsElement,
-      pc.itemController.view.element,
-      ev.index
-    );
+    insertElementAt(this.view.itemsElement, pc.itemController.view.element, ev.index);
     pc.itemController.viewProps.set('parent', this.viewProps);
     this.tab.add(pc.props.value('selected'));
   }
@@ -3130,8 +2950,7 @@ function createBladeController(plugin, args) {
     document: args.document,
     params: forceCast(
       Object.assign(Object.assign({}, ac.params), {
-        disabled:
-          params === null || params === void 0 ? void 0 : params.disabled,
+        disabled: params === null || params === void 0 ? void 0 : params.disabled,
         hidden: params === null || params === void 0 ? void 0 : params.hidden
       })
     ),
@@ -3299,9 +3118,7 @@ function normalizeListOptions(options) {
   return items;
 }
 function createListConstraint(options) {
-  return !isEmpty(options)
-    ? new ListConstraint(normalizeListOptions(forceCast(options)))
-    : null;
+  return !isEmpty(options) ? new ListConstraint(normalizeListOptions(forceCast(options))) : null;
 }
 
 const cn$k = ClassName('lst');
@@ -3357,8 +3174,7 @@ class ListController {
   }
   onSelectChange_(e) {
     const selectElem = forceCast(e.currentTarget);
-    this.value.rawValue =
-      this.props.get('options')[selectElem.selectedIndex].value;
+    this.value.rawValue = this.props.get('options')[selectElem.selectedIndex].value;
   }
   importProps(state) {
     return importBladeState(
@@ -3386,10 +3202,7 @@ class PopupView {
     this.element = doc.createElement('div');
     this.element.classList.add(cn$j());
     config.viewProps.bindClassModifiers(this.element);
-    bindValue(
-      config.shows,
-      valueToClassName(this.element, cn$j(undefined, 'v'))
-    );
+    bindValue(config.shows, valueToClassName(this.element, cn$j(undefined, 'v')));
   }
 }
 
@@ -3505,24 +3318,15 @@ function connectValues({ primary, secondary, forward, backward }) {
   }
   primary.emitter.on('change', (ev) => {
     preventFeedback(() => {
-      secondary.setRawValue(
-        forward(primary.rawValue, secondary.rawValue),
-        ev.options
-      );
+      secondary.setRawValue(forward(primary.rawValue, secondary.rawValue), ev.options);
     });
   });
   secondary.emitter.on('change', (ev) => {
     preventFeedback(() => {
-      primary.setRawValue(
-        backward(primary.rawValue, secondary.rawValue),
-        ev.options
-      );
+      primary.setRawValue(backward(primary.rawValue, secondary.rawValue), ev.options);
     });
     preventFeedback(() => {
-      secondary.setRawValue(
-        forward(primary.rawValue, secondary.rawValue),
-        ev.options
-      );
+      secondary.setRawValue(forward(primary.rawValue, secondary.rawValue), ev.options);
     });
   });
   preventFeedback(() => {
@@ -3570,14 +3374,8 @@ function computeOffset$1(ev, elem) {
   const win = elem.ownerDocument.defaultView;
   const rect = elem.getBoundingClientRect();
   return {
-    x:
-      ev.pageX -
-      (((_a = win && win.scrollX) !== null && _a !== void 0 ? _a : 0) +
-        rect.left),
-    y:
-      ev.pageY -
-      (((_b = win && win.scrollY) !== null && _b !== void 0 ? _b : 0) +
-        rect.top)
+    x: ev.pageX - (((_a = win && win.scrollX) !== null && _a !== void 0 ? _a : 0) + rect.left),
+    y: ev.pageY - (((_b = win && win.scrollY) !== null && _b !== void 0 ? _b : 0) + rect.top)
   };
 }
 class PointerHandler {
@@ -3687,10 +3485,7 @@ class PointerHandler {
   }
   onTouchEnd_(ev) {
     var _a;
-    const touch =
-      (_a = ev.targetTouches.item(0)) !== null && _a !== void 0
-        ? _a
-        : this.lastTouch_;
+    const touch = (_a = ev.targetTouches.item(0)) !== null && _a !== void 0 ? _a : this.lastTouch_;
     const rect = this.elem_.getBoundingClientRect();
     this.emitter.emit('up', {
       altKey: ev.altKey,
@@ -3766,9 +3561,7 @@ class NumberTextView {
     this.guideHeadElem_.setAttributeNS(
       null,
       'd',
-      [`M ${aox + adx},0 L${aox},4 L${aox + adx},8`, `M ${x},-1 L${x},9`].join(
-        ' '
-      )
+      [`M ${aox + adx},0 L${aox},4 L${aox + adx},8`, `M ${x},-1 L${x},9`].join(' ')
     );
     this.guideBodyElem_.setAttributeNS(null, 'd', `M 0,4 L${x},4`);
     const formatter = this.props_.get('formatter');
@@ -3796,8 +3589,7 @@ class NumberTextController {
     this.onPointerUp_ = this.onPointerUp_.bind(this);
     this.parser_ = config.parser;
     this.props = config.props;
-    this.sliderProps_ =
-      (_a = config.sliderProps) !== null && _a !== void 0 ? _a : null;
+    this.sliderProps_ = (_a = config.sliderProps) !== null && _a !== void 0 ? _a : null;
     this.value = config.value;
     this.viewProps = config.viewProps;
     this.dragging_ = createValue(null);
@@ -3818,14 +3610,8 @@ class NumberTextController {
   }
   constrainValue_(value) {
     var _a, _b;
-    const min =
-      (_a = this.sliderProps_) === null || _a === void 0
-        ? void 0
-        : _a.get('min');
-    const max =
-      (_b = this.sliderProps_) === null || _b === void 0
-        ? void 0
-        : _b.get('max');
+    const min = (_a = this.sliderProps_) === null || _a === void 0 ? void 0 : _a.get('min');
+    const max = (_b = this.sliderProps_) === null || _b === void 0 ? void 0 : _b.get('max');
     let v = value;
     if (min !== undefined) {
       v = Math.max(v, min);
@@ -3845,10 +3631,7 @@ class NumberTextController {
     this.view.refresh();
   }
   onInputKeyDown_(ev) {
-    const step = getStepForKey(
-      this.props.get('keyScale'),
-      getVerticalStepKeys(ev)
-    );
+    const step = getStepForKey(this.props.get('keyScale'), getVerticalStepKeys(ev));
     if (step === 0) {
       return;
     }
@@ -3858,10 +3641,7 @@ class NumberTextController {
     });
   }
   onInputKeyUp_(ev) {
-    const step = getStepForKey(
-      this.props.get('keyScale'),
-      getVerticalStepKeys(ev)
-    );
+    const step = getStepForKey(this.props.get('keyScale'), getVerticalStepKeys(ev));
     if (step === 0) {
       return;
     }
@@ -3879,9 +3659,7 @@ class NumberTextController {
       return null;
     }
     const dx = data.point.x - data.bounds.width / 2;
-    return this.constrainValue_(
-      this.originRawValue_ + dx * this.props.get('pointerScale')
-    );
+    return this.constrainValue_(this.originRawValue_ + dx * this.props.get('pointerScale'));
   }
   onPointerMove_(ev) {
     const v = this.computeDraggingValue_(ev.data);
@@ -3931,13 +3709,7 @@ class SliderView {
   }
   update_() {
     const p = constrainRange(
-      mapRange(
-        this.value.rawValue,
-        this.props_.get('min'),
-        this.props_.get('max'),
-        0,
-        100
-      ),
+      mapRange(this.value.rawValue, this.props_.get('min'), this.props_.get('max'), 0, 100),
       0,
       100
     );
@@ -3997,10 +3769,7 @@ class SliderController {
     });
   }
   onKeyDown_(ev) {
-    const step = getStepForKey(
-      this.props.get('keyScale'),
-      getHorizontalStepKeys(ev)
-    );
+    const step = getStepForKey(this.props.get('keyScale'), getHorizontalStepKeys(ev));
     if (step === 0) {
       return;
     }
@@ -4010,10 +3779,7 @@ class SliderController {
     });
   }
   onKeyUp_(ev) {
-    const step = getStepForKey(
-      this.props.get('keyScale'),
-      getHorizontalStepKeys(ev)
-    );
+    const step = getStepForKey(this.props.get('keyScale'), getHorizontalStepKeys(ev));
     if (step === 0) {
       return;
     }
@@ -4203,10 +3969,7 @@ class CheckboxController {
       viewProps: this.viewProps
     });
     this.view.inputElement.addEventListener('change', this.onInputChange_);
-    this.view.labelElement.addEventListener(
-      'mousedown',
-      this.onLabelMouseDown_
-    );
+    this.view.labelElement.addEventListener('mousedown', this.onLabelMouseDown_);
   }
   onInputChange_(ev) {
     const inputElem = forceCast(ev.currentTarget);
@@ -4285,15 +4048,8 @@ class ColorView {
   constructor(doc, config) {
     this.element = doc.createElement('div');
     this.element.classList.add(cn$d());
-    config.foldable.bindExpandedClass(
-      this.element,
-      cn$d(undefined, 'expanded')
-    );
-    bindValueMap(
-      config.foldable,
-      'completed',
-      valueToClassName(this.element, cn$d(undefined, 'cpl'))
-    );
+    config.foldable.bindExpandedClass(this.element, cn$d(undefined, 'expanded'));
+    bindValueMap(config.foldable, 'completed', valueToClassName(this.element, cn$d(undefined, 'cpl')));
     const headElem = doc.createElement('div');
     headElem.classList.add(cn$d('h'));
     this.element.appendChild(headElem);
@@ -4455,16 +4211,10 @@ function constrainColorComponents(components, mode, type) {
   var _a;
   const ms = getColorMaxComponents(mode, type);
   return [
-    mode === 'rgb'
-      ? constrainRange(components[0], 0, ms[0])
-      : loopHueRange(components[0], ms[0]),
+    mode === 'rgb' ? constrainRange(components[0], 0, ms[0]) : loopHueRange(components[0], ms[0]),
     constrainRange(components[1], 0, ms[1]),
     constrainRange(components[2], 0, ms[2]),
-    constrainRange(
-      (_a = components[3]) !== null && _a !== void 0 ? _a : 1,
-      0,
-      1
-    )
+    constrainRange((_a = components[3]) !== null && _a !== void 0 ? _a : 1, 0, 1)
   ];
 }
 function convertColorType(comps, mode, from, to) {
@@ -4562,10 +4312,7 @@ class ColorPickerView {
       ...this.textsView_.inputViews.map((v) => v.inputElement)
     ];
     if (this.alphaViews_) {
-      elems.push(
-        this.alphaViews_.palette.element,
-        this.alphaViews_.text.inputElement
-      );
+      elems.push(this.alphaViews_.palette.element, this.alphaViews_.text.inputElement);
     }
     return elems;
   }
@@ -4676,12 +4423,7 @@ function mapColorType(c, type) {
 }
 
 function equalsStringColorFormat(f1, f2) {
-  return (
-    f1.alpha === f2.alpha &&
-    f1.mode === f2.mode &&
-    f1.notation === f2.notation &&
-    f1.type === f2.type
-  );
+  return f1.alpha === f2.alpha && f1.mode === f2.mode && f1.notation === f2.notation && f1.type === f2.type;
 }
 function parseCssNumberOrPercentage(text, max) {
   const m = text.match(/^(.+)%$/);
@@ -4706,9 +4448,7 @@ function parseCssNumberOrAngle(text) {
   return ANGLE_TO_DEG_MAP[unit](angle);
 }
 function parseFunctionalRgbColorComponents(text) {
-  const m = text.match(
-    /^rgb\(\s*([0-9A-Fa-f.]+%?)\s*,\s*([0-9A-Fa-f.]+%?)\s*,\s*([0-9A-Fa-f.]+%?)\s*\)$/
-  );
+  const m = text.match(/^rgb\(\s*([0-9A-Fa-f.]+%?)\s*,\s*([0-9A-Fa-f.]+%?)\s*,\s*([0-9A-Fa-f.]+%?)\s*\)$/);
   if (!m) {
     return null;
   }
@@ -4739,12 +4479,7 @@ function parseFunctionalRgbaColorComponents(text) {
     parseCssNumberOrPercentage(m[3], 255),
     parseCssNumberOrPercentage(m[4], 1)
   ];
-  if (
-    isNaN(comps[0]) ||
-    isNaN(comps[1]) ||
-    isNaN(comps[2]) ||
-    isNaN(comps[3])
-  ) {
+  if (isNaN(comps[0]) || isNaN(comps[1]) || isNaN(comps[2]) || isNaN(comps[3])) {
     return null;
   }
   return comps;
@@ -4787,12 +4522,7 @@ function parseHslaColorComponents(text) {
     parseCssNumberOrPercentage(m[3], 100),
     parseCssNumberOrPercentage(m[4], 1)
   ];
-  if (
-    isNaN(comps[0]) ||
-    isNaN(comps[1]) ||
-    isNaN(comps[2]) ||
-    isNaN(comps[3])
-  ) {
+  if (isNaN(comps[0]) || isNaN(comps[1]) || isNaN(comps[2]) || isNaN(comps[3])) {
     return null;
   }
   return comps;
@@ -4804,21 +4534,11 @@ function parseFunctionalHslaColor(text) {
 function parseHexRgbColorComponents(text) {
   const mRgb = text.match(/^#([0-9A-Fa-f])([0-9A-Fa-f])([0-9A-Fa-f])$/);
   if (mRgb) {
-    return [
-      parseInt(mRgb[1] + mRgb[1], 16),
-      parseInt(mRgb[2] + mRgb[2], 16),
-      parseInt(mRgb[3] + mRgb[3], 16)
-    ];
+    return [parseInt(mRgb[1] + mRgb[1], 16), parseInt(mRgb[2] + mRgb[2], 16), parseInt(mRgb[3] + mRgb[3], 16)];
   }
-  const mRrggbb = text.match(
-    /^(?:#|0x)([0-9A-Fa-f]{2})([0-9A-Fa-f]{2})([0-9A-Fa-f]{2})$/
-  );
+  const mRrggbb = text.match(/^(?:#|0x)([0-9A-Fa-f]{2})([0-9A-Fa-f]{2})([0-9A-Fa-f]{2})$/);
   if (mRrggbb) {
-    return [
-      parseInt(mRrggbb[1], 16),
-      parseInt(mRrggbb[2], 16),
-      parseInt(mRrggbb[3], 16)
-    ];
+    return [parseInt(mRrggbb[1], 16), parseInt(mRrggbb[2], 16), parseInt(mRrggbb[3], 16)];
   }
   return null;
 }
@@ -4827,9 +4547,7 @@ function parseHexRgbColor(text) {
   return comps ? new IntColor(comps, 'rgb') : null;
 }
 function parseHexRgbaColorComponents(text) {
-  const mRgb = text.match(
-    /^#?([0-9A-Fa-f])([0-9A-Fa-f])([0-9A-Fa-f])([0-9A-Fa-f])$/
-  );
+  const mRgb = text.match(/^#?([0-9A-Fa-f])([0-9A-Fa-f])([0-9A-Fa-f])([0-9A-Fa-f])$/);
   if (mRgb) {
     return [
       parseInt(mRgb[1] + mRgb[1], 16),
@@ -4838,9 +4556,7 @@ function parseHexRgbaColorComponents(text) {
       mapRange(parseInt(mRgb[4] + mRgb[4], 16), 0, 255, 0, 1)
     ];
   }
-  const mRrggbb = text.match(
-    /^(?:#|0x)?([0-9A-Fa-f]{2})([0-9A-Fa-f]{2})([0-9A-Fa-f]{2})([0-9A-Fa-f]{2})$/
-  );
+  const mRrggbb = text.match(/^(?:#|0x)?([0-9A-Fa-f]{2})([0-9A-Fa-f]{2})([0-9A-Fa-f]{2})([0-9A-Fa-f]{2})$/);
   if (mRrggbb) {
     return [
       parseInt(mRrggbb[1], 16),
@@ -4881,18 +4597,8 @@ function parseObjectRgbaColorComponents(text) {
   if (!m) {
     return null;
   }
-  const comps = [
-    parseFloat(m[1]),
-    parseFloat(m[2]),
-    parseFloat(m[3]),
-    parseFloat(m[4])
-  ];
-  if (
-    isNaN(comps[0]) ||
-    isNaN(comps[1]) ||
-    isNaN(comps[2]) ||
-    isNaN(comps[3])
-  ) {
+  const comps = [parseFloat(m[1]), parseFloat(m[2]), parseFloat(m[3]), parseFloat(m[4])];
+  if (isNaN(comps[0]) || isNaN(comps[1]) || isNaN(comps[2]) || isNaN(comps[3])) {
     return null;
   }
   return comps;
@@ -5000,16 +4706,10 @@ function createColorStringParser(type) {
     parseFunctionalHslaColor
   ];
   if (type === 'int') {
-    parsers.push(
-      createObjectRgbColorParser('int'),
-      createObjectRgbaColorParser('int')
-    );
+    parsers.push(createObjectRgbColorParser('int'), createObjectRgbaColorParser('int'));
   }
   if (type === 'float') {
-    parsers.push(
-      createObjectRgbColorParser('float'),
-      createObjectRgbaColorParser('float')
-    );
+    parsers.push(createObjectRgbColorParser('float'), createObjectRgbaColorParser('float'));
   }
   const parser = composeParsers(parsers);
   return (text) => {
@@ -5030,24 +4730,18 @@ function zerofill(comp) {
   return hex.length === 1 ? `0${hex}` : hex;
 }
 function colorToHexRgbString(value, prefix = '#') {
-  const hexes = removeAlphaComponent(value.getComponents('rgb'))
-    .map(zerofill)
-    .join('');
+  const hexes = removeAlphaComponent(value.getComponents('rgb')).map(zerofill).join('');
   return `${prefix}${hexes}`;
 }
 function colorToHexRgbaString(value, prefix = '#') {
   const rgbaComps = value.getComponents('rgb');
-  const hexes = [rgbaComps[0], rgbaComps[1], rgbaComps[2], rgbaComps[3] * 255]
-    .map(zerofill)
-    .join('');
+  const hexes = [rgbaComps[0], rgbaComps[1], rgbaComps[2], rgbaComps[3] * 255].map(zerofill).join('');
   return `${prefix}${hexes}`;
 }
 function colorToFunctionalRgbString(value) {
   const formatter = createNumberFormatter(0);
   const ci = mapColorType(value, 'int');
-  const comps = removeAlphaComponent(ci.getComponents('rgb')).map((comp) =>
-    formatter(comp)
-  );
+  const comps = removeAlphaComponent(ci.getComponents('rgb')).map((comp) => formatter(comp));
   return `rgb(${comps.join(', ')})`;
 }
 function colorToFunctionalRgbaString(value) {
@@ -5061,28 +4755,15 @@ function colorToFunctionalRgbaString(value) {
   return `rgba(${comps.join(', ')})`;
 }
 function colorToFunctionalHslString(value) {
-  const formatters = [
-    createNumberFormatter(0),
-    formatPercentage,
-    formatPercentage
-  ];
+  const formatters = [createNumberFormatter(0), formatPercentage, formatPercentage];
   const ci = mapColorType(value, 'int');
-  const comps = removeAlphaComponent(ci.getComponents('hsl')).map(
-    (comp, index) => formatters[index](comp)
-  );
+  const comps = removeAlphaComponent(ci.getComponents('hsl')).map((comp, index) => formatters[index](comp));
   return `hsl(${comps.join(', ')})`;
 }
 function colorToFunctionalHslaString(value) {
-  const formatters = [
-    createNumberFormatter(0),
-    formatPercentage,
-    formatPercentage,
-    createNumberFormatter(2)
-  ];
+  const formatters = [createNumberFormatter(0), formatPercentage, formatPercentage, createNumberFormatter(2)];
   const ci = mapColorType(value, 'int');
-  const comps = ci
-    .getComponents('hsl')
-    .map((comp, index) => formatters[index](comp));
+  const comps = ci.getComponents('hsl').map((comp, index) => formatters[index](comp));
   return `hsla(${comps.join(', ')})`;
 }
 function colorToObjectRgbString(value, type) {
@@ -5229,19 +4910,9 @@ class APaletteView {
   update_() {
     const c = this.value.rawValue;
     const rgbaComps = c.getComponents('rgb');
-    const leftColor = new IntColor(
-      [rgbaComps[0], rgbaComps[1], rgbaComps[2], 0],
-      'rgb'
-    );
-    const rightColor = new IntColor(
-      [rgbaComps[0], rgbaComps[1], rgbaComps[2], 255],
-      'rgb'
-    );
-    const gradientComps = [
-      'to right',
-      colorToFunctionalRgbaString(leftColor),
-      colorToFunctionalRgbaString(rightColor)
-    ];
+    const leftColor = new IntColor([rgbaComps[0], rgbaComps[1], rgbaComps[2], 0], 'rgb');
+    const rightColor = new IntColor([rgbaComps[0], rgbaComps[1], rgbaComps[2], 255], 'rgb');
+    const gradientComps = ['to right', colorToFunctionalRgbaString(leftColor), colorToFunctionalRgbaString(rightColor)];
     this.colorElem_.style.background = `linear-gradient(${gradientComps.join(',')})`;
     this.previewElem_.style.backgroundColor = colorToFunctionalRgbaString(c);
     const left = mapRange(rgbaComps[3], 0, 1, 0, 100);
@@ -5300,10 +4971,7 @@ class APaletteController {
     });
   }
   onKeyDown_(ev) {
-    const step = getStepForKey(
-      getKeyScaleForColor(true),
-      getHorizontalStepKeys(ev)
-    );
+    const step = getStepForKey(getKeyScaleForColor(true), getHorizontalStepKeys(ev));
     if (step === 0) {
       return;
     }
@@ -5315,10 +4983,7 @@ class APaletteController {
     });
   }
   onKeyUp_(ev) {
-    const step = getStepForKey(
-      getKeyScaleForColor(true),
-      getHorizontalStepKeys(ev)
-    );
+    const step = getStepForKey(getKeyScaleForColor(true), getHorizontalStepKeys(ev));
     if (step === 0) {
       return;
     }
@@ -5466,16 +5131,9 @@ function createHexController(doc, config) {
   connectValues({
     primary: config.value,
     secondary: c.value,
-    forward: (p) =>
-      new IntColor(removeAlphaComponent(p.getComponents()), p.mode),
+    forward: (p) => new IntColor(removeAlphaComponent(p.getComponents()), p.mode),
     backward: (p, s) =>
-      new IntColor(
-        appendAlphaComponent(
-          removeAlphaComponent(s.getComponents(p.mode)),
-          p.getComponents()[3]
-        ),
-        p.mode
-      )
+      new IntColor(appendAlphaComponent(removeAlphaComponent(s.getComponents(p.mode)), p.getComponents()[3]), p.mode)
   });
   return [c];
 }
@@ -5495,10 +5153,7 @@ class ColorTextsController {
       inputViews: [this.ccs_[0].view, this.ccs_[1].view, this.ccs_[2].view],
       viewProps: this.viewProps
     });
-    this.view.modeSelectElement.addEventListener(
-      'change',
-      this.onModeSelectChange_
-    );
+    this.view.modeSelectElement.addEventListener('change', this.onModeSelectChange_);
   }
   createComponentControllers_(doc) {
     const mode = this.colorMode.rawValue;
@@ -5518,9 +5173,7 @@ class ColorTextsController {
   onModeSelectChange_(ev) {
     const selectElem = ev.currentTarget;
     this.colorMode.rawValue = selectElem.value;
-    this.ccs_ = this.createComponentControllers_(
-      this.view.element.ownerDocument
-    );
+    this.ccs_ = this.createComponentControllers_(this.view.element.ownerDocument);
     this.view.inputViews = this.ccs_.map((cc) => cc.view);
   }
 }
@@ -5547,9 +5200,7 @@ class HPaletteView {
   update_() {
     const c = this.value.rawValue;
     const [h] = c.getComponents('hsv');
-    this.markerElem_.style.backgroundColor = colorToFunctionalRgbString(
-      new IntColor([h, 100, 100], 'hsv')
-    );
+    this.markerElem_.style.backgroundColor = colorToFunctionalRgbString(new IntColor([h, 100, 100], 'hsv'));
     const left = mapRange(h, 0, 360, 0, 100);
     this.markerElem_.style.left = `${left}%`;
   }
@@ -5582,13 +5233,7 @@ class HPaletteController {
     if (!d.point) {
       return;
     }
-    const hue = mapRange(
-      constrainRange(d.point.x, 0, d.bounds.width),
-      0,
-      d.bounds.width,
-      0,
-      360
-    );
+    const hue = mapRange(constrainRange(d.point.x, 0, d.bounds.width), 0, d.bounds.width, 0, 360);
     const c = this.value.rawValue;
     const [, s, v, a] = c.getComponents('hsv');
     this.value.setRawValue(new IntColor([hue, s, v, a], 'hsv'), opts);
@@ -5612,10 +5257,7 @@ class HPaletteController {
     });
   }
   onKeyDown_(ev) {
-    const step = getStepForKey(
-      getKeyScaleForColor(false),
-      getHorizontalStepKeys(ev)
-    );
+    const step = getStepForKey(getKeyScaleForColor(false), getHorizontalStepKeys(ev));
     if (step === 0) {
       return;
     }
@@ -5627,10 +5269,7 @@ class HPaletteController {
     });
   }
   onKeyUp_(ev) {
-    const step = getStepForKey(
-      getKeyScaleForColor(false),
-      getHorizontalStepKeys(ev)
-    );
+    const step = getStepForKey(getKeyScaleForColor(false), getHorizontalStepKeys(ev));
     if (step === 0) {
       return;
     }
@@ -5725,10 +5364,7 @@ class SvPaletteController {
     const saturation = mapRange(d.point.x, 0, d.bounds.width, 0, 100);
     const value = mapRange(d.point.y, 0, d.bounds.height, 100, 0);
     const [h, , , a] = this.value.rawValue.getComponents('hsv');
-    this.value.setRawValue(
-      new IntColor([h, saturation, value, a], 'hsv'),
-      opts
-    );
+    this.value.setRawValue(new IntColor([h, saturation, value, a], 'hsv'), opts);
   }
   onPointerDown_(ev) {
     this.handlePointerEvent_(ev.data, {
@@ -5975,11 +5611,7 @@ class ColorController {
     if (nextTarget && elem.contains(nextTarget)) {
       return;
     }
-    if (
-      nextTarget &&
-      nextTarget === this.swatchC_.view.buttonElement &&
-      !supportsTouch(elem.ownerDocument)
-    ) {
+    if (nextTarget && nextTarget === this.swatchC_.view.buttonElement && !supportsTouch(elem.ownerDocument)) {
       return;
     }
     this.popC_.shows.rawValue = false;
@@ -5998,12 +5630,9 @@ class ColorController {
 }
 
 function colorToRgbNumber(value) {
-  return removeAlphaComponent(value.getComponents('rgb')).reduce(
-    (result, comp) => {
-      return (result << 8) | (Math.floor(comp) & 0xff);
-    },
-    0
-  );
+  return removeAlphaComponent(value.getComponents('rgb')).reduce((result, comp) => {
+    return (result << 8) | (Math.floor(comp) & 0xff);
+  }, 0);
 }
 function colorToRgbaNumber(value) {
   return (
@@ -6014,19 +5643,11 @@ function colorToRgbaNumber(value) {
   );
 }
 function numberToRgbColor(num) {
-  return new IntColor(
-    [(num >> 16) & 0xff, (num >> 8) & 0xff, num & 0xff],
-    'rgb'
-  );
+  return new IntColor([(num >> 16) & 0xff, (num >> 8) & 0xff, num & 0xff], 'rgb');
 }
 function numberToRgbaColor(num) {
   return new IntColor(
-    [
-      (num >> 24) & 0xff,
-      (num >> 16) & 0xff,
-      (num >> 8) & 0xff,
-      mapRange(num & 0xff, 0, 255, 0, 1)
-    ],
+    [(num >> 24) & 0xff, (num >> 16) & 0xff, (num >> 8) & 0xff, mapRange(num & 0xff, 0, 255, 0, 1)],
     'rgb'
   );
 }
@@ -6050,11 +5671,7 @@ function isRgbColorComponent(obj, key) {
   return key in obj && typeof obj[key] === 'number';
 }
 function isRgbColorObject(obj) {
-  return (
-    isRgbColorComponent(obj, 'r') &&
-    isRgbColorComponent(obj, 'g') &&
-    isRgbColorComponent(obj, 'b')
-  );
+  return isRgbColorComponent(obj, 'r') && isRgbColorComponent(obj, 'g') && isRgbColorComponent(obj, 'b');
 }
 function isRgbaColorObject(obj) {
   return isRgbColorObject(obj) && isRgbColorComponent(obj, 'a');
@@ -6124,10 +5741,7 @@ function createColorObjectWriter(supportsAlpha, type) {
 function shouldSupportAlpha$1(inputParams) {
   var _a;
   if (
-    (_a =
-      inputParams === null || inputParams === void 0
-        ? void 0
-        : inputParams.color) === null || _a === void 0
+    (_a = inputParams === null || inputParams === void 0 ? void 0 : inputParams.color) === null || _a === void 0
       ? void 0
       : _a.alpha
   ) {
@@ -6136,9 +5750,7 @@ function shouldSupportAlpha$1(inputParams) {
   return false;
 }
 function createFormatter$1(supportsAlpha) {
-  return supportsAlpha
-    ? (v) => colorToHexRgbaString(v, '0x')
-    : (v) => colorToHexRgbString(v, '0x');
+  return supportsAlpha ? (v) => colorToHexRgbaString(v, '0x') : (v) => colorToHexRgbString(v, '0x');
 }
 function isForColor(params) {
   if ('color' in params) {
@@ -6171,9 +5783,7 @@ const NumberColorInputPlugin = createPlugin({
   },
   binding: {
     reader: (args) => {
-      return args.params.supportsAlpha
-        ? colorFromRgbaNumber
-        : colorFromRgbNumber;
+      return args.params.supportsAlpha ? colorFromRgbaNumber : colorFromRgbNumber;
     },
     equals: equalsColor,
     writer: (args) => {
@@ -6184,12 +5794,10 @@ const NumberColorInputPlugin = createPlugin({
     var _a, _b;
     return new ColorController(args.document, {
       colorType: 'int',
-      expanded:
-        (_a = args.params.expanded) !== null && _a !== void 0 ? _a : false,
+      expanded: (_a = args.params.expanded) !== null && _a !== void 0 ? _a : false,
       formatter: createFormatter$1(args.params.supportsAlpha),
       parser: createColorStringParser('int'),
-      pickerLayout:
-        (_b = args.params.picker) !== null && _b !== void 0 ? _b : 'popup',
+      pickerLayout: (_b = args.params.picker) !== null && _b !== void 0 ? _b : 'popup',
       supportsAlpha: args.params.supportsAlpha,
       value: args.value,
       viewProps: args.viewProps
@@ -6242,10 +5850,7 @@ const ObjectColorInputPlugin = createPlugin({
       ? {
           initialValue: value,
           params: Object.assign(Object.assign({}, result), {
-            colorType:
-              (_a = extractColorType(params)) !== null && _a !== void 0
-                ? _a
-                : 'int'
+            colorType: (_a = extractColorType(params)) !== null && _a !== void 0 ? _a : 'int'
           })
         }
       : null;
@@ -6253,26 +5858,17 @@ const ObjectColorInputPlugin = createPlugin({
   binding: {
     reader: (args) => createColorObjectBindingReader(args.params.colorType),
     equals: equalsColor,
-    writer: (args) =>
-      createColorObjectWriter(
-        shouldSupportAlpha(args.initialValue),
-        args.params.colorType
-      )
+    writer: (args) => createColorObjectWriter(shouldSupportAlpha(args.initialValue), args.params.colorType)
   },
   controller: (args) => {
     var _a, _b;
     const supportsAlpha = isRgbaColorObject(args.initialValue);
     return new ColorController(args.document, {
       colorType: args.params.colorType,
-      expanded:
-        (_a = args.params.expanded) !== null && _a !== void 0 ? _a : false,
-      formatter: createColorObjectFormatter(
-        supportsAlpha,
-        args.params.colorType
-      ),
+      expanded: (_a = args.params.expanded) !== null && _a !== void 0 ? _a : false,
+      formatter: createColorObjectFormatter(supportsAlpha, args.params.colorType),
       parser: createColorStringParser('int'),
-      pickerLayout:
-        (_b = args.params.picker) !== null && _b !== void 0 ? _b : 'popup',
+      pickerLayout: (_b = args.params.picker) !== null && _b !== void 0 ? _b : 'popup',
       supportsAlpha: supportsAlpha,
       value: args.value,
       viewProps: args.viewProps
@@ -6324,12 +5920,10 @@ const StringColorInputPlugin = createPlugin({
     var _a, _b;
     return new ColorController(args.document, {
       colorType: args.params.format.type,
-      expanded:
-        (_a = args.params.expanded) !== null && _a !== void 0 ? _a : false,
+      expanded: (_a = args.params.expanded) !== null && _a !== void 0 ? _a : false,
       formatter: args.params.stringifier,
       parser: createColorStringParser('int'),
-      pickerLayout:
-        (_b = args.params.picker) !== null && _b !== void 0 ? _b : 'popup',
+      pickerLayout: (_b = args.params.picker) !== null && _b !== void 0 ? _b : 'popup',
       supportsAlpha: args.params.format.alpha,
       value: args.value,
       viewProps: args.viewProps
@@ -6345,10 +5939,8 @@ class PointNdConstraint {
   constrain(value) {
     const comps = this.asm_.toComponents(value).map((comp, index) => {
       var _a, _b;
-      return (_b =
-        (_a = this.components[index]) === null || _a === void 0
-          ? void 0
-          : _a.constrain(comp)) !== null && _b !== void 0
+      return (_b = (_a = this.components[index]) === null || _a === void 0 ? void 0 : _a.constrain(comp)) !== null &&
+        _b !== void 0
         ? _b
         : comp;
     });
@@ -6373,8 +5965,7 @@ class PointNdTextView {
 
 function createAxisController(doc, config, index) {
   return new NumberTextController(doc, {
-    arrayPosition:
-      index === 0 ? 'fst' : index === config.axes.length - 1 ? 'lst' : 'mid',
+    arrayPosition: index === 0 ? 'fst' : index === config.axes.length - 1 ? 'lst' : 'mid',
     parser: config.parser,
     props: config.axes[index].textProps,
     value: createValue(0, {
@@ -6387,9 +5978,7 @@ class PointNdTextController {
   constructor(doc, config) {
     this.value = config.value;
     this.viewProps = config.viewProps;
-    this.acs_ = config.axes.map((_, index) =>
-      createAxisController(doc, config, index)
-    );
+    this.acs_ = config.axes.map((_, index) => createAxisController(doc, config, index));
     this.acs_.forEach((c, index) => {
       connectValues({
         primary: this.value,
@@ -6480,10 +6069,7 @@ const NumberInputPlugin = createPlugin({
         viewProps: args.viewProps
       });
     }
-    const textPropsObj = createNumberTextPropsObject(
-      args.params,
-      value.rawValue
-    );
+    const textPropsObj = createNumberTextPropsObject(args.params, value.rawValue);
     const drc = c && findConstraint(c, DefiniteRangeConstraint);
     if (drc) {
       return new SliderTextController(
@@ -6564,10 +6150,7 @@ class Point2dView {
     this.element = doc.createElement('div');
     this.element.classList.add(cn$5());
     config.viewProps.bindClassModifiers(this.element);
-    bindValue(
-      config.expanded,
-      valueToClassName(this.element, cn$5(undefined, 'expanded'))
-    );
+    bindValue(config.expanded, valueToClassName(this.element, cn$5(undefined, 'expanded')));
     const headElem = doc.createElement('div');
     headElem.classList.add(cn$5('h'));
     this.element.appendChild(headElem);
@@ -6742,13 +6325,10 @@ class Point2dPickerController {
     if (dx === 0 && dy === 0) {
       return;
     }
-    this.value.setRawValue(
-      new Point2d(this.value.rawValue.x + dx, this.value.rawValue.y + dy),
-      {
-        forceEmit: false,
-        last: false
-      }
-    );
+    this.value.setRawValue(new Point2d(this.value.rawValue.x + dx, this.value.rawValue.y + dy), {
+      forceEmit: false,
+      last: false
+    });
   }
   onPadKeyUp_(ev) {
     const [dx, dy] = computeOffset(
@@ -6859,11 +6439,7 @@ class Point2dController {
     if (nextTarget && elem.contains(nextTarget)) {
       return;
     }
-    if (
-      nextTarget &&
-      nextTarget === this.view.buttonElement &&
-      !supportsTouch(elem.ownerDocument)
-    ) {
+    if (nextTarget && nextTarget === this.view.buttonElement && !supportsTouch(elem.ownerDocument)) {
       return;
     }
     this.popC_.shows.rawValue = false;
@@ -6882,9 +6458,7 @@ class Point2dController {
 }
 
 function point2dFromUnknown(value) {
-  return Point2d.isObject(value)
-    ? new Point2d(value.x, value.y)
-    : new Point2d();
+  return Point2d.isObject(value) ? new Point2d(value.x, value.y) : new Point2d();
 }
 function writePoint2d(target, value) {
   target.writeProperty('x', value.x);
@@ -6895,14 +6469,8 @@ function createConstraint$3(params, initialValue) {
   return new PointNdConstraint({
     assembly: Point2dAssembly,
     components: [
-      createDimensionConstraint(
-        Object.assign(Object.assign({}, params), params.x),
-        initialValue.x
-      ),
-      createDimensionConstraint(
-        Object.assign(Object.assign({}, params), params.y),
-        initialValue.y
-      )
+      createDimensionConstraint(Object.assign(Object.assign({}, params), params.x), initialValue.x),
+      createDimensionConstraint(Object.assign(Object.assign({}, params), params.y), initialValue.y)
     ]
   });
 }
@@ -6984,19 +6552,14 @@ const Point2dInputPlugin = createPlugin({
         return createPointAxis({
           constraint: c.components[i],
           initialValue: comp,
-          params: deepMerge(
-            args.params,
-            (_a = dParams[i]) !== null && _a !== void 0 ? _a : {}
-          )
+          params: deepMerge(args.params, (_a = dParams[i]) !== null && _a !== void 0 ? _a : {})
         });
       }),
-      expanded:
-        (_a = args.params.expanded) !== null && _a !== void 0 ? _a : false,
+      expanded: (_a = args.params.expanded) !== null && _a !== void 0 ? _a : false,
       invertsY: shouldInvertY(args.params),
       max: getSuitableMax(args.params, value.rawValue),
       parser: parseNumber,
-      pickerLayout:
-        (_b = args.params.picker) !== null && _b !== void 0 ? _b : 'popup',
+      pickerLayout: (_b = args.params.picker) !== null && _b !== void 0 ? _b : 'popup',
       value: value,
       viewProps: args.viewProps
     });
@@ -7019,11 +6582,7 @@ class Point3d {
     const x = obj.x;
     const y = obj.y;
     const z = obj.z;
-    if (
-      typeof x !== 'number' ||
-      typeof y !== 'number' ||
-      typeof z !== 'number'
-    ) {
+    if (typeof x !== 'number' || typeof y !== 'number' || typeof z !== 'number') {
       return false;
     }
     return true;
@@ -7045,9 +6604,7 @@ const Point3dAssembly = {
 };
 
 function point3dFromUnknown(value) {
-  return Point3d.isObject(value)
-    ? new Point3d(value.x, value.y, value.z)
-    : new Point3d();
+  return Point3d.isObject(value) ? new Point3d(value.x, value.y, value.z) : new Point3d();
 }
 function writePoint3d(target, value) {
   target.writeProperty('x', value.x);
@@ -7059,18 +6616,9 @@ function createConstraint$2(params, initialValue) {
   return new PointNdConstraint({
     assembly: Point3dAssembly,
     components: [
-      createDimensionConstraint(
-        Object.assign(Object.assign({}, params), params.x),
-        initialValue.x
-      ),
-      createDimensionConstraint(
-        Object.assign(Object.assign({}, params), params.y),
-        initialValue.y
-      ),
-      createDimensionConstraint(
-        Object.assign(Object.assign({}, params), params.z),
-        initialValue.z
-      )
+      createDimensionConstraint(Object.assign(Object.assign({}, params), params.x), initialValue.x),
+      createDimensionConstraint(Object.assign(Object.assign({}, params), params.y), initialValue.y),
+      createDimensionConstraint(Object.assign(Object.assign({}, params), params.z), initialValue.z)
     ]
   });
 }
@@ -7113,10 +6661,7 @@ const Point3dInputPlugin = createPlugin({
         return createPointAxis({
           constraint: c.components[i],
           initialValue: comp,
-          params: deepMerge(
-            args.params,
-            (_a = dParams[i]) !== null && _a !== void 0 ? _a : {}
-          )
+          params: deepMerge(args.params, (_a = dParams[i]) !== null && _a !== void 0 ? _a : {})
         });
       }),
       parser: parseNumber,
@@ -7144,12 +6689,7 @@ class Point4d {
     const y = obj.y;
     const z = obj.z;
     const w = obj.w;
-    if (
-      typeof x !== 'number' ||
-      typeof y !== 'number' ||
-      typeof z !== 'number' ||
-      typeof w !== 'number'
-    ) {
+    if (typeof x !== 'number' || typeof y !== 'number' || typeof z !== 'number' || typeof w !== 'number') {
       return false;
     }
     return true;
@@ -7172,9 +6712,7 @@ const Point4dAssembly = {
 };
 
 function point4dFromUnknown(value) {
-  return Point4d.isObject(value)
-    ? new Point4d(value.x, value.y, value.z, value.w)
-    : new Point4d();
+  return Point4d.isObject(value) ? new Point4d(value.x, value.y, value.z, value.w) : new Point4d();
 }
 function writePoint4d(target, value) {
   target.writeProperty('x', value.x);
@@ -7187,22 +6725,10 @@ function createConstraint$1(params, initialValue) {
   return new PointNdConstraint({
     assembly: Point4dAssembly,
     components: [
-      createDimensionConstraint(
-        Object.assign(Object.assign({}, params), params.x),
-        initialValue.x
-      ),
-      createDimensionConstraint(
-        Object.assign(Object.assign({}, params), params.y),
-        initialValue.y
-      ),
-      createDimensionConstraint(
-        Object.assign(Object.assign({}, params), params.z),
-        initialValue.z
-      ),
-      createDimensionConstraint(
-        Object.assign(Object.assign({}, params), params.w),
-        initialValue.w
-      )
+      createDimensionConstraint(Object.assign(Object.assign({}, params), params.x), initialValue.x),
+      createDimensionConstraint(Object.assign(Object.assign({}, params), params.y), initialValue.y),
+      createDimensionConstraint(Object.assign(Object.assign({}, params), params.z), initialValue.z),
+      createDimensionConstraint(Object.assign(Object.assign({}, params), params.w), initialValue.w)
     ]
   });
 }
@@ -7238,12 +6764,7 @@ const Point4dInputPlugin = createPlugin({
   controller: (args) => {
     const value = args.value;
     const c = args.constraint;
-    const dParams = [
-      args.params.x,
-      args.params.y,
-      args.params.z,
-      args.params.w
-    ];
+    const dParams = [args.params.x, args.params.y, args.params.z, args.params.w];
     return new PointNdTextController(args.document, {
       assembly: Point4dAssembly,
       axes: value.rawValue.getComponents().map((comp, i) => {
@@ -7251,10 +6772,7 @@ const Point4dInputPlugin = createPlugin({
         return createPointAxis({
           constraint: c.components[i],
           initialValue: comp,
-          params: deepMerge(
-            args.params,
-            (_a = dParams[i]) !== null && _a !== void 0 ? _a : {}
-          )
+          params: deepMerge(args.params, (_a = dParams[i]) !== null && _a !== void 0 ? _a : {})
         });
       }),
       parser: parseNumber,
@@ -7357,8 +6875,7 @@ class MultiLogView {
   }
   update_() {
     const elem = this.textareaElem_;
-    const shouldScroll =
-      elem.scrollTop === elem.scrollHeight - elem.clientHeight;
+    const shouldScroll = elem.scrollTop === elem.scrollHeight - elem.clientHeight;
     const lines = [];
     this.value.rawValue.forEach((value) => {
       if (value !== undefined) {
@@ -7410,8 +6927,7 @@ class SingleLogView {
   update_() {
     const values = this.value.rawValue;
     const lastValue = values[values.length - 1];
-    this.inputElement.value =
-      lastValue !== undefined ? this.formatter_(lastValue) : '';
+    this.inputElement.value = lastValue !== undefined ? this.formatter_(lastValue) : '';
   }
   onValueUpdate_() {
     this.update_();
@@ -7462,10 +6978,7 @@ const BooleanMonitorPlugin = createPlugin({
     }
     return new MultiLogController(args.document, {
       formatter: BooleanFormatter,
-      rows:
-        (_a = args.params.rows) !== null && _a !== void 0
-          ? _a
-          : Constants.monitor.defaultRows,
+      rows: (_a = args.params.rows) !== null && _a !== void 0 ? _a : Constants.monitor.defaultRows,
       value: args.value,
       viewProps: args.viewProps
     });
@@ -7613,9 +7126,7 @@ class GraphLogController {
   }
   onGraphMouseMove_(ev) {
     const { clientWidth: w } = this.view.element;
-    this.cursor_.rawValue = Math.floor(
-      mapRange(ev.offsetX, 0, w, 0, this.value.rawValue.length)
-    );
+    this.cursor_.rawValue = Math.floor(mapRange(ev.offsetX, 0, w, 0, this.value.rawValue.length));
   }
   onGraphPointerDown_(ev) {
     this.onGraphPointerMove_(ev);
@@ -7626,13 +7137,7 @@ class GraphLogController {
       return;
     }
     this.cursor_.rawValue = Math.floor(
-      mapRange(
-        ev.data.point.x,
-        0,
-        ev.data.bounds.width,
-        0,
-        this.value.rawValue.length
-      )
+      mapRange(ev.data.point.x, 0, ev.data.bounds.width, 0, this.value.rawValue.length)
     );
   }
   onGraphPointerUp_() {
@@ -7654,10 +7159,7 @@ function createTextMonitor(args) {
   }
   return new MultiLogController(args.document, {
     formatter: createFormatter(args.params),
-    rows:
-      (_a = args.params.rows) !== null && _a !== void 0
-        ? _a
-        : Constants.monitor.defaultRows,
+    rows: (_a = args.params.rows) !== null && _a !== void 0 ? _a : Constants.monitor.defaultRows,
     value: args.value,
     viewProps: args.viewProps
   });
@@ -7666,10 +7168,7 @@ function createGraphMonitor(args) {
   var _a, _b, _c;
   return new GraphLogController(args.document, {
     formatter: createFormatter(args.params),
-    rows:
-      (_a = args.params.rows) !== null && _a !== void 0
-        ? _a
-        : Constants.monitor.defaultRows,
+    rows: (_a = args.params.rows) !== null && _a !== void 0 ? _a : Constants.monitor.defaultRows,
     props: ValueMap.fromObject({
       max: (_b = args.params.max) !== null && _b !== void 0 ? _b : 100,
       min: (_c = args.params.min) !== null && _c !== void 0 ? _c : 0
@@ -7750,10 +7249,7 @@ const StringMonitorPlugin = createPlugin({
     if (multiline) {
       return new MultiLogController(args.document, {
         formatter: formatString,
-        rows:
-          (_a = args.params.rows) !== null && _a !== void 0
-            ? _a
-            : Constants.monitor.defaultRows,
+        rows: (_a = args.params.rows) !== null && _a !== void 0 ? _a : Constants.monitor.defaultRows,
         value: value,
         viewProps: args.viewProps
       });
@@ -7821,9 +7317,7 @@ function createInputBindingController(plugin, args) {
     tag: p.optional.string
   }));
   const reader = plugin.binding.reader(valueArgs);
-  const constraint = plugin.binding.constraint
-    ? plugin.binding.constraint(valueArgs)
-    : undefined;
+  const constraint = plugin.binding.constraint ? plugin.binding.constraint(valueArgs) : undefined;
   const binding = new ReadWriteBinding({
     reader: reader,
     target: args.target,
@@ -7852,9 +7346,7 @@ function createInputBindingController(plugin, args) {
     props: ValueMap.fromObject({
       label:
         'label' in args.params
-          ? (_a =
-              params === null || params === void 0 ? void 0 : params.label) !==
-              null && _a !== void 0
+          ? (_a = params === null || params === void 0 ? void 0 : params.label) !== null && _a !== void 0
             ? _a
             : null
           : args.target.key
@@ -7880,9 +7372,7 @@ function createTicker(document, interval) {
     ? new ManualTicker()
     : new IntervalTicker(
         document,
-        interval !== null && interval !== void 0
-          ? interval
-          : Constants.monitor.defaultInterval
+        interval !== null && interval !== void 0 ? interval : Constants.monitor.defaultInterval
       );
 }
 function createMonitorBindingController(plugin, args) {
@@ -7906,13 +7396,9 @@ function createMonitorBindingController(plugin, args) {
   const reader = plugin.binding.reader(bindingArgs);
   const bufferSize =
     (_b =
-      (_a =
-        params === null || params === void 0 ? void 0 : params.bufferSize) !==
-        null && _a !== void 0
+      (_a = params === null || params === void 0 ? void 0 : params.bufferSize) !== null && _a !== void 0
         ? _a
-        : plugin.binding.defaultBufferSize &&
-          plugin.binding.defaultBufferSize(result.params)) !== null &&
-    _b !== void 0
+        : plugin.binding.defaultBufferSize && plugin.binding.defaultBufferSize(result.params)) !== null && _b !== void 0
       ? _b
       : 1;
   const value = new MonitorBindingValue({
@@ -7921,10 +7407,7 @@ function createMonitorBindingController(plugin, args) {
       target: args.target
     }),
     bufferSize: bufferSize,
-    ticker: createTicker(
-      args.document,
-      params === null || params === void 0 ? void 0 : params.interval
-    )
+    ticker: createTicker(args.document, params === null || params === void 0 ? void 0 : params.interval)
   });
   const controller = plugin.controller({
     document: args.document,
@@ -7944,9 +7427,7 @@ function createMonitorBindingController(plugin, args) {
     props: ValueMap.fromObject({
       label:
         'label' in args.params
-          ? (_c =
-              params === null || params === void 0 ? void 0 : params.label) !==
-              null && _c !== void 0
+          ? (_c = params === null || params === void 0 ? void 0 : params.label) !== null && _c !== void 0
             ? _c
             : null
           : args.target.key
@@ -7966,11 +7447,7 @@ class PluginPool {
     this.apiCache_ = apiCache;
   }
   getAll() {
-    return [
-      ...this.pluginsMap_.blades,
-      ...this.pluginsMap_.inputs,
-      ...this.pluginsMap_.monitors
-    ];
+    return [...this.pluginsMap_.blades, ...this.pluginsMap_.inputs, ...this.pluginsMap_.monitors];
   }
   register(bundleId, r) {
     if (!isCompatible(r.core)) {
@@ -8071,10 +7548,7 @@ class PluginPool {
         ? _b
         : null;
     }, null);
-    return this.apiCache_.add(
-      bc,
-      api !== null && api !== void 0 ? api : new BindingApi(bc)
-    );
+    return this.apiCache_.add(bc, api !== null && api !== void 0 ? api : new BindingApi(bc));
   }
   createMonitorBindingApi_(bc) {
     const api = this.pluginsMap_.monitors.reduce((result, plugin) => {
@@ -8091,10 +7565,7 @@ class PluginPool {
         ? _b
         : null;
     }, null);
-    return this.apiCache_.add(
-      bc,
-      api !== null && api !== void 0 ? api : new BindingApi(bc)
-    );
+    return this.apiCache_.add(bc, api !== null && api !== void 0 ? api : new BindingApi(bc));
   }
   createBindingApi(bc) {
     if (this.apiCache_.has(bc)) {
@@ -8457,8 +7928,7 @@ const SliderBladePlugin = {
   },
   controller(args) {
     var _a, _b;
-    const initialValue =
-      (_a = args.params.value) !== null && _a !== void 0 ? _a : 0;
+    const initialValue = (_a = args.params.value) !== null && _a !== void 0 ? _a : 0;
     const drc = new DefiniteRangeConstraint({
       max: args.params.max,
       min: args.params.min
@@ -8472,10 +7942,7 @@ const SliderBladePlugin = {
         Object.assign(
           {},
           createSliderTextProps({
-            formatter:
-              (_b = args.params.format) !== null && _b !== void 0
-                ? _b
-                : numberToString,
+            formatter: (_b = args.params.format) !== null && _b !== void 0 ? _b : numberToString,
             keyScale: createValue(1),
             max: drc.values.value('max'),
             min: drc.values.value('min'),
@@ -8526,10 +7993,7 @@ const TextBladePlugin = (function () {
       const ic = new TextController(args.document, {
         parser: args.params.parse,
         props: ValueMap.fromObject({
-          formatter:
-            (_a = args.params.format) !== null && _a !== void 0
-              ? _a
-              : (v) => String(v)
+          formatter: (_a = args.params.format) !== null && _a !== void 0 ? _a : (v) => String(v)
         }),
         value: v,
         viewProps: args.viewProps
@@ -8578,12 +8042,8 @@ function embedStyle(doc, id, css) {
 class Pane extends RootApi {
   constructor(opt_config) {
     var _a, _b;
-    const config =
-      opt_config !== null && opt_config !== void 0 ? opt_config : {};
-    const doc =
-      (_a = config.document) !== null && _a !== void 0
-        ? _a
-        : getWindowDocument();
+    const config = opt_config !== null && opt_config !== void 0 ? opt_config : {};
+    const doc = (_a = config.document) !== null && _a !== void 0 ? _a : getWindowDocument();
     const pool = createDefaultPluginPool();
     const rootController = new RootController(doc, {
       expanded: config.expanded,
@@ -8595,10 +8055,7 @@ class Pane extends RootApi {
     });
     super(rootController, pool);
     this.pool_ = pool;
-    this.containerElem_ =
-      (_b = config.container) !== null && _b !== void 0
-        ? _b
-        : createDefaultWrapperElement(doc);
+    this.containerElem_ = (_b = config.container) !== null && _b !== void 0 ? _b : createDefaultWrapperElement(doc);
     this.containerElem_.appendChild(this.element);
     this.doc_ = doc;
     this.usesDefaultWrapper_ = !config.container;
@@ -8631,12 +8088,7 @@ class Pane extends RootApi {
     if (bundle.css) {
       embedStyle(this.document, `plugin-${bundle.id}`, bundle.css);
     }
-    const plugins =
-      'plugin' in bundle
-        ? [bundle.plugin]
-        : 'plugins' in bundle
-          ? bundle.plugins
-          : [];
+    const plugins = 'plugin' in bundle ? [bundle.plugin] : 'plugins' in bundle ? bundle.plugins : [];
     plugins.forEach((p) => {
       this.pool_.register(bundle.id, p);
     });
@@ -8646,13 +8098,7 @@ class Pane extends RootApi {
       id: 'default',
       // NOTE: This string literal will be replaced with the default CSS by Rollup at the compilation time
       css: '.tp-tbiv_b,.tp-coltxtv_ms,.tp-colswv_b,.tp-ckbv_i,.tp-sglv_i,.tp-mllv_i,.tp-grlv_g,.tp-txtv_i,.tp-p2dpv_p,.tp-colswv_sw,.tp-rotv_b,.tp-fldv_b,.tp-p2dv_b,.tp-btnv_b,.tp-lstv_s{-webkit-appearance:none;-moz-appearance:none;appearance:none;background-color:rgba(0,0,0,0);border-width:0;font-family:inherit;font-size:inherit;font-weight:inherit;margin:0;outline:none;padding:0}.tp-p2dv_b,.tp-btnv_b,.tp-lstv_s{background-color:var(--btn-bg);border-radius:var(--bld-br);color:var(--btn-fg);cursor:pointer;display:block;font-weight:bold;height:var(--cnt-usz);line-height:var(--cnt-usz);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.tp-p2dv_b:hover,.tp-btnv_b:hover,.tp-lstv_s:hover{background-color:var(--btn-bg-h)}.tp-p2dv_b:focus,.tp-btnv_b:focus,.tp-lstv_s:focus{background-color:var(--btn-bg-f)}.tp-p2dv_b:active,.tp-btnv_b:active,.tp-lstv_s:active{background-color:var(--btn-bg-a)}.tp-p2dv_b:disabled,.tp-btnv_b:disabled,.tp-lstv_s:disabled{opacity:.5}.tp-rotv_c>.tp-cntv.tp-v-lst,.tp-tbpv_c>.tp-cntv.tp-v-lst,.tp-fldv_c>.tp-cntv.tp-v-lst{margin-bottom:calc(-1*var(--cnt-vp))}.tp-rotv_c>.tp-fldv.tp-v-lst .tp-fldv_c,.tp-tbpv_c>.tp-fldv.tp-v-lst .tp-fldv_c,.tp-fldv_c>.tp-fldv.tp-v-lst .tp-fldv_c{border-bottom-left-radius:0}.tp-rotv_c>.tp-fldv.tp-v-lst .tp-fldv_b,.tp-tbpv_c>.tp-fldv.tp-v-lst .tp-fldv_b,.tp-fldv_c>.tp-fldv.tp-v-lst .tp-fldv_b{border-bottom-left-radius:0}.tp-rotv_c>*:not(.tp-v-fst),.tp-tbpv_c>*:not(.tp-v-fst),.tp-fldv_c>*:not(.tp-v-fst){margin-top:var(--cnt-usp)}.tp-rotv_c>.tp-sprv:not(.tp-v-fst),.tp-tbpv_c>.tp-sprv:not(.tp-v-fst),.tp-fldv_c>.tp-sprv:not(.tp-v-fst),.tp-rotv_c>.tp-cntv:not(.tp-v-fst),.tp-tbpv_c>.tp-cntv:not(.tp-v-fst),.tp-fldv_c>.tp-cntv:not(.tp-v-fst){margin-top:var(--cnt-vp)}.tp-rotv_c>.tp-sprv+*:not(.tp-v-hidden),.tp-tbpv_c>.tp-sprv+*:not(.tp-v-hidden),.tp-fldv_c>.tp-sprv+*:not(.tp-v-hidden),.tp-rotv_c>.tp-cntv+*:not(.tp-v-hidden),.tp-tbpv_c>.tp-cntv+*:not(.tp-v-hidden),.tp-fldv_c>.tp-cntv+*:not(.tp-v-hidden){margin-top:var(--cnt-vp)}.tp-rotv_c>.tp-sprv:not(.tp-v-hidden)+.tp-sprv,.tp-tbpv_c>.tp-sprv:not(.tp-v-hidden)+.tp-sprv,.tp-fldv_c>.tp-sprv:not(.tp-v-hidden)+.tp-sprv,.tp-rotv_c>.tp-cntv:not(.tp-v-hidden)+.tp-cntv,.tp-tbpv_c>.tp-cntv:not(.tp-v-hidden)+.tp-cntv,.tp-fldv_c>.tp-cntv:not(.tp-v-hidden)+.tp-cntv{margin-top:0}.tp-tbpv_c>.tp-cntv,.tp-fldv_c>.tp-cntv{margin-left:4px}.tp-tbpv_c>.tp-fldv>.tp-fldv_b,.tp-fldv_c>.tp-fldv>.tp-fldv_b{border-top-left-radius:var(--bld-br);border-bottom-left-radius:var(--bld-br)}.tp-tbpv_c>.tp-fldv.tp-fldv-expanded>.tp-fldv_b,.tp-fldv_c>.tp-fldv.tp-fldv-expanded>.tp-fldv_b{border-bottom-left-radius:0}.tp-tbpv_c .tp-fldv>.tp-fldv_c,.tp-fldv_c .tp-fldv>.tp-fldv_c{border-bottom-left-radius:var(--bld-br)}.tp-tbpv_c>.tp-cntv+.tp-fldv>.tp-fldv_b,.tp-fldv_c>.tp-cntv+.tp-fldv>.tp-fldv_b{border-top-left-radius:0}.tp-tbpv_c>.tp-cntv+.tp-tabv>.tp-tabv_t,.tp-fldv_c>.tp-cntv+.tp-tabv>.tp-tabv_t{border-top-left-radius:0}.tp-tbpv_c>.tp-tabv>.tp-tabv_t,.tp-fldv_c>.tp-tabv>.tp-tabv_t{border-top-left-radius:var(--bld-br)}.tp-tbpv_c .tp-tabv>.tp-tabv_c,.tp-fldv_c .tp-tabv>.tp-tabv_c{border-bottom-left-radius:var(--bld-br)}.tp-rotv_b,.tp-fldv_b{background-color:var(--cnt-bg);color:var(--cnt-fg);cursor:pointer;display:block;height:calc(var(--cnt-usz) + 4px);line-height:calc(var(--cnt-usz) + 4px);overflow:hidden;padding-left:var(--cnt-hp);padding-right:calc(4px + var(--cnt-usz) + var(--cnt-hp));position:relative;text-align:left;text-overflow:ellipsis;white-space:nowrap;width:100%;transition:border-radius .2s ease-in-out .2s}.tp-rotv_b:hover,.tp-fldv_b:hover{background-color:var(--cnt-bg-h)}.tp-rotv_b:focus,.tp-fldv_b:focus{background-color:var(--cnt-bg-f)}.tp-rotv_b:active,.tp-fldv_b:active{background-color:var(--cnt-bg-a)}.tp-rotv_b:disabled,.tp-fldv_b:disabled{opacity:.5}.tp-rotv_m,.tp-fldv_m{background:linear-gradient(to left, var(--cnt-fg), var(--cnt-fg) 2px, transparent 2px, transparent 4px, var(--cnt-fg) 4px);border-radius:2px;bottom:0;content:"";display:block;height:6px;right:calc(var(--cnt-hp) + (var(--cnt-usz) + 4px - 6px)/2 - 2px);margin:auto;opacity:.5;position:absolute;top:0;transform:rotate(90deg);transition:transform .2s ease-in-out;width:6px}.tp-rotv.tp-rotv-expanded .tp-rotv_m,.tp-fldv.tp-fldv-expanded>.tp-fldv_b>.tp-fldv_m{transform:none}.tp-rotv_c,.tp-fldv_c{box-sizing:border-box;height:0;opacity:0;overflow:hidden;padding-bottom:0;padding-top:0;position:relative;transition:height .2s ease-in-out,opacity .2s linear,padding .2s ease-in-out}.tp-rotv.tp-rotv-cpl:not(.tp-rotv-expanded) .tp-rotv_c,.tp-fldv.tp-fldv-cpl:not(.tp-fldv-expanded)>.tp-fldv_c{display:none}.tp-rotv.tp-rotv-expanded .tp-rotv_c,.tp-fldv.tp-fldv-expanded>.tp-fldv_c{opacity:1;padding-bottom:var(--cnt-vp);padding-top:var(--cnt-vp);transform:none;overflow:visible;transition:height .2s ease-in-out,opacity .2s linear .2s,padding .2s ease-in-out}.tp-txtv_i,.tp-p2dpv_p,.tp-colswv_sw{background-color:var(--in-bg);border-radius:var(--bld-br);box-sizing:border-box;color:var(--in-fg);font-family:inherit;height:var(--cnt-usz);line-height:var(--cnt-usz);min-width:0;width:100%}.tp-txtv_i:hover,.tp-p2dpv_p:hover,.tp-colswv_sw:hover{background-color:var(--in-bg-h)}.tp-txtv_i:focus,.tp-p2dpv_p:focus,.tp-colswv_sw:focus{background-color:var(--in-bg-f)}.tp-txtv_i:active,.tp-p2dpv_p:active,.tp-colswv_sw:active{background-color:var(--in-bg-a)}.tp-txtv_i:disabled,.tp-p2dpv_p:disabled,.tp-colswv_sw:disabled{opacity:.5}.tp-lstv,.tp-coltxtv_m{position:relative}.tp-lstv_s{padding:0 20px 0 4px;width:100%}.tp-lstv_m,.tp-coltxtv_mm{bottom:0;margin:auto;pointer-events:none;position:absolute;right:2px;top:0}.tp-lstv_m svg,.tp-coltxtv_mm svg{bottom:0;height:16px;margin:auto;position:absolute;right:0;top:0;width:16px}.tp-lstv_m svg path,.tp-coltxtv_mm svg path{fill:currentColor}.tp-sglv_i,.tp-mllv_i,.tp-grlv_g{background-color:var(--mo-bg);border-radius:var(--bld-br);box-sizing:border-box;color:var(--mo-fg);height:var(--cnt-usz);scrollbar-color:currentColor rgba(0,0,0,0);scrollbar-width:thin;width:100%}.tp-sglv_i::-webkit-scrollbar,.tp-mllv_i::-webkit-scrollbar,.tp-grlv_g::-webkit-scrollbar{height:8px;width:8px}.tp-sglv_i::-webkit-scrollbar-corner,.tp-mllv_i::-webkit-scrollbar-corner,.tp-grlv_g::-webkit-scrollbar-corner{background-color:rgba(0,0,0,0)}.tp-sglv_i::-webkit-scrollbar-thumb,.tp-mllv_i::-webkit-scrollbar-thumb,.tp-grlv_g::-webkit-scrollbar-thumb{background-clip:padding-box;background-color:currentColor;border:rgba(0,0,0,0) solid 2px;border-radius:4px}.tp-pndtxtv,.tp-coltxtv_w{display:flex}.tp-pndtxtv_a,.tp-coltxtv_c{width:100%}.tp-pndtxtv_a+.tp-pndtxtv_a,.tp-coltxtv_c+.tp-pndtxtv_a,.tp-pndtxtv_a+.tp-coltxtv_c,.tp-coltxtv_c+.tp-coltxtv_c{margin-left:2px}.tp-rotv{--bs-bg: var(--tp-base-background-color, hsl(230, 7%, 17%));--bs-br: var(--tp-base-border-radius, 6px);--bs-ff: var(--tp-base-font-family, Roboto Mono, Source Code Pro, Menlo, Courier, monospace);--bs-sh: var(--tp-base-shadow-color, rgba(0, 0, 0, 0.2));--bld-br: var(--tp-blade-border-radius, 2px);--bld-hp: var(--tp-blade-horizontal-padding, 4px);--bld-vw: var(--tp-blade-value-width, 160px);--btn-bg: var(--tp-button-background-color, hsl(230, 7%, 70%));--btn-bg-a: var(--tp-button-background-color-active, #d6d7db);--btn-bg-f: var(--tp-button-background-color-focus, #c8cad0);--btn-bg-h: var(--tp-button-background-color-hover, #bbbcc4);--btn-fg: var(--tp-button-foreground-color, hsl(230, 7%, 17%));--cnt-bg: var(--tp-container-background-color, rgba(187, 188, 196, 0.1));--cnt-bg-a: var(--tp-container-background-color-active, rgba(187, 188, 196, 0.25));--cnt-bg-f: var(--tp-container-background-color-focus, rgba(187, 188, 196, 0.2));--cnt-bg-h: var(--tp-container-background-color-hover, rgba(187, 188, 196, 0.15));--cnt-fg: var(--tp-container-foreground-color, hsl(230, 7%, 75%));--cnt-hp: var(--tp-container-horizontal-padding, 4px);--cnt-vp: var(--tp-container-vertical-padding, 4px);--cnt-usp: var(--tp-container-unit-spacing, 4px);--cnt-usz: var(--tp-container-unit-size, 20px);--in-bg: var(--tp-input-background-color, rgba(187, 188, 196, 0.1));--in-bg-a: var(--tp-input-background-color-active, rgba(187, 188, 196, 0.25));--in-bg-f: var(--tp-input-background-color-focus, rgba(187, 188, 196, 0.2));--in-bg-h: var(--tp-input-background-color-hover, rgba(187, 188, 196, 0.15));--in-fg: var(--tp-input-foreground-color, hsl(230, 7%, 75%));--lbl-fg: var(--tp-label-foreground-color, rgba(187, 188, 196, 0.7));--mo-bg: var(--tp-monitor-background-color, rgba(0, 0, 0, 0.2));--mo-fg: var(--tp-monitor-foreground-color, rgba(187, 188, 196, 0.7));--grv-fg: var(--tp-groove-foreground-color, rgba(187, 188, 196, 0.1))}.tp-btnv_b{width:100%}.tp-btnv_t{text-align:center}.tp-ckbv_l{display:block;position:relative}.tp-ckbv_i{left:0;opacity:0;position:absolute;top:0}.tp-ckbv_w{background-color:var(--in-bg);border-radius:var(--bld-br);cursor:pointer;display:block;height:var(--cnt-usz);position:relative;width:var(--cnt-usz)}.tp-ckbv_w svg{bottom:0;display:block;height:16px;left:0;margin:auto;opacity:0;position:absolute;right:0;top:0;width:16px}.tp-ckbv_w svg path{fill:none;stroke:var(--in-fg);stroke-width:2}.tp-ckbv_i:hover+.tp-ckbv_w{background-color:var(--in-bg-h)}.tp-ckbv_i:focus+.tp-ckbv_w{background-color:var(--in-bg-f)}.tp-ckbv_i:active+.tp-ckbv_w{background-color:var(--in-bg-a)}.tp-ckbv_i:checked+.tp-ckbv_w svg{opacity:1}.tp-ckbv.tp-v-disabled .tp-ckbv_w{opacity:.5}.tp-colv{position:relative}.tp-colv_h{display:flex}.tp-colv_s{flex-grow:0;flex-shrink:0;width:var(--cnt-usz)}.tp-colv_t{flex:1;margin-left:4px}.tp-colv_p{height:0;margin-top:0;opacity:0;overflow:hidden;transition:height .2s ease-in-out,opacity .2s linear,margin .2s ease-in-out}.tp-colv.tp-colv-expanded.tp-colv-cpl .tp-colv_p{overflow:visible}.tp-colv.tp-colv-expanded .tp-colv_p{margin-top:var(--cnt-usp);opacity:1}.tp-colv .tp-popv{left:calc(-1*var(--cnt-hp));right:calc(-1*var(--cnt-hp));top:var(--cnt-usz)}.tp-colpv_h,.tp-colpv_ap{margin-left:6px;margin-right:6px}.tp-colpv_h{margin-top:var(--cnt-usp)}.tp-colpv_rgb{display:flex;margin-top:var(--cnt-usp);width:100%}.tp-colpv_a{display:flex;margin-top:var(--cnt-vp);padding-top:calc(var(--cnt-vp) + 2px);position:relative}.tp-colpv_a::before{background-color:var(--grv-fg);content:"";height:2px;left:calc(-1*var(--cnt-hp));position:absolute;right:calc(-1*var(--cnt-hp));top:0}.tp-colpv.tp-v-disabled .tp-colpv_a::before{opacity:.5}.tp-colpv_ap{align-items:center;display:flex;flex:3}.tp-colpv_at{flex:1;margin-left:4px}.tp-svpv{border-radius:var(--bld-br);outline:none;overflow:hidden;position:relative}.tp-svpv.tp-v-disabled{opacity:.5}.tp-svpv_c{cursor:crosshair;display:block;height:calc(var(--cnt-usz)*4);width:100%}.tp-svpv_m{border-radius:100%;border:rgba(255,255,255,.75) solid 2px;box-sizing:border-box;filter:drop-shadow(0 0 1px rgba(0, 0, 0, 0.3));height:12px;margin-left:-6px;margin-top:-6px;pointer-events:none;position:absolute;width:12px}.tp-svpv:focus .tp-svpv_m{border-color:#fff}.tp-hplv{cursor:pointer;height:var(--cnt-usz);outline:none;position:relative}.tp-hplv.tp-v-disabled{opacity:.5}.tp-hplv_c{background-image:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAAABCAYAAABubagXAAAAQ0lEQVQoU2P8z8Dwn0GCgQEDi2OK/RBgYHjBgIpfovFh8j8YBIgzFGQxuqEgPhaDOT5gOhPkdCxOZeBg+IDFZZiGAgCaSSMYtcRHLgAAAABJRU5ErkJggg==);background-position:left top;background-repeat:no-repeat;background-size:100% 100%;border-radius:2px;display:block;height:4px;left:0;margin-top:-2px;position:absolute;top:50%;width:100%}.tp-hplv_m{border-radius:var(--bld-br);border:rgba(255,255,255,.75) solid 2px;box-shadow:0 0 2px rgba(0,0,0,.1);box-sizing:border-box;height:12px;left:50%;margin-left:-6px;margin-top:-6px;pointer-events:none;position:absolute;top:50%;width:12px}.tp-hplv:focus .tp-hplv_m{border-color:#fff}.tp-aplv{cursor:pointer;height:var(--cnt-usz);outline:none;position:relative;width:100%}.tp-aplv.tp-v-disabled{opacity:.5}.tp-aplv_b{background-color:#fff;background-image:linear-gradient(to top right, #ddd 25%, transparent 25%, transparent 75%, #ddd 75%),linear-gradient(to top right, #ddd 25%, transparent 25%, transparent 75%, #ddd 75%);background-size:4px 4px;background-position:0 0,2px 2px;border-radius:2px;display:block;height:4px;left:0;margin-top:-2px;overflow:hidden;position:absolute;top:50%;width:100%}.tp-aplv_c{bottom:0;left:0;position:absolute;right:0;top:0}.tp-aplv_m{background-color:#fff;background-image:linear-gradient(to top right, #ddd 25%, transparent 25%, transparent 75%, #ddd 75%),linear-gradient(to top right, #ddd 25%, transparent 25%, transparent 75%, #ddd 75%);background-size:12px 12px;background-position:0 0,6px 6px;border-radius:var(--bld-br);box-shadow:0 0 2px rgba(0,0,0,.1);height:12px;left:50%;margin-left:-6px;margin-top:-6px;overflow:hidden;pointer-events:none;position:absolute;top:50%;width:12px}.tp-aplv_p{border-radius:var(--bld-br);border:rgba(255,255,255,.75) solid 2px;box-sizing:border-box;bottom:0;left:0;position:absolute;right:0;top:0}.tp-aplv:focus .tp-aplv_p{border-color:#fff}.tp-colswv{background-color:#fff;background-image:linear-gradient(to top right, #ddd 25%, transparent 25%, transparent 75%, #ddd 75%),linear-gradient(to top right, #ddd 25%, transparent 25%, transparent 75%, #ddd 75%);background-size:10px 10px;background-position:0 0,5px 5px;border-radius:var(--bld-br);overflow:hidden}.tp-colswv.tp-v-disabled{opacity:.5}.tp-colswv_sw{border-radius:0}.tp-colswv_b{cursor:pointer;display:block;height:var(--cnt-usz);left:0;position:absolute;top:0;width:var(--cnt-usz)}.tp-colswv_b:focus::after{border:rgba(255,255,255,.75) solid 2px;border-radius:var(--bld-br);bottom:0;content:"";display:block;left:0;position:absolute;right:0;top:0}.tp-coltxtv{display:flex;width:100%}.tp-coltxtv_m{margin-right:4px}.tp-coltxtv_ms{border-radius:var(--bld-br);color:var(--lbl-fg);cursor:pointer;height:var(--cnt-usz);line-height:var(--cnt-usz);padding:0 18px 0 4px}.tp-coltxtv_ms:hover{background-color:var(--in-bg-h)}.tp-coltxtv_ms:focus{background-color:var(--in-bg-f)}.tp-coltxtv_ms:active{background-color:var(--in-bg-a)}.tp-coltxtv_mm{color:var(--lbl-fg)}.tp-coltxtv.tp-v-disabled .tp-coltxtv_mm{opacity:.5}.tp-coltxtv_w{flex:1}.tp-dfwv{position:absolute;top:8px;right:8px;width:256px}.tp-fldv{position:relative}.tp-fldv_t{padding-left:4px}.tp-fldv_b:disabled .tp-fldv_m{display:none}.tp-fldv_c{padding-left:4px}.tp-fldv_i{bottom:0;color:var(--cnt-bg);left:0;overflow:hidden;position:absolute;top:calc(var(--cnt-usz) + 4px);width:max(var(--bs-br),4px)}.tp-fldv_i::before{background-color:currentColor;bottom:0;content:"";left:0;position:absolute;top:0;width:4px}.tp-fldv_b:hover+.tp-fldv_i{color:var(--cnt-bg-h)}.tp-fldv_b:focus+.tp-fldv_i{color:var(--cnt-bg-f)}.tp-fldv_b:active+.tp-fldv_i{color:var(--cnt-bg-a)}.tp-fldv.tp-v-disabled>.tp-fldv_i{opacity:.5}.tp-grlv{position:relative}.tp-grlv_g{display:block;height:calc(var(--cnt-usz)*3)}.tp-grlv_g polyline{fill:none;stroke:var(--mo-fg);stroke-linejoin:round}.tp-grlv_t{margin-top:-4px;transition:left .05s,top .05s;visibility:hidden}.tp-grlv_t.tp-grlv_t-a{visibility:visible}.tp-grlv_t.tp-grlv_t-in{transition:none}.tp-grlv.tp-v-disabled .tp-grlv_g{opacity:.5}.tp-grlv .tp-ttv{background-color:var(--mo-fg)}.tp-grlv .tp-ttv::before{border-top-color:var(--mo-fg)}.tp-lblv{align-items:center;display:flex;line-height:1.3;padding-left:var(--cnt-hp);padding-right:var(--cnt-hp)}.tp-lblv.tp-lblv-nol{display:block}.tp-lblv_l{color:var(--lbl-fg);flex:1;-webkit-hyphens:auto;hyphens:auto;overflow:hidden;padding-left:4px;padding-right:16px}.tp-lblv.tp-v-disabled .tp-lblv_l{opacity:.5}.tp-lblv.tp-lblv-nol .tp-lblv_l{display:none}.tp-lblv_v{align-self:flex-start;flex-grow:0;flex-shrink:0;width:var(--bld-vw)}.tp-lblv.tp-lblv-nol .tp-lblv_v{width:100%}.tp-lstv_s{padding:0 20px 0 var(--bld-hp);width:100%}.tp-lstv_m{color:var(--btn-fg)}.tp-sglv_i{padding-left:var(--bld-hp);padding-right:var(--bld-hp)}.tp-sglv.tp-v-disabled .tp-sglv_i{opacity:.5}.tp-mllv_i{display:block;height:calc(var(--cnt-usz)*3);line-height:var(--cnt-usz);padding-left:var(--bld-hp);padding-right:var(--bld-hp);resize:none;white-space:pre}.tp-mllv.tp-v-disabled .tp-mllv_i{opacity:.5}.tp-p2dv{position:relative}.tp-p2dv_h{display:flex}.tp-p2dv_b{height:var(--cnt-usz);margin-right:4px;position:relative;width:var(--cnt-usz)}.tp-p2dv_b svg{display:block;height:16px;left:50%;margin-left:-8px;margin-top:-8px;position:absolute;top:50%;width:16px}.tp-p2dv_b svg path{stroke:currentColor;stroke-width:2}.tp-p2dv_b svg circle{fill:currentColor}.tp-p2dv_t{flex:1}.tp-p2dv_p{height:0;margin-top:0;opacity:0;overflow:hidden;transition:height .2s ease-in-out,opacity .2s linear,margin .2s ease-in-out}.tp-p2dv.tp-p2dv-expanded .tp-p2dv_p{margin-top:var(--cnt-usp);opacity:1}.tp-p2dv .tp-popv{left:calc(-1*var(--cnt-hp));right:calc(-1*var(--cnt-hp));top:var(--cnt-usz)}.tp-p2dpv{padding-left:calc(var(--cnt-usz) + 4px)}.tp-p2dpv_p{cursor:crosshair;height:0;overflow:hidden;padding-bottom:100%;position:relative}.tp-p2dpv.tp-v-disabled .tp-p2dpv_p{opacity:.5}.tp-p2dpv_g{display:block;height:100%;left:0;pointer-events:none;position:absolute;top:0;width:100%}.tp-p2dpv_ax{opacity:.1;stroke:var(--in-fg);stroke-dasharray:1}.tp-p2dpv_l{opacity:.5;stroke:var(--in-fg);stroke-dasharray:1}.tp-p2dpv_m{border:var(--in-fg) solid 1px;border-radius:50%;box-sizing:border-box;height:4px;margin-left:-2px;margin-top:-2px;position:absolute;width:4px}.tp-p2dpv_p:focus .tp-p2dpv_m{background-color:var(--in-fg);border-width:0}.tp-popv{background-color:var(--bs-bg);border-radius:var(--bs-br);box-shadow:0 2px 4px var(--bs-sh);display:none;max-width:var(--bld-vw);padding:var(--cnt-vp) var(--cnt-hp);position:absolute;visibility:hidden;z-index:1000}.tp-popv.tp-popv-v{display:block;visibility:visible}.tp-sldv.tp-v-disabled{opacity:.5}.tp-sldv_t{box-sizing:border-box;cursor:pointer;height:var(--cnt-usz);margin:0 6px;outline:none;position:relative}.tp-sldv_t::before{background-color:var(--in-bg);border-radius:1px;bottom:0;content:"";display:block;height:2px;left:0;margin:auto;position:absolute;right:0;top:0}.tp-sldv_k{height:100%;left:0;position:absolute;top:0}.tp-sldv_k::before{background-color:var(--in-fg);border-radius:1px;bottom:0;content:"";display:block;height:2px;left:0;margin-bottom:auto;margin-top:auto;position:absolute;right:0;top:0}.tp-sldv_k::after{background-color:var(--btn-bg);border-radius:var(--bld-br);bottom:0;content:"";display:block;height:12px;margin-bottom:auto;margin-top:auto;position:absolute;right:-6px;top:0;width:12px}.tp-sldv_t:hover .tp-sldv_k::after{background-color:var(--btn-bg-h)}.tp-sldv_t:focus .tp-sldv_k::after{background-color:var(--btn-bg-f)}.tp-sldv_t:active .tp-sldv_k::after{background-color:var(--btn-bg-a)}.tp-sldtxtv{display:flex}.tp-sldtxtv_s{flex:2}.tp-sldtxtv_t{flex:1;margin-left:4px}.tp-tabv{position:relative}.tp-tabv_t{align-items:flex-end;color:var(--cnt-bg);display:flex;overflow:hidden;position:relative}.tp-tabv_t:hover{color:var(--cnt-bg-h)}.tp-tabv_t:has(*:focus){color:var(--cnt-bg-f)}.tp-tabv_t:has(*:active){color:var(--cnt-bg-a)}.tp-tabv_t::before{background-color:currentColor;bottom:0;content:"";height:2px;left:0;pointer-events:none;position:absolute;right:0}.tp-tabv.tp-v-disabled .tp-tabv_t::before{opacity:.5}.tp-tabv.tp-tabv-nop .tp-tabv_t{height:calc(var(--cnt-usz) + 4px);position:relative}.tp-tabv.tp-tabv-nop .tp-tabv_t::before{background-color:var(--cnt-bg);bottom:0;content:"";height:2px;left:0;position:absolute;right:0}.tp-tabv_i{bottom:0;color:var(--cnt-bg);left:0;overflow:hidden;position:absolute;top:calc(var(--cnt-usz) + 4px);width:max(var(--bs-br),4px)}.tp-tabv_i::before{background-color:currentColor;bottom:0;content:"";left:0;position:absolute;top:0;width:4px}.tp-tabv_t:hover+.tp-tabv_i{color:var(--cnt-bg-h)}.tp-tabv_t:has(*:focus)+.tp-tabv_i{color:var(--cnt-bg-f)}.tp-tabv_t:has(*:active)+.tp-tabv_i{color:var(--cnt-bg-a)}.tp-tabv.tp-v-disabled>.tp-tabv_i{opacity:.5}.tp-tbiv{flex:1;min-width:0;position:relative}.tp-tbiv+.tp-tbiv{margin-left:2px}.tp-tbiv+.tp-tbiv.tp-v-disabled::before{opacity:.5}.tp-tbiv_b{display:block;padding-left:calc(var(--cnt-hp) + 4px);padding-right:calc(var(--cnt-hp) + 4px);position:relative;width:100%}.tp-tbiv_b:disabled{opacity:.5}.tp-tbiv_b::before{background-color:var(--cnt-bg);bottom:2px;content:"";left:0;pointer-events:none;position:absolute;right:0;top:0}.tp-tbiv_b:hover::before{background-color:var(--cnt-bg-h)}.tp-tbiv_b:focus::before{background-color:var(--cnt-bg-f)}.tp-tbiv_b:active::before{background-color:var(--cnt-bg-a)}.tp-tbiv_t{color:var(--cnt-fg);height:calc(var(--cnt-usz) + 4px);line-height:calc(var(--cnt-usz) + 4px);opacity:.5;overflow:hidden;position:relative;text-overflow:ellipsis}.tp-tbiv.tp-tbiv-sel .tp-tbiv_t{opacity:1}.tp-tbpv_c{padding-bottom:var(--cnt-vp);padding-left:4px;padding-top:var(--cnt-vp)}.tp-txtv{position:relative}.tp-txtv_i{padding-left:var(--bld-hp);padding-right:var(--bld-hp)}.tp-txtv.tp-txtv-fst .tp-txtv_i{border-bottom-right-radius:0;border-top-right-radius:0}.tp-txtv.tp-txtv-mid .tp-txtv_i{border-radius:0}.tp-txtv.tp-txtv-lst .tp-txtv_i{border-bottom-left-radius:0;border-top-left-radius:0}.tp-txtv.tp-txtv-num .tp-txtv_i{text-align:right}.tp-txtv.tp-txtv-drg .tp-txtv_i{opacity:.3}.tp-txtv_k{cursor:pointer;height:100%;left:calc(var(--bld-hp) - 5px);position:absolute;top:0;width:12px}.tp-txtv_k::before{background-color:var(--in-fg);border-radius:1px;bottom:0;content:"";height:calc(var(--cnt-usz) - 4px);left:50%;margin-bottom:auto;margin-left:-1px;margin-top:auto;opacity:.1;position:absolute;top:0;transition:border-radius .1s,height .1s,transform .1s,width .1s;width:2px}.tp-txtv_k:hover::before,.tp-txtv.tp-txtv-drg .tp-txtv_k::before{opacity:1}.tp-txtv.tp-txtv-drg .tp-txtv_k::before{border-radius:50%;height:4px;transform:translateX(-1px);width:4px}.tp-txtv_g{bottom:0;display:block;height:8px;left:50%;margin:auto;overflow:visible;pointer-events:none;position:absolute;top:0;visibility:hidden;width:100%}.tp-txtv.tp-txtv-drg .tp-txtv_g{visibility:visible}.tp-txtv_gb{fill:none;stroke:var(--in-fg);stroke-dasharray:1}.tp-txtv_gh{fill:none;stroke:var(--in-fg)}.tp-txtv .tp-ttv{margin-left:6px;visibility:hidden}.tp-txtv.tp-txtv-drg .tp-ttv{visibility:visible}.tp-ttv{background-color:var(--in-fg);border-radius:var(--bld-br);color:var(--bs-bg);padding:2px 4px;pointer-events:none;position:absolute;transform:translate(-50%, -100%)}.tp-ttv::before{border-color:var(--in-fg) rgba(0,0,0,0) rgba(0,0,0,0) rgba(0,0,0,0);border-style:solid;border-width:2px;box-sizing:border-box;content:"";font-size:.9em;height:4px;left:50%;margin-left:-2px;position:absolute;top:100%;width:4px}.tp-rotv{background-color:var(--bs-bg);border-radius:var(--bs-br);box-shadow:0 2px 4px var(--bs-sh);font-family:var(--bs-ff);font-size:11px;font-weight:500;line-height:1;text-align:left}.tp-rotv_b{border-bottom-left-radius:var(--bs-br);border-bottom-right-radius:var(--bs-br);border-top-left-radius:var(--bs-br);border-top-right-radius:var(--bs-br);padding-left:calc(4px + var(--cnt-usz) + var(--cnt-hp));text-align:center}.tp-rotv.tp-rotv-expanded .tp-rotv_b{border-bottom-left-radius:0;border-bottom-right-radius:0;transition-delay:0s;transition-duration:0s}.tp-rotv.tp-rotv-not>.tp-rotv_b{display:none}.tp-rotv_b:disabled .tp-rotv_m{display:none}.tp-rotv_c>.tp-fldv.tp-v-lst>.tp-fldv_c{border-bottom-left-radius:var(--bs-br);border-bottom-right-radius:var(--bs-br)}.tp-rotv_c>.tp-fldv.tp-v-lst>.tp-fldv_i{border-bottom-left-radius:var(--bs-br)}.tp-rotv_c>.tp-fldv.tp-v-lst:not(.tp-fldv-expanded)>.tp-fldv_b{border-bottom-left-radius:var(--bs-br);border-bottom-right-radius:var(--bs-br)}.tp-rotv_c>.tp-fldv.tp-v-lst.tp-fldv-expanded>.tp-fldv_b{transition-delay:0s;transition-duration:0s}.tp-rotv_c .tp-fldv.tp-v-vlst:not(.tp-fldv-expanded)>.tp-fldv_b{border-bottom-right-radius:var(--bs-br)}.tp-rotv.tp-rotv-not .tp-rotv_c>.tp-fldv.tp-v-fst{margin-top:calc(-1*var(--cnt-vp))}.tp-rotv.tp-rotv-not .tp-rotv_c>.tp-fldv.tp-v-fst>.tp-fldv_b{border-top-left-radius:var(--bs-br);border-top-right-radius:var(--bs-br)}.tp-rotv_c>.tp-tabv.tp-v-lst>.tp-tabv_c{border-bottom-left-radius:var(--bs-br);border-bottom-right-radius:var(--bs-br)}.tp-rotv_c>.tp-tabv.tp-v-lst>.tp-tabv_i{border-bottom-left-radius:var(--bs-br)}.tp-rotv.tp-rotv-not .tp-rotv_c>.tp-tabv.tp-v-fst{margin-top:calc(-1*var(--cnt-vp))}.tp-rotv.tp-rotv-not .tp-rotv_c>.tp-tabv.tp-v-fst>.tp-tabv_t{border-top-left-radius:var(--bs-br);border-top-right-radius:var(--bs-br)}.tp-rotv.tp-v-disabled,.tp-rotv .tp-v-disabled{pointer-events:none}.tp-rotv.tp-v-hidden,.tp-rotv .tp-v-hidden{display:none}.tp-sprv_r{background-color:var(--grv-fg);border-width:0;display:block;height:2px;margin:0;width:100%}.tp-sprv.tp-v-disabled .tp-sprv_r{opacity:.5}',
-      plugins: [
-        ListBladePlugin,
-        SeparatorBladePlugin,
-        SliderBladePlugin,
-        TabBladePlugin,
-        TextBladePlugin
-      ]
+      plugins: [ListBladePlugin, SeparatorBladePlugin, SliderBladePlugin, TabBladePlugin, TextBladePlugin]
     });
   }
 }

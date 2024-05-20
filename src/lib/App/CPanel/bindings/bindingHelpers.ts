@@ -7,7 +7,7 @@ import { ParentBindings } from './ParentBindings';
 import { CommonGetterParams } from './bindingTypes';
 import { MaterialBindings } from './MaterialBindings';
 import { animate } from 'lib/utils/animate';
-import { isValidTexture } from 'lib/types';
+import { isValidTexture } from 'src/types';
 
 export const numberFormat = (precision: number) => (value: number) => value.toFixed(precision);
 

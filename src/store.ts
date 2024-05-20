@@ -5,7 +5,7 @@ import { subscribeWithSelector } from 'zustand/middleware';
 import { BindingParams } from 'tweakpane';
 import * as THREE from 'three';
 import { setFullScreen } from 'lib/utils';
-import { isTextureImage, isValidTexture } from 'lib/types';
+import { isTextureImage, isValidTexture } from 'src/types';
 
 const cPanelCustomParamsStore: any = {};
 let selectedObject: THREE.Object3D | null = null;

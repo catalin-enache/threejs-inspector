@@ -4,7 +4,7 @@ import { HDRJPGLoader } from '@monogrid/gainmap-js'; // see ThreeJS example: web
 import { useAppStore } from 'src/store';
 import { getNameAndType, getFileType } from '.';
 import { tiffLoader, exrLoader, textureLoader, hdrJpgLoader, rgbeLoader, tgaLoader, ktx2Loader } from './loaders';
-import { isValidTexture } from 'lib/types';
+import { isValidTexture } from 'src/types';
 
 export const FILE_EXR = 'image/x-exr';
 export const FILE_HDR = 'image/hdr';

@@ -8,6 +8,7 @@ export type __inspectorData = {
   hitRedirect: THREE.Object3D;
   picker: THREE.Mesh;
   helper:
+    | THREE.SkeletonHelper
     | THREE.SpotLightHelper
     | THREE.CameraHelper
     | RectAreaLightHelper

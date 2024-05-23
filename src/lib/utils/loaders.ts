@@ -10,7 +10,7 @@ import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader';
 import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module';
 
 import { GLTFLoader, GLTF } from 'three/examples/jsm/loaders/GLTFLoader';
-import { FBXLoader } from 'three/examples/jsm/loaders/FBXLoader';
+// import { FBXLoader } from 'three/examples/jsm/loaders/FBXLoader';
 import { PLYLoader } from 'three/examples/jsm/loaders/PLYLoader';
 import { OBJLoader } from 'three/examples/jsm/loaders/OBJLoader';
 import { MTLLoader } from 'three/examples/jsm/loaders/MTLLoader';
@@ -18,7 +18,7 @@ import { STLLoader } from 'three/examples/jsm/loaders/STLLoader';
 import { ColladaLoader, Collada } from 'three/examples/jsm/loaders/ColladaLoader';
 
 // @ts-ignore
-// import { FBXLoader } from 'lib/third_party/FBXLoader.js';
+import { FBXLoader } from 'lib/third_party/FBXLoader.js'; // TODO: revert to upstream after new release containing my PR
 
 export {
   MeshoptDecoder,

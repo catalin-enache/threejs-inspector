@@ -238,15 +238,26 @@ const _buildBindings = (folder: FolderApi, object: any, bindings: any, params: C
       expanded: false
     });
     tweakFolder(animationsFolder, `${animationsFolder.title!}-${object.uuid || 'no-id'}`);
-    const mixer = new THREE.AnimationMixer(object);
-    const { start, stop } = animate((delta) => {
-      mixer.update(delta);
-    });
 
-    let currentPlayingAction: THREE.AnimationAction | null = null;
-    object.__inspectorData.animations.forEach((animation: THREE.AnimationClip) => {
+    const inspectorData = object.__inspectorData;
+
+    // reuse existing mixer and actions if available so that we can select other objects then came back to prev object and stop actions
+    inspectorData.cpMixer = inspectorData.cpMixer ?? new THREE.AnimationMixer(object);
+    const mixer = inspectorData.cpMixer;
+    inspectorData.cpStartStop = inspectorData.cpStartStop ?? animate((delta) => mixer.update(delta), object);
+    inspectorData.cpActions = inspectorData.cpActions ?? new Map();
+    const { start, stop } = inspectorData.cpStartStop;
+    const actions = inspectorData.cpActions;
+
+    inspectorData.animations.forEach((animation: THREE.AnimationClip) => {
       const actionID = animation.name || animation.uuid;
-      const action = mixer.clipAction(animation);
+      let action;
+      if (actions.has(animation)) {
+        action = actions.get(animation);
+      } else {
+        action = mixer.clipAction(animation);
+        actions.set(animation, action);
+      }
       const button = animationsFolder.addButton({
         label: actionID,
         title: actionID
@@ -256,12 +267,12 @@ const _buildBindings = (folder: FolderApi, object: any, bindings: any, params: C
           action.paused = true;
           stop();
         } else {
-          if (currentPlayingAction === action) {
+          if (inspectorData.__cpCurrentPlayingAction === action) {
             action.paused = false;
             start();
           } else {
             mixer.stopAllAction();
-            currentPlayingAction = action;
+            inspectorData.__cpCurrentPlayingAction = action;
             action.play();
             start();
           }
@@ -275,7 +286,7 @@ const _buildBindings = (folder: FolderApi, object: any, bindings: any, params: C
     });
     button.on('click', () => {
       mixer.stopAllAction();
-      currentPlayingAction = null;
+      inspectorData.__cpCurrentPlayingAction = null;
       stop();
     });
     tweakBindingView(button);

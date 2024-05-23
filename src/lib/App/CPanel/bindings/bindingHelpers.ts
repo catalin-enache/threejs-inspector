@@ -9,6 +9,8 @@ import { MaterialBindings } from './MaterialBindings';
 import { animate } from 'lib/utils/animate';
 import { isValidTexture } from 'src/types';
 
+const cachedBindings = new WeakMap<any, any>();
+
 export const numberFormat = (precision: number) => (value: number) => value.toFixed(precision);
 
 export const numberCommon = {
@@ -96,6 +98,7 @@ const _buildParentBindings = (folder: FolderApi, object: any, params: CommonGett
       title: 'Parent',
       expanded: false
     });
+    tweakFolder(parentFolder, `${parentFolder.title!}-${object.parent.uuid || 'no-id'}`);
     const parentBindings = ParentBindings(params);
     Object.keys(parentBindings.parent).forEach((key) => {
       // @ts-ignore
@@ -234,6 +237,7 @@ const _buildBindings = (folder: FolderApi, object: any, bindings: any, params: C
       title: 'Animations',
       expanded: false
     });
+    tweakFolder(animationsFolder, `${animationsFolder.title!}-${object.uuid || 'no-id'}`);
     const mixer = new THREE.AnimationMixer(object);
     const { start, stop } = animate((delta) => {
       mixer.update(delta);
@@ -288,7 +292,7 @@ const _buildBindings = (folder: FolderApi, object: any, bindings: any, params: C
         Object.keys(child.morphTargetDictionary || {}).forEach((key) => {
           if (!morphInfluences[key]) {
             morphInfluences[key] = [];
-            fakeParams[key] = 0;
+            fakeParams[key] = child.morphTargetInfluences![child.morphTargetDictionary![key]];
           }
           morphInfluences[key].push(child.morphTargetInfluences!); // morphTargetDictionary implies morphTargetInfluences
         });
@@ -302,6 +306,7 @@ const _buildBindings = (folder: FolderApi, object: any, bindings: any, params: C
         title: 'Morph Targets',
         expanded: false
       });
+      tweakFolder(morphFolder, `${morphFolder.title!}-${object.uuid || 'no-id'}`);
       Object.keys(morphInfluences).forEach((key: string, index: number) => {
         const binding = morphFolder
           .addBinding(fakeParams, key, {
@@ -345,6 +350,7 @@ const _buildBindings = (folder: FolderApi, object: any, bindings: any, params: C
         title: 'Materials Inventory',
         expanded: false
       });
+      tweakFolder(materialsFolder, `${materialsFolder.title!}-${object.uuid || 'no-id'}`);
       materialsArray.forEach((material, index) => {
         const subFolder = materialsFolder.addFolder({
           title: material.name || `Material ${index}`,
@@ -365,11 +371,12 @@ const _buildBindings = (folder: FolderApi, object: any, bindings: any, params: C
 
   // TODO: try to put this in Object3DBindings, same for other sections in this function (we need some new logic for that)
   // morphTargetInfluences
-  if (Object.keys(object.morphTargetDictionary || {})?.length) {
+  if (folder.title !== 'Object3D' && Object.keys(object.morphTargetDictionary || {})?.length) {
     const morphFolder = folder.addFolder({
       title: 'Morph Targets',
       expanded: false
     });
+    tweakFolder(morphFolder, `${morphFolder.title!}-${object.uuid || 'no-id'}`);
     Object.keys(object.morphTargetDictionary).forEach((key: string, index: number) => {
       const binding = morphFolder.addBinding(object.morphTargetInfluences, index, {
         label: key,
@@ -391,24 +398,33 @@ const _buildBindings = (folder: FolderApi, object: any, bindings: any, params: C
       title: 'Children',
       expanded: false
     });
+    tweakFolder(childrenFolder, `${childrenFolder.title!}-${object.uuid || 'no-id'}`);
     objectChildren.forEach(function (child: any) {
       const childFolder = childrenFolder.addFolder({
         title: `${child.name || child.uuid}`,
         expanded: false
       });
-      let hasBinding = false;
-      childFolder.on('fold', (evt) => {
-        if (evt.expanded && !hasBinding) {
-          try {
-            const newBindings = getObject3DBindings(params);
-            // lazy building bindings for children
-            _buildBindings(childFolder, child, newBindings, params);
-            hasBinding = true;
-          } catch (error) {
-            console.error('Error building bindings for', child.name || child.uuid, { error });
-          }
+      let hasBinding = cachedBindings.has(child);
+      if (hasBinding) {
+        try {
+          _buildBindings(childFolder, child, cachedBindings.get(child), params);
+        } catch (error) {
+          console.error('Error building bindings for', child.name || child.uuid, { error });
         }
-      });
+      } else {
+        childFolder.on('fold', (evt) => {
+          if (evt.expanded && !hasBinding) {
+            try {
+              const newBindings = getObject3DBindings(params);
+              cachedBindings.set(child, newBindings);
+              // lazy building bindings for children
+              _buildBindings(childFolder, child, newBindings, params);
+            } catch (error) {
+              console.error('Error building bindings for', child.name || child.uuid, { error });
+            }
+          }
+        });
+      }
     });
   }
 

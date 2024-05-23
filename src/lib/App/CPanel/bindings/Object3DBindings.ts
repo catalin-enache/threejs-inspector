@@ -38,14 +38,14 @@ export const Object3DBindings = (params: CommonGetterParams) => ({
   },
   position: {
     label: 'Position(L)',
-    ...numberCommon,
-    if: (object: THREE.Object3D) => !isSkinnedMesh(object)
+    ...numberCommon
+    // if: (object: THREE.Object3D) => !isSkinnedMesh(object)
   },
   rotation: {
     label: `Rotation(${params.angleFormat})(L)`,
     ...numberCommon,
-    ...(params.angleFormat === 'deg' ? { format: radToDegFormatter } : {}),
-    if: (object: THREE.Object3D) => !isSkinnedMesh(object)
+    ...(params.angleFormat === 'deg' ? { format: radToDegFormatter } : {})
+    // if: (object: THREE.Object3D) => !isSkinnedMesh(object)
   },
   // quaternion is not displayed because it interferes with rotation when cPanel updates
   // TODO: make a text plugin that only reads
@@ -57,13 +57,13 @@ export const Object3DBindings = (params: CommonGetterParams) => ({
   // },
   scale: {
     label: 'Scale(L)',
-    ...numberCommon,
-    if: (object: THREE.Object3D) => !isSkinnedMesh(object)
+    ...numberCommon
+    // if: (object: THREE.Object3D) => !isSkinnedMesh(object)
   },
   up: {
     label: 'Up',
-    ...numberCommon,
-    if: (object: THREE.Object3D) => !isSkinnedMesh(object)
+    ...numberCommon
+    // if: (object: THREE.Object3D) => !isSkinnedMesh(object)
   },
   castShadow: {
     label: 'Cast Shadow',

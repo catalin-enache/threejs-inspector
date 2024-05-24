@@ -234,7 +234,7 @@ const _buildBindings = (folder: FolderApi, object: any, bindings: any, params: C
   // TODO: Later on add more capabilities to animations (blending, editing, ...)
   if (object.__inspectorData?.animations && object.__inspectorData.animations.length) {
     const animationsFolder = folder.addFolder({
-      title: 'Animations',
+      title: `Animations (${object.__inspectorData.animations.length})`,
       expanded: false
     });
     tweakFolder(animationsFolder, `${animationsFolder.title!}-${object.uuid || 'no-id'}`);
@@ -314,7 +314,7 @@ const _buildBindings = (folder: FolderApi, object: any, bindings: any, params: C
         view: 'separator'
       });
       const morphFolder = folder.addFolder({
-        title: 'Morph Targets',
+        title: `Morph Targets (${Object.keys(morphInfluences).length})`,
         expanded: false
       });
       tweakFolder(morphFolder, `${morphFolder.title!}-${object.uuid || 'no-id'}`);
@@ -358,7 +358,7 @@ const _buildBindings = (folder: FolderApi, object: any, bindings: any, params: C
         view: 'separator'
       });
       const materialsFolder = folder.addFolder({
-        title: 'Materials Inventory',
+        title: `Materials Inventory (${materialsArray.length})`,
         expanded: false
       });
       tweakFolder(materialsFolder, `${materialsFolder.title!}-${object.uuid || 'no-id'}`);
@@ -384,7 +384,7 @@ const _buildBindings = (folder: FolderApi, object: any, bindings: any, params: C
   // morphTargetInfluences
   if (folder.title !== 'Object3D' && Object.keys(object.morphTargetDictionary || {})?.length) {
     const morphFolder = folder.addFolder({
-      title: 'Morph Targets',
+      title: `Morph Targets (${object.morphTargetInfluences.length})`,
       expanded: false
     });
     tweakFolder(morphFolder, `${morphFolder.title!}-${object.uuid || 'no-id'}`);
@@ -406,7 +406,7 @@ const _buildBindings = (folder: FolderApi, object: any, bindings: any, params: C
       : object.children?.map((child: any) => !child.__inspectorData.isPicker && child).filter(Boolean) || [];
   if (objectChildren.length) {
     const childrenFolder = folder.addFolder({
-      title: 'Children',
+      title: `Children (${objectChildren.length})`,
       expanded: false
     });
     tweakFolder(childrenFolder, `${childrenFolder.title!}-${object.uuid || 'no-id'}`);

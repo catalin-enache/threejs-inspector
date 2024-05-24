@@ -296,16 +296,20 @@ const _buildBindings = (folder: FolderApi, object: any, bindings: any, params: C
   // As an edge case if 2 original meshes (before optimization done by loadModel) had the same morph target name
   // they will be grouped together
   if (folder.title === 'Object3D' && object.traverse) {
-    const morphInfluences: Record<string, number[][]> = {};
+    const morphInfluences: Record<string, { index: number; influences: number[] }[]> = {};
     const fakeParams: Record<string, number> = {};
     object.traverse((child: any) => {
       if (child instanceof THREE.Mesh) {
         Object.keys(child.morphTargetDictionary || {}).forEach((key) => {
           if (!morphInfluences[key]) {
             morphInfluences[key] = [];
+            // all influences for some key should be equal
             fakeParams[key] = child.morphTargetInfluences![child.morphTargetDictionary![key]];
           }
-          morphInfluences[key].push(child.morphTargetInfluences!); // morphTargetDictionary implies morphTargetInfluences
+          morphInfluences[key].push({
+            index: child.morphTargetDictionary![key],
+            influences: child.morphTargetInfluences!
+          }); // morphTargetDictionary implies morphTargetInfluences
         });
       }
     });
@@ -318,7 +322,7 @@ const _buildBindings = (folder: FolderApi, object: any, bindings: any, params: C
         expanded: false
       });
       tweakFolder(morphFolder, `${morphFolder.title!}-${object.uuid || 'no-id'}`);
-      Object.keys(morphInfluences).forEach((key: string, index: number) => {
+      Object.keys(morphInfluences).forEach((key: string) => {
         const binding = morphFolder
           .addBinding(fakeParams, key, {
             label: key,
@@ -328,7 +332,7 @@ const _buildBindings = (folder: FolderApi, object: any, bindings: any, params: C
           })
           .on('change', (evt) => {
             morphInfluences[key].forEach((influence) => {
-              influence[index] = evt.value;
+              influence.influences[influence.index] = evt.value;
             });
           });
         tweakBindingView(binding);

@@ -428,6 +428,7 @@ const _buildBindings = (folder: FolderApi, object: any, bindings: any, params: C
             try {
               const newBindings = getObject3DBindings(params);
               cachedBindings.set(child, newBindings);
+              hasBinding = true;
               // lazy building bindings for children
               _buildBindings(childFolder, child, newBindings, params);
             } catch (error) {

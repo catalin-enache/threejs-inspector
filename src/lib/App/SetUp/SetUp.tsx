@@ -1,33 +1,63 @@
 import * as THREE from 'three';
 // @ts-ignore
 import { useThree } from '@react-three/fiber';
-
 import { useCallback, useEffect, useRef } from 'react';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import { TransformControls } from 'three/examples/jsm/controls/TransformControls';
 import { RectAreaLightHelper } from 'three/examples/jsm/helpers/RectAreaLightHelper';
 import { RectAreaLightUniformsLib } from 'three/examples/jsm/lights/RectAreaLightUniformsLib';
 import { LightProbeHelper } from 'three/examples/jsm/helpers/LightProbeHelper';
-
 import { FlyControls } from 'lib/App/FlyControls';
 import { useAppStore } from 'src/store';
 import { focusCamera } from 'lib/utils';
 import { __inspectorData } from 'src/types';
 
+RectAreaLightUniformsLib.init(); // required for RectAreaLight
+
 Object.defineProperty(THREE.Object3D.prototype, '__inspectorData', {
   get: function () {
     if (!this._innerInspectorData) {
-      this._innerInspectorData = {};
+      const __inspectorData: any = {};
+      const scope = this;
+      Object.defineProperty(__inspectorData, 'isInspectable', {
+        get: () => {
+          // console.log('isInspectable getter called', scope.name || scope.type || scope.uuid);
+          return this._isInspectable;
+        },
+        set: (value) => {
+          this._isInspectable = value;
+          scope.children.forEach((child: THREE.Object3D) => {
+            child.__inspectorData.isInspectable = value;
+            // only need hitRedirect on descendants if it's not set, not on root
+            if (!child.__inspectorData.hitRedirect) {
+              child.__inspectorData.hitRedirect = this;
+            }
+          });
+        },
+        configurable: true
+      });
+      Object.defineProperty(__inspectorData, 'hitRedirect', {
+        get: () => {
+          // console.log('hitRedirect getter called', scope.name || scope.type || scope.uuid);
+          return this._hitRedirect;
+        },
+        set: (value) => {
+          this._hitRedirect = value;
+          scope.children.forEach((child: THREE.Object3D) => {
+            child.__inspectorData.hitRedirect = value;
+          });
+        },
+        configurable: true
+      });
+      this._innerInspectorData = __inspectorData;
     }
     return this._innerInspectorData;
   },
   set: function (value) {
-    this._innerInspectorData = value;
+    Object.assign(this._innerInspectorData, value);
   },
   configurable: true
 });
-
-RectAreaLightUniformsLib.init(); // required for RectAreaLight
 
 const threeScene = new THREE.Scene();
 const inspectableObjects: Record<string, THREE.Object3D> = {};
@@ -35,18 +65,45 @@ const dependantObjects: Record<string, THREE.Object3D[]> = {};
 threeScene.__inspectorData.inspectableObjects = inspectableObjects;
 threeScene.__inspectorData.dependantObjects = dependantObjects;
 
+const objectHasSkeleton = (object: THREE.Object3D) => {
+  let hasSkeleton = false;
+  object.traverse((descendant) => {
+    if (descendant instanceof THREE.SkinnedMesh) {
+      hasSkeleton = true;
+    }
+  });
+  return hasSkeleton;
+};
+
 const makeHelpers = (object: THREE.Object3D) => {
   let helper: __inspectorData['helper'];
 
   let picker: THREE.Mesh;
 
-  if (!(object instanceof THREE.Light || object instanceof THREE.Camera || object instanceof THREE.CubeCamera)) return;
+  let hasSkeleton = objectHasSkeleton(object);
+
+  if (
+    !(
+      object instanceof THREE.Light ||
+      object instanceof THREE.Camera ||
+      object instanceof THREE.CubeCamera ||
+      hasSkeleton
+    )
+  )
+    return;
   // console.log('Making helpers for', object.name || object.type || object.uuid, object);
+  if (hasSkeleton) {
+    // console.log('has skeleton', object.name || object.type || object.uuid, object);
+  }
+
+  // we don't need pickers for meshes
+  const pickerIsNeeded = !hasSkeleton;
 
   const helperSize = 0.25;
-  // TODO: check other included helpers (e.g. LightProbeHelper, SkeletonHelper)
-  helper =
-    object instanceof THREE.Camera
+  // TODO: check other included helpers (e.g. LightProbeHelper)
+  helper = hasSkeleton
+    ? new THREE.SkeletonHelper(object)
+    : object instanceof THREE.Camera
       ? new THREE.CameraHelper(object)
       : object instanceof THREE.RectAreaLight
         ? new RectAreaLightHelper(object)
@@ -125,12 +182,13 @@ const makeHelpers = (object: THREE.Object3D) => {
   }
   const objectInspectorData = object.__inspectorData as __inspectorData;
   const pickerInspectorData = picker.__inspectorData as __inspectorData;
-  objectInspectorData.picker = picker;
+  pickerIsNeeded && (objectInspectorData.picker = picker);
   objectInspectorData.helper = helper;
   pickerInspectorData.hitRedirect = object;
   pickerInspectorData.isPicker = true;
 
-  object.add(picker);
+  pickerIsNeeded && object.add(picker);
+
   if (object instanceof THREE.SpotLight) {
     picker.lookAt(object.target.position);
   }
@@ -189,10 +247,10 @@ const makeHelpers = (object: THREE.Object3D) => {
       // we don't need to remove helpers for default cameras since R3F does not add them to scene
       if (objectInspectorData.useOnPlay) {
         if (isPlaying) {
-          object.remove(picker);
+          pickerIsNeeded && object.remove(picker);
           threeScene.remove(helper);
         } else {
-          object.add(picker);
+          pickerIsNeeded && object.add(picker);
           threeScene.add(helper);
         }
       }
@@ -217,13 +275,15 @@ const destroy = (object: any) => {
 
 const cleanupAfterRemovedObject = (object: THREE.Object3D) => {
   object.traverse((child) => {
-    destroy(child);
+    // no need to destroy everything, geometries and materials might be reused
+    if (child.__inspectorData.isPicker) {
+      destroy(child);
+    }
     delete inspectableObjects[child.uuid];
   });
-  delete inspectableObjects[object.uuid];
   (dependantObjects[object.uuid] || []).forEach((dependantObject) => {
-    dependantObject.parent?.remove(dependantObject);
-    (dependantObject as any).dispose?.();
+    dependantObject.removeFromParent();
+    (dependantObject as any).dispose?.(); // for helpers
   });
   delete dependantObjects[object.uuid];
 };
@@ -237,6 +297,7 @@ const isSceneObject = (object: THREE.Object3D) => {
   return parent !== null;
 };
 
+// called for every child of an object only when added to the scene
 const handleObjectAdded = (object: THREE.Object3D) => {
   const __inspectorData = object.__inspectorData as __inspectorData;
   if (
@@ -247,7 +308,7 @@ const handleObjectAdded = (object: THREE.Object3D) => {
   ) {
     // R3F does not add cameras to scene, so this check is not needed, but checking just in case
     if (object !== perspectiveCamera && object !== orthographicCamera) {
-      makeHelpers(object); // will enrich object with helper and picker
+      makeHelpers(object); // will enrich certain objects with helper and picker
     }
     if (
       (object instanceof THREE.PerspectiveCamera || object instanceof THREE.OrthographicCamera) &&
@@ -281,7 +342,9 @@ THREE.Object3D.prototype.add = (function () {
     objects.forEach((object) => {
       if (isSceneObject(this)) {
         // console.log('Is scene object already', this.name || this.type || this.uuid, this);
-        handleObjectAdded(object);
+        object.traverse((descendant) => {
+          handleObjectAdded(descendant);
+        });
       } else if (this instanceof THREE.Scene) {
         // console.log('Adding to scene', object.name || object.type || object.uuid, object);
         object.traverse((descendant) => {
@@ -320,12 +383,12 @@ THREE.Object3D.prototype.remove = (function () {
 // TODO: when using different camera on play we might/will need different controller
 
 const cameraPosition = new THREE.Vector3(0, 0, 12);
-const perspectiveCamera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 100);
+const perspectiveCamera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 10000);
 perspectiveCamera.position.copy(cameraPosition);
 perspectiveCamera.zoom = 1;
 perspectiveCamera.name = 'DefaultPerspectiveCamera';
 
-const orthographicCamera = new THREE.OrthographicCamera(-0, 0, 0, -0, 0.1, 100);
+const orthographicCamera = new THREE.OrthographicCamera(-0, 0, 0, -0, 0.1, 10000);
 orthographicCamera.position.copy(cameraPosition);
 orthographicCamera.zoom = 45;
 orthographicCamera.name = 'DefaultOrthographicCamera';
@@ -533,6 +596,14 @@ const SetUp = () => {
   // On scene double click, set select object
   const onSceneDblClick = useCallback(
     (_event: globalThis.MouseEvent) => {
+      threeScene.traverse((child) => {
+        if (child instanceof THREE.SkinnedMesh) {
+          // allow skinned mesh modified by animation to be selectable based on their current shape
+          child.computeBoundingBox();
+          child.computeBoundingSphere();
+        }
+      });
+
       const hits = hitsRef.current;
       hits.length = 0;
 

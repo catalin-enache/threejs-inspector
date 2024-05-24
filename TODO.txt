@@ -42,6 +42,22 @@ We should not rebuild the Panel for selected object when playing or changing stu
 Let's not crash CPanel when selecting an object and textures are missing from materials *DONE*
 Not all textures have image(s). We should handle that *Done* in bindingHelpers we're preventing invalid textures now.
 
+Allow setting isInspectable on root and the function should do it recursively automatically, same with castShadow and receiveShadow *DONE*
+
+Some imported objects are too big. We need to scale them down generically compared to the scene. *DONE*
+
+
+
+
+
+
+
+Allow seeing bounding boxes and spheres for objects
+
+The colors are different between gltf and fbx (see test_multi_features)
+
+Bug: Sophia animated fbx cannot be selected.
+
 Bug: When using transform sliders and releasing mouse on disabled inputs the control is not released.
 
 Bug: FBXLoader: DDS loader not found for Modular Military Character fbx.
@@ -60,15 +76,12 @@ Add default textures for non mesh imports and make it a PhysicalMaterial
 Write doc about loading models.
 Allow with ctrl + dblclick to select inside object
 
-
-
 Handle multiple fbx/gltf imports (when animations or other things are separated) and merge them.
 Implement a deep merge.
 
 Handle the case where gltf comes with lights (LightsPunctualLamp.glb)
 Handle the case where gltf/fbx comes with animations. Try with multi gltf from mixamo as well.
 
-Some imported objects are too big. We need to scale them down generically compared to the scene.
 
 Could we add a use_pmremGenerator bool to inspector ?
 
@@ -85,7 +98,7 @@ https://www.npmjs.com/package/eslint-config-mdcs
     "plugin:compat/recommended"
   ],
 
-Se where kandao3_depthmap.jpg is used in threejs examples
+See where kandao3_depthmap.jpg is used in threejs examples
 
 Bug: Changing rotation 90deg does not make it 90 but 90.012
 
@@ -108,7 +121,7 @@ However, to test with multi texture bindings later
 Implement typing multiple letters as key listeners? add minimal custom controls to use in Experience for play/pause
 Make a pause button
 
-Add Skeleton helper.
+
 Add plugin for Animations
 Add plugin for Layers
 Add plugin for radio buttons

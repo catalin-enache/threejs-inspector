@@ -15,11 +15,11 @@ function parallelTraverse(
 
 export const cloneObject3D = (root: THREE.Object3D) => {
   const newRoot = SkeletonUtils.clone(root);
-  newRoot.__inspectorData.isInspectable = root.__inspectorData.isInspectable;
+  Object.keys(root.__inspectorData).forEach((key) => {
+    newRoot.__inspectorData[key] = root.__inspectorData[key];
+  });
   if (root.__inspectorData.hitRedirect === root) {
     newRoot.__inspectorData.hitRedirect = newRoot;
-  } else if (root.__inspectorData.hitRedirect) {
-    newRoot.__inspectorData.hitRedirect = root.__inspectorData.hitRedirect;
   }
   return newRoot;
 };

@@ -280,12 +280,13 @@ const cleanupAfterRemovedObject = (object: THREE.Object3D) => {
       destroy(child);
     }
     delete inspectableObjects[child.uuid];
+
+    (dependantObjects[child.uuid] || []).forEach((dependantObject) => {
+      dependantObject.removeFromParent();
+      (dependantObject as any).dispose?.(); // for helpers
+    });
+    delete dependantObjects[child.uuid];
   });
-  (dependantObjects[object.uuid] || []).forEach((dependantObject) => {
-    dependantObject.removeFromParent();
-    (dependantObject as any).dispose?.(); // for helpers
-  });
-  delete dependantObjects[object.uuid];
 };
 
 const isSceneObject = (object: THREE.Object3D) => {

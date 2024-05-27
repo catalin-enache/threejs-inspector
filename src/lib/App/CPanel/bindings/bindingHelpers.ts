@@ -232,9 +232,9 @@ const _buildBindings = (folder: FolderApi, object: any, bindings: any, params: C
 
   // Collecting animations
   // TODO: Later on add more capabilities to animations (blending, editing, ...)
-  if (object.__inspectorData?.animations && object.__inspectorData.animations.length) {
+  if (object.animations && object.animations.length) {
     const animationsFolder = folder.addFolder({
-      title: `Animations (${object.__inspectorData.animations.length})`,
+      title: `Animations (${object.animations.length})`,
       expanded: false
     });
     tweakFolder(animationsFolder, `${animationsFolder.title!}-${object.uuid || 'no-id'}`);
@@ -249,7 +249,7 @@ const _buildBindings = (folder: FolderApi, object: any, bindings: any, params: C
     const { start, stop } = inspectorData.cpStartStop;
     const actions = inspectorData.cpActions;
 
-    inspectorData.animations.forEach((animation: THREE.AnimationClip) => {
+    object.animations.forEach((animation: THREE.AnimationClip) => {
       const actionID = animation.name || animation.uuid;
       let action;
       if (actions.has(animation)) {

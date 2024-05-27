@@ -5,8 +5,6 @@ import { BufferAttributeConstructor, TypedArrayConstructor } from 'src/types';
 // @ts-ignore
 import * as BufferGeometryUtils from 'lib/third_party/BufferGeometryUtils.js'; // fixed in my PR // TODO: revert to upstream after new release
 
-const MESH_TO_VERIFY = 'no mesh to verify';
-
 // @ts-ignore
 const _verifyIntegrity = (newMesh: THREE.Mesh, oldMesh: THREE.Mesh) => {
   const newGeometry = newMesh.geometry;
@@ -158,7 +156,7 @@ const createAndAddNewMesh = (
 };
 
 // TODO: test recombineMeshesByMaterial with a cube having 3 meshes and one material and see if they are recombined into one mesh. (We won't want that)
-export function recombineMeshesByMaterial(root: THREE.Mesh | THREE.Group, _debug: boolean) {
+export function recombineMeshesByMaterial(root: THREE.Mesh | THREE.Group, { debug }: { debug?: string }) {
   // From what I've seen so far for a loaded fbx, the root is a Group having as children a Group and a few SkinnedMeshes.
   // The Group child has itself as only child the root Bone of the Skeleton of the one of the SkinnedMeshes.
   // Each SkinnedMesh has its own Skeleton but only one has the skeleton.bones[0] the same instance as the Group.children[0].
@@ -179,7 +177,7 @@ export function recombineMeshesByMaterial(root: THREE.Mesh | THREE.Group, _debug
   const parents = new Set();
   const animations: THREE.AnimationClip[] = newRoot.animations;
 
-  _debug && console.log('mergeSkinnedMeshes start', { root, newRoot });
+  debug && console.log('recombineMeshes start', { root, newRoot });
   // @ts-ignore
 
   const visitedMeshes = new Set<THREE.Mesh>();
@@ -189,7 +187,7 @@ export function recombineMeshesByMaterial(root: THREE.Mesh | THREE.Group, _debug
       return;
     }
     const oldMeshClone = child;
-    const DEBUG = oldMeshClone.name === MESH_TO_VERIFY || _debug;
+    const DEBUG = oldMeshClone.name === debug || debug === 'ALL';
 
     visitedMeshes.add(oldMeshClone);
 
@@ -462,11 +460,11 @@ export function recombineMeshesByMaterial(root: THREE.Mesh | THREE.Group, _debug
     }
     mesh.removeFromParent();
     mesh.geometry.dispose();
-    _debug && console.log('removing mesh', { mesh }, 'from', { meshParent: mesh.parent });
+    debug && console.log('removing mesh', { mesh }, 'from', { meshParent: mesh.parent });
     totalMeshesRemoved++;
   });
 
-  _debug && console.log('object has been rebuilt', { newRoot, root, totalMeshesAdded, totalMeshesRemoved, parents });
+  debug && console.log('object has been rebuilt', { newRoot, root, totalMeshesAdded, totalMeshesRemoved, parents });
   newRoot.__inspectorData.isRecombined = true;
   newRoot.__inspectorData.animations = newRoot.animations;
 

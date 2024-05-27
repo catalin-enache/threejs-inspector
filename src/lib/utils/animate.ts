@@ -13,7 +13,6 @@ const updateDelta = () => {
 window.requestAnimationFrame(updateDelta);
 
 export function animate(callback: (delta: number) => void, id: any) {
-  console.log('animate', callbacks.size);
   return {
     start: () => {
       callbacks.set(id, callback);

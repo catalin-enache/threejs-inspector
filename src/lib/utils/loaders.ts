@@ -93,6 +93,11 @@ export const textureLoader = new THREE.TextureLoader(defaultLoadingManager);
 
 defaultLoadingManager.addHandler(/\.tga$/i, tgaLoader);
 defaultLoadingManager.addHandler(/\.dds$/i, ddsLoader);
+defaultLoadingManager.addHandler(/\.exr$/i, exrLoader);
+defaultLoadingManager.addHandler(/\.hdr$/i, rgbeLoader);
+defaultLoadingManager.addHandler(/\.ktx2$/i, ktx2Loader);
+defaultLoadingManager.addHandler(/\.tif$/i, tiffLoader);
+defaultLoadingManager.addHandler(/\.tiff$/i, tiffLoader);
 
 // Model loaders
 export const dracoLoader = new DRACOLoader(defaultLoadingManager).setDecoderPath('libs/draco/gltf/');

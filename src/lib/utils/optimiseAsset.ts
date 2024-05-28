@@ -187,7 +187,7 @@ export function recombineMeshesByMaterial(root: THREE.Mesh | THREE.Group, { debu
       return;
     }
     const oldMeshClone = child;
-    const DEBUG = oldMeshClone.name === debug || debug === 'ALL';
+    const DEBUG = (debug && oldMeshClone.name === debug) || debug === 'ALL';
 
     visitedMeshes.add(oldMeshClone);
 

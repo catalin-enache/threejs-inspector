@@ -7,7 +7,13 @@ import { PositionalAudioHelper } from 'three/examples/jsm/helpers/PositionalAudi
 import { ViewHelper } from 'three/examples/jsm/helpers/ViewHelper.js';
 
 export function getBoundingBoxSize(object: THREE.Object3D) {
-  const box = new THREE.Box3().setFromObject(object);
+  const group = new THREE.Group();
+  object.traverse((child) => {
+    if (child instanceof THREE.Mesh) {
+      group.add(child.clone());
+    }
+  });
+  const box = new THREE.Box3().setFromObject(group);
   const size = new THREE.Vector3();
   box.getSize(size);
   return size;

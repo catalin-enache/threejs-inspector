@@ -115,6 +115,14 @@ const createAndAddNewMesh = (
   mergedMesh.updateMatrix();
   mergedMesh.updateMatrixWorld(true);
 
+  // collect the children of the old mesh into first merged mesh
+  // materialIndex === 0 means this is the first mesh generated from the old mesh
+  if (materialIndex === 0) {
+    oldMeshClone.children.forEach((child) => {
+      mergedMesh.add(child);
+    });
+  }
+
   if (oldMeshClone.morphTargetInfluences) {
     mergedMesh.morphTargetInfluences = oldMeshClone.morphTargetInfluences;
   }
@@ -170,7 +178,8 @@ export function recombineMeshesByMaterial(root: THREE.Mesh | THREE.Group, { debu
   // TODO: The Group children bones can have Mesh as children, make sure to reach and address them too. Check Cyborg Soldier (Rigged Character).
   // TODO: Android Soldier throws error.
 
-  const newRoot = cloneObject3D(root) as THREE.Mesh | THREE.Group;
+  // newRoot might be replaced during the traverse but the traverse will continue normally
+  let newRoot = cloneObject3D(root) as THREE.Mesh | THREE.Group;
 
   let totalMeshesAdded = 0;
   let totalMeshesRemoved = 0;
@@ -333,7 +342,21 @@ export function recombineMeshesByMaterial(root: THREE.Mesh | THREE.Group, { debu
 
         DEBUG && console.log('mergedGeometry', { mergedGeometry });
 
-        createAndAddNewMesh(mergedGeometry, oldMeshClone, material, materialIndex, newRoot, root, animationsMap, DEBUG);
+        const mergedMesh = createAndAddNewMesh(
+          mergedGeometry,
+          oldMeshClone,
+          material,
+          materialIndex,
+          newRoot,
+          root,
+          animationsMap,
+          DEBUG
+        );
+
+        // this is to preserve the children of the root mesh (if root is a mesh)
+        if (oldMeshClone === newRoot && mergedMesh) {
+          newRoot = mergedMesh;
+        }
       } else {
         const mergedGeometry = new THREE.BufferGeometry();
         const attributesKeys = Object.keys(geometryClone.attributes);
@@ -438,7 +461,21 @@ export function recombineMeshesByMaterial(root: THREE.Mesh | THREE.Group, { debu
 
         DEBUG && console.log('mergedGeometry', { mergedGeometry });
 
-        createAndAddNewMesh(mergedGeometry, oldMeshClone, material, materialIndex, newRoot, root, animationsMap, DEBUG);
+        const mergedMesh = createAndAddNewMesh(
+          mergedGeometry,
+          oldMeshClone,
+          material,
+          materialIndex,
+          newRoot,
+          root,
+          animationsMap,
+          DEBUG
+        );
+
+        // this is to preserve the children of the root mesh (if root is a mesh)
+        if (oldMeshClone === newRoot && mergedMesh) {
+          newRoot = mergedMesh;
+        }
       }
     });
 
@@ -454,9 +491,9 @@ export function recombineMeshesByMaterial(root: THREE.Mesh | THREE.Group, { debu
 
   visitedMeshes.forEach((mesh) => {
     if (parents.has(mesh)) {
-      // TODO: make a test for this case
+      // TODO: make a unit test for this case
       console.log('removing mesh that is also a parent', { mesh }, 'from', { meshParent: mesh.parent });
-      // should not happen
+      // should not happen ever !!!
     }
     mesh.removeFromParent();
     mesh.geometry.dispose();

@@ -50,7 +50,8 @@ export const registerFiles = (files: (File | string)[]) => {
   for (let i = 0; i < files.length; i++) {
     const file = files[i];
     if (file instanceof File) {
-      blobs[file.name] = file;
+      console.log('registerFiles', { file: file.name });
+      blobs[decodeURI(file.name)] = file;
     }
   }
 };
@@ -59,7 +60,7 @@ export const registerFiles = (files: (File | string)[]) => {
 // https://gltf-viewer.donmccurdy.com/
 defaultLoadingManager.setURLModifier((resource) => {
   // console.log('defaultLoadingManager setURLModifier', { resource, blobs });
-  const normalizedResource = resource.replace(/^.*[\\/]/, '');
+  const normalizedResource = decodeURI(resource).replace(/^.*[\\/]/, '');
   if (!blobs[normalizedResource]) return resource;
   const url = URL.createObjectURL(blobs[normalizedResource]);
   objectURLs.push(url);

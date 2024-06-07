@@ -48,7 +48,7 @@ Some imported objects are too big. We need to scale them down generically compar
 
 
 
-
+Implement options for importing via input file. (optimize ? autoscale ? geometry ?)
 
 See the hair for some characters, why not showing well ?
 

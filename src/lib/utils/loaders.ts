@@ -50,7 +50,6 @@ export const registerFiles = (files: (File | string)[]) => {
   for (let i = 0; i < files.length; i++) {
     const file = files[i];
     if (file instanceof File) {
-      console.log('registerFiles', { file: file.name });
       blobs[decodeURI(file.name)] = file;
     }
   }

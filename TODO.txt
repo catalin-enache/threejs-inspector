@@ -50,7 +50,7 @@ Some imported objects are too big. We need to scale them down generically compar
 
 
 
-
+See the hair for some characters, why not showing well ?
 
 Allow seeing bounding boxes and spheres for objects
 

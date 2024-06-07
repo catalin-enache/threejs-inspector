@@ -56,20 +56,13 @@ Allow seeing bounding boxes and spheres for objects
 
 The colors are different between gltf and fbx (see test_multi_features)
 
-Bug: Sophia animated fbx cannot be selected.
-
 Bug: When using transform sliders and releasing mouse on disabled inputs the control is not released.
 
-Bug: FBXLoader: DDS loader not found for Modular Military Character fbx.
+Bug: FBXLoader: DDS loader not found for Modular Military Character fbx. (maybe a dds re-export would fix it)
 
 Bug: When loading via http fbx doesn't find textures in subfolder.
 
-See why solider fbx slows down rendering
-
 See why it takes that long to select a complex object in the scene. Can cPanel be optimised or is it normal?
-
-I think we should implement => manager.addHandler( /\.tga$/i, new TGALoader() );
-Try to load a fbx file with external (non default supported) textures (tga/tiff/exr) and see if it works.
 
 Add default textures for non mesh imports and make it a PhysicalMaterial
 
@@ -141,7 +134,7 @@ Implement snapping
 
 Cleanup package.json
 
-Normalize all handlers to pointer instead of mouse.
+Normalize all handlers to pointer instead of mouse ? Not sure if needed.
 
 
 

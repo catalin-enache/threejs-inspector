@@ -89,11 +89,17 @@ export const SceneButtons = ({ isPlaying, sceneObjects: { camera, scene } }: Com
         const files = (e.target as HTMLInputElement).files;
         if (!files || !files.length) return;
         const filesArray = Array.from(files);
-        const rootFile = filesArray.find((file) => rootExtensions.some((ext) => file.name.endsWith(ext)));
+        const rootFile = filesArray.find((file) => rootExtensions.some((ext) => file.name.toLowerCase().endsWith(ext)));
         if (!rootFile) return;
         // inspired from https://github.com/donmccurdy/three-gltf-viewer/blob/main/src/viewer.js#L159-L191
         // https://gltf-viewer.donmccurdy.com/
-        loadModel(rootFile, scene, { filesArray }).then((mesh) => {
+        loadModel(rootFile, scene, {
+          filesArray,
+          // changeGeometry: 'indexed', // 'indexed' | 'non-indexed'
+          recombineByMaterial: true,
+          autoScaleRatio: 0.4, // 0..1 percentage
+          debug: '' // <meshName> || 'ALL'
+        }).then((mesh) => {
           mesh && scene.add(mesh);
         });
       };

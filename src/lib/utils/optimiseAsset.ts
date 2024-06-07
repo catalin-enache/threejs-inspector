@@ -168,7 +168,7 @@ const createAndAddNewMesh = (
     _verifyIntegrity(mergedMesh, oldMeshClone);
   }
 
-  // clone old animations into new ones targeting new mesh name (not removing yet old animations targeting old mesh name)
+  // clone old animations (if any for old mesh name) into new ones targeting new mesh name (not removing yet old animations targeting old mesh name)
   animationsMap.forEach((tracks, animationClip) => {
     tracks.forEach((track) => {
       const newTrack = track.clone();
@@ -223,7 +223,9 @@ export function splitMeshesByMaterial(root: THREE.Mesh | THREE.Group, { debug }:
 
     const animationsMap = new Map<THREE.AnimationClip, THREE.KeyframeTrack[]>();
     animations.forEach((animationClip) => {
-      const relatedTracks = animationClip.tracks.filter((track) => track.name.startsWith(`${oldMeshClone.name}.`));
+      const relatedTracks = animationClip.tracks.filter((track) => {
+        return track.name.startsWith(`${oldMeshClone.name}.`);
+      });
       if (relatedTracks.length) {
         animationsMap.set(animationClip, relatedTracks);
       }
@@ -502,10 +504,8 @@ export function splitMeshesByMaterial(root: THREE.Mesh | THREE.Group, { debug }:
 
     // remove original animations
     animationsMap.forEach((tracks, animationClip) => {
-      animationClip.tracks = animationClip.tracks.filter((track) => !tracks.includes(track));
-      tracks.forEach((track) => {
-        const index = animationClip.tracks.indexOf(track);
-        animationClip.tracks.splice(index, 1);
+      animationClip.tracks = animationClip.tracks.filter((track) => {
+        return !tracks.includes(track);
       });
     });
   });

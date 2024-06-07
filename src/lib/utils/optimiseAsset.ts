@@ -96,10 +96,11 @@ const createAndAddNewMesh = (
   newRoot: THREE.Object3D,
   oldRoot: THREE.Object3D,
   animationsMap: Map<THREE.AnimationClip, THREE.KeyframeTrack[]>,
+  rootContainer: THREE.Group,
   debug: boolean
 ) => {
-  // if is root mesh then parent is null
-  const meshParent = oldMeshClone.parent;
+  // if is root mesh then parent is null, we use rootContainer instead
+  const meshParent = oldMeshClone.parent || rootContainer;
   if (!mergedGeometry.attributes.position) return;
 
   let mergedMesh: THREE.Mesh | THREE.SkinnedMesh;
@@ -119,23 +120,20 @@ const createAndAddNewMesh = (
   mergedMesh.__inspectorData.isInspectable = oldMeshClone.__inspectorData.isInspectable;
   mergedMesh.__inspectorData.hitRedirect =
     oldMeshClone.__inspectorData.hitRedirect === oldRoot ? newRoot : oldMeshClone.__inspectorData.hitRedirect;
-  mergedMesh.__inspectorData.isRecombined = true;
+  mergedMesh.__inspectorData.isDerivedMesh = true;
 
   mergedMesh.name = oldMeshClone.name + '_' + materialIndex;
   debug && console.log('adding mesh', { mergedMesh }, 'to', { meshParent }, 'oldMeshClone', { oldMeshClone });
-  meshParent?.add(mergedMesh); // don't remove the old mesh yet, we'll remove it after we finish processing it
+  meshParent.add(mergedMesh); // don't remove the old mesh yet, we'll remove it after we finish processing it
   mergedMesh.position.copy(oldMeshClone.position);
   mergedMesh.rotation.copy(oldMeshClone.rotation);
   mergedMesh.scale.copy(oldMeshClone.scale);
   mergedMesh.updateMatrix();
   mergedMesh.updateMatrixWorld(true);
 
-  // collect the children of the old mesh into first merged mesh
-  // materialIndex === 0 means this is the first mesh generated from the old mesh
   if (materialIndex === 0) {
-    oldMeshClone.children.forEach((child) => {
-      mergedMesh.add(child);
-    });
+    // use to collect children at the end
+    oldMeshClone.__inspectorData.mainDerivedMesh = mergedMesh;
   }
 
   if (oldMeshClone.morphTargetInfluences) {
@@ -197,8 +195,11 @@ export function splitMeshesByMaterial(root: THREE.Mesh | THREE.Group, { debug }:
   // We may have a "hip" -> "hip" -> "hip" chain where just the top is the one animated and is the one found in Group descendants.
   // The descendant "hip" bones are moving just because they are descendants of the top "hip" bone which is the one animated.
 
-  // newRoot might be replaced during the traverse but the traverse will continue normally
-  let newRoot = cloneObject3D(root) as THREE.Mesh | THREE.Group;
+  const newRoot = cloneObject3D(root) as THREE.Mesh | THREE.Group;
+
+  // fakeRootGroup needed when the root is a mesh which would be split in multiple meshes
+  const rootContainer = new THREE.Group();
+  rootContainer.name = newRoot.name + '_container';
 
   let totalMeshesAdded = 0;
   let totalMeshesRemoved = 0;
@@ -206,7 +207,6 @@ export function splitMeshesByMaterial(root: THREE.Mesh | THREE.Group, { debug }:
   const animations: THREE.AnimationClip[] = newRoot.animations;
 
   debug && console.log('recombineMeshes start', { root, newRoot });
-  // @ts-ignore
 
   const visitedMeshes = new Set<THREE.Mesh>();
 
@@ -232,7 +232,7 @@ export function splitMeshesByMaterial(root: THREE.Mesh | THREE.Group, { debug }:
     });
 
     const meshMaterials: THREE.Material[] = Array.isArray(oldMeshClone.material)
-      ? oldMeshClone.material
+      ? [...oldMeshClone.material] // cloning in order to not modify the original material array
       : [oldMeshClone.material];
 
     let geometryClone: THREE.BufferGeometry = oldMeshClone.geometry.clone();
@@ -254,6 +254,17 @@ export function splitMeshesByMaterial(root: THREE.Mesh | THREE.Group, { debug }:
     const groups = geometryClone.groups?.length
       ? geometryClone.groups
       : [{ start: 0, count: geometryClone.index?.count ?? geometryClone.attributes.position.count, materialIndex: 0 }];
+
+    // padding materials to match groups
+    if (meshMaterials.length < groups.length) {
+      console.warn('padding materials array with first material to match geometry groups length', {
+        meshMaterialsLength: meshMaterials.length,
+        groupsLength: groups.length
+      });
+      for (let i = groups.length - meshMaterials.length; i > 0; i--) {
+        meshMaterials.push(meshMaterials[0]);
+      }
+    }
 
     const oldMeshParent = oldMeshClone.parent;
     oldMeshParent && parents.add(oldMeshParent);
@@ -365,7 +376,7 @@ export function splitMeshesByMaterial(root: THREE.Mesh | THREE.Group, { debug }:
 
         DEBUG && console.log('mergedGeometry', { mergedGeometry });
 
-        const mergedMesh = createAndAddNewMesh(
+        createAndAddNewMesh(
           mergedGeometry,
           oldMeshClone,
           material,
@@ -373,13 +384,9 @@ export function splitMeshesByMaterial(root: THREE.Mesh | THREE.Group, { debug }:
           newRoot,
           root,
           animationsMap,
+          rootContainer,
           DEBUG
         );
-
-        // this is to preserve the children of the root mesh (if root is a mesh)
-        if (oldMeshClone === newRoot && mergedMesh) {
-          newRoot = mergedMesh;
-        }
       } else {
         const mergedGeometry = new THREE.BufferGeometry();
         const attributesKeys = Object.keys(geometryClone.attributes);
@@ -484,7 +491,7 @@ export function splitMeshesByMaterial(root: THREE.Mesh | THREE.Group, { debug }:
 
         DEBUG && console.log('mergedGeometry', { mergedGeometry });
 
-        const mergedMesh = createAndAddNewMesh(
+        createAndAddNewMesh(
           mergedGeometry,
           oldMeshClone,
           material,
@@ -492,13 +499,9 @@ export function splitMeshesByMaterial(root: THREE.Mesh | THREE.Group, { debug }:
           newRoot,
           root,
           animationsMap,
+          rootContainer,
           DEBUG
         );
-
-        // this is to preserve the children of the root mesh (if root is a mesh)
-        if (oldMeshClone === newRoot && mergedMesh) {
-          newRoot = mergedMesh;
-        }
       }
     });
 
@@ -511,11 +514,19 @@ export function splitMeshesByMaterial(root: THREE.Mesh | THREE.Group, { debug }:
   });
 
   visitedMeshes.forEach((mesh) => {
-    if (parents.has(mesh)) {
-      // TODO: make a unit test for this case
-      console.log('removing mesh that is also a parent', { mesh }, 'from', { meshParent: mesh.parent });
-      // should not happen ever !!!
+    const collectedChildren: THREE.Object3D[] = [];
+    mesh.children.forEach((child) => {
+      if (child.__inspectorData.isDerivedMesh) {
+        collectedChildren.push(child);
+      }
+    });
+
+    while (collectedChildren.length) {
+      const child = collectedChildren.shift();
+      // transfer children from old mesh to the main derived mesh (of old mesh)
+      mesh.__inspectorData.mainDerivedMesh.add(child);
     }
+
     mesh.removeFromParent();
     mesh.geometry.dispose();
     debug && console.log('removing mesh', { mesh }, 'from', { meshParent: mesh.parent });
@@ -526,5 +537,5 @@ export function splitMeshesByMaterial(root: THREE.Mesh | THREE.Group, { debug }:
   newRoot.__inspectorData.isRecombined = true;
   newRoot.__inspectorData.animations = newRoot.animations;
 
-  return newRoot;
+  return newRoot instanceof THREE.Group ? newRoot : rootContainer;
 }

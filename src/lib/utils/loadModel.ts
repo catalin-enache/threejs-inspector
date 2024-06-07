@@ -17,6 +17,8 @@ import {
   PLYLoader,
   ColladaLoader
 } from './loaders';
+import { splitMeshesByMaterial, toIndexedGeometry } from './optimiseAsset';
+import { getBoundingBoxSize, calculateScaleFactor, getVisibleSceneBoundingBoxSize } from './sizeUtils';
 
 export const FILE_FBX = 'FBX';
 export const FILE_PLY = 'PLY';
@@ -56,79 +58,187 @@ export const getLoader = (fileType: string) => {
   }
 };
 
-const registerMesh = (child: THREE.Mesh, mesh: THREE.Object3D | null, scene: THREE.Scene) => {
-  if (!mesh) return;
-  child.castShadow = true;
-  child.receiveShadow = true;
-  child.userData.object = mesh; // proxy raycaster hit to parent
-  scene.userData.inspectableObjects[child.uuid] = child;
-};
+const registerMesh = (mesh: THREE.Object3D, isInspectable: boolean) => {
+  if (isInspectable) {
+    mesh.__inspectorData.isInspectable = isInspectable;
+  }
 
-const collectAnimationsAndRegisterMesh = (
-  mesh: THREE.Object3D,
-  result: THREE.Group<THREE.Object3DEventMap> | THREE.BufferGeometry<THREE.NormalBufferAttributes> | GLTF | Collada,
-  scene: THREE.Scene
-) => {
-  mesh.userData.animations = [...((result as GLTF).animations || [])];
   mesh.traverse(function (child) {
-    if (child === mesh) return; // for fbx
-    if (child.animations && child.animations.length) {
-      // did not encounter so far animations on the mesh itself, only in the root. Logging just in case for awareness.
-      console.log('animation found while traversing mesh', { child, animations: child.animations });
-      // @ts-ignore -- how could the mesh be null here ?
-      mesh.userData.animations.push(...child.animations);
-    }
     if (child instanceof THREE.Mesh) {
-      registerMesh(child, mesh, scene);
+      child.castShadow = true;
+      child.receiveShadow = true;
     }
   });
 };
+
+const collectDescendantAnimationsIfAny = (mesh: THREE.Group | THREE.Mesh) => {
+  mesh.traverse(function (child) {
+    if (child === mesh) return;
+    if (child.animations?.length) {
+      // did not encounter so far animations on the descendant mesh itself, only in the root. Logging just in case for awareness.
+      console.log('animation found while traversing mesh', { child, animations: child.animations });
+      mesh.animations.push(...child.animations);
+    }
+  });
+};
+
+const findRootAsset = (roots: THREE.Group<THREE.Object3DEventMap>[]) => {
+  // the root should be the one with the most meshes
+  const map = new Map<THREE.Group<THREE.Object3DEventMap>, number>();
+  roots.forEach((root) => {
+    root.traverse((child) => {
+      if (child instanceof THREE.Mesh) {
+        map.set(root, (map.get(root) || 0) + 1);
+      }
+    });
+  });
+  const max = Math.max(...Array.from(map.values()));
+  const root = Array.from(map.entries()).find(([_, value]) => value === max)!;
+  return root[0];
+};
+
+const areAnimationChildrenTargetingMainChildren = (
+  main: THREE.Group<THREE.Object3DEventMap>,
+  secondary: THREE.Group<THREE.Object3DEventMap>
+) => {
+  return secondary.children.every((sChild) => {
+    let isTargeting = false;
+    main.traverse((mChild) => {
+      if (mChild.name === sChild.name) {
+        isTargeting = true;
+      }
+    });
+    return isTargeting;
+  });
+};
+
+const mergeAnimationsFromRestAssets = (
+  main: THREE.Group<THREE.Object3DEventMap>,
+  sec: THREE.Group<THREE.Object3DEventMap>
+) => {
+  Object.keys(main).forEach((key) => {
+    if (key === 'animations') {
+      // mixamo fbx animation file has children having the same name as one of the main children.
+      // Not sure if this is a requirement or not, or should we just merge animations without checking
+      // when we have multiple fbx files.
+      if (areAnimationChildrenTargetingMainChildren(main, sec)) {
+        sec.animations.forEach((animation) => {
+          animation.name = `${animation.name} from ${sec.__inspectorData.resourceName}`;
+          main.animations.push(animation);
+        });
+      }
+    }
+  });
+};
+
+// TODO: check a foliage model to see how it works
+// TODO: loading a FBX (uppercase) file does not work. It is case sensitive. Need to fix it.
+// TODO: Check the hair between Mixamo Jennifer fbx and gltf. See why hair material is better handled by gltf.
 
 // to copy a model locally and ensure it is well constructed example:
 // gltf-transform cp https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/main/Models/AnisotropyBarnLamp/glTF-KTX-BasisU/AnisotropyBarnLamp.gltf out/lamp.gltf --allow-http
 // https://github.com/mrdoob/three.js/issues/28258
 export const loadModel = async (
-  file: File | string,
+  rootFile: File | string,
   scene: THREE.Scene,
-  { filesArray = [] }: { filesArray?: (File | string)[] } = {}
+  {
+    filesArray = [],
+    changeGeometry,
+    recombineByMaterial = true,
+    autoScaleRatio = 0.4,
+    isInspectable = true,
+    resourcePath,
+    debug
+  }: {
+    filesArray?: (File | string)[];
+    changeGeometry?: 'indexed' | 'non-indexed';
+    recombineByMaterial?: boolean;
+    autoScaleRatio?: number;
+    isInspectable?: boolean;
+    resourcePath?: string;
+    debug?: 'ALL' | string;
+  } = {}
 ) => {
-  const isFileType = file instanceof File;
-  const resource = isFileType ? file.name : file;
-  const { name, fileType } = getNameAndType(resource, fileTypeMap);
-  const loader = getLoader(fileType);
+  const rootSource = rootFile instanceof File ? rootFile.name : rootFile;
+  let { name, fileType } = getNameAndType(rootSource, fileTypeMap);
 
+  console.log('loadModel start', { name, fileType, rootSource, filesArray });
+
+  const loader = getLoader(fileType);
   if (!loader) return null;
 
-  registerFiles(filesArray);
+  if (resourcePath) {
+    loader.setResourcePath(resourcePath);
+  }
 
-  if (filesArray.length > 1) {
-    const mtlFile = filesArray.find((file) => (file instanceof File ? file.name : file).endsWith('.mtl'));
-    if (mtlFile) {
-      const url = mtlFile instanceof File ? URL.createObjectURL(mtlFile) : mtlFile;
-      const objMaterials = await mtlLoader.loadAsync(url);
-      objMaterials.preload();
-      if (loader instanceof OBJLoader) {
-        loader.setMaterials(objMaterials);
-      }
+  registerFiles(filesArray); // if filesArray has items it also contains the rootFile
+  const sources = [...new Set(filesArray.concat(rootSource).map((f) => (f instanceof File ? f.name : f)))];
+
+  const mtlSource = sources.find((resource) => resource.toLowerCase().endsWith('.mtl'));
+  if (mtlSource) {
+    // no need for createObjectURL. DefaultManager takes care of it. just extract the resource
+    const objMaterials = await mtlLoader.loadAsync(mtlSource);
+    objMaterials.preload();
+    if (loader instanceof OBJLoader) {
+      loader.setMaterials(objMaterials);
     }
   }
 
-  const result = await loader.loadAsync(resource);
-  // console.log('loadModel start', { name, fileType, result });
-  let mesh: THREE.Object3D | THREE.Group | null = null;
-  if (loader instanceof GLTFLoader) {
-    mesh = (result as GLTF).scene;
-    collectAnimationsAndRegisterMesh(mesh, result, scene);
-  } else if (loader instanceof FBXLoader) {
-    mesh = result as THREE.Group<THREE.Object3DEventMap>;
-    collectAnimationsAndRegisterMesh(mesh, result, scene);
-  } else if (loader instanceof OBJLoader) {
-    mesh = result as THREE.Group<THREE.Object3DEventMap>;
-    mesh.traverse(function (child) {
-      if (child instanceof THREE.Mesh) {
-        registerMesh(child, mesh, scene);
-      }
+  let result: THREE.Group<THREE.Object3DEventMap> | THREE.BufferGeometry<THREE.NormalBufferAttributes> | GLTF | Collada;
+  const multiAssetSources = sources.filter((source) =>
+    ['.fbx', '.gltf', '.glb'].some((ext) => source.toLowerCase().endsWith(ext))
+  );
+  // TODO: test loading via http multiple fbx files (with separate animations)
+
+  if (multiAssetSources.length) {
+    console.log('multiAssetSources', { multiAssetSources, sources });
+    // dealing with fbx/gltf one or more files
+    const loadedAssets = await Promise.all(
+      multiAssetSources.map(async (source) => {
+        let loaded = await loader.loadAsync(source);
+        if (loader instanceof GLTFLoader) {
+          loaded.scene.__inspectorData.fullData = loaded;
+          const { animations } = loaded as GLTF;
+          loaded = loaded.scene;
+          loaded.animations = animations;
+        }
+        loaded.__inspectorData.resourceName = source;
+        return loaded;
+      })
+    );
+
+    const rootAsset = findRootAsset(loadedAssets);
+    // restAssets most of the time contain just animations
+    const restAssets = loadedAssets.filter((a) => a !== rootAsset);
+    console.log('multiAssetSources loadedAssets', { loadedAssets, rootAsset });
+
+    result = rootAsset;
+    name = rootAsset.__inspectorData.resourceName;
+
+    restAssets.forEach((externalAnimationAsset) => {
+      mergeAnimationsFromRestAssets(result as THREE.Group, externalAnimationAsset);
     });
+
+    console.log('multiAssetSources merged animations', { rootAsset, restAssets });
+  } else {
+    // the rest non fbx, glb, gltf files
+    result = await loader.loadAsync(rootSource);
+  }
+
+  console.log('loadModel result', { name, fileType, result });
+  let root: THREE.Mesh | THREE.Group | null = null;
+
+  if (loader instanceof GLTFLoader) {
+    root = result as THREE.Group;
+    collectDescendantAnimationsIfAny(root);
+  } else if (loader instanceof FBXLoader) {
+    root = result as THREE.Group;
+    collectDescendantAnimationsIfAny(root);
+  } else if (loader instanceof ColladaLoader) {
+    root = (result as Collada).scene as unknown as THREE.Group;
+    collectDescendantAnimationsIfAny(root);
+  } else if (loader instanceof OBJLoader) {
+    root = result as THREE.Group;
   } else if (loader instanceof PLYLoader || loader instanceof STLLoader) {
     // TODO: add default textures and make it a PhysicalMaterial
     const material = new THREE.MeshStandardMaterial();
@@ -136,28 +246,90 @@ export const loadModel = async (
     geometry.computeVertexNormals();
     geometry.computeBoundingBox();
     geometry.computeBoundingSphere();
-    mesh = new THREE.Mesh(geometry, material);
-    mesh.userData.isInspectable = true;
-  } else if (loader instanceof GLTFLoader) {
-    mesh = (result as GLTF).scene;
-    mesh.traverse(function (child) {
-      if (child instanceof THREE.Mesh) {
-        registerMesh(child, mesh, scene);
+    const newMesh = new THREE.Mesh(geometry, material);
+    newMesh.updateMatrix();
+    newMesh.updateMatrixWorld(true);
+    root = newMesh;
+  }
+
+  if (!root) return null;
+
+  if (changeGeometry === 'indexed') {
+    root.traverse((child) => {
+      if (child instanceof THREE.Mesh && !child.geometry.index) {
+        // console.log('toIndexedGeometry', child);
+        toIndexedGeometry(child);
+        child.geometry.computeBoundingBox();
+        child.geometry.computeBoundingSphere();
       }
     });
-  } else if (loader instanceof ColladaLoader) {
-    mesh = (result as Collada).scene as unknown as THREE.Group;
-    mesh.traverse(function (child) {
-      if (child instanceof THREE.Mesh) {
-        registerMesh(child, mesh, scene);
+  } else if (changeGeometry === 'non-indexed') {
+    root.traverse((child) => {
+      if (child instanceof THREE.Mesh && child.geometry.index) {
+        // console.log('toNonIndexedGeometry', child);
+        child.geometry = child.geometry.toNonIndexed();
+        child.geometry.computeBoundingBox();
+        child.geometry.computeBoundingSphere();
       }
     });
   }
 
-  if (!mesh) return null;
-  console.log('loadModel done', { name, fileType, mesh });
-  mesh.name = name;
-  mesh.scale.set(0.001, 0.001, 0.001);
-  mesh.userData.fullData = result;
-  return mesh;
+  // =========== test injecting children ===========
+
+  // const testGeometry = new THREE.BoxGeometry(0.5, 0.5, 0.5);
+  //
+  // const testMaterial = new THREE.MeshStandardMaterial();
+  // testMaterial.color.set(0x00ff00);
+  //
+  // const testMaterialChild = new THREE.MeshStandardMaterial();
+  // testMaterialChild.color.set(0xff0000);
+  //
+  // const testMesh = new THREE.Mesh(
+  //   testGeometry.clone(),
+  //   testMaterial
+  //   // Array.from({ length: testGeometry.groups.length }).map(() => testMaterial)
+  // );
+  // testMesh.name = 'testMesh';
+  // testMesh.position.set(0.5, 0.5, 0.5);
+  // const testMeshChild = new THREE.Mesh(
+  //   testGeometry.clone(),
+  //   testMaterialChild
+  //   // Array.from({ length: testGeometry.groups.length }).map(() => testMaterial)
+  // );
+  // testMeshChild.name = 'testMeshChild';
+  // testMeshChild.position.y = 1;
+  // testMesh.add(testMeshChild);
+  //
+  // const existingMeshes: THREE.Mesh[] = [];
+  // root.traverse((child) => {
+  //   if (child instanceof THREE.Mesh) {
+  //     existingMeshes.push(child);
+  //   }
+  // });
+  // existingMeshes.forEach((mesh, index) => {
+  //   const clone = testMesh.clone(true);
+  //   clone.position.x += index;
+  //   mesh.add(clone);
+  // });
+
+  // =========== test injecting children end ===========
+
+  root.name = name;
+
+  if (recombineByMaterial) {
+    root = splitMeshesByMaterial(root, { debug });
+  }
+
+  console.log('loadModel done', { name, fileType, root });
+
+  if (autoScaleRatio) {
+    const meshSize = getBoundingBoxSize(root);
+    const sceneSize = getVisibleSceneBoundingBoxSize(scene, scene.__inspectorData.currentCamera, new Set([root]));
+    const scaleFactor = calculateScaleFactor(meshSize, sceneSize, autoScaleRatio);
+    root.scale.set(scaleFactor, scaleFactor, scaleFactor);
+  }
+
+  registerMesh(root, isInspectable);
+
+  return root;
 };

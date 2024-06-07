@@ -18,7 +18,7 @@ import { STLLoader } from 'three/examples/jsm/loaders/STLLoader';
 import { ColladaLoader, Collada } from 'three/examples/jsm/loaders/ColladaLoader';
 
 // @ts-ignore
-import { FBXLoader } from 'lib/third_party/FBXLoader.js'; // TODO: revert to upstream after new release containing my PR
+import { FBXLoader } from 'lib/third_party/FBXLoader.js'; // TODO: revert to upstream after new ThreeJS release containing my PR
 
 export {
   MeshoptDecoder,

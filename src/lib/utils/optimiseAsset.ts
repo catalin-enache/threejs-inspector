@@ -3,7 +3,7 @@ import { cloneObject3D } from './cloneObject3D';
 import { BufferAttributeConstructor, TypedArrayConstructor } from 'src/types';
 // import * as BufferGeometryUtils from 'three/examples/jsm/utils/BufferGeometryUtils';
 // @ts-ignore
-import * as BufferGeometryUtils from 'lib/third_party/BufferGeometryUtils.js'; // fixed in my PR // TODO: revert to upstream after new release
+import * as BufferGeometryUtils from 'lib/third_party/BufferGeometryUtils.js'; // fixed in my PR // TODO: revert to upstream after new ThreeJS release
 
 // @ts-ignore
 const _verifyIntegrity = (newMesh: THREE.Mesh, oldMesh: THREE.Mesh) => {
@@ -41,8 +41,8 @@ const _verifyIntegrity = (newMesh: THREE.Mesh, oldMesh: THREE.Mesh) => {
   }
 
   let count = 0;
-  const oldIndices = oldGeometry.index!.array;
-  const newIndices = newGeometry.index!.array;
+  const oldIndices = oldGeometry.index?.array || [];
+  const newIndices = newGeometry.index?.array || [];
   for (let i = 0; i < oldIndices.length; i++) {
     if (count > 100) break;
     if (oldIndices[i] !== newIndices[i]) {
@@ -69,6 +69,21 @@ const putGeometryNamesBack = (newGeometry: THREE.BufferGeometry, oldGeometry: TH
   Object.keys(oldGeometry.morphAttributes).forEach((key) => {
     oldGeometry.morphAttributes[key].forEach((buffer, index) => {
       newGeometry.morphAttributes[key][index].name = buffer.name;
+    });
+  });
+};
+
+// copy names from morphTargetDictionary to morphAttributes
+const putNamesOnMorphAttributes = (mesh: THREE.Mesh) => {
+  Object.keys(mesh.geometry.morphAttributes).forEach((attr) => {
+    // position, normal, ...
+    mesh.geometry.morphAttributes[attr].forEach((buffer, index) => {
+      const name = Object.keys(mesh.morphTargetDictionary || {}).find((key) => {
+        return mesh.morphTargetDictionary![key] === index;
+      });
+      if (name) {
+        buffer.name = name;
+      }
     });
   });
 };
@@ -153,6 +168,7 @@ const createAndAddNewMesh = (
     _verifyIntegrity(mergedMesh, oldMeshClone);
   }
 
+  // clone old animations into new ones targeting new mesh name (not removing yet old animations targeting old mesh name)
   animationsMap.forEach((tracks, animationClip) => {
     tracks.forEach((track) => {
       const newTrack = track.clone();
@@ -163,8 +179,14 @@ const createAndAddNewMesh = (
   return mergedMesh;
 };
 
-// TODO: test recombineMeshesByMaterial with a cube having 3 meshes and one material and see if they are recombined into one mesh. (We won't want that)
-export function recombineMeshesByMaterial(root: THREE.Mesh | THREE.Group, { debug }: { debug?: string }) {
+// TODO: add support for THREE.InterleavedBufferAttribute
+
+// With this function, multiple meshes will not be reduced to fewer meshes.
+// It only splits the meshes by material.
+// This optimizes for example a mesh that has 2 materials alternating every few faces.
+// If a mesh has 1000 faces and 2 materials alternating every face this will result in ~500 draw calls.
+// With this optimization it will result in 2 draw calls.
+export function splitMeshesByMaterial(root: THREE.Mesh | THREE.Group, { debug }: { debug?: 'ALL' | string }) {
   // From what I've seen so far for a loaded fbx, the root is a Group having as children a Group and a few SkinnedMeshes.
   // The Group child has itself as only child the root Bone of the Skeleton of the one of the SkinnedMeshes.
   // Each SkinnedMesh has its own Skeleton but only one has the skeleton.bones[0] the same instance as the Group.children[0].
@@ -174,9 +196,6 @@ export function recombineMeshesByMaterial(root: THREE.Mesh | THREE.Group, { debu
   // The other SkinnedMeshes have their own Skeletons but their Bones are descendants from the main Skeleton Bones.
   // We may have a "hip" -> "hip" -> "hip" chain where just the top is the one animated and is the one found in Group descendants.
   // The descendant "hip" bones are moving just because they are descendants of the top "hip" bone which is the one animated.
-  // TODO: we might have a mesh by itself, not inside a group
-  // TODO: The Group children bones can have Mesh as children, make sure to reach and address them too. Check Cyborg Soldier (Rigged Character).
-  // TODO: Android Soldier throws error.
 
   // newRoot might be replaced during the traverse but the traverse will continue normally
   let newRoot = cloneObject3D(root) as THREE.Mesh | THREE.Group;
@@ -199,6 +218,8 @@ export function recombineMeshesByMaterial(root: THREE.Mesh | THREE.Group, { debu
     const DEBUG = (debug && oldMeshClone.name === debug) || debug === 'ALL';
 
     visitedMeshes.add(oldMeshClone);
+
+    putNamesOnMorphAttributes(oldMeshClone);
 
     const animationsMap = new Map<THREE.AnimationClip, THREE.KeyframeTrack[]>();
     animations.forEach((animationClip) => {
@@ -246,15 +267,15 @@ export function recombineMeshesByMaterial(root: THREE.Mesh | THREE.Group, { debu
         }, {} as any);
 
         let morphAttributesKeys: string[] | undefined;
-        let mergedMorphAttributes: any;
+        let mergedMorphAttributes: Record<string, number[][]> | undefined;
         if (geometryClone.morphAttributes) {
           morphAttributesKeys = Object.keys(geometryClone.morphAttributes);
           morphAttributesKeys.forEach((key) => {
             // key is 'position', 'normal', 'color', ...
             mergedMorphAttributes = mergedMorphAttributes || {};
-            mergedMorphAttributes[key] = {};
-            geometryClone.morphAttributes[key].forEach((buffer) => {
-              mergedMorphAttributes[key][buffer.name] = [];
+            mergedMorphAttributes[key] = [];
+            geometryClone.morphAttributes[key].forEach((_, idx) => {
+              mergedMorphAttributes![key][idx] = [];
             });
           });
         }
@@ -275,13 +296,13 @@ export function recombineMeshesByMaterial(root: THREE.Mesh | THREE.Group, { debu
           });
 
           morphAttributesKeys?.forEach((key) => {
-            geometryClone.morphAttributes[key].forEach((buffer) => {
+            geometryClone.morphAttributes[key].forEach((buffer, idx) => {
               const slice = buffer.array.slice(
                 group.start * buffer.itemSize,
                 (group.start + group.count) * buffer.itemSize
               );
               slice.forEach((value) => {
-                mergedMorphAttributes[key][buffer.name].push(value);
+                mergedMorphAttributes![key][idx].push(value);
               });
             });
           });
@@ -293,6 +314,7 @@ export function recombineMeshesByMaterial(root: THREE.Mesh | THREE.Group, { debu
             const oldAttribute = geometryClone.attributes[key];
             const itemSize = oldAttribute.itemSize;
             const normalized = oldAttribute.normalized;
+            const name = oldAttribute.name;
             // @ts-ignore
             const gpuType = oldAttribute.gpuType;
             const ArrayConstructor = oldAttribute.array.constructor as TypedArrayConstructor;
@@ -303,6 +325,7 @@ export function recombineMeshesByMaterial(root: THREE.Mesh | THREE.Group, { debu
               new BufferConstructor(new ArrayConstructor(mergedAttributes[key]), itemSize, normalized)
             );
 
+            mergedGeometry.attributes[key].name = `${name}_${materialIndex}`;
             // @ts-ignore
             mergedGeometry.attributes[key].gpuType = gpuType;
           } else {
@@ -312,29 +335,27 @@ export function recombineMeshesByMaterial(root: THREE.Mesh | THREE.Group, { debu
 
         mergedMorphAttributes &&
           Object.keys(mergedMorphAttributes).forEach((morphKey) => {
-            const morphAttributes = mergedMorphAttributes[morphKey]; // e.g. position: [array, array]
+            const newMorphAttributes = mergedMorphAttributes![morphKey]; // e.g. position: [array, array]
             const oldMorphAttributeSample = geometryClone.morphAttributes[morphKey][0];
             const itemSize = oldMorphAttributeSample.itemSize;
             const normalized = oldMorphAttributeSample.normalized;
-            // TODO: check how to handle THREE.InterleavedBufferAttribute
             // @ts-ignore
             const gpuType = oldMorphAttributeSample.gpuType;
             const ArrayConstructor = oldMorphAttributeSample.array.constructor as TypedArrayConstructor;
             const BufferConstructor = oldMorphAttributeSample.constructor as BufferAttributeConstructor;
 
-            const morphBuffers = Object.keys(morphAttributes).map((name) => {
-              // name: smile, frown, ...
-              const morphData: number[] = morphAttributes[name];
+            const newMorphBuffers = newMorphAttributes.map((_, idx) => {
+              const morphData: number[] = newMorphAttributes[idx];
               // If BufferConstructor is BufferAttribute class, it only accepts typed arrays
-              const morphGeoBuffer = new BufferConstructor(new ArrayConstructor(morphData), itemSize, normalized);
-              morphGeoBuffer.name = name;
-              morphGeoBuffer.gpuType = gpuType;
-              return morphGeoBuffer;
+              const newMorphGeoBuffer = new BufferConstructor(new ArrayConstructor(morphData), itemSize, normalized);
+              newMorphGeoBuffer.name = geometryClone.morphAttributes[morphKey][idx].name;
+              newMorphGeoBuffer.gpuType = gpuType;
+              return newMorphGeoBuffer;
             });
 
             // morphBuffers: position: [Buffer, Buffer]
-            if (morphBuffers.length === 0) return;
-            mergedGeometry.morphAttributes[morphKey] = morphBuffers;
+            if (newMorphBuffers.length === 0) return;
+            mergedGeometry.morphAttributes[morphKey] = newMorphBuffers;
           });
 
         mergedGeometry.morphTargetsRelative = geometryClone.morphTargetsRelative;
@@ -434,7 +455,7 @@ export function recombineMeshesByMaterial(root: THREE.Mesh | THREE.Group, { debu
           const BufferConstructor = oldMorphAttributeSample.constructor as BufferAttributeConstructor;
           const ArrayConstructor = oldBuffer.constructor as TypedArrayConstructor;
 
-          const morphBuffers = geometryClone.morphAttributes[morphKey].map((morphAttribute) => {
+          const newMorphBuffers = geometryClone.morphAttributes[morphKey].map((morphAttribute) => {
             const name = morphAttribute.name;
             const morphData = morphAttribute.array;
             const compactedBuffer = new ArrayConstructor(indicesMapper.size * itemSize);
@@ -445,15 +466,15 @@ export function recombineMeshesByMaterial(root: THREE.Mesh | THREE.Group, { debu
               }
             });
 
-            const morphGeoBuffer = new BufferConstructor(compactedBuffer, itemSize, normalized);
-            morphGeoBuffer.name = name;
-            morphGeoBuffer.gpuType = gpuType;
-            return morphGeoBuffer;
+            const newMorphGeoBuffer = new BufferConstructor(compactedBuffer, itemSize, normalized);
+            newMorphGeoBuffer.name = name;
+            newMorphGeoBuffer.gpuType = gpuType;
+            return newMorphGeoBuffer;
           });
 
           // morphBuffers: position: [Buffer, Buffer]
-          if (morphBuffers.length === 0) return;
-          mergedGeometry.morphAttributes[morphKey] = morphBuffers;
+          if (newMorphBuffers.length === 0) return;
+          mergedGeometry.morphAttributes[morphKey] = newMorphBuffers;
         });
 
         mergedGeometry.morphTargetsRelative = geometryClone.morphTargetsRelative;

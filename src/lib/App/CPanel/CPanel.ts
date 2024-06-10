@@ -52,6 +52,11 @@ panelContainer.addEventListener('pointerdown', (evt) => {
   while (walker) {
     walker = walker?.parentNode as HTMLElement;
     if (!walker) return;
+    // binding-value is set when defining bindings in bindingHelpers
+    if (walker.classList.contains('binding-value')) {
+      // here's we mark the current one to read it on "pointerup"
+      walker.classList.add('binding-value-current');
+    }
     if (walker.id === 'controlPanelContent') {
       // fixing cPanel hiding inner content when dragged outside
       walker.classList.add('cPanel-mousedown');
@@ -62,7 +67,40 @@ panelContainer.addEventListener('pointerdown', (evt) => {
   }
 });
 
-document.addEventListener('pointerup', () => {
+document.addEventListener('pointerup', (evt) => {
+  let releasedOnCurrentBindingValue = false;
+  let walker: HTMLElement = evt.target as HTMLElement;
+
+  while (walker) {
+    walker = walker?.parentNode as HTMLElement;
+    if (!walker) break;
+    if (walker.classList?.contains('binding-value-current')) {
+      releasedOnCurrentBindingValue = true;
+      break;
+    }
+  }
+
+  // fixing Tweakpane dragging handlers not being released when "pointerup" / "mouseup" is fired from disabled inputs.
+  if (!releasedOnCurrentBindingValue) {
+    document.querySelectorAll('.binding-value-current *').forEach((el) => {
+      // Dispatching "mouseup" event to release the handle. Tewakpane listens for "mouseup" not for "pointerup" event.
+      el.dispatchEvent(
+        new PointerEvent('mouseup', {
+          bubbles: true,
+          cancelable: true,
+          view: window,
+          clientX: evt.clientX,
+          clientY: evt.clientY
+        })
+      );
+    });
+  }
+
+  // cleanup
+  document.querySelectorAll('.binding-value-current').forEach((el) => {
+    el.classList.remove('binding-value-current');
+  });
+
   document.querySelectorAll('.cPanel-mousedown').forEach((el) => {
     // setTimeout is for Firefox which keeps the draggable attached to mouse
     setTimeout(() => {

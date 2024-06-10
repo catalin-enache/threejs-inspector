@@ -27,10 +27,11 @@
 }
 
 #controlPanel {
+  --cPanelNestingOffset: 10px; /* account for cPane Global tab initial nesting */
   --cPanelWidth: 340px;
   --cPanelRightMargin: 10px;
   --leftRightMargin: calc(var(--cPanelRightMargin) * 2);
-  --cPanelFinalWidth: min(var(--cPanelWidth), 100vw - var(--leftRightMargin));
+  --cPanelFinalWidth: min(calc(var(--cPanelWidth) + var(--cPanelNestingOffset)), 100vw - var(--leftRightMargin));
   position: absolute;
   top: 10px;
   right: var(--cPanelRightMargin);

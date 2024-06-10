@@ -22,6 +22,27 @@ export const numberCommon = {
   format: numberFormat(3)
 };
 
+const adjustCPanelWidthFromNestedExpandedFolders = () => {
+  const cPanelContainer = document.getElementById('controlPanel')!;
+  const cPanelStyle = cPanelContainer!.style;
+  const buttons = cPanelContainer.querySelectorAll('button');
+  let max = 0;
+  buttons.forEach((button) => {
+    let walker: HTMLElement = button;
+    let _max = 0;
+    while (walker) {
+      walker = walker?.parentNode as HTMLElement;
+      if (!walker) break;
+      if (walker.classList?.contains('folder-button') && [...walker.classList].some((c) => c.endsWith('expanded'))) {
+        _max += 1;
+      }
+    }
+    max = Math.max(max, _max);
+  });
+
+  cPanelStyle.setProperty('--cPanelNestingOffset', 10 * max + 'px');
+};
+
 export function rotationHandler(this: HTMLInputElement, e: Event) {
   // @ts-ignore
   e.target.value = +degToRad(e.target.value);
@@ -88,6 +109,7 @@ export const tweakFolder = (folder: FolderApi | TabPageApi, id: string) => {
           propertyName: 'height'
         })
       );
+      adjustCPanelWidthFromNestedExpandedFolders();
     });
   });
 };

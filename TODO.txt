@@ -46,6 +46,8 @@ Allow setting isInspectable on root and the function should do it recursively au
 
 Some imported objects are too big. We need to scale them down generically compared to the scene. *DONE*
 
+Bug: When using transform sliders and releasing mouse on disabled inputs the control is not released. *DONE*
+
 
 
 Implement options for importing via input file. (optimize ? autoscale ? geometry ?)
@@ -55,8 +57,6 @@ See the hair for some characters, why not showing well ?
 Allow seeing bounding boxes and spheres for objects
 
 The colors are different between gltf and fbx (see test_multi_features)
-
-Bug: When using transform sliders and releasing mouse on disabled inputs the control is not released.
 
 Bug: FBXLoader: DDS loader not found for Modular Military Character fbx. (maybe a dds re-export would fix it)
 

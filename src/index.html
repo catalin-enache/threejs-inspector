@@ -16,20 +16,6 @@
     <div id="main">
       <div id="webgl"></div>
     </div>
-    <div id="controlPanel">
-      <div id="dragMe"></div>
-      <div id="help"></div>
-      <div id="controlPanelContent"></div>
-      <script type="module">
-        import { gsap } from "gsap";
-        import { Draggable } from "gsap/Draggable";
-        gsap.registerPlugin(Draggable);
-        Draggable.create("#controlPanel", {
-          trigger: "#dragMe",
-          minimumMovement: 0
-        });
-      </script>
-    </div>
     <script type="module" src="index.tsx"></script>
   </body>
 </html>

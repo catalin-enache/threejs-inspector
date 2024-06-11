@@ -2,8 +2,9 @@ import { useEffect, useRef, useCallback, useMemo } from 'react';
 import * as THREE from 'three';
 import { useThree } from '@react-three/fiber';
 import { Pane, FolderApi, TabApi } from 'tweakpane';
-// import { Pane, FolderApi, TabApi } from 'lib/third_party/tweakpane';
 import * as EssentialsPlugin from '@tweakpane/plugin-essentials';
+import { gsap } from 'gsap';
+import { Draggable } from 'gsap/Draggable';
 import { useAppStore } from 'src/store';
 import { makeContinuousUpdate } from './continuousUpdate';
 import TexturePlugin from './Plugins/TexturePlugin';
@@ -22,9 +23,24 @@ import {
 import { makeRotationBinding, tweakBindingView, buildBindings, cleanupContainer } from './bindings/bindingHelpers';
 // @ts-ignore
 import { html } from '../../../../README.md';
-import './CPanel.css';
 import { CommonGetterParams } from 'lib/App/CPanel/bindings/bindingTypes';
 import { LoadModel } from 'components/LoadModel/LoadModel';
+import './CPanel.css';
+
+const cPanel = document.createElement('div');
+cPanel.id = 'controlPanel';
+cPanel.innerHTML = `
+<div id="dragMe"></div>
+<div id="help"></div>
+<div id="controlPanelContent"></div>
+`;
+document.body.appendChild(cPanel);
+
+gsap.registerPlugin(Draggable);
+Draggable.create('#controlPanel', {
+  trigger: '#dragMe',
+  minimumMovement: 0
+});
 
 const cPanelContainer = document.getElementById('controlPanel')!;
 const helpContainer = document.getElementById('help')!;

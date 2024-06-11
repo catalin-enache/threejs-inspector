@@ -1,11 +1,18 @@
 import * as THREE from 'three';
 import { useEffect, useRef, useState } from 'react';
 import { useFrame, ThreeElements, useThree } from '@react-three/fiber';
+// @ts-ignore
+import Stats from 'three/addons/libs/stats.module.js';
 import { CustomControl } from 'components/CustomControl/CustomControl';
 import { usePlay } from 'lib/hooks';
 import { degToRad } from 'lib/utils';
 import { createTexturesFromImages } from 'lib/utils/imageUtils';
-import { loadModel } from 'lib/utils/loadModel';
+// import { TestIndexedCube3Materials } from './TestIndexedCube3Materials';
+// import { TestMorphTargets } from './TestMorphTargets';
+// import { recombineMeshesByMaterial } from 'lib/utils/recombineMeshes';
+
+const stats = new Stats();
+document.body.appendChild(stats.dom);
 
 function Box(
   props: ThreeElements['mesh'] & {
@@ -81,6 +88,7 @@ export function Experience() {
   // const cubeCameraRef = useRef<THREE.CubeCamera>(null!);
   // const webGLCubeRenderTargetRef = useRef(new THREE.WebGLCubeRenderTarget(128));
   useFrame((_state, _delta) => {
+    stats.update();
     if (refPointLight.current) {
       // refPointLight.current.intensity = Math.sin(Date.now() / 100) + 1;
     }
@@ -106,6 +114,7 @@ export function Experience() {
         (img) => `textures/pbr/door/${img}`
       )
     ).then((textures) => {
+      if (!doorMaterialRef.current) return;
       // console.log(doorMaterialRef.current, textures);
       doorMaterialRef.current.alphaMap = textures[0];
       doorMaterialRef.current.aoMap = textures[1];
@@ -174,42 +183,52 @@ export function Experience() {
         // texture.needsPMREMUpdate = true;
         // texture.needsUpdate = true;
 
-        loadModel('models/ply/binary/Lucy100k.ply', scene).then((mesh) => {
-          if (!mesh) return;
+        // loadModel('models/FromThreeRepo/ply/binary/Lucy100k.ply', scene, {}).then((mesh) => {
+        //   if (!mesh) return;
+        //   mesh.name = 'LoadedMesh';
+        //
+        //   const phongMaterial = new THREE.MeshPhongMaterial({
+        //     color: 0xffffff,
+        //     envMap: scene.background as THREE.Texture,
+        //     refractionRatio: 0.98
+        //   });
+        //
+        //   const s = 0.001;
+        //   (mesh as THREE.Mesh).material = phongMaterial;
+        //   mesh.position.set(1, 0, 2);
+        //   mesh.__inspectorData.isInspectable = true;
+        //   mesh.scale.x = mesh.scale.y = mesh.scale.z = s;
+        //
+        //   scene.add(mesh);
+        // });
 
-          const phongMaterial = new THREE.MeshPhongMaterial({
-            color: 0xffffff,
-            envMap: scene.background as THREE.Texture,
-            refractionRatio: 0.98
-          });
+        // models/MyTests/with_non_default_textures/with_non_native_textures.fbx
+        // models/NonFree/Dark Elf Blader - Game Ready/Assets/Textures/DarkElfBlader_FBX_From3DsMax.fbx
+        // loadModel('models/MyTests/having space in path/asset with space in path.fbx', scene, {
+        //   // filesArray: ['models/MyTests/with_non_native_textures/textures/with_non_native_textures.bin'],
+        //   // resourcePath: 'models/MyTests/with_non_native_textures/textures/'
+        // }).then((mesh) => {
+        //   if (!mesh) return;
+        //   scene.add(mesh);
+        // });
 
-          const s = 0.001;
-          (mesh as THREE.Mesh).material = phongMaterial;
-          mesh.position.set(1, 0, 2);
-          mesh.userData.isInspectable = true;
-          mesh.scale.x = mesh.scale.y = mesh.scale.z = s;
+        // const testIndexedCube3Materials = TestIndexedCube3Materials();
+        // const testMorphTargets = TestMorphTargets();
+        // const recombinedCube = recombineMeshesByMaterial(testIndexedCube3Materials);
 
-          scene.add(mesh);
-        });
+        // testIndexedCube3Materials.position.set(0, 0, 0);
+        // recombinedCube.position.set(0, 3, 0);
+        // recombinedCube.name = 'recombinedCube';
 
-        // models/gltf/IridescentDishWithOlives.glb
-        // models/ply/binary/Lucy100k.ply
-        // models/gltf/Flower/Flower.glb
-        // models/gltf/ferrari.glb requires draco
-        // models/gltf/DamagedHelmet/glTF/DamagedHelmet.gltf
-        // models/gltf/coffeemat.glb
-        // models/gltf/DamagedHelmet/glTF-instancing/DamagedHelmetGpuInstancing.gltf
-        // models/gltf/LeePerrySmith/LeePerrySmith.glb
-        // models/gltf/RobotExpressive/RobotExpressive.glb
-        // models/gltf/AnisotropyBarnLamp/glTF-KTX-BasisU/AnisotropyBarnLamp.gltf
-        // models/gltf/AnisotropyBarnLamp/glTF-KTX-BasisU-fixed/AnisotropyBarnLamp.gltf
-        // models/gltf/RobotExpressive/RobotExpressive.glb
-        // https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/main/Models/AnisotropyBarnLamp/glTF-KTX-BasisU/AnisotropyBarnLamp.gltf
-        loadModel('models/gltf/RobotExpressive/RobotExpressive.glb', scene).then((mesh) => {
-          if (!mesh) return;
-          console.log('loadedModel', { mesh });
-          scene.add(mesh);
-        });
+        // these are not needed
+        // testIndexedCube3Materials.__inspectorData.isInspectable = true;
+        // recombinedCube.__inspectorData.isInspectable = true;
+
+        // console.log('recombinedCube', { testIndexedCube3Materials, recombinedCube });
+
+        // scene.add(testIndexedCube3Materials);
+        // scene.add(recombinedCube);
+        // scene.add(testMorphTargets);
       }
     );
   }, []);
@@ -228,7 +247,7 @@ export function Experience() {
         intensity={4.5}
         ref={refDirectionalLight}
         color={'white'}
-        userData={{ isInspectable: false }}
+        __inspectorData={{ isInspectable: false }}
       ></directionalLight>
       {/*<hemisphereLight*/}
       {/*  // args={[0xffffff, 0xffffff, 2]}*/}
@@ -247,7 +266,7 @@ export function Experience() {
         scale={1}
         intensity={Math.PI}
         ref={refPointLight}
-        userData={{ isInspectable: false }}
+        __inspectorData={{ isInspectable: false }}
       />
 
       <spotLight
@@ -261,36 +280,51 @@ export function Experience() {
         penumbra={0.5}
       ></spotLight>
 
-      <Box
-        castShadow
+      {/*<Box*/}
+      {/*  castShadow*/}
+      {/*  receiveShadow*/}
+      {/*  mapURL="textures/utils/checkerboard-8x8.png"*/}
+      {/*  position={[-1.2, customControlXY.x, customControlXY.y]}*/}
+      {/*  __inspectorData={{ isInspectable: true }}*/}
+      {/*  name="Box 1"*/}
+      {/*/>*/}
+      {/*<Box*/}
+      {/*  mapURL="textures/utils/checkerboard-8x8.png"*/}
+      {/*  alphaMapURL="textures/utils/checkerboard-8x8.png"*/}
+      {/*  position={[1.2, 0, 0]}*/}
+      {/*  __inspectorData={{ isInspectable: true }}*/}
+      {/*  castShadow*/}
+      {/*  receiveShadow*/}
+      {/*  name="Box 2"*/}
+      {/*>*/}
+      {/*  <mesh*/}
+      {/*    // receiveShadow*/}
+      {/*    position={[1.5, 0.5, 0]}*/}
+      {/*    __inspectorData={{ isInspectable: true }}*/}
+      {/*    name="Box 2 child"*/}
+      {/*  >*/}
+      {/*    <boxGeometry args={[1, 1, 1]} />*/}
+      {/*    <meshStandardMaterial />*/}
+      {/*  </mesh>*/}
+      {/*</Box>*/}
+      <mesh
+        name="plane"
+        rotation={[-1.5, 0, 0]}
+        position={[-5, -6, -3]}
         receiveShadow
-        mapURL="textures/utils/checkerboard-8x8.png"
-        position={[-1.2, customControlXY.x, customControlXY.y]}
-        userData={{ isInspectable: true }}
-      />
-      <Box
-        mapURL="textures/utils/checkerboard-8x8.png"
-        alphaMapURL="textures/utils/checkerboard-8x8.png"
-        position={[1.2, 0, 0]}
-        userData={{ isInspectable: true }}
-        castShadow
-        receiveShadow
+        __inspectorData={{ isInspectable: true }}
       >
-        <mesh
-          // receiveShadow
-          position={[1.5, 0.5, 0]}
-          userData={{ isInspectable: true }}
-        >
-          <boxGeometry args={[1, 1, 1]} />
-          <meshStandardMaterial />
-        </mesh>
-      </Box>
-      <mesh rotation={[-1.5, 0, 0]} position={[-5, -6, -3]} receiveShadow userData={{ isInspectable: true }}>
         <planeGeometry args={[16, 16]} />
         <meshStandardMaterial color="white" side={THREE.DoubleSide} />
       </mesh>
 
-      <mesh name="door" rotation={[0, 0, 0]} position={[0, 0, -2]} receiveShadow userData={{ isInspectable: true }}>
+      <mesh
+        name="door"
+        rotation={[0, 0, 0]}
+        position={[0, 0, -2]}
+        receiveShadow
+        __inspectorData={{ isInspectable: true }}
+      >
         <planeGeometry args={[16, 16]} />
         {/*@ts-ignore*/}
         <meshPhysicalMaterial ref={doorMaterialRef} side={THREE.DoubleSide} />
@@ -303,7 +337,7 @@ export function Experience() {
         position={[0, 0, 5]}
         name="myPerspectiveCamera"
         rotation={[degToRad(25.86), degToRad(-46.13), degToRad(0)]} // 25.86 , -46.13, 19.26
-        userData={{ useOnPlay: false }}
+        __inspectorData={{ useOnPlay: false }}
       />
 
       {/*<cubeCamera*/}

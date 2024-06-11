@@ -1,6 +1,7 @@
 :root {
   --tp-base-background-opacity: 0.41;
   --tp-base-background-color: hsla(0, 0%, 10%, var(--tp-base-background-opacity));
+  --tp-base-background-color-no-opacity: hsla(0, 0%, 10%, 1);
   --tp-base-shadow-color: hsla(0, 0%, 0%, 0.2);
   --tp-base-border-radius: 0px;
   --tp-blade-border-radius: 0px;

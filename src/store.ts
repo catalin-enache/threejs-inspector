@@ -58,6 +58,8 @@ export interface AppStore {
   cPanelCustomControls: Record<string, BindingParams>;
   setCPanelCustomControls: (name: string, customParams: any) => void;
   removeCPanelCustomControls: (name: string) => void;
+  loadModelIsOpen: boolean;
+  setLoadModelIsOpen: (isOpen: boolean) => void;
   cameraControl: 'orbit' | 'fly';
   setCameraControl: (type: 'orbit' | 'fly') => void;
   toggleCameraControl: () => void;
@@ -210,6 +212,8 @@ export const useAppStore = create<AppStore>()(
         delete state.cPanelCustomControls[name];
         return { cPanelCustomControls: { ...state.cPanelCustomControls } };
       }),
+    loadModelIsOpen: false,
+    setLoadModelIsOpen: (loadModelIsOpen) => set({ loadModelIsOpen }),
     cameraControl: 'orbit',
     setCameraControl: (cameraControl) => {
       if (get().isDraggingTransformControls) return;

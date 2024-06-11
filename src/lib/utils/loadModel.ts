@@ -162,7 +162,19 @@ export const loadModel = async (
   const rootSource = rootFile instanceof File ? rootFile.name : rootFile;
   let { name, fileType } = getNameAndType(rootSource, fileTypeMap);
 
-  console.log('loadModel start', { name, fileType, rootSource, filesArray });
+  debug &&
+    console.log('loadModel start', {
+      name,
+      fileType,
+      rootSource,
+      filesArray,
+      changeGeometry,
+      autoScaleRatio,
+      recombineByMaterial,
+      resourcePath,
+      isInspectable,
+      debug
+    });
 
   const loader = getLoader(fileType);
   if (!loader) return null;
@@ -191,7 +203,6 @@ export const loadModel = async (
   // TODO: test loading via http multiple fbx files (with separate animations)
 
   if (multiAssetSources.length) {
-    console.log('multiAssetSources', { multiAssetSources, sources });
     // dealing with fbx/gltf one or more files
     const loadedAssets = await Promise.all(
       multiAssetSources.map(async (source) => {
@@ -210,7 +221,8 @@ export const loadModel = async (
     const rootAsset = findRootAsset(loadedAssets);
     // restAssets most of the time contain just animations
     const restAssets = loadedAssets.filter((a) => a !== rootAsset);
-    console.log('multiAssetSources loadedAssets', { loadedAssets, rootAsset });
+    debug &&
+      console.log('loadModel multiAssetSources loadedAssets', { multiAssetSources, sources, loadedAssets, rootAsset });
 
     result = rootAsset;
     name = rootAsset.__inspectorData.resourceName;
@@ -219,13 +231,12 @@ export const loadModel = async (
       mergeAnimationsFromRestAssets(result as THREE.Group, externalAnimationAsset);
     });
 
-    console.log('multiAssetSources merged animations', { rootAsset, restAssets });
+    debug && console.log('loadModel multiAssetSources merged animations', { rootAsset, restAssets });
   } else {
     // the rest non fbx, glb, gltf files
     result = await loader.loadAsync(rootSource);
   }
 
-  console.log('loadModel result', { name, fileType, result });
   let root: THREE.Mesh | THREE.Group | null = null;
 
   if (loader instanceof GLTFLoader) {
@@ -257,7 +268,7 @@ export const loadModel = async (
   if (changeGeometry === 'indexed') {
     root.traverse((child) => {
       if (child instanceof THREE.Mesh && !child.geometry.index) {
-        // console.log('toIndexedGeometry', child);
+        debug && console.log('loadModel toIndexedGeometry', child);
         toIndexedGeometry(child);
         child.geometry.computeBoundingBox();
         child.geometry.computeBoundingSphere();
@@ -266,7 +277,7 @@ export const loadModel = async (
   } else if (changeGeometry === 'non-indexed') {
     root.traverse((child) => {
       if (child instanceof THREE.Mesh && child.geometry.index) {
-        // console.log('toNonIndexedGeometry', child);
+        debug && console.log('loadModel toNonIndexedGeometry', child);
         child.geometry = child.geometry.toNonIndexed();
         child.geometry.computeBoundingBox();
         child.geometry.computeBoundingSphere();
@@ -320,7 +331,7 @@ export const loadModel = async (
     root = splitMeshesByMaterial(root, { debug });
   }
 
-  console.log('loadModel done', { name, fileType, root });
+  debug && console.log('loadModel done', { name, fileType, result, root });
 
   if (autoScaleRatio) {
     const meshSize = getBoundingBoxSize(root);

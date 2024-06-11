@@ -24,6 +24,7 @@ import { makeRotationBinding, tweakBindingView, buildBindings, cleanupContainer 
 import { html } from '../../../../README.md';
 import './CPanel.css';
 import { CommonGetterParams } from 'lib/App/CPanel/bindings/bindingTypes';
+import { LoadModel } from 'components/LoadModel/LoadModel';
 
 const cPanelContainer = document.getElementById('controlPanel')!;
 const helpContainer = document.getElementById('help')!;
@@ -408,5 +409,9 @@ export const CPanel = () => {
     cPanelStateFake
   ]);
 
-  return null;
+  return (
+    <>
+      <LoadModel scene={scene} />
+    </>
+  );
 };

@@ -1,0 +1,59 @@
+.modal {
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  padding: 8px 16px 16px 16px;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  max-height: 90%;
+  overflow-y: scroll;
+  background-color: var(--tp-base-background-color-no-opacity);
+  box-shadow: rgba(0, 0, 0, 0.15) 1.95px 1.95px 2.6px;
+}
+
+.modal__title {
+  margin-right: auto;
+  font-weight: bold;
+  font-size: 24px;
+  height: 30px;
+}
+
+/* hide scrollbar */
+.modal::-webkit-scrollbar {
+  display: none;
+}
+.modal {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+
+.modal .formRow label {
+  display: flex;
+  flex-direction: column;
+  margin: 8px 0px;
+  font-size: 12px;
+  align-items: flex-start;
+}
+
+.modal .formRow input, .modal .formRow select, .modal button {
+  margin: 4px 0 0 0;
+  height: 24px;
+  width: 100%;
+  outline: none;
+  background: var(--tp-input-background-color);
+  border: none;
+  color: var(--tp-container-foreground-color);
+  cursor: pointer;
+}
+
+.modal button {
+  background: var(--tp-container-foreground-color);
+  color: black;
+}
+
+.modal .formRow input[type=checkbox] {
+  width: 24px;
+  height: 24px;
+}

@@ -1,26 +1,6 @@
 import { useAppStore } from 'src/store';
 import { focusCamera } from 'lib/utils';
 import type { CommonGetterParams, onChange } from './bindingTypes';
-import { loadModel } from 'lib/utils/loadModel';
-
-const rootExtensions = ['.glb', '.gltf', '.obj', '.fbx', '.dae', '.3ds', '.stl', '.ply', '.vtk'];
-const allowedExtensions = [
-  ...rootExtensions,
-  '.bin',
-  '.mtl',
-  '.jpg',
-  '.jpeg',
-  '.png',
-  '.gif',
-  '.webp',
-  '.tif',
-  '.tiff',
-  '.exr',
-  '.hdr',
-  '.tga',
-  '.ktx2',
-  '.dds'
-];
 
 // keys are not relevant for buttons
 export const SceneButtons = ({ isPlaying, sceneObjects: { camera, scene } }: CommonGetterParams) => ({
@@ -81,29 +61,7 @@ export const SceneButtons = ({ isPlaying, sceneObjects: { camera, scene } }: Com
     label: 'Load Model',
     title: 'Load Model',
     onClick: (() => {
-      const input = document.createElement('input');
-      input.type = 'file';
-      input.accept = allowedExtensions.join(',');
-      input.multiple = true;
-      input.onchange = (e) => {
-        const files = (e.target as HTMLInputElement).files;
-        if (!files || !files.length) return;
-        const filesArray = Array.from(files);
-        const rootFile = filesArray.find((file) => rootExtensions.some((ext) => file.name.toLowerCase().endsWith(ext)));
-        if (!rootFile) return;
-        // inspired from https://github.com/donmccurdy/three-gltf-viewer/blob/main/src/viewer.js#L159-L191
-        // https://gltf-viewer.donmccurdy.com/
-        loadModel(rootFile, scene, {
-          filesArray,
-          // changeGeometry: 'indexed', // 'indexed' | 'non-indexed'
-          recombineByMaterial: true,
-          autoScaleRatio: 0.4, // 0..1 percentage
-          debug: '' // <meshName> || 'ALL'
-        }).then((mesh) => {
-          mesh && scene.add(mesh);
-        });
-      };
-      input.click();
+      useAppStore.getState().setLoadModelIsOpen(true);
     }) as onChange
   }
 });

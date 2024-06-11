@@ -46,6 +46,7 @@ export function App(props: AppProps) {
       onContextMenu={preventContextMenu}
       shadows={'soft'}
       gl={{ antialias: true, precision: 'highp' }}
+      // frameloop={'never'}
       // legacy
       // when legacy is true it sets THREE.ColorManagement.enabled = false, by default THREE.ColorManagement is enabled
       // when THREE.ColorManagement is enabled, ThreeJS will automatically handle the conversion of textures and colors to linear space.

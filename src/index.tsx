@@ -6,7 +6,7 @@ import './index.css';
 
 const useStrictMode = true;
 
-createRoot(document.getElementById('webgl') as HTMLElement).render(
+createRoot(document.getElementById('main') as HTMLElement).render(
   useStrictMode ? (
     <StrictMode>
       <App>

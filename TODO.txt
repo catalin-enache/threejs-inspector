@@ -52,6 +52,8 @@ Bug: When using transform sliders and releasing mouse on disabled inputs the con
 
 Implement options for importing via input file. (optimize ? autoscale ? geometry ?)
 
+Allow setting the size for pickers. In some scenes they are too small/big;
+
 Check ALL_Asian_female why is rendering slow ? It is a bout a hair mesh.
 Check ALL_Asian_female.fbx make it indexed and recombine meshes. Observe lots of children (too many).
     - also just recombine meshes without making geometry indexed and debug Shoes mesh (the validation shows lots of inequalities)

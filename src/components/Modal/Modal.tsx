@@ -24,24 +24,24 @@ export const Modal = (props: ModalProps) => {
   useEffect(() => {
     if (!isOpen) return;
     const modalContainer = document.createElement('div');
-    modalContainer.classList.add('modal');
+    modalContainer.classList.add('inspectorModal');
     modalContainer.style.width = width;
     document.body.appendChild(modalContainer);
     modalHostRef.current = modalContainer;
 
     const modalTitle = document.createElement('div');
-    modalTitle.classList.add('modal__title');
+    modalTitle.classList.add('inspectorModal__title');
     modalTitle.innerText = title;
     modalContainer.appendChild(modalTitle);
 
     const content = document.createElement('div');
-    content.classList.add('modal__content');
+    content.classList.add('inspectorModal__content');
     contentRef.current = content;
     content.appendChild(children);
     modalContainer.appendChild(content);
 
     const closeButton = document.createElement('button');
-    closeButton.classList.add('modal__closeBtn');
+    closeButton.classList.add('inspectorModal__closeBtn');
     closeButton.innerText = 'Close';
     buttonCloseRef.current = closeButton;
     buttonCloseRef.current.addEventListener('click', handleClose);

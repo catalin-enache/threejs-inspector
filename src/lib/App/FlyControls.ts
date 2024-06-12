@@ -21,7 +21,7 @@ const setupFlyControls = (camera: THREE.Camera, scene: THREE.Scene) => {
   const cameraDirection = new THREE.Vector3();
   const rightVector = new THREE.Vector3();
 
-  // TODO: maybe we can find a way to make it more smooth
+  // TODO: maybe we can find a way to make it more smooth (look into OrbitControls source code)
   // move camera wasd/qe
   const flyCamera = () => {
     // this will only fire if frameloop is not 'never'

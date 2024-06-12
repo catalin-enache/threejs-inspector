@@ -54,7 +54,8 @@ const isExcluded = (object: THREE.Object3D, exclude: Set<THREE.Object3D>) => {
 export function getVisibleSceneBoundingBoxSize(
   scene: THREE.Scene,
   camera: THREE.Camera,
-  exclude: Set<THREE.Object3D> = new Set()
+  exclude: Set<THREE.Object3D> = new Set(),
+  useFrustum = false
 ) {
   const frustum = new THREE.Frustum();
   const cameraViewProjectionMatrix = new THREE.Matrix4();
@@ -67,7 +68,7 @@ export function getVisibleSceneBoundingBoxSize(
   scene.traverse((object) => {
     if (!isExcluded(object, exclude) && !(object instanceof THREE.Scene)) {
       const objectBoundingBox = new THREE.Box3().setFromObject(object);
-      if (frustum.intersectsBox(objectBoundingBox)) {
+      if (!useFrustum || frustum.intersectsBox(objectBoundingBox)) {
         visibleObjectsBoundingBox.union(objectBoundingBox);
       }
     }

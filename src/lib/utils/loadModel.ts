@@ -335,7 +335,7 @@ export const loadModel = async (
 
   if (autoScaleRatio) {
     const meshSize = getBoundingBoxSize(root);
-    const sceneSize = getVisibleSceneBoundingBoxSize(scene, scene.__inspectorData.currentCamera, new Set([root]));
+    const sceneSize = getVisibleSceneBoundingBoxSize(scene, scene.__inspectorData.currentCamera, new Set([root]), true);
     const scaleFactor = calculateScaleFactor(meshSize, sceneSize, autoScaleRatio);
     root.scale.set(scaleFactor, scaleFactor, scaleFactor);
   }

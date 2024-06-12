@@ -381,7 +381,7 @@ export const CPanel = () => {
     // Add Raycaster Params
     const raycasterParamsFolder = sceneTab
       .addFolder({
-        title: 'Raycaster',
+        title: 'Inspector Raycaster',
         expanded: false
       })
       .on('change', () => {

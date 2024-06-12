@@ -51,7 +51,7 @@ const isExcluded = (object: THREE.Object3D, exclude: Set<THREE.Object3D>) => {
   return false;
 };
 
-export function getVisibleSceneBoundingBoxSize(
+export function getSceneBoundingBoxSize(
   scene: THREE.Scene,
   camera: THREE.Camera,
   exclude: Set<THREE.Object3D> = new Set(),

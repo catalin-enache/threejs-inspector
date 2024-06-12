@@ -18,7 +18,7 @@ import {
   ColladaLoader
 } from './loaders';
 import { splitMeshesByMaterial, toIndexedGeometry } from './optimiseAsset';
-import { getBoundingBoxSize, calculateScaleFactor, getVisibleSceneBoundingBoxSize } from './sizeUtils';
+import { getBoundingBoxSize, calculateScaleFactor, getSceneBoundingBoxSize } from './sizeUtils';
 
 export const FILE_FBX = 'FBX';
 export const FILE_PLY = 'PLY';
@@ -335,7 +335,7 @@ export const loadModel = async (
 
   if (autoScaleRatio) {
     const meshSize = getBoundingBoxSize(root);
-    const sceneSize = getVisibleSceneBoundingBoxSize(scene, scene.__inspectorData.currentCamera, new Set([root]), true);
+    const sceneSize = getSceneBoundingBoxSize(scene, scene.__inspectorData.currentCamera, new Set([root]), true);
     const scaleFactor = calculateScaleFactor(meshSize, sceneSize, autoScaleRatio);
     root.scale.set(scaleFactor, scaleFactor, scaleFactor);
   }

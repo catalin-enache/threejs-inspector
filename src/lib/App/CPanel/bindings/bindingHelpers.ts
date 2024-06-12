@@ -142,6 +142,7 @@ const _buildBindings = (folder: FolderApi, object: any, bindings: any, params: C
     const isButton = bindingCandidate.title && bindingCandidate.label;
 
     if (isButton) {
+      if (bindingCandidate.if && !bindingCandidate.if(object)) return;
       const button = folder.addButton({
         label: bindingCandidate.label,
         title: bindingCandidate.title

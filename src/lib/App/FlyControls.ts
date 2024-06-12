@@ -1,8 +1,9 @@
 import * as THREE from 'three';
 import { useFrame, useThree } from '@react-three/fiber';
 import { useEffect, useRef } from 'react';
+import { getSceneBoundingBoxSize } from 'lib/utils/sizeUtils';
 
-const setupFlyControls = (camera: THREE.Camera) => {
+const setupFlyControls = (camera: THREE.Camera, scene: THREE.Scene) => {
   let moveForward = false;
   let moveBackward = false;
   let moveLeft = false;
@@ -10,14 +11,20 @@ const setupFlyControls = (camera: THREE.Camera) => {
   let moveUp = false;
   let moveDown = false;
 
+  const sceneBoundingBox = getSceneBoundingBoxSize(scene, camera);
+  const sceneSize = Math.max(sceneBoundingBox.x, sceneBoundingBox.y, sceneBoundingBox.z);
+  const ratio = sceneSize / 23; // 23 is the scene size the defaults were tested with
+
   const flyCameraEnabled = { current: false };
-  const speed = { current: 0.05 };
+  const speed = { current: 0.05 * ratio };
   const euler = new THREE.Euler(0, 0, 0, 'YXZ');
   const cameraDirection = new THREE.Vector3();
   const rightVector = new THREE.Vector3();
 
+  // TODO: maybe we can find a way to make it more smooth
   // move camera wasd/qe
   const flyCamera = () => {
+    // this will only fire if frameloop is not 'never'
     if (!flyCameraEnabled.current) return;
 
     camera.getWorldDirection(cameraDirection); // Get the forward vector
@@ -127,7 +134,7 @@ const setupFlyControls = (camera: THREE.Camera) => {
 
   // on mouse wheel change speed
   const handleMouseWheel = (evt: WheelEvent) => {
-    speed.current -= evt.deltaY * 0.00005;
+    speed.current -= evt.deltaY * 0.00005 * ratio;
     speed.current = Math.max(0.000001, speed.current);
   };
 
@@ -154,13 +161,13 @@ const setupFlyControls = (camera: THREE.Camera) => {
 };
 
 export const FlyControls = () => {
-  const { camera } = useThree();
+  const { camera, scene } = useThree();
   const flyCameraRef = useRef<(() => void) | null>(null);
   const cleanupRef = useRef<(() => void) | null>(null);
 
   useEffect(() => {
     cleanupRef.current?.();
-    const { flyCamera, cleanup } = setupFlyControls(camera);
+    const { flyCamera, cleanup } = setupFlyControls(camera, scene);
     flyCameraRef.current = flyCamera;
     cleanupRef.current = cleanup;
   }, [camera]);

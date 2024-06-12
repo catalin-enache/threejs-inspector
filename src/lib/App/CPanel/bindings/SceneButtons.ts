@@ -43,7 +43,8 @@ export const SceneButtons = ({ isPlaying, sceneObjects: { camera, scene } }: Com
     title: isPlaying ? 'Stop' : 'Play',
     onClick: (() => {
       useAppStore.getState().togglePlaying();
-    }) as onChange
+    }) as onChange,
+    if: () => !useAppStore.getState().isInjected
     // TODO: we need play/pause/stop state
     // label: 'Play State ( Space|CAS+Space )',
     // view: 'radiogrid',

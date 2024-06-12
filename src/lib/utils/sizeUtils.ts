@@ -26,27 +26,27 @@ export function calculateScaleFactor(assetSize: THREE.Vector3, sceneSize: THREE.
 }
 
 const isExcluded = (object: THREE.Object3D, exclude: Set<THREE.Object3D>) => {
-  let parent: THREE.Object3D | null = object;
-  while (parent) {
+  let walker: THREE.Object3D | null = object;
+  while (walker) {
     if (
-      exclude.has(parent) ||
-      parent instanceof TransformControls ||
-      parent instanceof THREE.Camera ||
-      parent instanceof THREE.Light ||
-      parent instanceof THREE.CameraHelper ||
-      parent instanceof THREE.SpotLightHelper ||
-      parent instanceof THREE.DirectionalLightHelper ||
-      parent instanceof THREE.PointLightHelper ||
-      parent instanceof THREE.HemisphereLightHelper ||
-      parent instanceof LightProbeHelper ||
-      parent instanceof RectAreaLightHelper ||
-      parent instanceof PositionalAudioHelper ||
-      parent instanceof ViewHelper ||
-      parent instanceof OctreeHelper
+      exclude.has(walker) ||
+      walker instanceof TransformControls ||
+      walker instanceof THREE.Camera ||
+      walker instanceof THREE.Light ||
+      walker instanceof THREE.CameraHelper ||
+      walker instanceof THREE.SpotLightHelper ||
+      walker instanceof THREE.DirectionalLightHelper ||
+      walker instanceof THREE.PointLightHelper ||
+      walker instanceof THREE.HemisphereLightHelper ||
+      walker instanceof LightProbeHelper ||
+      walker instanceof RectAreaLightHelper ||
+      walker instanceof PositionalAudioHelper ||
+      walker instanceof ViewHelper ||
+      walker instanceof OctreeHelper
     ) {
       return true;
     }
-    parent = parent.parent;
+    walker = walker.parent;
   }
   return false;
 };

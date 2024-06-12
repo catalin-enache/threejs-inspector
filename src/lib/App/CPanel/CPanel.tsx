@@ -207,6 +207,7 @@ export const CPanel = () => {
     paneRef.current = new Pane({
       container: panelContainer
     });
+    cPanelContainer.style.display = cPanelVisible ? 'block' : 'none';
 
     paneRef.current.registerPlugin(TexturePlugin);
     paneRef.current.registerPlugin(EssentialsPlugin);

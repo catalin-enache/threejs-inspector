@@ -25,7 +25,25 @@
   --tp-label-foreground-color: hsla(0, 0%, 100%, 0.8);
   --tp-monitor-background-color: hsla(0, 0%, 0%, 0.2);
   --tp-monitor-foreground-color: hsla(0, 0%, 100%, 0.8);
+  --tp-base-font-family: Roboto Mono, Source Code Pro, Menlo, Courier, monospace;
 }
+
+
+/* overriding host start >> */
+body * {
+  /* needed for correct display of CPanel help */
+  box-sizing: border-box;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  -webkit-user-select: none; /* Safari */
+  -ms-user-select: none; /* IE 10 and IE 11 */
+  user-select: none; /* Standard syntax */
+}
+/* << overriding host end */
 
 #controlPanel {
   --cPanelNestingOffset: 10px; /* account for cPane Global tab initial nesting */
@@ -37,6 +55,21 @@
   top: 10px;
   right: var(--cPanelRightMargin);
   width: var(--cPanelFinalWidth);
+  display: none; /* overridden with inline style in CPanel */
+
+  font-family: var(--tp-base-font-family);
+  line-height: 1.5;
+  font-weight: 400;
+  font-size: 16px;
+
+  color: var(--tp-container-foreground-color);
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  -webkit-text-size-adjust: 100%;
+  -webkit-tap-highlight-color: transparent;
 }
 
 #dragMe {
@@ -165,6 +198,7 @@ by dispatching "transitionend" event which it seams that Tweakpane relies on
 */
 #controlPanelContent  * {
   transition: none !important;
+  text-transform: none;
 }
 
 

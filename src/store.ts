@@ -11,6 +11,8 @@ const cPanelCustomParamsStore: any = {};
 let selectedObject: THREE.Object3D | null = null;
 
 export interface AppStore {
+  isInjected: boolean;
+  setIsInjected: (isInjected: boolean) => void;
   isPlaying: boolean;
   setPlaying: (isPlaying: boolean) => void;
   togglePlaying: () => void;
@@ -82,6 +84,8 @@ export const useAppStore = create<AppStore>()(
   // devtools makes cPanel continuous update (when playing) very slow when displaying materials (hard to serialize). So we're disabling it.
   // devtools(
   subscribeWithSelector((set, get) => ({
+    isInjected: false,
+    setIsInjected: (isInjected) => set({ isInjected }),
     isPlaying: false,
     setPlaying: (isPlaying) => {
       if (get().isDraggingTransformControls) return;

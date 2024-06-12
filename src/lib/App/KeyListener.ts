@@ -19,7 +19,12 @@ const getAllMetaPressed = (e: KeyboardEvent) => {
   return e.altKey && e.ctrlKey && e.shiftKey;
 };
 
-export function KeyListener() {
+interface KeyListenerProps {
+  isInjected?: boolean;
+}
+
+export function KeyListener(props: KeyListenerProps) {
+  const { isInjected = false } = props;
   const isEditorMode = useAppStore((state) => state.showGizmos || state.cPanelVisible);
   const keysPressed: any = {};
 
@@ -31,7 +36,7 @@ export function KeyListener() {
       if (document.activeElement?.type === 'text' || isMouseDown) return;
       switch (e.code) {
         case 'Space':
-          if (!keysPressed[e.code] && (isEditorMode || getAllMetaPressed(e))) {
+          if (!keysPressed[e.code] && !isInjected && (isEditorMode || getAllMetaPressed(e))) {
             e.stopPropagation();
             e.preventDefault(); // to  not interfere with form focused elements and cPanel folder collapsing
             useAppStore.getState().togglePlaying();
@@ -67,7 +72,7 @@ export function KeyListener() {
           if (getAllMetaPressed(e)) useAppStore.getState().toggleShowHelpers();
           break;
         case 'Space':
-          if (isEditorMode || getAllMetaPressed(e)) {
+          if (!isInjected && (isEditorMode || getAllMetaPressed(e))) {
             e.stopPropagation();
             e.preventDefault(); // to  not interfere with form focused elements and cPanel folder collapsing
           }
@@ -95,10 +100,10 @@ export function KeyListener() {
           isEditorMode && useAppStore.getState().setTransformControlsSpace('local');
           break;
         case 'KeyC':
-          isEditorMode && useAppStore.getState().toggleCameraType();
+          isEditorMode && !isInjected && useAppStore.getState().toggleCameraType();
           break;
         case 'BracketRight':
-          isEditorMode && useAppStore.getState().toggleAttachDefaultControllersToPlayingCamera();
+          isEditorMode && !isInjected && useAppStore.getState().toggleAttachDefaultControllersToPlayingCamera();
           break;
         case 'BracketLeft':
           isEditorMode && useAppStore.getState().toggleAngleFormat();

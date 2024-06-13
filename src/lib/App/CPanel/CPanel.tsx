@@ -338,13 +338,16 @@ export const CPanel = () => {
     // Add scene buttons
     buildBindings(sceneFolder, {}, getSceneButtons(commonGetterParams), commonGetterParams);
 
-    const cameraEditorFolder = sceneTab.addFolder({
-      title: 'Camera Control',
-      expanded: true
-    });
+    // if there is at least something to show, create the folder
+    if (!useAppStore.getState().isInjected || useAppStore.getState().autoNavControls) {
+      const cameraEditorFolder = sceneTab.addFolder({
+        title: 'Camera Control',
+        expanded: true
+      });
 
-    // Add camera editor store bindings
-    buildBindings(cameraEditorFolder, store, getCameraStoreBindings(commonGetterParams), commonGetterParams);
+      // Add camera editor store bindings
+      buildBindings(cameraEditorFolder, store, getCameraStoreBindings(commonGetterParams), commonGetterParams);
+    }
 
     const sceneConfigFolder = sceneTab.addFolder({
       title: 'Scene',

@@ -7,10 +7,6 @@ import { CPanel } from './App/CPanel/CPanel';
 import { KeyListener } from './App/KeyListener';
 // extend(THREE);
 
-const preventContextMenu = (evt) => {
-  evt.preventDefault();
-};
-
 const App = memo(({ orbitControls, autoNavControls }) => {
   return (
     <>
@@ -36,8 +32,7 @@ export const injectInspector = ({
   if (!canvasElement) {
     throw new Error('No canvas element found');
   }
-  canvasElement.removeEventListener('contextmenu', preventContextMenu);
-  canvasElement.addEventListener('contextmenu', preventContextMenu);
+
   root = root || createRoot(canvasElement);
   root.configure({
     events,

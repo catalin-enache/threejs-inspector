@@ -431,6 +431,10 @@ const getIsPlayingCamera = (camera: THREE.Camera) => camera !== perspectiveCamer
 
 // ----------------------------------- << Cameras -----------------------------------
 
+const preventContextMenu = (evt: MouseEvent) => {
+  evt.preventDefault();
+};
+
 interface SetUpProps {
   orbitControls?: OrbitControls;
   autoNavControls: boolean; // considered when orbitControls is falsy
@@ -472,6 +476,13 @@ const SetUp = (props: SetUpProps) => {
     setAutoNavControls(autoNavControls);
     triggerCPaneStateChanged();
   }, [isInjected, setIsInjected, autoNavControls, setAutoNavControls, triggerCPaneStateChanged]);
+
+  useEffect(() => {
+    gl.domElement.addEventListener('contextmenu', preventContextMenu);
+    return () => {
+      gl.domElement.removeEventListener('contextmenu', preventContextMenu);
+    };
+  }, [gl]);
 
   useEffect(() => {
     if (isInjected) return;

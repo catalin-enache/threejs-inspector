@@ -14,9 +14,9 @@ const preventContextMenu = (evt) => {
 const App = memo(({ orbitControls, autoNavControls }) => {
   return (
     <>
-      <SetUp orbitControls={orbitControls} autoNavControls={autoNavControls} isInjected={true} />
+      <SetUp orbitControls={orbitControls} isInjected={true} autoNavControls={autoNavControls} />
       <CPanel />
-      <KeyListener isInjected={true} />
+      <KeyListener isInjected={true} autoNavControls={autoNavControls} />
     </>
   );
 });

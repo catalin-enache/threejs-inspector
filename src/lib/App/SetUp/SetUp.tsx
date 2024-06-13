@@ -59,7 +59,7 @@ Object.defineProperty(THREE.Object3D.prototype, '__inspectorData', {
   configurable: true
 });
 
-const threeScene = new THREE.Scene();
+let threeScene = new THREE.Scene();
 const inspectableObjects: Record<string, THREE.Object3D> = {};
 const dependantObjects: Record<string, THREE.Object3D[]> = {};
 threeScene.__inspectorData.inspectableObjects = inspectableObjects;
@@ -248,6 +248,7 @@ const makeHelpers = (object: THREE.Object3D) => {
       if (objectInspectorData.useOnPlay) {
         if (isPlaying) {
           pickerIsNeeded && object.remove(picker);
+          // since threeScene is global, we can access its latest value here
           threeScene.remove(helper);
         } else {
           pickerIsNeeded && object.add(picker);
@@ -394,6 +395,7 @@ orthographicCamera.position.copy(cameraPosition);
 orthographicCamera.zoom = 45;
 orthographicCamera.name = 'DefaultOrthographicCamera';
 
+// defaultPerspectiveCamera and defaultOrthographicCamera and cameraToUseOnPlay are used in App (when !isInjected)
 threeScene.__inspectorData.defaultPerspectiveCamera = perspectiveCamera;
 threeScene.__inspectorData.defaultOrthographicCamera = orthographicCamera;
 threeScene.__inspectorData.currentCamera =
@@ -429,8 +431,17 @@ const getIsPlayingCamera = (camera: THREE.Camera) => camera !== perspectiveCamer
 
 // ----------------------------------- << Cameras -----------------------------------
 
-const SetUp = () => {
+interface SetUpProps {
+  orbitControls?: OrbitControls;
+  autoNavControls: boolean; // considered when orbitControls is falsy
+  isInjected?: boolean;
+}
+const SetUp = (props: SetUpProps) => {
+  const { orbitControls = null, autoNavControls, isInjected = false } = props;
   const { camera, gl, raycaster, pointer, scene } = useThree();
+
+  const setIsInjected = useAppStore((state) => state.setIsInjected);
+  const setAutoNavControls = useAppStore((state) => state.setAutoNavControls);
 
   const isEditorMode = useAppStore((state) => state.showGizmos || state.cPanelVisible);
   const isPlaying = useAppStore((state) => state.isPlaying);
@@ -439,6 +450,8 @@ const SetUp = () => {
   const selectedObjectUUID = useAppStore((state) => state.selectedObjectUUID);
   const setSelectedObject = useAppStore((state) => state.setSelectedObject);
   const triggerSelectedObjectChanged = useAppStore((state) => state.triggerSelectedObjectChanged);
+
+  const triggerCPaneStateChanged = useAppStore((state) => state.triggerCPaneStateChanged);
 
   const showGizmos = useAppStore((state) => state.showGizmos);
 
@@ -449,13 +462,22 @@ const SetUp = () => {
   const transformControlsSpace = useAppStore((state) => state.transformControlsSpace);
   const transformControlsRef = useRef<TransformControls | null>(null);
 
-  const orbitControlsRef = useRef<OrbitControls | null>(null);
+  const orbitControlsRef = useRef<OrbitControls | null>(orbitControls);
   const hitsRef = useRef<THREE.Intersection<THREE.Object3D>[]>([]);
   const lastHitRef = useRef<THREE.Intersection<THREE.Object3D> | null>(null);
   const targetPositionRef = useRef<THREE.Vector3>(new THREE.Vector3());
 
   useEffect(() => {
-    const sceneInspectorData = threeScene.__inspectorData;
+    setIsInjected(isInjected);
+    setAutoNavControls(autoNavControls);
+    triggerCPaneStateChanged();
+  }, [isInjected, setIsInjected, autoNavControls, setAutoNavControls, triggerCPaneStateChanged]);
+
+  useEffect(() => {
+    if (isInjected) return;
+    // The currentCamera that we set here is only used in App.
+    // It is ignored when injectInspector is used.
+    const sceneInspectorData = scene.__inspectorData;
     if (isPlaying) {
       sceneInspectorData.currentCamera = sceneInspectorData.cameraToUseOnPlay || sceneInspectorData.currentCamera;
     } else {
@@ -466,14 +488,26 @@ const SetUp = () => {
     }
     // notify main App to re-render and send new camera into canvas
     useAppStore.getState().triggerCurrentCameraChanged();
-  }, [isPlaying, cameraType]);
+  }, [isPlaying, cameraType, scene, isInjected]);
 
   useEffect(() => {
+    scene.__inspectorData.inspectableObjects = inspectableObjects;
+    scene.__inspectorData.dependantObjects = dependantObjects;
+    scene.__inspectorData.currentCamera = camera; // used in sizeUtils when importing model
     // @ts-ignore - just attach them for referencing elsewhere
     scene.orbitControlsRef = orbitControlsRef;
     // @ts-ignore
     scene.transformControlsRef = transformControlsRef;
-  }, [scene]);
+    // Transferring existing helpers.
+    // Helpers were added to the threeScene (due to patching Object3D) before receiving here the replacement scene.
+    scene.traverse((child) => {
+      if (child.__inspectorData.helper) {
+        scene.add(child.__inspectorData.helper);
+      }
+    });
+
+    threeScene = scene;
+  }, [scene, camera]);
 
   // useFrame(() => {
   // updating orbitControls seems to lock scene rotation when changing in cPanel
@@ -488,7 +522,8 @@ const SetUp = () => {
 
   // Create orbit and transform controls (singletons) and attach transform controls to scene
   useEffect(() => {
-    orbitControlsRef.current = new OrbitControls(camera, gl.domElement);
+    orbitControlsRef.current =
+      orbitControlsRef.current || (autoNavControls ? new OrbitControls(camera, gl.domElement) : null);
     // orbitControlsRef.current.enableDamping = true;
     // orbitControlsRef.current.dampingFactor = 0.3;
     // orbitControlsRef.current.autoRotate = true;
@@ -502,6 +537,7 @@ const SetUp = () => {
     // Preventing here for orbit controls to interfere with transform controls
     let currentEnabled = false;
     transformControlsRef.current.addEventListener('dragging-changed', function (event: any) {
+      if (!orbitControlsRef.current) return;
       useAppStore.getState().setIsDraggingTransformControls(event.value);
       if (event.value) {
         currentEnabled = !!orbitControlsRef.current?.enabled;
@@ -510,11 +546,12 @@ const SetUp = () => {
         orbitControlsRef.current && (orbitControlsRef.current.enabled = currentEnabled);
       }
     });
-    threeScene.add(transformControlsRef.current);
+    scene.add(transformControlsRef.current);
     // eslint-disable-next-line
   }, []);
 
   useEffect(() => {
+    if (!orbitControlsRef.current) return () => {};
     orbitControlsRef.current?.addEventListener('change', render);
     return () => orbitControlsRef.current?.removeEventListener('change', render);
   }, [render]);
@@ -597,7 +634,7 @@ const SetUp = () => {
   // On scene double click, set select object
   const onSceneDblClick = useCallback(
     (_event: globalThis.MouseEvent) => {
-      threeScene.traverse((child) => {
+      scene.traverse((child) => {
         if (child instanceof THREE.SkinnedMesh) {
           // allow skinned mesh modified by animation to be selectable based on their current shape
           child.computeBoundingBox();
@@ -616,7 +653,7 @@ const SetUp = () => {
       // if we hit a picker or an inner mesh proxy, select the object it represents else select the object itself
       setSelectedObject(__inspectorData?.hitRedirect || lastHitRef.current?.object || null);
     },
-    [raycaster, pointer, camera, setSelectedObject]
+    [raycaster, pointer, camera, setSelectedObject, scene]
   );
 
   useEffect(() => {
@@ -633,8 +670,9 @@ const SetUp = () => {
 
   const isPlayingCamera = getIsPlayingCamera(camera);
   const shouldUseFlyControls =
-    (isPlayingCamera && attachDefaultControllersToPlayingCamera && cameraControl === 'fly') ||
-    (!isPlayingCamera && cameraControl === 'fly');
+    autoNavControls &&
+    ((isPlayingCamera && attachDefaultControllersToPlayingCamera && cameraControl === 'fly') ||
+      (!isPlayingCamera && cameraControl === 'fly'));
 
   return <>{shouldUseFlyControls && <FlyControls />}</>;
 };

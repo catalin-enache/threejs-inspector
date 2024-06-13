@@ -18,11 +18,10 @@
   text-transform: none;
 }
 
-.modal__title {
-  margin-right: auto;
+.inspectorModal__title {
   font-weight: bold;
-  font-size: 24px;
-  height: 30px;
+  font-size: 18px;
+  height: 24px;
   color: var(--tp-container-foreground-color);
 }
 

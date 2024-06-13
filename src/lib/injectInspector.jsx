@@ -7,7 +7,7 @@ import { CPanel } from './App/CPanel/CPanel';
 import { KeyListener } from './App/KeyListener';
 // extend(THREE);
 
-const App = memo(({ orbitControls, autoNavControls }) => {
+export const Inspector = memo(({ orbitControls, autoNavControls }) => {
   return (
     <>
       <SetUp orbitControls={orbitControls} isInjected={true} autoNavControls={autoNavControls} />
@@ -43,7 +43,7 @@ export const injectInspector = ({
   });
 
   root.render(
-    React.createElement(App, {
+    React.createElement(Inspector, {
       orbitControls,
       frameloop,
       autoNavControls

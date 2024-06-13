@@ -99,7 +99,7 @@ const makeHelpers = (object: THREE.Object3D) => {
   // we don't need pickers for meshes
   const pickerIsNeeded = !hasSkeleton;
 
-  const helperSize = 0.25;
+  const helperSize = useAppStore.getState().gizmoSize;
   // TODO: check other included helpers (e.g. LightProbeHelper)
   helper = hasSkeleton
     ? new THREE.SkeletonHelper(object)

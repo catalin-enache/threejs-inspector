@@ -1,6 +1,7 @@
 import { useAppStore } from 'src/store';
 import { focusCamera } from 'lib/utils';
 import type { CommonGetterParams, onChange } from './bindingTypes';
+import { numberCommon } from 'lib/App/CPanel/bindings/bindingHelpers';
 
 // keys are not relevant for buttons
 export const SceneButtons = ({ isPlaying, sceneObjects: { camera, scene } }: CommonGetterParams) => ({
@@ -36,6 +37,15 @@ export const SceneButtons = ({ isPlaying, sceneObjects: { camera, scene } }: Com
     title: 'Toggle Gizmos',
     onClick: (() => {
       useAppStore.getState().toggleShowGizmos();
+    }) as onChange
+  },
+  gizmoSize: {
+    label: 'Gizmo Size (refresh page to take effect)',
+    min: 0.1,
+    max: 20,
+    ...numberCommon,
+    onChange: ((_, evt) => {
+      useAppStore.getState().setGizmoSize(evt.value);
     }) as onChange
   },
   4: {

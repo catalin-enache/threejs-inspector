@@ -39,6 +39,8 @@ export interface AppStore {
   showHelpers: boolean;
   setShowHelpers: (showHelpers: boolean) => void;
   toggleShowHelpers: () => void;
+  gizmoSize: number;
+  setGizmoSize: (gizmoSize: number) => void;
   cPanelShowHelp: boolean;
   setCPanelShowHelp: (show: boolean) => void;
   toggleCPanelShowHelp: () => void;
@@ -139,6 +141,11 @@ export const useAppStore = create<AppStore>()(
       set((state) => ({
         showHelpers: !state.showHelpers
       }));
+    },
+    gizmoSize: +(localStorage.getItem('threeInspector__gizmoSize') || 0.25),
+    setGizmoSize: (gizmoSize) => {
+      set({ gizmoSize });
+      localStorage.setItem('threeInspector__gizmoSize', gizmoSize.toString());
     },
     cPanelShowHelp: false,
     setCPanelShowHelp: (cPanelShowHelp) => set({ cPanelShowHelp }),

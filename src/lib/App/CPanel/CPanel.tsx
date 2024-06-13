@@ -336,7 +336,14 @@ export const CPanel = () => {
     });
 
     // Add scene buttons
-    buildBindings(sceneFolder, {}, getSceneButtons(commonGetterParams), commonGetterParams);
+    buildBindings(
+      sceneFolder,
+      {
+        gizmoSize: useAppStore.getState().gizmoSize
+      },
+      getSceneButtons(commonGetterParams),
+      commonGetterParams
+    );
 
     // if there is at least something to show, create the folder
     if (!useAppStore.getState().isInjected || useAppStore.getState().autoNavControls) {

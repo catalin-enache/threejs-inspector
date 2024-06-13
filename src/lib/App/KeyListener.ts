@@ -21,10 +21,11 @@ const getAllMetaPressed = (e: KeyboardEvent) => {
 
 interface KeyListenerProps {
   isInjected?: boolean;
+  autoNavControls?: boolean;
 }
 
 export function KeyListener(props: KeyListenerProps) {
-  const { isInjected = false } = props;
+  const { isInjected = false, autoNavControls = false } = props;
   const isEditorMode = useAppStore((state) => state.showGizmos || state.cPanelVisible);
   const keysPressed: any = {};
 
@@ -81,7 +82,7 @@ export function KeyListener(props: KeyListenerProps) {
           isEditorMode && useAppStore.getState().toggleCPanelContinuousUpdate();
           break;
         case 'KeyN':
-          isEditorMode && useAppStore.getState().toggleCameraControl();
+          isEditorMode && autoNavControls && useAppStore.getState().toggleCameraControl();
           break;
         // Transform Controls
         case 'Comma':

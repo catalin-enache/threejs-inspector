@@ -112,12 +112,14 @@ const setupFlyControls = (camera: THREE.Camera, scene: THREE.Scene) => {
   const handleMouseDown = (evt: MouseEvent) => {
     if (evt.button === 2) {
       flyCameraEnabled.current = true;
+      document.body.requestPointerLock();
     }
   };
 
   const handleMouseUp = (evt: MouseEvent) => {
     if (evt.button === 2) {
       flyCameraEnabled.current = false;
+      document.exitPointerLock();
     }
   };
 

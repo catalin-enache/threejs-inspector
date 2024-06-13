@@ -13,7 +13,8 @@ export const CameraStoreBindings = (_params: CommonGetterParams) => ({
     }),
     onChange: ((_, evt: any) => {
       useAppStore.getState().setCameraControl(evt.value);
-    }) as onChange
+    }) as onChange,
+    if: () => useAppStore.getState().autoNavControls
   },
   cameraType: {
     label: 'Type ( C )',

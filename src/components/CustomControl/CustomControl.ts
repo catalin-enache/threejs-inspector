@@ -20,7 +20,7 @@ Flow:
     and calls triggerCPanelCustomParamsChanged which changes cPanelCustomParamsStateFake
  - we react to cPanelCustomParamsStateFake and call onChange
  - the app can use the value reported in onChange to make other updates including updating other CustomControls
- - due to this the app will also send back the new value to the CustomControl that called onChange
+ - due to this the app will also send back the new value to the CustomControl (controlled component) that called onChange
    but since it is the same value the component will do nothing.
  - if the value changes from the app, the component will update the store by calling setCPanelCustomParams
 */
@@ -28,25 +28,13 @@ export const CustomControl = memo((props: CustomControlProps) => {
   const { onChange, value } = props;
   const onChangeRef = useRef(onChange);
   onChangeRef.current = onChange;
-  const cPanelCustomParams = useAppStore((state) =>
-    state.getCPanelCustomParams()
-  );
+  const cPanelCustomParams = useAppStore((state) => state.getCPanelCustomParams());
   const cachedValueRef = useRef(null);
-  const removeCPanelCustomParams = useAppStore(
-    (state) => state.removeCPanelCustomParams
-  );
-  const cPanelCustomParamsStateFake = useAppStore(
-    (state) => state.cPanelCustomParamsStateFake
-  );
-  const setCPanelCustomControls = useAppStore(
-    (state) => state.setCPanelCustomControls
-  );
-  const setOrUpdateCPanelCustomParams = useAppStore(
-    (state) => state.setOrUpdateCPanelCustomParams
-  );
-  const removeCPanelCustomControls = useAppStore(
-    (state) => state.removeCPanelCustomControls
-  );
+  const removeCPanelCustomParams = useAppStore((state) => state.removeCPanelCustomParams);
+  const cPanelCustomParamsStateFake = useAppStore((state) => state.cPanelCustomParamsStateFake);
+  const setCPanelCustomControls = useAppStore((state) => state.setCPanelCustomControls);
+  const setOrUpdateCPanelCustomParams = useAppStore((state) => state.setOrUpdateCPanelCustomParams);
+  const removeCPanelCustomControls = useAppStore((state) => state.removeCPanelCustomControls);
 
   // Read from store and call onChange
   // cPanelCustomParamsStateFake notifies for every change in cPanelCustomParams
@@ -55,16 +43,6 @@ export const CustomControl = memo((props: CustomControlProps) => {
   // The copy is needed because Tweakpane updates params in place
   useEffect(() => {
     const valueFromPanel = cPanelCustomParams[props.name];
-    // if (props.name === 'myImage') {
-    //   console.log(
-    //     'CustomControl cPanelCustomParamsStateFake',
-    //     props.name,
-    //     'old',
-    //     cPanelCustomParams[props.name], //?.toFixed(2),
-    //     'new',
-    //     value //.toFixed(2)
-    //   );
-    // }
     if (
       valueFromPanel !== undefined &&
       !isEqual(cachedValueRef.current, valueFromPanel) &&
@@ -81,16 +59,6 @@ export const CustomControl = memo((props: CustomControlProps) => {
 
   // Read from value and set on store
   useEffect(() => {
-    // if (props.name === 'myImage') {
-    //   console.log(
-    //     'CustomControl value changed',
-    //     props.name,
-    //     'old',
-    //     cPanelCustomParams[props.name], //?.toFixed(2),
-    //     'new',
-    //     value //.toFixed(2)
-    //   );
-    // }
     if (!isEqual(cachedValueRef.current, value) && value !== undefined) {
       const clonedValue = shallowClone(value);
       cachedValueRef.current = clonedValue;

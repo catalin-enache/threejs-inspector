@@ -48,11 +48,12 @@ Some imported objects are too big. We need to scale them down generically compar
 
 Bug: When using transform sliders and releasing mouse on disabled inputs the control is not released. *DONE*
 
+Allow setting the size for pickers. In some scenes they are too small/big; *DONE*
+
+
 
 
 Implement options for importing via input file. (optimize ? autoscale ? geometry ?)
-
-Allow setting the size for pickers. In some scenes they are too small/big;
 
 Check if we remove the mixer for objects removed from the scene.
 

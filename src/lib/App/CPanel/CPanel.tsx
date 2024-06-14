@@ -295,9 +295,10 @@ export const CPanel = () => {
     // Clear bindings
     cleanupContainer(customParamsTab);
     // Add bindings
-    Object.keys(cPanelCustomParams).forEach((key) => {
+    Object.keys(cPanelCustomControls).forEach((key) => {
       const bindingParams = cPanelCustomControls[key];
-      if (!bindingParams) return;
+      const valueExists = cPanelCustomParams[key] !== undefined;
+      if (!valueExists) return;
       // Forcing all pickers inline to prevent layout issues.
       // Not all bindings have pickers but there's no harm in setting it inline even if there's no picker
       bindingParams.picker = 'inline';
@@ -309,6 +310,11 @@ export const CPanel = () => {
         makeRotationBinding(binding);
       }
     });
+
+    // select the Custom Controls tab if there are custom controls inside
+    if (Object.keys(cPanelCustomControls).length) {
+      pane.children[0].element.children[0].children[1].children[0].dispatchEvent(new Event('click'));
+    }
   }, [cPanelCustomControls, cPanelCustomParams, handleCustomParamsChanges, cPanelStateFake]);
 
   // Setup bindings for Scene/Pane

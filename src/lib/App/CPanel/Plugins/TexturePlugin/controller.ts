@@ -8,7 +8,7 @@ const cleanUp = (self: TextureController) => {
   self.isMounted = false;
   window.removeEventListener('TweakpaneRemove', self.onRemoveHandler);
   self.view.input.removeEventListener('change', self.onFile);
-  self.view.canvas.removeEventListener('dblclick', self.openFileBrowser);
+  self.view.canvas.removeEventListener('click', self.openFileBrowser);
   self.objectURL && URL.revokeObjectURL(self.objectURL);
 };
 
@@ -83,7 +83,7 @@ export class TextureController implements Controller<TextureView> {
 
     this.setIsLoading(true);
     // For UX to not allow choosing another file while loading
-    this.view.canvas.removeEventListener('dblclick', this.openFileBrowser);
+    this.view.canvas.removeEventListener('click', this.openFileBrowser);
     createTexturesFromImages(files, { material: null, gl: this.gl })
       .then((textures) => {
         const texture = textures[0];
@@ -101,7 +101,7 @@ export class TextureController implements Controller<TextureView> {
         setTimeout(() => {
           if (!this.isMounted) return;
           // Re-allow choosing another file
-          this.view.canvas.addEventListener('dblclick', this.openFileBrowser);
+          this.view.canvas.addEventListener('click', this.openFileBrowser);
         });
       })
       .catch((err) => {

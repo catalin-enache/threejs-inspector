@@ -51,6 +51,10 @@ Bug: When using transform sliders and releasing mouse on disabled inputs the con
 Allow setting the size for pickers. In some scenes they are too small/big; *DONE*
 
 
+
+
+See if we can reproduce CustomControls setup from existing Experience into the native ThreeJs example.
+
 If we have Custom params in CPanel make the tab selected by default
 
 Implement options for importing via input file. (optimize ? autoscale ? geometry ?)

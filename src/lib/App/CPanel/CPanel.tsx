@@ -214,7 +214,7 @@ export const CPanel = () => {
     continuousUpdateRef.current = makeContinuousUpdate(paneRef.current);
     const pane = paneRef.current;
 
-    pane.addTab({ pages: [{ title: 'Selected' }, { title: 'Custom' }, { title: 'Global' }] });
+    pane.addTab({ pages: [{ title: 'Selected' }, { title: 'Custom Controls' }, { title: 'Global' }] });
     [...pane.children[0].element.children[0].children].forEach((tab, idx) => {
       tab.classList.add('cPanel-tab'); // to style them hover-able
       if (idx === 2) {

@@ -9,33 +9,43 @@ import { KeyListener } from './App/KeyListener';
 import { useAppStore } from 'src/store';
 // extend(THREE);
 
+// singleton
+let root;
+let version = 0;
+
 export const Inspector = memo(
-  ({ orbitControls, autoNavControls, customParams, customControls, onCustomParamsChange }) => {
+  ({ orbitControls, autoNavControls, customParams, customControls, onCustomParamsChange, version = 0 }) => {
     const cPanelCustomParamsStateFake = useAppStore((state) => state.cPanelCustomParamsStateFake);
     const triggerCPanelCustomParamsChanged = useAppStore((state) => state.triggerCPanelCustomParamsChanged);
 
     const customParamsElements = useMemo(() => {
       if (!customParams || !customControls) return null;
-      return Object.keys(customParams).map((key, index) => {
-        const { onChange } = customControls[key];
-        return (
-          <CustomControl
-            key={key}
-            name={key}
-            value={customParams[key]}
-            control={customControls[key]}
-            onChange={(value) => {
-              customParams[key] = value;
-              onChange?.(value);
-              onCustomParamsChange?.(key, value);
-              // Updates CustomControl value in this change rather than making 2 updates in the next change.
-              // Without this it still works but at every 2 changes the number of updates will be doubled.
-              triggerCPanelCustomParamsChanged();
-            }}
-          />
-        );
-      });
-    }, [customParams, customControls, cPanelCustomParamsStateFake]);
+      return Object.keys(customControls)
+        .map((key, index) => {
+          const { onChange } = customControls[key];
+          const value = customParams[key];
+          if (value === undefined) {
+            return;
+          }
+          return (
+            <CustomControl
+              key={key}
+              name={key}
+              value={value}
+              control={customControls[key]}
+              onChange={(value) => {
+                customParams[key] = value;
+                onChange?.(value);
+                onCustomParamsChange?.(key, value);
+                // Updates CustomControl value in this change rather than making 2 updates in the next change.
+                // Without this it still works but at every 2 changes the number of updates will be doubled.
+                triggerCPanelCustomParamsChanged();
+              }}
+            />
+          );
+        })
+        .filter(Boolean);
+    }, [customParams, customControls, cPanelCustomParamsStateFake, version]);
 
     return (
       <>
@@ -47,9 +57,6 @@ export const Inspector = memo(
     );
   }
 );
-
-// singleton
-let root;
 
 export const injectInspector = ({
   renderer: gl,
@@ -83,7 +90,28 @@ export const injectInspector = ({
       autoNavControls,
       customParams,
       customControls,
-      onCustomParamsChange
+      onCustomParamsChange,
+      version: ++version
     })
   );
+
+  return {
+    unmountInspector() {
+      root.unmount();
+      root = null;
+    },
+    updateCustomParams() {
+      root.render(
+        React.createElement(Inspector, {
+          orbitControls,
+          frameloop,
+          autoNavControls,
+          customParams,
+          customControls,
+          onCustomParamsChange,
+          version: ++version
+        })
+      );
+    }
+  };
 };

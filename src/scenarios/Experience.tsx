@@ -4,6 +4,7 @@ import { useFrame, ThreeElements, useThree } from '@react-three/fiber';
 // @ts-ignore
 import Stats from 'three/addons/libs/stats.module.js';
 import { CustomControl } from 'components/CustomControl/CustomControl';
+// import { CustomControlFolder } from 'components/CustomControlFolder/CustomControlFolder';
 import { usePlay } from 'lib/hooks';
 import { degToRad } from 'lib/utils';
 import { createTexturesFromImages } from 'lib/utils/imageUtils';
@@ -14,6 +15,7 @@ import { createTexturesFromImages } from 'lib/utils/imageUtils';
 const stats = new Stats();
 document.body.appendChild(stats.dom);
 
+// @ts-ignore
 function Box(
   props: ThreeElements['mesh'] & {
     mapURL: string;
@@ -356,6 +358,7 @@ export function Experience() {
           control={{
             label: 'Texture',
             view: 'texture',
+            // TODO: see what happens if scene.background is a color
             color: { type: 'float' }
           }}
           onChange={(value) => {

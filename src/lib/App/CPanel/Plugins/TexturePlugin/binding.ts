@@ -3,7 +3,20 @@ import * as THREE from 'three';
 import { TextureController } from './controller';
 import { isValidTexture } from 'src/types';
 
-const DEFAULT_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.tif', '.tiff', '.exr', '.hdr', '.tga', '.ktx2'];
+const DEFAULT_EXTENSIONS = [
+  '.jpg',
+  '.jpeg',
+  '.png',
+  '.gif',
+  '.webp',
+  '.tif',
+  '.tiff',
+  '.exr',
+  '.hdr',
+  '.tga',
+  '.ktx2',
+  '.dds'
+];
 
 export interface TexturePluginConfig extends BaseInputParams {
   extensions?: string[];

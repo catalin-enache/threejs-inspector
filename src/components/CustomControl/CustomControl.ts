@@ -18,7 +18,6 @@ export const CustomControl = (props: CustomControlProps) => {
     (state) => state.triggerCPanelCustomParamsStructureChanged
   );
 
-  // console.log('CustomControl_2', name);
   useEffect(() => {
     const pathArray = path
       .split('/')

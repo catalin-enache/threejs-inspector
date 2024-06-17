@@ -19,9 +19,9 @@ export const SceneButtons = ({ isPlaying, sceneObjects: { camera, scene } }: Com
       focusCamera({
         camera,
         // @ts-ignore
-        orbitControls: scene.orbitControlsRef.current,
+        orbitControls: scene.__inspectorData.orbitControlsRef.current,
         // @ts-ignore
-        transformControls: scene.transformControlsRef.current
+        transformControls: scene.__inspectorData.transformControlsRef.current
       });
     }) as onChange
   },

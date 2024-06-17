@@ -12,9 +12,9 @@ interface CustomControlProps {
 
 export const CustomControl = (props: CustomControlProps) => {
   const { name, prop, control, path = '', object } = props;
-  const setOrUpdateCPanelCustomParams_2 = useAppStore((state) => state.setOrUpdateCPanelCustomParams);
-  const removeCPanelCustomParams_2 = useAppStore((state) => state.removeCPanelCustomParams);
-  const triggerCPanelCustomParamsStructureChanged_2 = useAppStore(
+  const setOrUpdateCPanelCustomParams = useAppStore((state) => state.setOrUpdateCPanelCustomParams);
+  const removeCPanelCustomParams = useAppStore((state) => state.removeCPanelCustomParams);
+  const triggerCPanelCustomParamsStructureChanged = useAppStore(
     (state) => state.triggerCPanelCustomParamsStructureChanged
   );
 
@@ -24,11 +24,11 @@ export const CustomControl = (props: CustomControlProps) => {
       .split('/')
       .map((p) => p.trim())
       .filter((p) => p.length > 0);
-    setOrUpdateCPanelCustomParams_2(name, object, prop, control, pathArray);
-    triggerCPanelCustomParamsStructureChanged_2();
+    setOrUpdateCPanelCustomParams(name, object, prop, control, pathArray);
+    triggerCPanelCustomParamsStructureChanged();
     return () => {
-      removeCPanelCustomParams_2(name, pathArray);
-      triggerCPanelCustomParamsStructureChanged_2();
+      removeCPanelCustomParams(name, pathArray);
+      triggerCPanelCustomParamsStructureChanged();
     };
   }, []);
 

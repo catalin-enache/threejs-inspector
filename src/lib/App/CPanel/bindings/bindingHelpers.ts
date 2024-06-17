@@ -480,6 +480,53 @@ export const buildBindings = (folder: FolderApi, object: any, bindings: any, par
   }
 };
 
+export const buildCustomParams = ({
+  cPanelCustomParams,
+  customParamsTab,
+  nesting = 0
+}: {
+  cPanelCustomParams: Record<string, any>;
+  customParamsTab: TabPageApi;
+  nesting?: number;
+}) => {
+  Object.keys(cPanelCustomParams).forEach((controlName) => {
+    const isBinding = !!cPanelCustomParams[controlName].object;
+    const isFolder = !isBinding;
+
+    if (isFolder) {
+      const folder = customParamsTab.addFolder({
+        title: controlName,
+        expanded: nesting === 0
+      });
+      buildCustomParams({
+        cPanelCustomParams: cPanelCustomParams[controlName],
+        // @ts-ignore
+        customParamsTab: folder,
+        nesting: nesting + 1
+      });
+      tweakFolder(folder, `${controlName}-${nesting}`);
+    } else {
+      const { object, prop, control } = cPanelCustomParams[controlName];
+      const value = object[prop];
+      if (value === undefined || value === null) return;
+      // Forcing all pickers inline to prevent layout issues.
+      // Not all bindings have pickers but there's no harm in setting it inline even if there's no picker
+      control.picker = 'inline';
+      try {
+        const binding = customParamsTab.addBinding(object, prop, control).on('change', (evt) => {
+          control.onChange?.(evt.value, object, prop);
+        });
+        tweakBindingView(binding);
+        if (control.format === radToDegFormatter) {
+          makeRotationBinding(binding);
+        }
+      } catch (err) {
+        console.error('Error building bindings for', controlName, err);
+      }
+    }
+  });
+};
+
 export const cleanupContainer = (container: any) => {
   if (!container.children) return;
   container.children.forEach((child: any) => {

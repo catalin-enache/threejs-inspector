@@ -6,57 +6,57 @@ import { CPanel } from './App/CPanel/CPanel';
 import { CustomControl } from 'components/CustomControl/CustomControl';
 // KeyListener depends on CPanel (sideEffect) to add in DOM CPanel elements to listen to
 import { KeyListener } from './App/KeyListener';
-import { useAppStore } from 'src/store';
 // extend(THREE);
 
 // singleton
 let root;
 let version = 0;
 
-export const Inspector = memo(
-  ({ orbitControls, autoNavControls, customParams, customControls, onCustomParamsChange, version = 0 }) => {
-    const cPanelCustomParamsStateFake = useAppStore((state) => state.cPanelCustomParamsStateFake);
-    const triggerCPanelCustomParamsChanged = useAppStore((state) => state.triggerCPanelCustomParamsChanged);
+export const buildCustomParamsElements = ({ customParams, pathArray = [] }) => {
+  return Object.keys(customParams)
+    .map((controlName) => {
+      const isBinding = !!customParams[controlName].object;
+      const isFolder = !isBinding;
 
-    const customParamsElements = useMemo(() => {
-      if (!customParams || !customControls) return null;
-      return Object.keys(customControls)
-        .map((key, index) => {
-          const { onChange } = customControls[key];
-          const value = customParams[key];
-          if (value === undefined) {
-            return;
-          }
-          return (
-            <CustomControl
-              key={key}
-              name={key}
-              value={value}
-              control={customControls[key]}
-              onChange={(value) => {
-                customParams[key] = value;
-                onChange?.(value);
-                onCustomParamsChange?.(key, value);
-                // Updates CustomControl value in this change rather than making 2 updates in the next change.
-                // Without this it still works but at every 2 changes the number of updates will be doubled.
-                triggerCPanelCustomParamsChanged();
-              }}
-            />
-          );
-        })
-        .filter(Boolean);
-    }, [customParams, customControls, cPanelCustomParamsStateFake, version]);
+      if (isFolder) {
+        pathArray.push(controlName);
+        return buildCustomParamsElements({
+          customParams: customParams[controlName],
+          pathArray
+        });
+      } else {
+        const { object, prop, control } = customParams[controlName];
+        return (
+          <CustomControl
+            key={controlName}
+            name={controlName}
+            object={object}
+            prop={prop}
+            path={pathArray.join('/')}
+            control={control}
+          />
+        );
+      }
+    })
+    .flat(Infinity)
+    .filter(Boolean);
+};
 
-    return (
-      <>
-        <SetUp orbitControls={orbitControls} isInjected={true} autoNavControls={autoNavControls} />
-        <CPanel />
-        <KeyListener isInjected={true} autoNavControls={autoNavControls} />
-        {customParamsElements}
-      </>
-    );
-  }
-);
+export const Inspector = memo(({ orbitControls, autoNavControls, customParams, version = 0 }) => {
+  const customParamsElements = useMemo(() => {
+    if (!customParams) return null;
+    return buildCustomParamsElements({ customParams });
+  }, [customParams, version]);
+
+  return (
+    <>
+      <SetUp orbitControls={orbitControls} isInjected={true} autoNavControls={autoNavControls} />
+      <CPanel />
+      <KeyListener isInjected={true} autoNavControls={autoNavControls} />
+      {customParamsElements}
+    </>
+  );
+});
 
 export const injectInspector = ({
   renderer: gl,
@@ -65,9 +65,7 @@ export const injectInspector = ({
   frameloop = 'never', // 'always' | 'demand' | 'never'
   orbitControls,
   autoNavControls,
-  customParams,
-  customControls,
-  onCustomParamsChange
+  customParams
 } = {}) => {
   const canvasElement = document.querySelector('canvas');
   if (!canvasElement) {
@@ -89,8 +87,6 @@ export const injectInspector = ({
       frameloop,
       autoNavControls,
       customParams,
-      customControls,
-      onCustomParamsChange,
       version: ++version
     })
   );
@@ -107,8 +103,6 @@ export const injectInspector = ({
           frameloop,
           autoNavControls,
           customParams,
-          customControls,
-          onCustomParamsChange,
           version: ++version
         })
       );

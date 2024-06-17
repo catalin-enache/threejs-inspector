@@ -444,7 +444,7 @@ interface SetUpProps {
   isInjected?: boolean;
 }
 const SetUp = (props: SetUpProps) => {
-  const { orbitControls = null, autoNavControls, isInjected = false } = props;
+  const { orbitControls = null, autoNavControls = false, isInjected = true } = props;
   const { camera, gl, raycaster, pointer, scene } = useThree();
 
   const setIsInjected = useAppStore((state) => state.setIsInjected);
@@ -526,12 +526,6 @@ const SetUp = (props: SetUpProps) => {
 
   // Create orbit and transform controls (singletons) and attach transform controls to scene
   useEffect(() => {
-    orbitControlsRef.current =
-      orbitControlsRef.current || (autoNavControls ? new OrbitControls(camera, gl.domElement) : null);
-    // orbitControlsRef.current.enableDamping = true;
-    // orbitControlsRef.current.dampingFactor = 0.3;
-    // orbitControlsRef.current.autoRotate = true;
-
     // prettier-ignore
     transformControlsRef.current = new TransformControls(camera, gl.domElement);
     transformControlsRef.current.name = 'TransformControls';
@@ -668,9 +662,14 @@ const SetUp = (props: SetUpProps) => {
   }, [gl, onSceneDblClick]);
 
   useEffect(() => {
-    // console.log('THREE.ColorManagement.enabled', THREE.ColorManagement.enabled);
-    // console.log('gl.outputColorSpace', gl.outputColorSpace);
-  }, []);
+    if (orbitControlsRef.current) {
+      orbitControlsRef.current.dispose();
+    }
+    orbitControlsRef.current = orbitControls || (autoNavControls ? new OrbitControls(camera, gl.domElement) : null);
+    // orbitControlsRef.current.enableDamping = true;
+    // orbitControlsRef.current.dampingFactor = 0.3;
+    // orbitControlsRef.current.autoRotate = true;
+  }, [orbitControls, autoNavControls, camera, gl]);
 
   const isPlayingCamera = getIsPlayingCamera(camera);
   const shouldUseFlyControls =

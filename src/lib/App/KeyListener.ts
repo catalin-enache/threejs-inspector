@@ -25,7 +25,7 @@ interface KeyListenerProps {
 }
 
 export function KeyListener(props: KeyListenerProps) {
-  const { isInjected = false, autoNavControls = false } = props;
+  const { isInjected = true, autoNavControls = false } = props;
   const isEditorMode = useAppStore((state) => state.showGizmos || state.cPanelVisible);
   const keysPressed: any = {};
 

@@ -9,7 +9,6 @@ import { useAppStore } from 'src/store';
 import { makeContinuousUpdate } from './continuousUpdate';
 import TexturePlugin from './Plugins/TexturePlugin';
 import './manipulateMouseSpeed';
-import { radToDegFormatter } from 'lib/utils';
 import {
   getObject3DBindings,
   getRendererBindings,
@@ -20,7 +19,7 @@ import {
   getSceneConfigBindings,
   getRaycasterParamsBindings
 } from './bindings';
-import { makeRotationBinding, tweakBindingView, buildBindings, cleanupContainer } from './bindings/bindingHelpers';
+import { buildBindings, cleanupContainer, buildCustomParams } from './bindings/bindingHelpers';
 // @ts-ignore
 import { html } from '../../../../README.md';
 import { CommonGetterParams } from 'lib/App/CPanel/bindings/bindingTypes';
@@ -130,6 +129,10 @@ document.addEventListener('pointerup', (evt) => {
 
 // ----------------------- << Allowing input control to be visible when dragged outside cPanel  << --------------------------------
 
+const setSelectedTab = (pane: Pane, tabIndex: number) => {
+  pane.children[0].element.children[0].children[tabIndex].children[0].dispatchEvent(new Event('click'));
+};
+
 const preventContextMenu = (evt: globalThis.MouseEvent) => {
   evt.preventDefault();
 };
@@ -153,12 +156,12 @@ export const CPanel = () => {
   const cPanelVisible = useAppStore((state) => state.cPanelVisible);
   const setCPanelOpacity = useAppStore((state) => state.setCPanelOpacity);
   const setCPanelSize = useAppStore((state) => state.setCPanelSize);
-  const cPanelCustomParams = useAppStore((state) => state.getCPanelCustomParams());
-  const triggerCPanelCustomParamsChanged = useAppStore((state) => state.triggerCPanelCustomParamsChanged);
-  const cPanelCustomControls = useAppStore((state) => state.cPanelCustomControls);
   const selectedObjectUUID = useAppStore((state) => state.selectedObjectUUID);
   const selectedObjectRef = useRef<THREE.Object3D | null>(null);
   const triggerSelectedObjectChanged = useAppStore((state) => state.triggerSelectedObjectChanged);
+
+  const cPanelCustomParams = useAppStore((state) => state.getCPanelCustomParams());
+  const cPanelCustomParamsStructureStateFake = useAppStore((state) => state.cPanelCustomParamsStructureStateFake);
 
   const continuousUpdateRef = useRef<ReturnType<typeof makeContinuousUpdate> | null>(null);
 
@@ -176,13 +179,6 @@ export const CPanel = () => {
       }
     },
     [triggerSelectedObjectChanged]
-  );
-
-  const handleCustomParamsChanges = useCallback(
-    (_event: any) => {
-      triggerCPanelCustomParamsChanged();
-    },
-    [triggerCPanelCustomParamsChanged]
   );
 
   // Set selectedObject
@@ -215,12 +211,8 @@ export const CPanel = () => {
     const pane = paneRef.current;
 
     pane.addTab({ pages: [{ title: 'Selected' }, { title: 'Custom Controls' }, { title: 'Global' }] });
-    [...pane.children[0].element.children[0].children].forEach((tab, idx) => {
+    [...pane.children[0].element.children[0].children].forEach((tab) => {
       tab.classList.add('cPanel-tab'); // to style them hover-able
-      if (idx === 2) {
-        // select the Global tab by default
-        tab.children[0].dispatchEvent(new Event('click'));
-      }
     });
   }, [cPanelVisible, cPanelContinuousUpdate]);
 
@@ -244,6 +236,21 @@ export const CPanel = () => {
       ? continuousUpdateRef.current?.start()
       : continuousUpdateRef.current?.stop();
   }, [cPanelContinuousUpdate, cPanelVisible]);
+
+  // select most relevant tab
+  useEffect(() => {
+    if (!paneRef.current || paneRef.current.hidden) return;
+    const pane = paneRef.current;
+    const hasCustomParams = Object.keys(cPanelCustomParams).length;
+
+    if (hasCustomParams && !selectedObjectUUID) {
+      setSelectedTab(pane, 1);
+    } else if (selectedObjectUUID) {
+      setSelectedTab(pane, 0);
+    } else {
+      setSelectedTab(pane, 2);
+    }
+  }, [cPanelCustomParamsStructureStateFake, selectedObjectUUID]);
 
   // Create folders and bindings for selectedObject
   useEffect(() => {
@@ -273,18 +280,7 @@ export const CPanel = () => {
       .on('change', handleSelectedObjectChanges);
 
     buildBindings(objectFolder, selectedObject, getObject3DBindings(commonGetterParams), commonGetterParams);
-  }, [
-    selectedObjectUUID,
-    // handleSelectedObjectChanges,
-    // transformControlsMode,
-    // transformControlsSpace,
-    // scene,
-    // camera,
-    // gl,
-    angleFormat
-    // isPlaying,
-    // cPanelStateFake
-  ]);
+  }, [selectedObjectUUID, angleFormat]);
 
   // Setup bindings for custom params
   useEffect(() => {
@@ -294,28 +290,11 @@ export const CPanel = () => {
     const customParamsTab = tabs.pages[1];
     // Clear bindings
     cleanupContainer(customParamsTab);
-    // Add bindings
-    Object.keys(cPanelCustomControls).forEach((key) => {
-      const bindingParams = cPanelCustomControls[key];
-      const valueExists = cPanelCustomParams[key] !== undefined;
-      if (!valueExists) return;
-      // Forcing all pickers inline to prevent layout issues.
-      // Not all bindings have pickers but there's no harm in setting it inline even if there's no picker
-      bindingParams.picker = 'inline';
-      const binding = customParamsTab
-        .addBinding(cPanelCustomParams, key, bindingParams)
-        .on('change', handleCustomParamsChanges);
-      tweakBindingView(binding);
-      if (bindingParams.format === radToDegFormatter) {
-        makeRotationBinding(binding);
-      }
+    buildCustomParams({
+      cPanelCustomParams,
+      customParamsTab
     });
-
-    // select the Custom Controls tab if there are custom controls inside
-    if (Object.keys(cPanelCustomControls).length) {
-      pane.children[0].element.children[0].children[1].children[0].dispatchEvent(new Event('click'));
-    }
-  }, [cPanelCustomControls, cPanelCustomParams, handleCustomParamsChanges, cPanelStateFake]);
+  }, [cPanelCustomParams, cPanelCustomParamsStructureStateFake]);
 
   // Setup bindings for Scene/Pane
   useEffect(() => {
@@ -426,10 +405,8 @@ export const CPanel = () => {
     selectedObjectUUID,
     transformControlsMode,
     transformControlsSpace,
-    cPanelCustomControls,
     cPanelCustomParams,
     cPanelContinuousUpdate,
-    cPanelCustomParams,
     cameraControl,
     attachDefaultControllersToPlayingCamera,
     cameraType,

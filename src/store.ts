@@ -2,10 +2,8 @@ import { create } from 'zustand';
 import { subscribeWithSelector } from 'zustand/middleware';
 // import { devtools } from 'zustand/middleware';
 // import type {} from '@redux-devtools/extension'; // required for devtools typing
-import { BindingParams } from 'tweakpane';
 import * as THREE from 'three';
 import { setFullScreen } from 'lib/utils';
-import { isTextureImage, isValidTexture } from 'src/types';
 
 const cPanelCustomParamsStore: any = {};
 let selectedObject: THREE.Object3D | null = null;
@@ -57,13 +55,10 @@ export interface AppStore {
   cPanelStateFake: number;
   triggerCPaneStateChanged: () => void;
   getCPanelCustomParams: () => typeof cPanelCustomParamsStore;
-  setOrUpdateCPanelCustomParams: (name: string, customParams: any) => void;
-  removeCPanelCustomParams: (name: string) => void;
-  cPanelCustomParamsStateFake: number;
-  triggerCPanelCustomParamsChanged: () => void;
-  cPanelCustomControls: Record<string, BindingParams>;
-  setCPanelCustomControls: (name: string, customParams: any) => void;
-  removeCPanelCustomControls: (name: string) => void;
+  setOrUpdateCPanelCustomParams: (name: string, object: any, prop: string, control: any, path: string[]) => void;
+  removeCPanelCustomParams: (name: string, path: string[]) => void;
+  cPanelCustomParamsStructureStateFake: number;
+  triggerCPanelCustomParamsStructureChanged: () => void;
   loadModelIsOpen: boolean;
   setLoadModelIsOpen: (isOpen: boolean) => void;
   cameraControl: 'orbit' | 'fly';
@@ -183,50 +178,46 @@ export const useAppStore = create<AppStore>()(
       }));
     },
     getCPanelCustomParams: () => cPanelCustomParamsStore,
-    // setOrUpdateCPanelCustomParams does not replace objects but mutates them
-    // in order to not make Tweakpane control stale objects.
-    setOrUpdateCPanelCustomParams: (name, customParams) => {
-      const type = typeof customParams;
-      if (
-        type === 'string' ||
-        type === 'number' ||
-        type === 'boolean' ||
-        customParams === null ||
-        cPanelCustomParamsStore[name] === undefined ||
-        cPanelCustomParamsStore[name] === null ||
-        isTextureImage(customParams) ||
-        isValidTexture(customParams)
-      ) {
-        cPanelCustomParamsStore[name] = customParams;
-      } else {
-        Object.assign(cPanelCustomParamsStore[name], customParams);
+    setOrUpdateCPanelCustomParams: (name, object, prop, control, path) => {
+      const _path = [...path];
+      let store = cPanelCustomParamsStore;
+      while (_path.length) {
+        const section = _path.shift();
+        if (section) {
+          // TODO: maybe be able to control when the folder should be expanded ?
+          store[section] = store[section] || {};
+          store = store[section];
+        }
+      }
+      store[name] = { object, prop, control };
+    },
+    removeCPanelCustomParams: (name, path) => {
+      const _path = [...path];
+      let store = cPanelCustomParamsStore;
+      const stores = [{ store, parent: null, section: '' }];
+      while (_path.length) {
+        const section = _path.shift();
+        if (section) {
+          stores.push({ store: store[section], parent: store, section });
+          store = store[section];
+        }
+      }
+
+      delete store[name];
+      while (stores.length) {
+        const { store, parent, section } = stores.pop()!;
+        if (Object.keys(store).length === 0 && parent) {
+          delete parent[section];
+        }
       }
     },
-    removeCPanelCustomParams: (name) => {
-      delete cPanelCustomParamsStore[name];
-    },
-    cPanelCustomParamsStateFake: 0,
-    triggerCPanelCustomParamsChanged: () => {
+    cPanelCustomParamsStructureStateFake: 0,
+    triggerCPanelCustomParamsStructureChanged: () => {
       set((state) => ({
-        cPanelCustomParamsStateFake: state.cPanelCustomParamsStateFake < 100 ? state.cPanelCustomParamsStateFake + 1 : 0
+        cPanelCustomParamsStructureStateFake:
+          state.cPanelCustomParamsStructureStateFake < 100 ? state.cPanelCustomParamsStructureStateFake + 1 : 0
       }));
     },
-    cPanelCustomControls: {},
-    setCPanelCustomControls: (name, customControls) => {
-      set((state) => {
-        return {
-          cPanelCustomControls: {
-            ...state.cPanelCustomControls,
-            [name]: customControls
-          }
-        };
-      });
-    },
-    removeCPanelCustomControls: (name) =>
-      set((state) => {
-        delete state.cPanelCustomControls[name];
-        return { cPanelCustomControls: { ...state.cPanelCustomControls } };
-      }),
     loadModelIsOpen: false,
     setLoadModelIsOpen: (loadModelIsOpen) => set({ loadModelIsOpen }),
     cameraControl: 'orbit',

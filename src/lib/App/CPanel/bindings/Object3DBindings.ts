@@ -30,8 +30,7 @@ export const Object3DBindings = (params: CommonGetterParams) => ({
     label: 'Remove',
     title: 'Remove',
     onClick: (({ object }) => {
-      // @ts-ignore
-      params.sceneObjects.scene.transformControlsRef?.current?.detach();
+      params.sceneObjects.scene.__inspectorData.transformControlsRef?.current?.detach();
       object.parent?.remove(object);
       // inspectable objects should be cleaned up already
     }) as onChange

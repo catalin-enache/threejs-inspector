@@ -276,6 +276,9 @@ const destroy = (object: any) => {
 
 const cleanupAfterRemovedObject = (object: THREE.Object3D) => {
   object.traverse((child) => {
+    if (threeScene.__inspectorData.transformControlsRef?.current?.object === child) {
+      threeScene.__inspectorData.transformControlsRef.current.detach();
+    }
     // no need to destroy everything, geometries and materials might be reused
     if (child.__inspectorData.isPicker) {
       destroy(child);
@@ -455,8 +458,6 @@ const SetUp = (props: SetUpProps) => {
   const setSelectedObject = useAppStore((state) => state.setSelectedObject);
   const triggerSelectedObjectChanged = useAppStore((state) => state.triggerSelectedObjectChanged);
 
-  const triggerCPaneStateChanged = useAppStore((state) => state.triggerCPaneStateChanged);
-
   const showGizmos = useAppStore((state) => state.showGizmos);
 
   const cameraControl = useAppStore((state) => state.cameraControl);
@@ -474,8 +475,7 @@ const SetUp = (props: SetUpProps) => {
   useEffect(() => {
     setIsInjected(isInjected);
     setAutoNavControls(autoNavControls);
-    triggerCPaneStateChanged();
-  }, [isInjected, setIsInjected, autoNavControls, setAutoNavControls, triggerCPaneStateChanged]);
+  }, [isInjected, setIsInjected, autoNavControls, setAutoNavControls]);
 
   useEffect(() => {
     gl.domElement.addEventListener('contextmenu', preventContextMenu);
@@ -505,10 +505,8 @@ const SetUp = (props: SetUpProps) => {
     scene.__inspectorData.inspectableObjects = inspectableObjects;
     scene.__inspectorData.dependantObjects = dependantObjects;
     scene.__inspectorData.currentCamera = camera; // used in sizeUtils when importing model
-    // @ts-ignore - just attach them for referencing elsewhere
-    scene.orbitControlsRef = orbitControlsRef;
-    // @ts-ignore
-    scene.transformControlsRef = transformControlsRef;
+    scene.__inspectorData.orbitControlsRef = orbitControlsRef;
+    scene.__inspectorData.transformControlsRef = transformControlsRef;
     // Transferring existing helpers.
     // Helpers were added to the threeScene (due to patching Object3D) before receiving here the replacement scene.
     scene.traverse((child) => {
@@ -519,11 +517,6 @@ const SetUp = (props: SetUpProps) => {
 
     threeScene = scene;
   }, [scene, camera]);
-
-  // useFrame(() => {
-  // updating orbitControls seems to lock scene rotation when changing in cPanel
-  // orbitControlsRef.current?.enabled && orbitControlsRef.current?.update();
-  // });
 
   const render = useCallback(() => {
     // The render is not necessarily needed because gl.render is called anyway.

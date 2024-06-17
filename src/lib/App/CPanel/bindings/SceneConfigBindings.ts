@@ -12,6 +12,16 @@ export const SceneConfigBindings = (params: CommonGetterParams) => ({
       ...TextureBindings(params)
     }
   },
+  environmentIntensity: {
+    label: 'ENV Intensity',
+    ...numberCommon,
+    min: 0
+  },
+  environmentRotation: {
+    label: `ENV Rotation(${params.angleFormat})`,
+    ...numberCommon,
+    ...(params.angleFormat === 'deg' ? { format: radToDegFormatter } : {})
+  },
   background: {
     label: 'Background',
     color: { type: 'float' },
@@ -35,5 +45,15 @@ export const SceneConfigBindings = (params: CommonGetterParams) => ({
     label: `BG Rotation(${params.angleFormat})`,
     ...numberCommon,
     ...(params.angleFormat === 'deg' ? { format: radToDegFormatter } : {})
+  },
+  fog: {
+    title: 'Fog',
+    color: { label: 'Color', color: { type: 'float' }, view: 'color' },
+    near: {
+      label: 'Near',
+      pointerScale: 0.1,
+      step: 0.1
+    },
+    far: { label: 'Far', pointerScale: 0.1, step: 0.1 }
   }
 });

@@ -439,7 +439,7 @@ const preventContextMenu = (evt: MouseEvent) => {
 };
 
 interface SetUpProps {
-  orbitControls?: OrbitControls;
+  orbitControls?: OrbitControls | null;
   autoNavControls: boolean; // considered when orbitControls is falsy
   isInjected?: boolean;
 }
@@ -467,7 +467,7 @@ const SetUp = (props: SetUpProps) => {
   const transformControlsSpace = useAppStore((state) => state.transformControlsSpace);
   const transformControlsRef = useRef<TransformControls | null>(null);
 
-  const orbitControlsRef = useRef<OrbitControls | null>(orbitControls);
+  const orbitControlsRef = useRef<OrbitControls | null | undefined>(null);
   const hitsRef = useRef<THREE.Intersection<THREE.Object3D>[]>([]);
   const lastHitRef = useRef<THREE.Intersection<THREE.Object3D> | null>(null);
   const targetPositionRef = useRef<THREE.Vector3>(new THREE.Vector3());
@@ -663,12 +663,17 @@ const SetUp = (props: SetUpProps) => {
 
   useEffect(() => {
     if (orbitControlsRef.current) {
-      orbitControlsRef.current.dispose();
+      // prevent having more orbit controls active at the same time
+      // for the case where orbit controls are injected, and we don't need our default orbit controls active
+      orbitControlsRef.current.enabled = false;
     }
     orbitControlsRef.current = orbitControls || (autoNavControls ? new OrbitControls(camera, gl.domElement) : null);
-    // orbitControlsRef.current.enableDamping = true;
-    // orbitControlsRef.current.dampingFactor = 0.3;
-    // orbitControlsRef.current.autoRotate = true;
+    if (orbitControlsRef.current) {
+      orbitControlsRef.current.enabled = true;
+      // orbitControlsRef.current.enableDamping = true;
+      // orbitControlsRef.current.dampingFactor = 0.3;
+      // orbitControlsRef.current.autoRotate = true;
+    }
   }, [orbitControls, autoNavControls, camera, gl]);
 
   const isPlayingCamera = getIsPlayingCamera(camera);

@@ -1,8 +1,8 @@
+import * as THREE from 'three';
 import type { CommonGetterParams, onChange } from './bindingTypes';
 import { numberCommon } from './bindingHelpers';
 import { radToDegFormatter } from 'lib/utils';
 import { MaterialBindings } from 'lib/App/CPanel/bindings/MaterialBindings';
-// import * as THREE from 'three';
 
 // const isSkinnedMesh = (object: THREE.Object3D) => object instanceof THREE.SkinnedMesh;
 
@@ -33,7 +33,8 @@ export const Object3DBindings = (params: CommonGetterParams) => ({
       params.sceneObjects.scene.__inspectorData.transformControlsRef?.current?.detach();
       object.parent?.remove(object);
       // inspectable objects should be cleaned up already
-    }) as onChange
+    }) as onChange,
+    if: (object: THREE.Object3D) => !!object.parent
   },
   position: {
     label: 'Position(L)',

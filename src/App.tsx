@@ -1,10 +1,6 @@
-import { ReactNode, useState, useEffect } from 'react';
+import { ReactNode } from 'react';
 import { Canvas } from '@react-three/fiber';
-import { useAppStore } from './store';
-// TODO: do not import threeScene, make it local
-import { SetUp, currentScene } from 'lib/App/SetUp/SetUp';
-import { CPanel } from 'lib/App/CPanel/CPanel';
-import { KeyListener } from 'lib/App/KeyListener';
+import { useDefaultScene } from 'lib/hooks';
 
 interface AppProps {
   children?: ReactNode;
@@ -12,12 +8,7 @@ interface AppProps {
 
 export function App(props: AppProps) {
   const { children } = props;
-  const currentCameraStateFake = useAppStore((state) => state.currentCameraStateFake);
-  const [camera, setCamera] = useState(currentScene.__inspectorData.currentCamera);
-
-  useEffect(() => {
-    setCamera(currentScene.__inspectorData.currentCamera);
-  }, [currentCameraStateFake]);
+  const { camera, scene, inspector } = useDefaultScene();
 
   /*
   shadow types
@@ -38,7 +29,7 @@ export function App(props: AppProps) {
   return (
     <Canvas
       camera={camera}
-      scene={currentScene}
+      scene={scene}
       shadows={'soft'}
       gl={{ antialias: true, precision: 'highp' }}
       frameloop={'always'} // 'always' | 'demand' | 'never'
@@ -46,9 +37,7 @@ export function App(props: AppProps) {
       // when legacy is true it sets THREE.ColorManagement.enabled = false, by default THREE.ColorManagement is enabled
       // when THREE.ColorManagement is enabled, ThreeJS will automatically handle the conversion of textures and colors to linear space.
     >
-      <SetUp isInjected={false} autoNavControls />
-      <CPanel />
-      <KeyListener isInjected={false} autoNavControls />
+      {inspector}
       {children}
     </Canvas>
   );

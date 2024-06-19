@@ -1,26 +1,22 @@
-import { ReactNode, MouseEvent, useState, useEffect } from 'react';
+import { ReactNode, useState, useEffect } from 'react';
 import { Canvas } from '@react-three/fiber';
-
 import { useAppStore } from './store';
-
+// TODO: do not import threeScene, make it local
+import { SetUp, currentScene } from 'lib/App/SetUp/SetUp';
 import { CPanel } from 'lib/App/CPanel/CPanel';
 import { KeyListener } from 'lib/App/KeyListener';
 
-import { SetUp, threeScene } from 'lib/App/SetUp/SetUp';
-
 interface AppProps {
-  children: ReactNode;
+  children?: ReactNode;
 }
-const preventContextMenu = (evt: MouseEvent) => {
-  evt.preventDefault();
-};
 
 export function App(props: AppProps) {
+  const { children } = props;
   const currentCameraStateFake = useAppStore((state) => state.currentCameraStateFake);
-  const [camera, setCamera] = useState(threeScene.__inspectorData.currentCamera);
+  const [camera, setCamera] = useState(currentScene.__inspectorData.currentCamera);
 
   useEffect(() => {
-    setCamera(threeScene.__inspectorData.currentCamera);
+    setCamera(currentScene.__inspectorData.currentCamera);
   }, [currentCameraStateFake]);
 
   /*
@@ -42,21 +38,18 @@ export function App(props: AppProps) {
   return (
     <Canvas
       camera={camera}
-      scene={threeScene}
-      onContextMenu={preventContextMenu}
+      scene={currentScene}
       shadows={'soft'}
       gl={{ antialias: true, precision: 'highp' }}
-      // frameloop={'never'}
+      frameloop={'always'} // 'always' | 'demand' | 'never'
       // legacy
       // when legacy is true it sets THREE.ColorManagement.enabled = false, by default THREE.ColorManagement is enabled
       // when THREE.ColorManagement is enabled, ThreeJS will automatically handle the conversion of textures and colors to linear space.
     >
-      <SetUp />
-      <KeyListener />
-
+      <SetUp isInjected={false} autoNavControls />
       <CPanel />
-
-      {props.children}
+      <KeyListener isInjected={false} autoNavControls />
+      {children}
     </Canvas>
   );
 }

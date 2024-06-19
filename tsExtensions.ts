@@ -31,6 +31,6 @@ type __inspectorData = {
 
 declare module 'three' {
   export interface Object3D {
-    __inspectorData: __inspectorData;
+    __inspectorData: Partial<__inspectorData>;
   }
 }

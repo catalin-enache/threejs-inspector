@@ -4,7 +4,6 @@ import { useFrame, ThreeElements, useThree } from '@react-three/fiber';
 // @ts-ignore
 import Stats from 'three/addons/libs/stats.module.js';
 import { CustomControl } from 'components/CustomControl/CustomControl';
-// import { CustomControlFolder } from 'components/CustomControlFolder/CustomControlFolder';
 import { usePlay } from 'lib/hooks';
 import { degToRad } from 'lib/utils';
 import { createTexturesFromImages } from 'lib/utils/imageUtils';
@@ -97,8 +96,17 @@ export function Experience() {
   });
   // const [myImage, setMyImage] = useState<any>(null);
   const [showOthers, setShowOthers] = useState(false);
+  // @ts-ignore
   const [customControlXY, setCustomControlXY] = useState({ x: 0.5, y: 0.5 });
+  // @ts-ignore
   const [number, setNumber] = useState(1.23);
+
+  const customPropsRef = useRef({
+    myImage: null,
+    myBool: false,
+    myNumber: 0.23,
+    myPoint: { x: 0.5, y: 0.5 }
+  });
 
   usePlay((_state, _delta) => {
     // setNumber((prev) => {
@@ -336,10 +344,10 @@ export function Experience() {
 
       <perspectiveCamera
         args={[75, 1, 0.1, 100]} // window.innerWidth / window.innerHeight
-        position={[0, 0, 5]}
+        position={[-12.98, 3.963, 4.346]}
         name="myPerspectiveCamera"
-        rotation={[degToRad(25.86), degToRad(-46.13), degToRad(0)]} // 25.86 , -46.13, 19.26
-        __inspectorData={{ useOnPlay: false }}
+        rotation={[degToRad(-42.342), degToRad(-65.604), degToRad(-39.706)]} // 25.86 , -46.13, 19.26
+        __inspectorData={{ useOnPlay: true }}
       />
 
       {/*<cubeCamera*/}
@@ -351,66 +359,75 @@ export function Experience() {
 
       <axesHelper args={[10]} />
 
-      {showOthers && scene.background && (
-        <CustomControl
-          name="myImage"
-          value={scene.background}
-          control={{
-            label: 'Texture',
-            view: 'texture',
-            // TODO: see what happens if scene.background is a color
-            color: { type: 'float' }
-          }}
-          onChange={(value) => {
-            console.log('Experience reacting to myImage value change', value?.constructor);
-            scene.background = value;
-          }}
-        />
-      )}
-
       <CustomControl
-        name="myBool"
-        value={showOthers}
-        control={{ label: 'Show point' }}
-        onChange={(value) => {
-          setShowOthers(value);
-        }}
-      />
-
-      <CustomControl
-        name="myNumber"
-        value={number}
+        name={'myBool'}
+        object={customPropsRef.current}
+        prop={'myBool'}
         control={{
-          label: 'My Number',
-          step: 0.01,
-          keyScale: 0.1,
-          pointerScale: 0.01
-        }}
-        onChange={(value) => {
-          // console.log('Experience reacting to myNumber value change', value);
-          setNumber(value);
-          setCustomControlXY({ x: value, y: customControlXY.y });
+          label: 'My Bool',
+          onChange: (value: boolean) => {
+            setShowOthers(value);
+            console.log('Experience reacting to myBool value change', value);
+          }
         }}
       />
-
+      <CustomControl
+        name={'myBool_2'}
+        object={customPropsRef.current}
+        prop={'myBool'}
+        control={{
+          label: 'My Bool',
+          onChange: (value: boolean) => {
+            setShowOthers(value);
+            console.log('Experience reacting to myBool_2 value change', value);
+          }
+        }}
+      />
       {showOthers && (
-        <CustomControl
-          name="myPoint"
-          value={customControlXY}
-          control={{
-            label: 'Point',
-            step: 0.01,
-            keyScale: 0.1,
-            pointerScale: 0.01
-            // x: { step: 0.02 },
-            // y: { step: 0.02 }
-          }}
-          onChange={(value) => {
-            // console.log('Experience reacting to myPoint value change', value);
-            setCustomControlXY(value);
-            setNumber(value.x);
-          }}
-        />
+        <>
+          <CustomControl
+            name={'SceneBG'}
+            object={scene}
+            prop={'background'}
+            control={{
+              label: 'Texture',
+              view: 'texture',
+              // TODO: see what happens if scene.background is a color
+              color: { type: 'float' },
+              onChange: (...args: any[]) => {
+                console.log('Experience reacting to SceneBG value change', args);
+              }
+            }}
+          />
+          <CustomControl
+            name="myNumber"
+            object={customPropsRef.current}
+            prop={'myNumber'}
+            control={{
+              label: 'My Number',
+              step: 0.01,
+              keyScale: 0.1,
+              pointerScale: 0.01,
+              onChange: (value: number) => {
+                customPropsRef.current.myPoint.x = value;
+              }
+            }}
+          />
+          <CustomControl
+            name="myPoint"
+            object={customPropsRef.current}
+            prop={'myPoint'}
+            control={{
+              label: 'Point',
+              step: 0.01,
+              keyScale: 0.1,
+              pointerScale: 0.01,
+              onChange: (value: any) => {
+                customPropsRef.current.myNumber = value.x;
+              }
+            }}
+          />
+        </>
       )}
     </>
   );

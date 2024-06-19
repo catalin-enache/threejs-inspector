@@ -355,7 +355,11 @@ const handleObjectAdded = (object: THREE.Object3D) => {
     object instanceof THREE.CubeCamera
   ) {
     // R3F does not add cameras to scene, so this check is not needed, but checking just in case
-    if (object !== defaultPerspectiveCamera && object !== defaultOrthographicCamera) {
+    if (
+      object !== defaultPerspectiveCamera &&
+      object !== defaultOrthographicCamera &&
+      !(object.parent instanceof THREE.CubeCamera)
+    ) {
       makeHelpers(object); // will enrich certain objects with helper and picker
     }
     if (
@@ -381,11 +385,6 @@ const handleObjectAdded = (object: THREE.Object3D) => {
 THREE.Object3D.prototype.add = (function () {
   const originalAdd = THREE.Object3D.prototype.add;
   return function (this: THREE.Object3D, ...objects: THREE.Object3D[]) {
-    // things to skip
-    if (this instanceof THREE.CubeCamera) {
-      // skip children cameras of a cubeCamera
-      return originalAdd.call(this, ...objects);
-    }
     originalAdd.call(this, ...objects);
     objects.forEach((object) => {
       if (isSceneObject(this)) {

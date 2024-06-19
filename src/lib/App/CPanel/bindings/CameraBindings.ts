@@ -64,7 +64,7 @@ export const CubeCameraBindings = (_params: CommonGetterParams) => ({
       disabled: true
     },
     // texture: {
-    //   // cannot render the image for this CubeTexture. We need to read it from gl context.
+    //   // cannot easily render the image for this CubeTexture. We need to read it from gl context.
     //   label: 'Texture',
     //   view: 'texture',
     //   gl: params.sceneObjects.gl,

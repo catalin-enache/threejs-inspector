@@ -50,20 +50,19 @@ Bug: When using transform sliders and releasing mouse on disabled inputs the con
 
 Allow setting the size for pickers. In some scenes they are too small/big; *DONE*
 
+If we have Custom params in CPanel make the tab selected by default *DONE*
 
+Implement options for importing via input file. (optimize ? autoscale ? geometry ?) *DONE*
 
+Add control for scene fog, and other scene props. *DONE*
+
+See if we can use Custom tab when inspector is injected in the scene. *DONE*
+
+Bug: Changing rotation 90deg does not make it 90 but 90.012
 
 See if we can reproduce CustomControls setup from existing Experience into the native ThreeJs example.
 
-If we have Custom params in CPanel make the tab selected by default
-
-Implement options for importing via input file. (optimize ? autoscale ? geometry ?)
-
 Check if we remove the mixer for objects removed from the scene.
-
-Add control for scene fog, and other scene props.
-
-See if we can use Custom tab when inspector is injected in the scene.
 
 Check ALL_Asian_female why is rendering slow ? It is a bout a hair mesh.
 Check ALL_Asian_female.fbx make it indexed and recombine meshes. Observe lots of children (too many).
@@ -111,8 +110,6 @@ https://www.npmjs.com/package/eslint-config-mdcs
   ],
 
 See where kandao3_depthmap.jpg is used in threejs examples
-
-Bug: Changing rotation 90deg does not make it 90 but 90.012
 
 Can we make an approach to share textures and materials between objects? (this is good for sharing envMap)
 

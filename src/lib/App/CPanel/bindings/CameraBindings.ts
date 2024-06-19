@@ -63,6 +63,7 @@ export const CubeCameraBindings = (_params: CommonGetterParams) => ({
       label: 'Viewport',
       disabled: true
     },
+    // TODO: improve here by enabling the inputs and showing the texture somehow
     // texture: {
     //   // cannot easily render the image for this CubeTexture. We need to read it from gl context.
     //   label: 'Texture',

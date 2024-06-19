@@ -86,8 +86,8 @@ export function Experience() {
   const refDirectionalLight = useRef<THREE.DirectionalLight>(null!);
   const refPointLight = useRef<THREE.PointLight>(null!);
   const doorMaterialRef = useRef<THREE.MeshStandardMaterial>(null!);
-  // const cubeCameraRef = useRef<THREE.CubeCamera>(null!);
-  // const webGLCubeRenderTargetRef = useRef(new THREE.WebGLCubeRenderTarget(128));
+  const cubeCameraRef = useRef<THREE.CubeCamera>(null!);
+  const webGLCubeRenderTargetRef = useRef(new THREE.WebGLCubeRenderTarget(128));
   useFrame((_state, _delta) => {
     stats.update();
     if (refPointLight.current) {
@@ -320,12 +320,19 @@ export function Experience() {
       <mesh
         name="plane"
         rotation={[-1.5, 0, 0]}
-        position={[-5, -6, -3]}
+        position={[-5, -7.23, -3]}
         receiveShadow
         __inspectorData={{ isInspectable: true }}
       >
-        <planeGeometry args={[16, 16]} />
+        <planeGeometry args={[32, 32]} />
         <meshStandardMaterial color="white" side={THREE.DoubleSide} />
+        {/*<meshStandardMaterial*/}
+        {/*  roughness={0}*/}
+        {/*  metalness={1}*/}
+        {/*  envMap={webGLCubeRenderTargetRef.current.texture}*/}
+        {/*  color="white"*/}
+        {/*  side={THREE.DoubleSide}*/}
+        {/*/>*/}
       </mesh>
 
       <mesh
@@ -333,6 +340,7 @@ export function Experience() {
         rotation={[0, 0, 0]}
         position={[0, 0, -2]}
         receiveShadow
+        castShadow
         __inspectorData={{ isInspectable: true }}
       >
         <planeGeometry args={[16, 16]} />
@@ -350,12 +358,12 @@ export function Experience() {
         __inspectorData={{ useOnPlay: true }}
       />
 
-      {/*<cubeCamera*/}
-      {/*  ref={cubeCameraRef}*/}
-      {/*  name="myCubeCamera"*/}
-      {/*  args={[0, 1000, webGLCubeRenderTargetRef.current]}*/}
-      {/*  position={[-3, 0, 0]}*/}
-      {/*/>*/}
+      <cubeCamera
+        ref={cubeCameraRef}
+        name="myCubeCamera"
+        args={[0, 1000, webGLCubeRenderTargetRef.current]}
+        position={[-3, 0, 0]}
+      />
 
       <axesHelper args={[10]} />
 

@@ -40,6 +40,67 @@ export const OrthographicCameraBindings = (_params: CommonGetterParams) => ({
   }
 });
 
+export const CubeCameraBindings = (_params: CommonGetterParams) => ({
+  renderTarget: {
+    title: 'Render Target',
+    width: {
+      label: 'Width',
+      disabled: true
+    },
+    height: {
+      label: 'Height',
+      disabled: true
+    },
+    scissor: {
+      label: 'Scissor',
+      disabled: true
+    },
+    scissorTest: {
+      label: 'Scissor Test',
+      disabled: true
+    },
+    viewport: {
+      label: 'Viewport',
+      disabled: true
+    },
+    // texture: {
+    //   // cannot render the image for this CubeTexture. We need to read it from gl context.
+    //   label: 'Texture',
+    //   view: 'texture',
+    //   gl: params.sceneObjects.gl,
+    //   details: {
+    //     ...TextureBindings(params)
+    //   }
+    //   // title: 'Texture',
+    //   // ...TextureBindings(params)
+    // },
+    depthBuffer: {
+      label: 'Depth Buffer',
+      disabled: true
+    },
+    stencilBuffer: {
+      label: 'Stencil Buffer',
+      disabled: true
+    },
+    resolveDepthBuffer: {
+      label: 'Resolve Depth Buffer',
+      disabled: true
+    },
+    resolveStencilBuffer: {
+      label: 'Resolve Stencil Buffer',
+      disabled: true
+    },
+    // depthTexture: {
+    //   label: 'Depth Texture',
+    //   view: 'texture'
+    // },
+    samples: {
+      label: 'Samples',
+      disabled: true
+    }
+  }
+});
+
 export const CameraBindings = (params: CommonGetterParams) => {
   const cameraBindings = {
     near: {
@@ -57,7 +118,8 @@ export const CameraBindings = (params: CommonGetterParams) => {
       min: 0
     },
     ...PerspectiveCameraBindings(params),
-    ...OrthographicCameraBindings(params)
+    ...OrthographicCameraBindings(params),
+    ...CubeCameraBindings(params)
   };
   Object.keys(cameraBindings).forEach((key) => {
     // @ts-ignore

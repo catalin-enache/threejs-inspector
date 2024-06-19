@@ -1,5 +1,4 @@
 import * as THREE from 'three';
-// @ts-ignore
 import { useThree } from '@react-three/fiber';
 import { useCallback, useEffect, useRef } from 'react';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
@@ -10,9 +9,6 @@ import { LightProbeHelper } from 'three/examples/jsm/helpers/LightProbeHelper';
 import { FlyControls } from 'lib/App/FlyControls';
 import { useAppStore } from 'src/store';
 import { focusCamera } from 'lib/utils';
-import { __inspectorData } from 'src/types';
-
-RectAreaLightUniformsLib.init(); // required for RectAreaLight
 
 Object.defineProperty(THREE.Object3D.prototype, '__inspectorData', {
   get: function () {
@@ -59,11 +55,49 @@ Object.defineProperty(THREE.Object3D.prototype, '__inspectorData', {
   configurable: true
 });
 
-let threeScene = new THREE.Scene();
+RectAreaLightUniformsLib.init(); // required for RectAreaLight
+
+const defaultScene = new THREE.Scene();
+let currentScene = defaultScene;
 const inspectableObjects: Record<string, THREE.Object3D> = {};
 const dependantObjects: Record<string, THREE.Object3D[]> = {};
-threeScene.__inspectorData.inspectableObjects = inspectableObjects;
-threeScene.__inspectorData.dependantObjects = dependantObjects;
+
+// ----------------------------------- Cameras >> -----------------------------------
+
+const cameraPosition = new THREE.Vector3(0, 0, 12);
+const defaultPerspectiveCamera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 10000);
+defaultPerspectiveCamera.position.copy(cameraPosition);
+defaultPerspectiveCamera.zoom = 1;
+defaultPerspectiveCamera.name = 'DefaultPerspectiveCamera';
+
+const defaultOrthographicCamera = new THREE.OrthographicCamera(-0, 0, 0, -0, 0.1, 10000);
+defaultOrthographicCamera.position.copy(cameraPosition);
+defaultOrthographicCamera.zoom = 45;
+defaultOrthographicCamera.name = 'DefaultOrthographicCamera';
+
+let cameraToUseOnPlay: THREE.PerspectiveCamera | THREE.OrthographicCamera | null = null;
+
+// defaultPerspectiveCamera and defaultOrthographicCamera and cameraToUseOnPlay are used in App (when !isInjected)
+currentScene.__inspectorData.currentCamera =
+  useAppStore.getState().cameraType === 'perspective' ? defaultPerspectiveCamera : defaultOrthographicCamera;
+
+const updateCameras = () => {
+  defaultPerspectiveCamera.aspect = window.innerWidth / window.innerHeight;
+  defaultPerspectiveCamera.updateProjectionMatrix();
+
+  defaultOrthographicCamera.left = window.innerWidth / -2;
+  defaultOrthographicCamera.right = window.innerWidth / 2;
+  defaultOrthographicCamera.top = window.innerHeight / 2;
+  defaultOrthographicCamera.bottom = window.innerHeight / -2;
+  defaultOrthographicCamera.updateProjectionMatrix();
+};
+
+updateCameras();
+
+const getIsPlayingCamera = (camera: THREE.Camera) =>
+  camera !== defaultPerspectiveCamera && camera !== defaultOrthographicCamera;
+
+// ----------------------------------- << Cameras -----------------------------------
 
 const objectHasSkeleton = (object: THREE.Object3D) => {
   let hasSkeleton = false;
@@ -76,7 +110,7 @@ const objectHasSkeleton = (object: THREE.Object3D) => {
 };
 
 const makeHelpers = (object: THREE.Object3D) => {
-  let helper: __inspectorData['helper'];
+  let helper: THREE.Object3D['__inspectorData']['helper'];
 
   let picker: THREE.Mesh;
 
@@ -180,8 +214,8 @@ const makeHelpers = (object: THREE.Object3D) => {
     picker.matrix = (helper as THREE.DirectionalLightHelper).lightPlane.matrix; // helper.matrix is a reference to helper.light.matrixWorld
     picker.matrixAutoUpdate = false;
   }
-  const objectInspectorData = object.__inspectorData as __inspectorData;
-  const pickerInspectorData = picker.__inspectorData as __inspectorData;
+  const objectInspectorData = object.__inspectorData;
+  const pickerInspectorData = picker.__inspectorData;
   pickerIsNeeded && (objectInspectorData.picker = picker);
   objectInspectorData.helper = helper;
   pickerInspectorData.hitRedirect = object;
@@ -244,15 +278,16 @@ const makeHelpers = (object: THREE.Object3D) => {
   useAppStore.subscribe(
     (appStore) => appStore.isPlaying,
     (isPlaying) => {
-      // we don't need to remove helpers for default cameras since R3F does not add them to scene
+      // we don't need to remove helpers for default cameras since R3F does not add cameras to scene
       if (objectInspectorData.useOnPlay) {
         if (isPlaying) {
           pickerIsNeeded && object.remove(picker);
           // since threeScene is global, we can access its latest value here
-          threeScene.remove(helper);
+          currentScene.remove(helper);
         } else {
           pickerIsNeeded && object.add(picker);
-          threeScene.add(helper);
+          inspectableObjects[picker.uuid] = picker;
+          currentScene.add(helper);
         }
       }
     }
@@ -276,19 +311,27 @@ const destroy = (object: any) => {
 
 const cleanupAfterRemovedObject = (object: THREE.Object3D) => {
   object.traverse((child) => {
-    if (threeScene.__inspectorData.transformControlsRef?.current?.object === child) {
-      threeScene.__inspectorData.transformControlsRef.current.detach();
+    if (currentScene.__inspectorData.transformControlsRef?.current?.object === child) {
+      currentScene.__inspectorData.transformControlsRef.current.detach();
     }
+
     // no need to destroy everything, geometries and materials might be reused
-    if (child.__inspectorData.isPicker) {
+    if (child.__inspectorData.isPicker && child.__inspectorData.hitRedirect !== cameraToUseOnPlay) {
+      // helpers and pickers for cameraToUseOnPlay needs to stay around
       destroy(child);
     }
+
     delete inspectableObjects[child.uuid];
+
+    if (cameraToUseOnPlay === child) {
+      cameraToUseOnPlay = null;
+    }
 
     (dependantObjects[child.uuid] || []).forEach((dependantObject) => {
       dependantObject.removeFromParent();
       (dependantObject as any).dispose?.(); // for helpers
     });
+
     delete dependantObjects[child.uuid];
   });
 };
@@ -304,7 +347,7 @@ const isSceneObject = (object: THREE.Object3D) => {
 
 // called for every child of an object only when added to the scene
 const handleObjectAdded = (object: THREE.Object3D) => {
-  const __inspectorData = object.__inspectorData as __inspectorData;
+  const __inspectorData = object.__inspectorData;
   if (
     __inspectorData.isInspectable ||
     (object as THREE.Light).isLight ||
@@ -312,7 +355,7 @@ const handleObjectAdded = (object: THREE.Object3D) => {
     object instanceof THREE.CubeCamera
   ) {
     // R3F does not add cameras to scene, so this check is not needed, but checking just in case
-    if (object !== perspectiveCamera && object !== orthographicCamera) {
+    if (object !== defaultPerspectiveCamera && object !== defaultOrthographicCamera) {
       makeHelpers(object); // will enrich certain objects with helper and picker
     }
     if (
@@ -320,7 +363,7 @@ const handleObjectAdded = (object: THREE.Object3D) => {
       __inspectorData.useOnPlay
     ) {
       // if multiple cameras are useOnPlay, only the last one will be considered
-      threeScene.__inspectorData.cameraToUseOnPlay = object as THREE.PerspectiveCamera | THREE.OrthographicCamera;
+      cameraToUseOnPlay = object as THREE.PerspectiveCamera | THREE.OrthographicCamera;
     }
     // picker appears in __inspectorData after makeHelpers
     if (__inspectorData.picker) {
@@ -330,7 +373,7 @@ const handleObjectAdded = (object: THREE.Object3D) => {
     }
     if (__inspectorData.helper) {
       dependantObjects[object.uuid] = [__inspectorData.helper];
-      threeScene.add(__inspectorData.helper);
+      currentScene.add(__inspectorData.helper);
     }
   }
 };
@@ -383,57 +426,6 @@ THREE.Object3D.prototype.remove = (function () {
   };
 })();
 
-// ----------------------------------- Cameras >> -----------------------------------
-
-// TODO: when using different camera on play we might/will need different controller
-
-const cameraPosition = new THREE.Vector3(0, 0, 12);
-const perspectiveCamera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 10000);
-perspectiveCamera.position.copy(cameraPosition);
-perspectiveCamera.zoom = 1;
-perspectiveCamera.name = 'DefaultPerspectiveCamera';
-
-const orthographicCamera = new THREE.OrthographicCamera(-0, 0, 0, -0, 0.1, 10000);
-orthographicCamera.position.copy(cameraPosition);
-orthographicCamera.zoom = 45;
-orthographicCamera.name = 'DefaultOrthographicCamera';
-
-// defaultPerspectiveCamera and defaultOrthographicCamera and cameraToUseOnPlay are used in App (when !isInjected)
-threeScene.__inspectorData.defaultPerspectiveCamera = perspectiveCamera;
-threeScene.__inspectorData.defaultOrthographicCamera = orthographicCamera;
-threeScene.__inspectorData.currentCamera =
-  useAppStore.getState().cameraType === 'perspective' ? perspectiveCamera : orthographicCamera;
-threeScene.__inspectorData.cameraToUseOnPlay = null;
-
-const updateCameras = () => {
-  const cameraToUseOnPlay = threeScene.__inspectorData.cameraToUseOnPlay;
-  perspectiveCamera.aspect = window.innerWidth / window.innerHeight;
-  perspectiveCamera.updateProjectionMatrix();
-
-  orthographicCamera.left = window.innerWidth / -2;
-  orthographicCamera.right = window.innerWidth / 2;
-  orthographicCamera.top = window.innerHeight / 2;
-  orthographicCamera.bottom = window.innerHeight / -2;
-  orthographicCamera.updateProjectionMatrix();
-
-  if (cameraToUseOnPlay instanceof THREE.PerspectiveCamera) {
-    cameraToUseOnPlay.aspect = perspectiveCamera.aspect;
-    cameraToUseOnPlay.updateProjectionMatrix();
-  } else if (cameraToUseOnPlay instanceof THREE.OrthographicCamera) {
-    cameraToUseOnPlay.left = orthographicCamera.left;
-    cameraToUseOnPlay.right = orthographicCamera.right;
-    cameraToUseOnPlay.top = orthographicCamera.top;
-    cameraToUseOnPlay.bottom = orthographicCamera.bottom;
-    cameraToUseOnPlay.updateProjectionMatrix();
-  }
-};
-
-updateCameras();
-
-const getIsPlayingCamera = (camera: THREE.Camera) => camera !== perspectiveCamera && camera !== orthographicCamera;
-
-// ----------------------------------- << Cameras -----------------------------------
-
 const preventContextMenu = (evt: MouseEvent) => {
   evt.preventDefault();
 };
@@ -485,28 +477,10 @@ const SetUp = (props: SetUpProps) => {
   }, [gl]);
 
   useEffect(() => {
-    if (isInjected) return;
-    // The currentCamera that we set here is only used in App.
-    // It is ignored when injectInspector is used.
-    const sceneInspectorData = scene.__inspectorData;
-    if (isPlaying) {
-      sceneInspectorData.currentCamera = sceneInspectorData.cameraToUseOnPlay || sceneInspectorData.currentCamera;
-    } else {
-      sceneInspectorData.currentCamera =
-        cameraType === 'perspective'
-          ? sceneInspectorData.defaultPerspectiveCamera
-          : sceneInspectorData.defaultOrthographicCamera;
-    }
-    // notify main App to re-render and send new camera into canvas
-    useAppStore.getState().triggerCurrentCameraChanged();
-  }, [isPlaying, cameraType, scene, isInjected]);
-
-  useEffect(() => {
-    scene.__inspectorData.inspectableObjects = inspectableObjects;
-    scene.__inspectorData.dependantObjects = dependantObjects;
-    scene.__inspectorData.currentCamera = camera; // used in sizeUtils when importing model
+    scene.__inspectorData.currentCamera = camera; // used in sizeUtils when importing model and in App when !isInjected
     scene.__inspectorData.orbitControlsRef = orbitControlsRef;
     scene.__inspectorData.transformControlsRef = transformControlsRef;
+    if (scene === currentScene) return; // prevent re-adding camera helpers once they were removed when playing
     // Transferring existing helpers.
     // Helpers were added to the threeScene (due to patching Object3D) before receiving here the replacement scene.
     scene.traverse((child) => {
@@ -515,7 +489,7 @@ const SetUp = (props: SetUpProps) => {
       }
     });
 
-    threeScene = scene;
+    currentScene = scene;
   }, [scene, camera]);
 
   const render = useCallback(() => {
@@ -523,6 +497,21 @@ const SetUp = (props: SetUpProps) => {
     // However, we want instant re-render so that it feels more responsive (eventually).
     gl.render(scene, camera);
   }, [scene, camera, gl]);
+
+  useEffect(() => {
+    if (isInjected) return;
+    // The currentCamera that we set here is only used in App.
+    // It is ignored when injectInspector is used.
+    const sceneInspectorData = scene.__inspectorData;
+    if (isPlaying) {
+      sceneInspectorData.currentCamera = cameraToUseOnPlay || sceneInspectorData.currentCamera;
+    } else {
+      sceneInspectorData.currentCamera =
+        cameraType === 'perspective' ? defaultPerspectiveCamera : defaultOrthographicCamera;
+    }
+    // notify main App to re-render and send new camera into canvas
+    useAppStore.getState().triggerCurrentCameraChanged();
+  }, [isPlaying, cameraType, scene, isInjected]);
 
   // Create orbit and transform controls (singletons) and attach transform controls to scene
   useEffect(() => {
@@ -647,7 +636,7 @@ const SetUp = (props: SetUpProps) => {
       raycaster.intersectObjects(Object.values(inspectableObjects), false, hits);
 
       lastHitRef.current = hits[0] || null;
-      const __inspectorData = lastHitRef.current?.object?.__inspectorData as __inspectorData;
+      const __inspectorData = lastHitRef.current?.object?.__inspectorData;
       // if we hit a picker or an inner mesh proxy, select the object it represents else select the object itself
       setSelectedObject(__inspectorData?.hitRedirect || lastHitRef.current?.object || null);
     },
@@ -686,4 +675,4 @@ const SetUp = (props: SetUpProps) => {
 };
 
 // eslint-disable-next-line
-export { SetUp, threeScene, perspectiveCamera, orthographicCamera };
+export { SetUp, currentScene };

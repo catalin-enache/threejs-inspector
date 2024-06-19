@@ -32,6 +32,6 @@ type __inspectorData = {
 
 declare module 'three' {
   export interface Object3D {
-    __inspectorData: __inspectorData; // Define __inspectorData as an optional property of any type
+    __inspectorData: __inspectorData;
   }
 }

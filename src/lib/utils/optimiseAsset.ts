@@ -178,6 +178,7 @@ const createAndAddNewMesh = (
 };
 
 // TODO: add support for THREE.InterleavedBufferAttribute
+// https://blog.tojicode.com/2011/05/interleaved-array-basics.html
 
 // With this function, multiple meshes will not be reduced to fewer meshes.
 // It only splits the meshes by material.
@@ -524,7 +525,7 @@ export function splitMeshesByMaterial(root: THREE.Mesh | THREE.Group, { debug }:
     while (collectedChildren.length) {
       const child = collectedChildren.shift();
       // transfer children from old mesh to the main derived mesh (of old mesh)
-      mesh.__inspectorData.mainDerivedMesh.add(child);
+      mesh.__inspectorData.mainDerivedMesh!.add(child!);
     }
 
     mesh.removeFromParent();

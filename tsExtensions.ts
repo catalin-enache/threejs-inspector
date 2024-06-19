@@ -27,6 +27,10 @@ type __inspectorData = {
   isRecombined: boolean;
   transformControlsRef: { current?: TransformControls | null };
   orbitControlsRef: { current?: OrbitControls | null };
+  // specific to optimiseAsset flow
+  geometryHasBeenIndexed: boolean;
+  isDerivedMesh: boolean;
+  mainDerivedMesh: THREE.Mesh;
 };
 
 declare module 'three' {

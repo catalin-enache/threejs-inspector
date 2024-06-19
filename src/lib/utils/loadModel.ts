@@ -225,7 +225,7 @@ export const loadModel = async (
       console.log('loadModel multiAssetSources loadedAssets', { multiAssetSources, sources, loadedAssets, rootAsset });
 
     result = rootAsset;
-    name = rootAsset.__inspectorData.resourceName;
+    name = rootAsset.__inspectorData.resourceName!;
 
     restAssets.forEach((externalAnimationAsset) => {
       mergeAnimationsFromRestAssets(result as THREE.Group, externalAnimationAsset);
@@ -335,7 +335,7 @@ export const loadModel = async (
 
   if (autoScaleRatio) {
     const meshSize = getBoundingBoxSize(root);
-    const sceneSize = getSceneBoundingBoxSize(scene, scene.__inspectorData.currentCamera, new Set([root]), true);
+    const sceneSize = getSceneBoundingBoxSize(scene, scene.__inspectorData.currentCamera!, new Set([root]), true);
     const scaleFactor = calculateScaleFactor(meshSize, sceneSize, autoScaleRatio);
     root.scale.set(scaleFactor, scaleFactor, scaleFactor);
   }

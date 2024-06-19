@@ -31,6 +31,8 @@ type __inspectorData = {
   geometryHasBeenIndexed: boolean;
   isDerivedMesh: boolean;
   mainDerivedMesh: THREE.Mesh;
+  // specific to optimiseAsset loadModel
+  resourceName: string;
 };
 
 declare module 'three' {

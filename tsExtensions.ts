@@ -1,5 +1,4 @@
 // three-extensions.d.ts
-// @ts-ignore
 import * as THREE from 'three';
 import type { RectAreaLightHelper } from 'three/examples/jsm/helpers/RectAreaLightHelper';
 import type { LightProbeHelper } from 'three/examples/jsm/helpers/LightProbeHelper';

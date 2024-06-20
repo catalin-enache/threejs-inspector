@@ -65,9 +65,9 @@ Check if we remove the mixer for objects removed from the scene. *DONE* (yes, be
 
 Bug: Changing rotation 90deg does not make it 90 but 90.012 *DONE* (expected: because conversion to rad and back to deg, but showing now 1 decimal to hide the difference)
 
+See if we can reproduce CustomControls setup from existing Experience into the native ThreeJs example. *DONE* (yes we can)
 
 
-See if we can reproduce CustomControls setup from existing Experience into the native ThreeJs example.
 
 When importing the same model multiple times allow to reselect the same materials and textures ore use prev mesh but make them instance meshes.
 

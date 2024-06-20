@@ -11,6 +11,7 @@ import {
   rgbeLoader,
   tgaLoader,
   ktx2Loader,
+  ddsLoader,
   registerFiles
 } from './loaders';
 import { isValidTexture } from 'src/types';
@@ -24,6 +25,7 @@ export const FILE_TIFF = 'image/tiff';
 export const FILE_WEBP = 'image/webp';
 export const FILE_TGA = 'image/tga';
 export const FILE_KTX2 = 'image/ktx2';
+export const FILE_DDS = 'image/vnd-ms.dds';
 
 export const fileTypeMap: Record<string, string> = {
   jpg: FILE_JPEG,
@@ -36,7 +38,8 @@ export const fileTypeMap: Record<string, string> = {
   exr: FILE_EXR,
   hdr: FILE_HDR,
   tga: FILE_TGA,
-  ktx2: FILE_KTX2
+  ktx2: FILE_KTX2,
+  dds: FILE_DDS
 };
 
 export const isPowerOf2Texture = (texture: THREE.Texture): boolean => {
@@ -101,6 +104,8 @@ export function getImageLoader(fileType: string, fileName: string, gl?: THREE.We
       return tiffLoader;
     case FILE_KTX2:
       return ktx2Loader;
+    case FILE_DDS:
+      return ddsLoader;
     case FILE_JPEG:
       if (fileName.toLowerCase().endsWith('.hdr.jpg')) {
         if (!gl) throw new Error('HDRJPGLoader requires a WebGLRenderer instance');

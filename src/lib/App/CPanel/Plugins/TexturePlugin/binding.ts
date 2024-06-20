@@ -13,9 +13,9 @@ const DEFAULT_EXTENSIONS = [
   '.tiff',
   '.exr',
   '.hdr',
-  '.tga'
-  //'.ktx2', // TODO: ktx2 is not working
-  //'.dds' // TODO: dds is not working
+  '.tga',
+  '.ktx2',
+  '.dds'
 ];
 
 export interface TexturePluginConfig extends BaseInputParams {

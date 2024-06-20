@@ -262,7 +262,7 @@ const _buildBindings = (folder: FolderApi, object: any, bindings: any, params: C
     });
     tweakFolder(animationsFolder, `${animationsFolder.title!}-${object.uuid || 'no-id'}`);
 
-    const inspectorData = object.__inspectorData;
+    const inspectorData = object.__inspectorData as THREE.Object3D['__inspectorData'];
 
     // reuse existing mixer and actions if available so that we can select other objects then came back to prev object and stop actions
     inspectorData.cpMixer = inspectorData.cpMixer ?? new THREE.AnimationMixer(object);
@@ -276,7 +276,7 @@ const _buildBindings = (folder: FolderApi, object: any, bindings: any, params: C
       const actionID = animation.name || animation.uuid;
       let action;
       if (actions.has(animation)) {
-        action = actions.get(animation);
+        action = actions.get(animation)!;
       } else {
         action = mixer.clipAction(animation);
         actions.set(animation, action);
@@ -368,7 +368,7 @@ const _buildBindings = (folder: FolderApi, object: any, bindings: any, params: C
     // console.log('Extracting materials');
     // root object
     const materials = new Set<THREE.Material>();
-    object.traverse((child: any) => {
+    object.traverse((child: THREE.Object3D) => {
       if (child === object || child.__inspectorData.isPicker) return;
       if (child instanceof THREE.Mesh && child.material) {
         // console.log('Material found', child.material);

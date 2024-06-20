@@ -33,6 +33,11 @@ type __inspectorData = {
   mainDerivedMesh: THREE.Mesh;
   // specific to optimiseAsset loadModel
   resourceName: string;
+  // specific to bindings
+  cpMixer: THREE.AnimationMixer;
+  cpStartStop: { start: () => void; stop: () => void; clear: () => void };
+  cpActions: Map<THREE.AnimationClip, THREE.AnimationAction>;
+  __cpCurrentPlayingAction: THREE.AnimationAction | null;
 };
 
 declare module 'three' {

@@ -10,6 +10,8 @@ import { createTexturesFromImages } from 'lib/utils/imageUtils';
 import { TestIndexedCube3Materials } from './TestIndexedCube3Materials';
 // import { TestMorphTargets } from './TestMorphTargets';
 import { splitMeshesByMaterial } from 'lib/utils/optimiseAsset';
+// @ts-ignore
+import { loadModel } from 'lib/utils/loadModel';
 
 const stats = new Stats();
 document.body.appendChild(stats.dom);
@@ -212,11 +214,13 @@ export function Experience() {
         //   scene.add(mesh);
         // });
 
+        // models/Free/fbx/Asuna/2/FreeTestAnimations_reexport.fbx
+        // models/MyTests/having space in path/asset with space in path.fbx
         // models/MyTests/with_non_default_textures/with_non_native_textures.fbx
         // models/NonFree/Dark Elf Blader - Game Ready/Assets/Textures/DarkElfBlader_FBX_From3DsMax.fbx
-        // loadModel('models/MyTests/having space in path/asset with space in path.fbx', scene, {
-        //   // filesArray: ['models/MyTests/with_non_native_textures/textures/with_non_native_textures.bin'],
-        //   // resourcePath: 'models/MyTests/with_non_native_textures/textures/'
+        // loadModel('models/MyTests/with_non_native_textures/with_non_native_textures.gltf', scene, {
+        //   filesArray: ['models/MyTests/with_non_native_textures/textures/with_non_native_textures.bin'],
+        //   resourcePath: 'models/MyTests/with_non_native_textures/textures/'
         // }).then((mesh) => {
         //   if (!mesh) return;
         //   scene.add(mesh);

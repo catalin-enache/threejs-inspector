@@ -69,6 +69,10 @@ See if we can reproduce CustomControls setup from existing Experience into the n
 
 Allow with shift + dblclick to select inside object *DONE*
 
+Bug: When loading via http fbx doesn't find textures in subfolder. *DONE*
+
+
+
 
 
 
@@ -82,7 +86,6 @@ The colors are different between gltf and fbx (see test_multi_features)
 
 Bug: FBXLoader: DDS loader not found for Modular Military Character fbx. (maybe a dds re-export would fix it)
 
-Bug: When loading via http fbx doesn't find textures in subfolder.
 
 See why it takes that long to select a complex object in the scene. Can cPanel be optimised or is it normal?
 

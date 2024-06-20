@@ -218,9 +218,9 @@ export function Experience() {
         // models/MyTests/having space in path/asset with space in path.fbx
         // models/MyTests/with_non_default_textures/with_non_native_textures.fbx
         // models/NonFree/Dark Elf Blader - Game Ready/Assets/Textures/DarkElfBlader_FBX_From3DsMax.fbx
-        // loadModel('models/MyTests/with_non_native_textures/with_non_native_textures.gltf', scene, {
-        //   filesArray: ['models/MyTests/with_non_native_textures/textures/with_non_native_textures.bin'],
-        //   resourcePath: 'models/MyTests/with_non_native_textures/textures/'
+        // loadModel('models/Free/gltf/Mixamo/Jennifer/Jennifer.glb', scene, {
+        //   filesArray: ['models/Free/gltf/Mixamo/Jennifer/Animations_gltf/Idle.glb']
+        //   // resourcePath: 'models/MyTests/with_non_native_textures/textures/'
         // }).then((mesh) => {
         //   if (!mesh) return;
         //   scene.add(mesh);
@@ -404,7 +404,6 @@ export function Experience() {
             control={{
               label: 'Texture',
               view: 'texture',
-              // TODO: see what happens if scene.background is a color
               color: { type: 'float' },
               onChange: (...args: any[]) => {
                 console.log('Experience reacting to SceneBG value change', args);

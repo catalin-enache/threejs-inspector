@@ -132,7 +132,6 @@ const mergeAnimationsFromRestAssets = (
 };
 
 // TODO: check a foliage model to see how it works
-// TODO: loading a FBX (uppercase) file does not work. It is case sensitive. Need to fix it.
 // TODO: Check the hair between Mixamo Jennifer fbx and gltf. See why hair material is better handled by gltf.
 
 // to copy a model locally and ensure it is well constructed example:
@@ -200,7 +199,6 @@ export const loadModel = async (
   const multiAssetSources = sources.filter((source) =>
     ['.fbx', '.gltf', '.glb'].some((ext) => source.toLowerCase().endsWith(ext))
   );
-  // TODO: test loading via http multiple fbx files (with separate animations)
 
   if (multiAssetSources.length) {
     // dealing with fbx/gltf one or more files

@@ -353,7 +353,7 @@ export function Experience() {
         <meshPhysicalMaterial ref={doorMaterialRef} side={THREE.DoubleSide} />
       </mesh>
 
-      {/*<lightProbe color={'red'} />*/}
+      <lightProbe color={'blue'} position={[0, 0, 3]} />
 
       <perspectiveCamera
         args={[75, 1, 0.1, 100]} // window.innerWidth / window.innerHeight

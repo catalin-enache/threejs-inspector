@@ -134,7 +134,7 @@ const makeHelpers = (object: THREE.Object3D) => {
   const pickerIsNeeded = !hasSkeleton;
 
   const helperSize = useAppStore.getState().gizmoSize;
-  // TODO: check other included helpers (e.g. LightProbeHelper)
+  // TODO: check other included helpers (e.g. PositionalAudioHelper, OctreeHelper)
   helper = hasSkeleton
     ? new THREE.SkeletonHelper(object)
     : object instanceof THREE.Camera
@@ -353,6 +353,7 @@ const handleObjectAdded = (object: THREE.Object3D) => {
     (object as THREE.Light).isLight ||
     (object as THREE.Camera).isCamera ||
     object instanceof THREE.CubeCamera
+    // object instanceof THREE.PositionalAudio // TODO: investigate how to use PositionalAudio
   ) {
     // R3F does not add cameras to scene, so this check is not needed, but checking just in case
     if (
@@ -638,11 +639,11 @@ const SetUp = (props: SetUpProps) => {
       lastHitRef.current = hits[0] || null;
       const __inspectorData = lastHitRef.current?.object?.__inspectorData;
       // if we hit a picker or an inner mesh proxy, select the object it represents else select the object itself
-      setSelectedObject(
-        shouldSelectInside
-          ? lastHitRef.current?.object
-          : __inspectorData?.hitRedirect || lastHitRef.current?.object || null
-      );
+      const selectedObject = shouldSelectInside
+        ? lastHitRef.current?.object
+        : __inspectorData?.hitRedirect || lastHitRef.current?.object || null;
+      console.log('selectedObject', selectedObject); // this console should stay around
+      setSelectedObject(selectedObject);
     },
     [raycaster, pointer, camera, setSelectedObject, scene]
   );

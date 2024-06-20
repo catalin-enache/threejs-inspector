@@ -131,7 +131,6 @@ const mergeAnimationsFromRestAssets = (
   });
 };
 
-// TODO: check a foliage model to see how it works
 // TODO: Check the hair between Mixamo Jennifer fbx and gltf. See why hair material is better handled by gltf.
 
 // to copy a model locally and ensure it is well constructed example:

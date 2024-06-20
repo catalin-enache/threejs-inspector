@@ -7,9 +7,9 @@ import { CustomControl } from 'components/CustomControl/CustomControl';
 import { usePlay } from 'lib/hooks';
 import { degToRad } from 'lib/utils';
 import { createTexturesFromImages } from 'lib/utils/imageUtils';
-// import { TestIndexedCube3Materials } from './TestIndexedCube3Materials';
+import { TestIndexedCube3Materials } from './TestIndexedCube3Materials';
 // import { TestMorphTargets } from './TestMorphTargets';
-// import { recombineMeshesByMaterial } from 'lib/utils/recombineMeshes';
+import { splitMeshesByMaterial } from 'lib/utils/optimiseAsset';
 
 const stats = new Stats();
 document.body.appendChild(stats.dom);
@@ -222,9 +222,9 @@ export function Experience() {
         //   scene.add(mesh);
         // });
 
-        // const testIndexedCube3Materials = TestIndexedCube3Materials();
+        const testIndexedCube3Materials = TestIndexedCube3Materials();
         // const testMorphTargets = TestMorphTargets();
-        // const recombinedCube = recombineMeshesByMaterial(testIndexedCube3Materials);
+        const recombinedCube = splitMeshesByMaterial(testIndexedCube3Materials, {});
 
         // testIndexedCube3Materials.position.set(0, 0, 0);
         // recombinedCube.position.set(0, 3, 0);
@@ -232,12 +232,12 @@ export function Experience() {
 
         // these are not needed
         // testIndexedCube3Materials.__inspectorData.isInspectable = true;
-        // recombinedCube.__inspectorData.isInspectable = true;
+        recombinedCube.__inspectorData.isInspectable = true;
 
         // console.log('recombinedCube', { testIndexedCube3Materials, recombinedCube });
 
         // scene.add(testIndexedCube3Materials);
-        // scene.add(recombinedCube);
+        scene.add(recombinedCube);
         // scene.add(testMorphTargets);
       }
     );

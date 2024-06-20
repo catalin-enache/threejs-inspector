@@ -155,96 +155,97 @@ export function Experience() {
     // ['px', 'nx', 'py', 'ny', 'pz', 'nz'].map((t) => `textures/background/cube/MilkyWay/dark-s_${t}.jpg`)
     // ['px', 'nx', 'py', 'ny', 'pz', 'nz'].map((t) => `textures/background/cube/Park3Med/${t}.jpg`)
     // ['px', 'nx', 'py', 'ny', 'pz', 'nz'].map((t) => `textures/background/cube/skyboxsun25deg/${t}.jpg`)
-    createTexturesFromImages('textures/background/equirectangular/spruit_sunrise_4k.hdr.jpg', { gl }).then(
-      (textures) => {
-        // console.log('createTextureFromImages', textures);
-        const texture = textures[0];
-        texture.mapping =
-          texture instanceof THREE.CubeTexture
-            ? THREE.CubeRefractionMapping
-            : texture.image.width / texture.image.height === 2
-              ? THREE.EquirectangularRefractionMapping
-              : THREE.UVMapping;
-        // texture.mapping = THREE.EquirectangularReflectionMapping;
-        texture.needsUpdate = true;
-        // texture.colorSpace = THREE.SRGBColorSpace;
+    createTexturesFromImages(
+      ['px', 'nx', 'py', 'ny', 'pz', 'nz'].map((t) => `textures/background/cube/Park3Med/${t}.jpg`),
+      { gl }
+    ).then((textures) => {
+      // console.log('createTextureFromImages', textures);
+      const texture = textures[0];
+      texture.mapping =
+        texture instanceof THREE.CubeTexture
+          ? THREE.CubeRefractionMapping
+          : texture.image.width / texture.image.height === 2
+            ? THREE.EquirectangularRefractionMapping
+            : THREE.UVMapping;
+      // texture.mapping = THREE.EquirectangularReflectionMapping;
+      texture.needsUpdate = true;
+      // texture.colorSpace = THREE.SRGBColorSpace;
 
-        // const pmremGenerator = new THREE.PMREMGenerator(gl);
+      // const pmremGenerator = new THREE.PMREMGenerator(gl);
 
-        // pmremGenerator.compileEquirectangularShader();
-        // pmremGenerator.compileCubemapShader();
+      // pmremGenerator.compileEquirectangularShader();
+      // pmremGenerator.compileCubemapShader();
 
-        // const PMREMRenderTarget = pmremGenerator.fromCubemap(texture as THREE.CubeTexture);
-        // const PMREMRenderTarget = pmremGenerator.fromEquirectangular(texture);
-        // const PMREMRenderTarget = pmremGenerator.fromScene(scene);
-        // PMREMRenderTarget.texture.mapping = THREE.CubeUVReflectionMapping;
-        // texture.colorSpace = THREE.SRGBColorSpace;
-        // texture.copy(PMREMRenderTarget.texture);
-        // texture.source = PMREMRenderTarget.texture.source;
-        // texture.image = PMREMRenderTarget.texture.image;
-        // console.log('createTextureFromImages', {
-        //   texture,
-        //   PMREMRenderTarget,
-        //   'PMREMRenderTarget.texture': PMREMRenderTarget.texture
-        // });
-        // scene.background = PMREMRenderTarget.texture;
-        // scene.environment = PMREMRenderTarget.texture;
-        // texture.mapping = THREE.EquirectangularReflectionMapping;
-        scene.background = texture;
-        scene.environment = texture;
-        // texture.needsPMREMUpdate = true;
-        // texture.needsUpdate = true;
+      // const PMREMRenderTarget = pmremGenerator.fromCubemap(texture as THREE.CubeTexture);
+      // const PMREMRenderTarget = pmremGenerator.fromEquirectangular(texture);
+      // const PMREMRenderTarget = pmremGenerator.fromScene(scene);
+      // PMREMRenderTarget.texture.mapping = THREE.CubeUVReflectionMapping;
+      // texture.colorSpace = THREE.SRGBColorSpace;
+      // texture.copy(PMREMRenderTarget.texture);
+      // texture.source = PMREMRenderTarget.texture.source;
+      // texture.image = PMREMRenderTarget.texture.image;
+      // console.log('createTextureFromImages', {
+      //   texture,
+      //   PMREMRenderTarget,
+      //   'PMREMRenderTarget.texture': PMREMRenderTarget.texture
+      // });
+      // scene.background = PMREMRenderTarget.texture;
+      // scene.environment = PMREMRenderTarget.texture;
+      // texture.mapping = THREE.EquirectangularReflectionMapping;
+      scene.background = texture;
+      scene.environment = texture;
+      // texture.needsPMREMUpdate = true;
+      // texture.needsUpdate = true;
 
-        // loadModel('models/FromThreeRepo/ply/binary/Lucy100k.ply', scene, {}).then((mesh) => {
-        //   if (!mesh) return;
-        //   mesh.name = 'LoadedMesh';
-        //
-        //   const phongMaterial = new THREE.MeshPhongMaterial({
-        //     color: 0xffffff,
-        //     envMap: scene.background as THREE.Texture,
-        //     refractionRatio: 0.98
-        //   });
-        //
-        //   const s = 0.001;
-        //   (mesh as THREE.Mesh).material = phongMaterial;
-        //   mesh.position.set(1, 0, 2);
-        //   mesh.__inspectorData.isInspectable = true;
-        //   mesh.scale.x = mesh.scale.y = mesh.scale.z = s;
-        //
-        //   scene.add(mesh);
-        // });
+      // loadModel('models/FromThreeRepo/ply/binary/Lucy100k.ply', scene, {}).then((mesh) => {
+      //   if (!mesh) return;
+      //   mesh.name = 'LoadedMesh';
+      //
+      //   const phongMaterial = new THREE.MeshPhongMaterial({
+      //     color: 0xffffff,
+      //     envMap: scene.background as THREE.Texture,
+      //     refractionRatio: 0.98
+      //   });
+      //
+      //   const s = 0.001;
+      //   (mesh as THREE.Mesh).material = phongMaterial;
+      //   mesh.position.set(1, 0, 2);
+      //   mesh.__inspectorData.isInspectable = true;
+      //   mesh.scale.x = mesh.scale.y = mesh.scale.z = s;
+      //
+      //   scene.add(mesh);
+      // });
 
-        // models/Free/fbx/Asuna/2/FreeTestAnimations_reexport.fbx
-        // models/MyTests/having space in path/asset with space in path.fbx
-        // models/MyTests/with_non_default_textures/with_non_native_textures.fbx
-        // models/NonFree/Dark Elf Blader - Game Ready/Assets/Textures/DarkElfBlader_FBX_From3DsMax.fbx
-        // loadModel('models/Free/gltf/Mixamo/Jennifer/Jennifer.glb', scene, {
-        //   filesArray: ['models/Free/gltf/Mixamo/Jennifer/Animations_gltf/Idle.glb']
-        //   // resourcePath: 'models/MyTests/with_non_native_textures/textures/'
-        // }).then((mesh) => {
-        //   if (!mesh) return;
-        //   scene.add(mesh);
-        // });
+      // models/Free/fbx/Asuna/2/FreeTestAnimations_reexport.fbx
+      // models/MyTests/having space in path/asset with space in path.fbx
+      // models/MyTests/with_non_default_textures/with_non_native_textures.fbx
+      // models/NonFree/Dark Elf Blader - Game Ready/Assets/Textures/DarkElfBlader_FBX_From3DsMax.fbx
+      // loadModel('models/Free/gltf/Mixamo/Jennifer/Jennifer.glb', scene, {
+      //   filesArray: ['models/Free/gltf/Mixamo/Jennifer/Animations_gltf/Idle.glb']
+      //   // resourcePath: 'models/MyTests/with_non_native_textures/textures/'
+      // }).then((mesh) => {
+      //   if (!mesh) return;
+      //   scene.add(mesh);
+      // });
 
-        const testIndexedCube3Materials = TestIndexedCube3Materials();
-        // const testMorphTargets = TestMorphTargets();
-        const recombinedCube = splitMeshesByMaterial(testIndexedCube3Materials, {});
+      const testIndexedCube3Materials = TestIndexedCube3Materials();
+      // const testMorphTargets = TestMorphTargets();
+      const recombinedCube = splitMeshesByMaterial(testIndexedCube3Materials, {});
 
-        // testIndexedCube3Materials.position.set(0, 0, 0);
-        // recombinedCube.position.set(0, 3, 0);
-        // recombinedCube.name = 'recombinedCube';
+      // testIndexedCube3Materials.position.set(0, 0, 0);
+      // recombinedCube.position.set(0, 3, 0);
+      // recombinedCube.name = 'recombinedCube';
 
-        // these are not needed
-        // testIndexedCube3Materials.__inspectorData.isInspectable = true;
-        recombinedCube.__inspectorData.isInspectable = true;
+      // these are not needed
+      // testIndexedCube3Materials.__inspectorData.isInspectable = true;
+      recombinedCube.__inspectorData.isInspectable = true;
 
-        // console.log('recombinedCube', { testIndexedCube3Materials, recombinedCube });
+      // console.log('recombinedCube', { testIndexedCube3Materials, recombinedCube });
 
-        // scene.add(testIndexedCube3Materials);
-        scene.add(recombinedCube);
-        // scene.add(testMorphTargets);
-      }
-    );
+      // scene.add(testIndexedCube3Materials);
+      scene.add(recombinedCube);
+      // scene.add(testMorphTargets);
+    });
   }, []);
 
   return (

@@ -3,7 +3,16 @@ import * as THREE from 'three';
 import { HDRJPGLoader } from '@monogrid/gainmap-js'; // see ThreeJS example: webgl_loader_texture_hdrjpg.html
 import { useAppStore } from 'src/store';
 import { getNameAndType, getFileType } from '.';
-import { tiffLoader, exrLoader, textureLoader, hdrJpgLoader, rgbeLoader, tgaLoader, ktx2Loader } from './loaders';
+import {
+  tiffLoader,
+  exrLoader,
+  textureLoader,
+  hdrJpgLoader,
+  rgbeLoader,
+  tgaLoader,
+  ktx2Loader,
+  registerFiles
+} from './loaders';
 import { isValidTexture } from 'src/types';
 
 export const FILE_EXR = 'image/x-exr';
@@ -111,23 +120,18 @@ export const cubeTextureLoader = async (
 ): Promise<THREE.CubeTexture> => {
   const texture = new THREE.CubeTexture();
   const sortedFiles = sortFiles(files);
-  const revokableUrls: string[] = [];
+  registerFiles(sortedFiles); // takes care of calling URL.createObjectURL(file)
   const textures = (await Promise.all(
     sortedFiles.map((file) => {
       const { fileType, name } = getNameAndType(file, fileTypeMap);
-      // TODO: reuse default loading manager setURLModifier here
-      const url = file instanceof File ? URL.createObjectURL(file) : file;
-      revokableUrls.push(url);
       const loader = getImageLoader(fileType, name, gl);
-      return loader.loadAsync(url);
+      return loader.loadAsync(name);
     })
   )) as THREE.Texture[];
 
   textures.forEach((tempTexture: THREE.Texture, index) => {
     texture.images[index] = tempTexture instanceof THREE.DataTexture ? tempTexture : tempTexture.image;
   });
-
-  revokableUrls.forEach((url) => URL.revokeObjectURL(url));
 
   const { fileType } = getNameAndType(sortedFiles[0], fileTypeMap);
   const isLinear = fileType === FILE_EXR || fileType === FILE_HDR;

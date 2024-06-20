@@ -89,7 +89,7 @@ Bug: FBXLoader: DDS loader not found for Modular Military Character fbx. (maybe 
 
 See why it takes that long to select a complex object in the scene. Can cPanel be optimised or is it normal?
 
-Add default textures for non mesh imports and make it a PhysicalMaterial
+Add default textures for non mesh imports (PLY/STL) and make it a PhysicalMaterial
 
 Write doc about loading models.
 

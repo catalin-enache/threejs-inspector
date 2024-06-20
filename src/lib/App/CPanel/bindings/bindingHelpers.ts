@@ -136,8 +136,8 @@ const _buildBindings = (folder: FolderApi, object: any, bindings: any, params: C
 
   _buildParentBindings(folder, object, params);
 
-  Object.keys(bindings).forEach((key) => {
-    const bindingCandidate = bindings[key];
+  Object.keys(bindings).forEach((bindingKey) => {
+    const bindingCandidate = bindings[bindingKey];
 
     const isButton = bindingCandidate.title && bindingCandidate.label;
 
@@ -153,25 +153,25 @@ const _buildBindings = (folder: FolderApi, object: any, bindings: any, params: C
     }
 
     if (
-      key === 'title' ||
-      object[key] === undefined ||
-      object[key] === null ||
-      (object[key] instanceof THREE.Texture && !isValidTexture(object[key]))
+      bindingKey === 'title' ||
+      object[bindingKey] === undefined ||
+      object[bindingKey] === null ||
+      (object[bindingKey] instanceof THREE.Texture && !isValidTexture(object[bindingKey]))
     )
       return;
 
     // handle material case which can be a Material or an array of Materials
-    if (Array.isArray(object[key])) {
+    if (Array.isArray(object[bindingKey])) {
       // We do not need a Set here because we want to show everything as is.
-      object[key].forEach((item: any, index: number) => {
+      object[bindingKey].forEach((item: any, index: number) => {
         const subFolder = folder.addFolder({
-          title: `${key} ${index}`,
+          title: `${bindingKey} ${index}`,
           expanded: false
         });
         try {
           _buildBindings(subFolder, item, bindingCandidate, params);
         } catch (error) {
-          console.error('Error building bindings for', key, { error });
+          console.error('Error building bindings for', bindingKey, { error });
         }
       });
       return;
@@ -187,9 +187,9 @@ const _buildBindings = (folder: FolderApi, object: any, bindings: any, params: C
       });
       bindingCandidate.__parent = object;
       try {
-        _buildBindings(subFolder, object[key], bindingCandidate, params);
+        _buildBindings(subFolder, object[bindingKey], bindingCandidate, params);
       } catch (error) {
-        console.error('Error building bindings for', key, { error });
+        console.error('Error building bindings for', bindingKey, { error });
       }
 
       return;
@@ -201,9 +201,9 @@ const _buildBindings = (folder: FolderApi, object: any, bindings: any, params: C
     // Not all bindings have pickers but there's no harm in setting it inline even if there's no picker
     bindingCandidate.picker = 'inline';
 
-    const binding = folder.addBinding(object, key, bindingCandidate);
+    const binding = folder.addBinding(object, bindingKey, bindingCandidate);
     // @ts-ignore
-    if (object instanceof THREE.Material && object[key] instanceof THREE.Texture) {
+    if (object instanceof THREE.Material && object[bindingKey] instanceof THREE.Texture) {
       binding.on('change', (_evt) => {
         // @ts-ignore
         // console.log('change', { _evt, key, object, 'object[key]': object[key] });
@@ -220,7 +220,11 @@ const _buildBindings = (folder: FolderApi, object: any, bindings: any, params: C
 
     // Special kind of subFolder allowing a prop to be both a value and a folder.
     // For example a texture can be handled as a value, allowing changing the image and as a folder allowing changing other texture properties.
-    if (bindingCandidate.details) {
+    if (
+      bindingCandidate.details &&
+      // show details folder only if there are any details to show (scene.background can be a texture or a color, details are only for texture)
+      Object.keys(bindingCandidate.details).some((detailKey) => object[bindingKey]?.[detailKey] !== undefined)
+    ) {
       const subFolder = folder.addFolder({
         title: `${bindingCandidate.label} Details ${object.uuid.split('-')[0]}-${object.id}`,
         expanded: false
@@ -232,7 +236,7 @@ const _buildBindings = (folder: FolderApi, object: any, bindings: any, params: C
         subFolder.on(
           'change',
           bindingCandidate.details.onDetailsChange.bind(null, {
-            object: object[key],
+            object: object[bindingKey],
             folder: subFolder,
             bindings: bindingCandidate.details
           })
@@ -240,9 +244,9 @@ const _buildBindings = (folder: FolderApi, object: any, bindings: any, params: C
         delete bindingCandidate.details.onDetailsChange;
       }
       try {
-        _buildBindings(subFolder, object[key], bindingCandidate.details, params);
+        _buildBindings(subFolder, object[bindingKey], bindingCandidate.details, params);
       } catch (error) {
-        console.error('Error building bindings for', key, { error });
+        console.error('Error building bindings for', bindingKey, { error });
       }
     }
 

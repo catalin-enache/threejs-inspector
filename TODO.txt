@@ -71,6 +71,8 @@ Allow with shift + dblclick to select inside object *DONE*
 
 Bug: When loading via http fbx doesn't find textures in subfolder. *DONE*
 
+Handle multiple fbx/gltf imports (when animations or other things are separated) and merge them. *DONE*
+
 
 
 
@@ -86,20 +88,13 @@ The colors are different between gltf and fbx (see test_multi_features)
 
 Bug: FBXLoader: DDS loader not found for Modular Military Character fbx. (maybe a dds re-export would fix it)
 
-
 See why it takes that long to select a complex object in the scene. Can cPanel be optimised or is it normal?
 
 Add default textures for non mesh imports (PLY/STL) and make it a PhysicalMaterial
 
 Write doc about loading models.
 
-
-Handle multiple fbx/gltf imports (when animations or other things are separated) and merge them.
-Implement a deep merge.
-
 Handle the case where gltf comes with lights (LightsPunctualLamp.glb)
-Handle the case where gltf/fbx comes with animations. Try with multi gltf from mixamo as well.
-
 
 Could we add a use_pmremGenerator bool to inspector ?
 

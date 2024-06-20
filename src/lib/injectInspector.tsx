@@ -87,30 +87,18 @@ type InjectInspectorParams = {
   customParams?: any;
 };
 
-export const injectInspector = ({
-  renderer: gl,
-  scene,
-  camera,
-  frameloop = 'never', // 'always' | 'demand' | 'never'
-  orbitControls,
-  autoNavControls,
-  customParams
-}: InjectInspectorParams) => {
-  const canvasElement = document.querySelector('canvas');
-  if (!canvasElement) {
-    throw new Error('No canvas element found');
-  }
+const configureAndRender = (params: InjectInspectorParams) => {
+  const { renderer, scene, camera, frameloop, orbitControls, autoNavControls, customParams } = params;
 
-  root = root || createRoot(canvasElement);
-  root.configure({
+  root?.configure({
     events,
     camera,
     scene,
-    gl,
+    gl: renderer,
     frameloop
   });
 
-  root.render(
+  root?.render(
     React.createElement(Inspector, {
       orbitControls,
       autoNavControls,
@@ -118,21 +106,24 @@ export const injectInspector = ({
       version: ++version
     })
   );
+};
+
+export const injectInspector = (params: InjectInspectorParams) => {
+  const canvasElement = document.querySelector('canvas');
+  if (!canvasElement) {
+    throw new Error('No canvas element found');
+  }
+
+  root = root || createRoot(canvasElement);
+  configureAndRender(params);
 
   return {
     unmountInspector() {
       root?.unmount();
       root = null;
     },
-    updateCustomParams() {
-      root?.render(
-        React.createElement(Inspector, {
-          orbitControls,
-          autoNavControls,
-          customParams,
-          version: ++version
-        })
-      );
+    updateInspector(updateParams: Partial<InjectInspectorParams> = {}) {
+      configureAndRender({ ...params, ...updateParams });
     }
   };
 };

@@ -174,7 +174,7 @@
         }
       } );
 
-      updateCustomParams();
+      updateInspector();
 
       scene.add( object );
 
@@ -216,13 +216,13 @@
 
 
   // can be called multiple times with different options
-  const { updateCustomParams } = injectInspector({
+  const { updateInspector } = injectInspector({
     camera,
     scene,
     renderer,
     frameloop: 'always',
     orbitControls: controls,
-    autoNavControls: false,
+    autoNavControls: true,
     customParams
   });
 

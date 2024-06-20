@@ -71,7 +71,7 @@ export const setFullScreen = (isFullScreen: boolean) => {
 };
 
 export const degToRad = (deg: number) => (deg / 180) * Math.PI;
-export const radToDegFormatter = (rad: number) => ((rad / Math.PI) * 180).toFixed(3);
+export const radToDegFormatter = (rad: number) => ((rad / Math.PI) * 180).toFixed(1);
 
 export const focusCamera = ({
   transformControls,

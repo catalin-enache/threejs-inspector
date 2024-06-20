@@ -619,7 +619,8 @@ const SetUp = (props: SetUpProps) => {
 
   // On scene double click, set select object
   const onSceneDblClick = useCallback(
-    (_event: globalThis.MouseEvent) => {
+    (event: globalThis.MouseEvent) => {
+      const shouldSelectInside = event.shiftKey;
       scene.traverse((child) => {
         if (child instanceof THREE.SkinnedMesh) {
           // allow skinned mesh modified by animation to be selectable based on their current shape
@@ -637,7 +638,11 @@ const SetUp = (props: SetUpProps) => {
       lastHitRef.current = hits[0] || null;
       const __inspectorData = lastHitRef.current?.object?.__inspectorData;
       // if we hit a picker or an inner mesh proxy, select the object it represents else select the object itself
-      setSelectedObject(__inspectorData?.hitRedirect || lastHitRef.current?.object || null);
+      setSelectedObject(
+        shouldSelectInside
+          ? lastHitRef.current?.object
+          : __inspectorData?.hitRedirect || lastHitRef.current?.object || null
+      );
     },
     [raycaster, pointer, camera, setSelectedObject, scene]
   );

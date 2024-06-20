@@ -67,6 +67,9 @@ Bug: Changing rotation 90deg does not make it 90 but 90.012 *DONE* (expected: be
 
 See if we can reproduce CustomControls setup from existing Experience into the native ThreeJs example. *DONE* (yes we can)
 
+Allow with shift + dblclick to select inside object *DONE*
+
+
 
 
 When importing the same model multiple times allow to reselect the same materials and textures ore use prev mesh but make them instance meshes.
@@ -86,7 +89,7 @@ See why it takes that long to select a complex object in the scene. Can cPanel b
 Add default textures for non mesh imports and make it a PhysicalMaterial
 
 Write doc about loading models.
-Allow with ctrl + dblclick to select inside object
+
 
 Handle multiple fbx/gltf imports (when animations or other things are separated) and merge them.
 Implement a deep merge.

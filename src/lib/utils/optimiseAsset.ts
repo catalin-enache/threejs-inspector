@@ -256,13 +256,17 @@ export function splitMeshesByMaterial(root: THREE.Mesh | THREE.Group, { debug }:
       ? geometryClone.groups
       : [{ start: 0, count: geometryClone.index?.count ?? geometryClone.attributes.position.count, materialIndex: 0 }];
 
+    const maxMaterialIndexUsedInGroups = groups.reduce((acc, group) => {
+      return Math.max(acc, group.materialIndex || 0);
+    }, 0);
+
     // padding materials to match groups
-    if (meshMaterials.length < groups.length) {
-      console.warn('padding materials array with first material to match geometry groups length', {
+    if (meshMaterials.length < maxMaterialIndexUsedInGroups + 1) {
+      console.warn('padding materials array with first material to match geometry groups max materialIndex', {
         meshMaterialsLength: meshMaterials.length,
-        groupsLength: groups.length
+        maxMaterialIndexUsedInGroups
       });
-      for (let i = groups.length - meshMaterials.length; i > 0; i--) {
+      for (let i = maxMaterialIndexUsedInGroups + 1 - meshMaterials.length; i > 0; i--) {
         meshMaterials.push(meshMaterials[0]);
       }
     }

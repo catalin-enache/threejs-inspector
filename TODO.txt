@@ -58,15 +58,17 @@ Add control for scene fog, and other scene props. *DONE*
 
 See if we can use Custom tab when inspector is injected in the scene. *DONE*
 
+Check ALL_Asian_female.fbx make it indexed and recombine meshes. Observe lots of children (too many). *DONE* (we padded materials wrongly by mesh groups length - now we pad by max materialIndex used)
+Check ALL_Asian_female why is rendering slow ? It is a bout a hair mesh.
+
 Bug: Changing rotation 90deg does not make it 90 but 90.012
 
 See if we can reproduce CustomControls setup from existing Experience into the native ThreeJs example.
 
 Check if we remove the mixer for objects removed from the scene.
 
-Check ALL_Asian_female why is rendering slow ? It is a bout a hair mesh.
-Check ALL_Asian_female.fbx make it indexed and recombine meshes. Observe lots of children (too many).
-    - also just recombine meshes without making geometry indexed and debug Shoes mesh (the validation shows lots of inequalities)
+
+
 
 When importing the same model multiple times allow to reselect the same materials and textures ore use prev mesh but make them instance meshes.
 

@@ -5,6 +5,8 @@ import { BufferAttributeConstructor, TypedArrayConstructor } from 'src/types';
 // @ts-ignore
 import * as BufferGeometryUtils from 'lib/third_party/BufferGeometryUtils.js'; // fixed in my PR // TODO: revert to upstream after new ThreeJS release
 
+// only good to check when we know for sure that the old mesh has not been split into multiple meshes by materialIndex
+// in which case the new generated mesh must match all the geometry details of the old mesh
 // @ts-ignore
 const _verifyIntegrity = (newMesh: THREE.Mesh, oldMesh: THREE.Mesh) => {
   const newGeometry = newMesh.geometry;
@@ -163,7 +165,7 @@ const createAndAddNewMesh = (
   }
 
   if (debug) {
-    _verifyIntegrity(mergedMesh, oldMeshClone);
+    // _verifyIntegrity(mergedMesh, oldMeshClone);
   }
 
   // clone old animations (if any for old mesh name) into new ones targeting new mesh name (not removing yet old animations targeting old mesh name)

@@ -280,7 +280,7 @@ export const CPanel = () => {
       .on('change', handleSelectedObjectChanges);
 
     buildBindings(objectFolder, selectedObject, getObject3DBindings(commonGetterParams), commonGetterParams);
-  }, [selectedObjectUUID, angleFormat]);
+  }, [selectedObjectUUID, angleFormat, transformControlsMode, transformControlsSpace]);
 
   // Setup bindings for custom params
   useEffect(() => {

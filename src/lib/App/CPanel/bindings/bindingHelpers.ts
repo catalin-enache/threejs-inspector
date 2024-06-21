@@ -9,8 +9,6 @@ import { MaterialBindings } from './MaterialBindings';
 import { animate } from 'lib/utils/animate';
 import { isValidTexture } from 'src/types';
 
-const cachedBindings = new WeakMap<any, any>();
-
 export const numberFormat = (precision: number) => (value: number) => value.toFixed(precision);
 
 export const numberCommon = {
@@ -388,22 +386,42 @@ const _buildBindings = (folder: FolderApi, object: any, bindings: any, params: C
       folder.addBlade({
         view: 'separator'
       });
+      const materialsFolderTitle = `Materials Inventory (${materialsArray.length})`;
+      const materialsFolderUUID = object.uuid || 'no-id';
+      const materialsFolderMapID = `${materialsFolderTitle}-${materialsFolderUUID}`;
       const materialsFolder = folder.addFolder({
-        title: `Materials Inventory (${materialsArray.length})`,
-        expanded: false
+        title: materialsFolderTitle,
+        expanded: foldersExpandedMap[materialsFolderMapID] ?? false
       });
-      tweakFolder(materialsFolder, `${materialsFolder.title!}-${object.uuid || 'no-id'}`);
-      materialsArray.forEach((material, index) => {
-        const subFolder = materialsFolder.addFolder({
-          title: material.name || `Material ${index}`,
-          expanded: false
+      tweakFolder(materialsFolder, materialsFolderMapID);
+
+      const populateMaterialsFolder = () => {
+        materialsArray.forEach((material, index) => {
+          const subFolder = materialsFolder.addFolder({
+            title: material.name || `Material ${index}`,
+            expanded: false
+          });
+          try {
+            _buildBindings(subFolder, material, MaterialBindings(params), params);
+          } catch (error) {
+            console.error('Error building bindings for', material.name || material.uuid, { material, error });
+          }
         });
-        try {
-          _buildBindings(subFolder, material, MaterialBindings(params), params);
-        } catch (error) {
-          console.error('Error building bindings for', material.name || material.uuid, { material, error });
+      };
+
+      if (materialsFolder.expanded) {
+        populateMaterialsFolder();
+      }
+
+      materialsFolder.on('fold', (evt) => {
+        if (evt.expanded) {
+          // foldersExpandedMap[materialsFolderMapID] = true; // this is needed when populating children but not sure if it is needed here
+          populateMaterialsFolder();
+        } else {
+          cleanupContainer(materialsFolder);
         }
       });
+
       object.children.length &&
         folder.addBlade({
           view: 'separator'
@@ -442,32 +460,37 @@ const _buildBindings = (folder: FolderApi, object: any, bindings: any, params: C
     });
     tweakFolder(childrenFolder, `${childrenFolder.title!}-${object.uuid || 'no-id'}`);
     objectChildren.forEach(function (child: any) {
+      const childFolderTitle = child.name || child.uuid;
+      const childFolderUUID = child.uuid || 'no-id';
+      const childMapID = `${childFolderTitle}-${childFolderUUID}`;
       const childFolder = childrenFolder.addFolder({
-        title: `${child.name || child.uuid}`,
-        expanded: false
+        title: childFolderTitle,
+        expanded: foldersExpandedMap[childMapID] ?? false
       });
-      let hasBinding = cachedBindings.has(child);
-      if (hasBinding) {
+
+      const populateChildFolder = () => {
         try {
-          _buildBindings(childFolder, child, cachedBindings.get(child), params);
+          const newBindings = getObject3DBindings(params);
+          _buildBindings(childFolder, child, newBindings, params);
         } catch (error) {
-          console.error('Error building bindings for', child.name || child.uuid, { error });
+          console.error('Error building bindings for', childFolderTitle, { error });
         }
-      } else {
-        childFolder.on('fold', (evt) => {
-          if (evt.expanded && !hasBinding) {
-            try {
-              const newBindings = getObject3DBindings(params);
-              cachedBindings.set(child, newBindings);
-              hasBinding = true;
-              // lazy building bindings for children
-              _buildBindings(childFolder, child, newBindings, params);
-            } catch (error) {
-              console.error('Error building bindings for', child.name || child.uuid, { error });
-            }
-          }
-        });
+      };
+
+      if (childFolder.expanded) {
+        populateChildFolder();
       }
+
+      childFolder.on('fold', (evt) => {
+        if (evt.expanded) {
+          // preventing not showing content when expanded second time
+          foldersExpandedMap[childMapID] = true;
+          // lazy populate children
+          populateChildFolder();
+        } else {
+          cleanupContainer(childFolder);
+        }
+      });
     });
   }
 

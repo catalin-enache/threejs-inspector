@@ -7,13 +7,7 @@ import { PositionalAudioHelper } from 'three/examples/jsm/helpers/PositionalAudi
 import { ViewHelper } from 'three/examples/jsm/helpers/ViewHelper.js';
 
 export function getBoundingBoxSize(object: THREE.Object3D) {
-  const group = new THREE.Group();
-  object.traverse((child) => {
-    if (child instanceof THREE.Mesh) {
-      group.add(child.clone());
-    }
-  });
-  const box = new THREE.Box3().setFromObject(group);
+  const box = new THREE.Box3().setFromObject(object, true);
   const size = new THREE.Vector3();
   box.getSize(size);
   return size;
@@ -65,9 +59,9 @@ export function getSceneBoundingBoxSize(
   frustum.setFromProjectionMatrix(cameraViewProjectionMatrix);
 
   const visibleObjectsBoundingBox = new THREE.Box3();
-  scene.traverse((object) => {
-    if (!isExcluded(object, exclude) && !(object instanceof THREE.Scene)) {
-      const objectBoundingBox = new THREE.Box3().setFromObject(object);
+  scene.children.forEach((object) => {
+    if (!isExcluded(object, exclude)) {
+      const objectBoundingBox = new THREE.Box3().setFromObject(object, true);
       if (!useFrustum || frustum.intersectsBox(objectBoundingBox)) {
         visibleObjectsBoundingBox.union(objectBoundingBox);
       }

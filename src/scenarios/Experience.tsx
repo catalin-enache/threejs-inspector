@@ -102,6 +102,7 @@ export function Experience() {
   const [customControlXY, setCustomControlXY] = useState({ x: 0.5, y: 0.5 });
   // @ts-ignore
   const [number, setNumber] = useState(1.23);
+  const audioListenerRef = useRef<THREE.AudioListener>(new THREE.AudioListener());
 
   const customPropsRef = useRef({
     myImage: null,
@@ -354,6 +355,7 @@ export function Experience() {
       </mesh>
 
       <lightProbe color={'blue'} position={[0, 0, 3]} />
+      <positionalAudio args={[audioListenerRef.current]} position={[0, 0, 5]} />
 
       <perspectiveCamera
         args={[75, 1, 0.1, 100]} // window.innerWidth / window.innerHeight

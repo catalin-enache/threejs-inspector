@@ -4,6 +4,7 @@ import type { RectAreaLightHelper } from 'three/examples/jsm/helpers/RectAreaLig
 import type { LightProbeHelper } from 'three/examples/jsm/helpers/LightProbeHelper';
 import type { TransformControls } from 'three/examples/jsm/controls/TransformControls';
 import type { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
+import type { PositionalAudioHelper } from 'three/examples/jsm/helpers/PositionalAudioHelper';
 
 type __inspectorData = {
   fullData: any;
@@ -19,6 +20,7 @@ type __inspectorData = {
     | THREE.PointLightHelper
     | THREE.HemisphereLightHelper
     | LightProbeHelper
+    | PositionalAudioHelper
     | THREE.Mesh; // fallback meaningless helper
   isInspectable: boolean;
   useOnPlay: boolean;

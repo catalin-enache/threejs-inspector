@@ -6,6 +6,7 @@ import { TransformControls } from 'three/examples/jsm/controls/TransformControls
 import { RectAreaLightHelper } from 'three/examples/jsm/helpers/RectAreaLightHelper';
 import { RectAreaLightUniformsLib } from 'three/examples/jsm/lights/RectAreaLightUniformsLib';
 import { LightProbeHelper } from 'three/examples/jsm/helpers/LightProbeHelper';
+import { PositionalAudioHelper } from 'three/examples/jsm/helpers/PositionalAudioHelper';
 import { FlyControls } from 'lib/App/FlyControls';
 import { useAppStore } from 'src/store';
 import { focusCamera } from 'lib/utils';
@@ -109,6 +110,10 @@ const objectHasSkeleton = (object: THREE.Object3D) => {
   return hasSkeleton;
 };
 
+const shouldOwnItsHelper = (object: THREE.Object3D) => {
+  return [THREE.PositionalAudio].some((Type) => object instanceof Type);
+};
+
 const makeHelpers = (object: THREE.Object3D) => {
   let helper: THREE.Object3D['__inspectorData']['helper'];
 
@@ -121,6 +126,7 @@ const makeHelpers = (object: THREE.Object3D) => {
       object instanceof THREE.Light ||
       object instanceof THREE.Camera ||
       object instanceof THREE.CubeCamera ||
+      object instanceof THREE.PositionalAudio ||
       hasSkeleton
     )
   )
@@ -153,7 +159,9 @@ const makeHelpers = (object: THREE.Object3D) => {
                   ? new THREE.PointLightHelper(object as THREE.PointLight, helperSize)
                   : object instanceof THREE.CubeCamera
                     ? new THREE.Mesh()
-                    : new THREE.Mesh(); // meaningless helper
+                    : object instanceof THREE.PositionalAudio
+                      ? new PositionalAudioHelper(object as THREE.PositionalAudio, helperSize)
+                      : new THREE.Mesh(); // meaningless helper
 
   const meshGeometry =
     object instanceof THREE.DirectionalLight
@@ -226,7 +234,10 @@ const makeHelpers = (object: THREE.Object3D) => {
   if (object instanceof THREE.SpotLight) {
     picker.lookAt(object.target.position);
   }
-  // helper is added to the scene in handleObjectAdded function
+  // helper is added to the scene in handleObjectAdded function except helpers for these object types
+  if (shouldOwnItsHelper(object)) {
+    object.add(helper);
+  }
 
   useAppStore.subscribe(
     (appStore) => appStore.selectedObjectStateFake,
@@ -352,8 +363,8 @@ const handleObjectAdded = (object: THREE.Object3D) => {
     __inspectorData.isInspectable ||
     (object as THREE.Light).isLight ||
     (object as THREE.Camera).isCamera ||
-    object instanceof THREE.CubeCamera
-    // object instanceof THREE.PositionalAudio // TODO: investigate how to use PositionalAudio
+    object instanceof THREE.CubeCamera ||
+    object instanceof THREE.PositionalAudio
   ) {
     // R3F does not add cameras to scene, so this check is not needed, but checking just in case
     if (
@@ -376,7 +387,8 @@ const handleObjectAdded = (object: THREE.Object3D) => {
     } else {
       inspectableObjects[object.uuid] = object;
     }
-    if (__inspectorData.helper) {
+    // most helpers are added to the scene but some are added to the object itself (e.g. PositionalAudioHelper)
+    if (__inspectorData.helper && !shouldOwnItsHelper(object)) {
       dependantObjects[object.uuid] = [__inspectorData.helper];
       currentScene.add(__inspectorData.helper);
     }
@@ -638,11 +650,15 @@ const SetUp = (props: SetUpProps) => {
 
       lastHitRef.current = hits[0] || null;
       const __inspectorData = lastHitRef.current?.object?.__inspectorData;
-      // if we hit a picker or an inner mesh proxy, select the object it represents else select the object itself
-      const selectedObject = shouldSelectInside
-        ? lastHitRef.current?.object
-        : __inspectorData?.hitRedirect || lastHitRef.current?.object || null;
+      // if we hit a picker or an inner mesh proxy, select the object it represents (hitRedirect)
+      // else select the object itself (or inside it if shouldSelectInside)
+      const selectedObject =
+        shouldSelectInside && !lastHitRef.current?.object.__inspectorData.isPicker
+          ? lastHitRef.current?.object
+          : __inspectorData?.hitRedirect || lastHitRef.current?.object || null;
+
       console.log('selectedObject', selectedObject); // this console should stay around
+
       setSelectedObject(selectedObject);
     },
     [raycaster, pointer, camera, setSelectedObject, scene]

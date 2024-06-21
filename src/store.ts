@@ -184,7 +184,6 @@ export const useAppStore = create<AppStore>()(
       while (_path.length) {
         const section = _path.shift();
         if (section) {
-          // TODO: maybe be able to control when the folder should be expanded ?
           store[section] = store[section] || {};
           store = store[section];
         }

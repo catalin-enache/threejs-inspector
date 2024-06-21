@@ -1,10 +1,21 @@
 import { Controller, Value, ViewProps } from '@tweakpane/core';
-import { TextureView } from './view';
+import { TextureView, cacheMeshMap } from './view';
 import { createTexturesFromImages } from 'lib/utils/imageUtils';
 import * as THREE from 'three';
+import { useAppStore } from 'src/store';
 
 const cleanUp = (self: TextureController) => {
-  // console.log('cleanUp', self);
+  // cleanup cacheMeshMap when no object is selected
+  if (!useAppStore.getState().getSelectedObject()) {
+    cacheMeshMap.forEach((value) => {
+      value.mesh.geometry.dispose();
+      (value.mesh.material as THREE.MeshStandardMaterial).map?.dispose();
+      (value.mesh.material as THREE.MeshStandardMaterial).dispose();
+      value.mapTexture.dispose();
+    });
+    cacheMeshMap.clear();
+  }
+
   self.isMounted = false;
   window.removeEventListener('TweakpaneRemove', self.onRemoveHandler);
   self.view.input.removeEventListener('change', self.onFile);

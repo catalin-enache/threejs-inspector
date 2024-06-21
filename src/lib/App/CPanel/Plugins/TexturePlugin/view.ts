@@ -24,6 +24,8 @@ export interface TextureViewConfig {
   extensions: string[];
 }
 
+export const cacheMeshMap = new Map<string, { mesh: THREE.Mesh; mapTexture: THREE.Texture }>();
+
 export class TextureView implements View {
   public readonly element: HTMLElement;
   public readonly input: HTMLElement;
@@ -57,6 +59,11 @@ export class TextureView implements View {
   }
 
   private makeMeshFromTexture(texture: THREE.Texture) {
+    if (cacheMeshMap.has(texture.uuid)) {
+      const { mesh, mapTexture } = cacheMeshMap.get(texture.uuid)!;
+      thumbnailMaterial.uniforms.map.value = mapTexture;
+      return mesh;
+    }
     const { width, height } = getWidthHeightFromTexture(texture);
     const isCubeTexture = texture instanceof THREE.CubeTexture;
     const ratio = height / width;
@@ -69,7 +76,7 @@ export class TextureView implements View {
         ? texture.images[0] // if CubeTexture already contains Textures get the first one
         : texture.images[0].src
           ? new THREE.Texture(texture.images[0]) // else make a new Texture from the first image if it has src
-          : new THREE.DataTexture(new Uint8Array(4 * 16 * 16), 16, 16); // fallback texture
+          : new THREE.DataTexture(new Uint8Array(4 * 8 * 8), 8, 8); // fallback texture
 
     thumbnailMaterial.uniforms.map.value = mapTexture;
 
@@ -77,6 +84,9 @@ export class TextureView implements View {
     const material = hdrJpgMaterial || thumbnailMaterial;
     const newMesh = new THREE.Mesh(geometry, material);
     newMesh.name = 'TexturePluginMesh';
+    // caching the mesh since it seems it takes long to create it and influences CPanel re-rendering
+    // when certain things change (things that trigger CPanel re-construction like rad/deg rotation, TMode, TSpace, ...)
+    cacheMeshMap.set(texture.uuid, { mesh: newMesh, mapTexture });
     return newMesh;
   }
 
@@ -87,9 +97,7 @@ export class TextureView implements View {
     // const snapshot = renderer.domElement.toDataURL(); // take a snapshot of the offline canvas
     this.ctx.drawImage(offlineRenderer.domElement, 0, 0);
     offlineScene.remove(mesh);
-    mesh.geometry.dispose();
-    mesh.material.map?.dispose();
-    mesh.material.dispose();
+    // we dispose everything in cacheMeshMap in controller when no current object is selected
   }
 
   setIsLoading(isLoading: boolean) {

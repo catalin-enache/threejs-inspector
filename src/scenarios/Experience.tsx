@@ -30,10 +30,15 @@ function Box(
   const [alphaMap, setAlphaMap] = useState<THREE.Texture | null>(null);
   const meshMaterialRef = useRef<THREE.MeshStandardMaterial | null>(null);
   const { position = [0, 0, 0], mapURL, alphaMapURL, ...rest } = props;
-  usePlay((_state, _delta) => {
-    refMesh.current.rotation.x += _delta;
-    // refMesh.current.position.x = Math.sin(Date.now() / 1000);
-    // refMesh?.current && (refMesh.current.position.z = 2);
+  usePlay((playingState, _state, delta) => {
+    // console.log('Box usePlay', { playingState, _state, delta });
+    if (playingState === 'playing') {
+      refMesh.current.rotation.x += delta;
+      // refMesh.current.position.x = Math.sin(Date.now() / 1000);
+      // refMesh?.current && (refMesh.current.position.z = 2);
+    } else if (playingState === 'stopped') {
+      refMesh.current.rotation.x = 0;
+    }
   });
 
   useEffect(() => {
@@ -296,33 +301,33 @@ export function Experience() {
         penumbra={0.5}
       ></spotLight>
 
-      {/*<Box*/}
-      {/*  castShadow*/}
-      {/*  receiveShadow*/}
-      {/*  mapURL="textures/utils/checkerboard-8x8.png"*/}
-      {/*  position={[-1.2, customControlXY.x, customControlXY.y]}*/}
-      {/*  __inspectorData={{ isInspectable: true }}*/}
-      {/*  name="Box 1"*/}
-      {/*/>*/}
-      {/*<Box*/}
-      {/*  mapURL="textures/utils/checkerboard-8x8.png"*/}
-      {/*  alphaMapURL="textures/utils/checkerboard-8x8.png"*/}
-      {/*  position={[1.2, 0, 0]}*/}
-      {/*  __inspectorData={{ isInspectable: true }}*/}
-      {/*  castShadow*/}
-      {/*  receiveShadow*/}
-      {/*  name="Box 2"*/}
-      {/*>*/}
-      {/*  <mesh*/}
-      {/*    // receiveShadow*/}
-      {/*    position={[1.5, 0.5, 0]}*/}
-      {/*    __inspectorData={{ isInspectable: true }}*/}
-      {/*    name="Box 2 child"*/}
-      {/*  >*/}
-      {/*    <boxGeometry args={[1, 1, 1]} />*/}
-      {/*    <meshStandardMaterial />*/}
-      {/*  </mesh>*/}
-      {/*</Box>*/}
+      <Box
+        castShadow
+        receiveShadow
+        mapURL="textures/utils/checkerboard-8x8.png"
+        position={[-1.2, customControlXY.x, customControlXY.y]}
+        __inspectorData={{ isInspectable: true }}
+        name="Box 1"
+      />
+      <Box
+        mapURL="textures/utils/checkerboard-8x8.png"
+        alphaMapURL="textures/utils/checkerboard-8x8.png"
+        position={[1.2, 0, 0]}
+        __inspectorData={{ isInspectable: true }}
+        castShadow
+        receiveShadow
+        name="Box 2"
+      >
+        <mesh
+          // receiveShadow
+          position={[1.5, 0.5, 0]}
+          __inspectorData={{ isInspectable: true }}
+          name="Box 2 child"
+        >
+          <boxGeometry args={[1, 1, 1]} />
+          <meshStandardMaterial />
+        </mesh>
+      </Box>
       <mesh
         name="plane"
         rotation={[-1.5, 0, 0]}
@@ -362,7 +367,7 @@ export function Experience() {
         position={[-12.98, 3.963, 4.346]}
         name="myPerspectiveCamera"
         rotation={[degToRad(-42.342), degToRad(-65.604), degToRad(-39.706)]} // 25.86 , -46.13, 19.26
-        __inspectorData={{ useOnPlay: true }}
+        __inspectorData={{ useOnPlay: false }}
       />
 
       <cubeCamera

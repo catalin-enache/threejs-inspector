@@ -47,7 +47,6 @@ export const shallowClone = (value: any) => {
   return value;
 };
 
-// not used
 export const setFullScreen = (isFullScreen: boolean) => {
   const fullScreenOn = document.documentElement;
   const fullscreenElement =

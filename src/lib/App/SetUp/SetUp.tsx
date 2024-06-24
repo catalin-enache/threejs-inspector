@@ -287,11 +287,11 @@ const makeHelpers = (object: THREE.Object3D) => {
   );
 
   useAppStore.subscribe(
-    (appStore) => appStore.isPlaying,
-    (isPlaying) => {
+    (appStore) => appStore.playingState,
+    (playingState) => {
       // we don't need to remove helpers for default cameras since R3F does not add cameras to scene
       if (objectInspectorData.useOnPlay) {
-        if (isPlaying) {
+        if (['playing', 'paused'].includes(playingState)) {
           pickerIsNeeded && object.remove(picker);
           // since threeScene is global, we can access its latest value here
           currentScene.remove(helper);
@@ -455,7 +455,7 @@ const SetUp = (props: SetUpProps) => {
   const setAutoNavControls = useAppStore((state) => state.setAutoNavControls);
 
   const isEditorMode = useAppStore((state) => state.showGizmos || state.cPanelVisible);
-  const isPlaying = useAppStore((state) => state.isPlaying);
+  const playingState = useAppStore((state) => state.playingState);
   const cameraType = useAppStore((state) => state.cameraType);
 
   const selectedObjectUUID = useAppStore((state) => state.selectedObjectUUID);
@@ -515,7 +515,7 @@ const SetUp = (props: SetUpProps) => {
     // The currentCamera that we set here is only used in App.
     // It is ignored when injectInspector is used.
     const sceneInspectorData = scene.__inspectorData;
-    if (isPlaying) {
+    if (['playing', 'paused'].includes(playingState)) {
       sceneInspectorData.currentCamera = cameraToUseOnPlay || sceneInspectorData.currentCamera;
     } else {
       sceneInspectorData.currentCamera =
@@ -523,7 +523,7 @@ const SetUp = (props: SetUpProps) => {
     }
     // notify main App to re-render and send new camera into canvas
     useAppStore.getState().triggerCurrentCameraChanged();
-  }, [isPlaying, cameraType, scene, isInjected]);
+  }, [playingState, cameraType, scene, isInjected]);
 
   // Create orbit and transform controls (singletons) and attach transform controls to scene
   useEffect(() => {

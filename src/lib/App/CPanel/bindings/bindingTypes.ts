@@ -9,7 +9,7 @@ export type SceneObjects = {
 
 export type CommonGetterParams = {
   angleFormat: 'deg' | 'rad';
-  isPlaying: boolean;
+  playingState: 'playing' | 'paused' | 'stopped';
   sceneObjects: SceneObjects;
 };
 

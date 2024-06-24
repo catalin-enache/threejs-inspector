@@ -13,9 +13,8 @@ export interface AppStore {
   setIsInjected: (isInjected: boolean) => void;
   autoNavControls: boolean;
   setAutoNavControls: (autoNavControls: boolean) => void;
-  isPlaying: boolean;
-  setPlaying: (isPlaying: boolean) => void;
-  togglePlaying: () => void;
+  playingState: 'stopped' | 'playing' | 'paused';
+  setPlaying: (playingState: AppStore['playingState']) => void;
   angleFormat: 'deg' | 'rad';
   setAngleFormat: (angleFormat: 'deg' | 'rad') => void;
   toggleAngleFormat: () => void;
@@ -87,16 +86,10 @@ export const useAppStore = create<AppStore>()(
     setIsInjected: (isInjected) => set({ isInjected }),
     autoNavControls: false,
     setAutoNavControls: (autoNavControls) => set({ autoNavControls }),
-    isPlaying: false,
-    setPlaying: (isPlaying) => {
+    playingState: 'stopped',
+    setPlaying: (playingState) => {
       if (get().isDraggingTransformControls) return;
-      set({ isPlaying });
-    },
-    togglePlaying: () => {
-      if (get().isDraggingTransformControls) return;
-      set((state) => ({
-        isPlaying: !state.isPlaying
-      }));
+      set({ playingState });
     },
     angleFormat: 'deg',
     setAngleFormat: (angleFormat) => set({ angleFormat }),
@@ -111,11 +104,12 @@ export const useAppStore = create<AppStore>()(
     isFullscreen:
       // @ts-ignore
       document.fullscreenElement || document.webkitFullscreenElement,
-    toggleFullscreen: () =>
+    toggleFullscreen: () => {
       setFullScreen(
         // @ts-ignore
         !(document.fullscreenElement || document.webkitFullscreenElement)
-      ),
+      );
+    },
     transformControlsMode: 'translate',
     setTransformControlsMode: (mode) => set({ transformControlsMode: mode }),
     transformControlsSpace: 'world',

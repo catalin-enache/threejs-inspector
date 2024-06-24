@@ -4,7 +4,7 @@ import type { CommonGetterParams, onChange } from './bindingTypes';
 import { numberCommon } from 'lib/App/CPanel/bindings/bindingHelpers';
 
 // keys are not relevant for buttons
-export const SceneButtons = ({ isPlaying, sceneObjects: { camera, scene } }: CommonGetterParams) => ({
+export const SceneButtons = ({ playingState, sceneObjects: { camera, scene } }: CommonGetterParams) => ({
   0: {
     label: 'Full Screen Toggle( \\ | F11(native) )',
     title: 'Toggle Full Screen',
@@ -49,26 +49,23 @@ export const SceneButtons = ({ isPlaying, sceneObjects: { camera, scene } }: Com
     }) as onChange
   },
   4: {
-    label: 'Play/Stop ( Space|CAS+Space )',
-    title: isPlaying ? 'Stop' : 'Play',
+    label: 'Play/Pause ( Space|CAS+Space )',
+    title: playingState === 'playing' ? 'Pause' : 'Play',
     onClick: (() => {
-      useAppStore.getState().togglePlaying();
+      const currentPlayingState = useAppStore.getState().playingState;
+      useAppStore.getState().setPlaying(currentPlayingState === 'playing' ? 'paused' : 'playing');
     }) as onChange,
     if: () => !useAppStore.getState().isInjected
-    // TODO: we need play/pause/stop state
-    // label: 'Play State ( Space|CAS+Space )',
-    // view: 'radiogrid',
-    // groupName: 'playState',
-    // size: [2, 1],
-    // cells: (x: number, _y: number) => ({
-    //   title: x === 0 ? 'Play' : 'Stop',
-    //   value: x === 0 ? false : true
-    // }),
-    // onChange: ((_, evt) => {
-    //   useAppStore.getState().setPlaying(evt.value);
-    // }) as onChange
   },
   5: {
+    label: 'Stop ( Backspace|CAS+Backspace )',
+    title: 'Stop',
+    onClick: (() => {
+      useAppStore.getState().setPlaying('stopped');
+    }) as onChange,
+    if: () => !useAppStore.getState().isInjected
+  },
+  6: {
     label: 'Load Model',
     title: 'Load Model',
     onClick: (() => {

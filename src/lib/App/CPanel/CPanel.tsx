@@ -142,7 +142,7 @@ helpContainer.addEventListener('contextmenu', preventContextMenu);
 
 export const CPanel = () => {
   const { camera, scene, gl, raycaster } = useThree();
-  const isPlaying = useAppStore((state) => state.isPlaying);
+  const playingState = useAppStore((state) => state.playingState);
   const paneRef = useRef<Pane | null>(null);
   const cameraControl = useAppStore((state) => state.cameraControl);
   const attachDefaultControllersToPlayingCamera = useAppStore((state) => state.attachDefaultControllersToPlayingCamera);
@@ -168,8 +168,8 @@ export const CPanel = () => {
   // In later useEffects the dependencies are already the ones used here.
   // No need to add commonGetterParams as a dependency.
   const commonGetterParams: CommonGetterParams = useMemo(
-    () => ({ angleFormat, isPlaying, sceneObjects: { scene, camera, gl } }),
-    [angleFormat, isPlaying, scene, camera, gl]
+    () => ({ angleFormat, playingState, sceneObjects: { scene, camera, gl } }),
+    [angleFormat, playingState, scene, camera, gl]
   );
 
   const handleSelectedObjectChanges = useCallback(
@@ -387,7 +387,7 @@ export const CPanel = () => {
   }, [
     cPanelContinuousUpdate,
     angleFormat,
-    isPlaying,
+    playingState,
     cameraControl,
     attachDefaultControllersToPlayingCamera,
     cameraType,
@@ -415,7 +415,7 @@ export const CPanel = () => {
     gl,
     raycaster,
     angleFormat,
-    isPlaying,
+    playingState,
     cPanelStateFake
   ]);
 

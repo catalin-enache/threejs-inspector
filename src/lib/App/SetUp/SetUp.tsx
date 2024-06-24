@@ -152,7 +152,7 @@ const makeHelpers = (object: THREE.Object3D) => {
   const pickerIsNeeded = !hasSkeleton;
 
   const helperSize = useAppStore.getState().gizmoSize;
-  // TODO: check other included helpers (e.g. PositionalAudioHelper, OctreeHelper)
+  // TODO: check other included helpers (e.g. OctreeHelper)
   helper = hasSkeleton
     ? new THREE.SkeletonHelper(object)
     : object instanceof THREE.Camera

@@ -28,6 +28,7 @@ interface KeyListenerProps {
 
 export function KeyListener(props: KeyListenerProps) {
   const { isInjected = true, autoNavControls = false } = props;
+  const cPanelVisible = useAppStore((state) => state.cPanelVisible);
   const isEditorMode = useAppStore((state) => state.showGizmos || state.cPanelVisible);
   const { scene } = useThree();
   const keysPressed: any = {};
@@ -76,10 +77,10 @@ export function KeyListener(props: KeyListenerProps) {
           if (getAllMetaPressed(e)) useAppStore.getState().toggleCPanelVisibility();
           break;
         case 'KeyG':
-          if (getAllMetaPressed(e)) useAppStore.getState().toggleShowGizmos();
+          if (cPanelVisible || getAllMetaPressed(e)) useAppStore.getState().toggleShowGizmos();
           break;
         case 'KeyH':
-          if (getAllMetaPressed(e)) useAppStore.getState().toggleShowHelpers();
+          if (cPanelVisible || getAllMetaPressed(e)) useAppStore.getState().toggleShowHelpers();
           break;
         case 'Space':
           if (!isInjected && (isEditorMode || getAllMetaPressed(e))) {
@@ -147,6 +148,6 @@ export function KeyListener(props: KeyListenerProps) {
       window.removeEventListener('keydown', handleKeyDown);
       window.removeEventListener('keyup', handleKeyUp);
     };
-  }, [isEditorMode]);
+  }, [isEditorMode, cPanelVisible]);
   return null;
 }

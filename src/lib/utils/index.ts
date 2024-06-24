@@ -90,6 +90,33 @@ export const focusCamera = ({
     camera.lookAt(focusOn);
   }
 };
+export const resetCamera = ({
+  code,
+  camera,
+  orbitControls
+}: {
+  code: string;
+  camera?: THREE.Camera;
+  orbitControls?: OrbitControls | null;
+}) => {
+  if (!camera) return;
+  const distance = camera.position.length();
+  if (code === 'Numpad1') {
+    // front
+    camera.position.set(0, 0, distance);
+  } else if (code === 'Numpad7') {
+    // top
+    camera.position.set(0, distance, 0);
+  } else if (code === 'Numpad3') {
+    // right
+    camera.position.set(distance, 0, 0);
+  } else if (code === 'Numpad9') {
+    // inverse
+    camera.position.negate();
+  }
+  camera.lookAt(0, 0, 0);
+  orbitControls?.target.set(0, 0, 0);
+};
 
 export const FILE_UNKNOWN = 'unknown';
 

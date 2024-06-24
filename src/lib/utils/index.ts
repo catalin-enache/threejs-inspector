@@ -1,6 +1,3 @@
-import * as THREE from 'three';
-import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
-import { TransformControls } from 'three/examples/jsm/controls/TransformControls';
 import { isTextureImage, isValidTexture } from 'src/types';
 
 export const isObject = (value: any) => {
@@ -47,76 +44,8 @@ export const shallowClone = (value: any) => {
   return value;
 };
 
-export const setFullScreen = (isFullScreen: boolean) => {
-  const fullScreenOn = document.documentElement;
-  const fullscreenElement =
-    // @ts-ignore
-    document.fullscreenElement || document.webkitFullscreenElement;
-
-  const requestFullscreen =
-    // prettier-ignore
-    // @ts-ignore
-    (fullScreenOn.requestFullscreen || fullScreenOn.webkitRequestFullscreen).bind(fullScreenOn);
-  const exitFullscreen =
-    // prettier-ignore
-    // @ts-ignore
-    (document.exitFullscreen || document.webkitExitFullscreen).bind(document);
-
-  if (!fullscreenElement && isFullScreen) {
-    requestFullscreen();
-  } else {
-    fullscreenElement && exitFullscreen();
-  }
-};
-
 export const degToRad = (deg: number) => (deg / 180) * Math.PI;
 export const radToDegFormatter = (rad: number) => ((rad / Math.PI) * 180).toFixed(1);
-
-export const focusCamera = ({
-  transformControls,
-  orbitControls,
-  camera
-}: {
-  transformControls?: TransformControls | null;
-  orbitControls?: OrbitControls | null;
-  camera: THREE.Camera;
-}) => {
-  const focusOn = new THREE.Vector3(); // center of the stage by default
-  transformControls?.['object']?.getWorldPosition(focusOn);
-  if (orbitControls) {
-    orbitControls.target.copy(focusOn);
-    orbitControls.update();
-  } else {
-    camera.lookAt(focusOn);
-  }
-};
-export const resetCamera = ({
-  code,
-  camera,
-  orbitControls
-}: {
-  code: string;
-  camera?: THREE.Camera;
-  orbitControls?: OrbitControls | null;
-}) => {
-  if (!camera) return;
-  const distance = camera.position.length();
-  if (code === 'Numpad1') {
-    // front
-    camera.position.set(0, 0, distance);
-  } else if (code === 'Numpad7') {
-    // top
-    camera.position.set(0, distance, 0);
-  } else if (code === 'Numpad3') {
-    // right
-    camera.position.set(distance, 0, 0);
-  } else if (code === 'Numpad9') {
-    // inverse
-    camera.position.negate();
-  }
-  camera.lookAt(0, 0, 0);
-  orbitControls?.target.set(0, 0, 0);
-};
 
 export const FILE_UNKNOWN = 'unknown';
 

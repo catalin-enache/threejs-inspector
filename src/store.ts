@@ -3,7 +3,7 @@ import { subscribeWithSelector } from 'zustand/middleware';
 // import { devtools } from 'zustand/middleware';
 // import type {} from '@redux-devtools/extension'; // required for devtools typing
 import * as THREE from 'three';
-import { setFullScreen } from 'lib/utils';
+import { setFullScreen } from 'lib/utils/fullScreenUtils';
 
 const cPanelCustomParamsStore: any = {};
 let selectedObject: THREE.Object3D | null = null;

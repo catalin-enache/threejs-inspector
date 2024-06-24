@@ -9,7 +9,7 @@ import { LightProbeHelper } from 'three/examples/jsm/helpers/LightProbeHelper';
 import { PositionalAudioHelper } from 'three/examples/jsm/helpers/PositionalAudioHelper';
 import { FlyControls } from 'lib/App/FlyControls';
 import { useAppStore } from 'src/store';
-import { focusCamera } from 'lib/utils';
+import { focusCamera } from 'lib/utils/cameraUtils';
 
 Object.defineProperty(THREE.Object3D.prototype, '__inspectorData', {
   get: function () {

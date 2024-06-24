@@ -16,6 +16,7 @@ function parallelTraverse(
 export const cloneObject3D = (root: THREE.Object3D) => {
   const newRoot = SkeletonUtils.clone(root);
   Object.keys(root.__inspectorData).forEach((key) => {
+    // @ts-ignore
     newRoot.__inspectorData[key] = root.__inspectorData[key];
   });
   if (root.__inspectorData.hitRedirect === root) {

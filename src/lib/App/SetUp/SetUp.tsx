@@ -91,6 +91,18 @@ const updateCameras = () => {
   defaultOrthographicCamera.top = window.innerHeight / 2;
   defaultOrthographicCamera.bottom = window.innerHeight / -2;
   defaultOrthographicCamera.updateProjectionMatrix();
+
+  // update currentCamera knowledge about window re-size that might happened before play
+  if (cameraToUseOnPlay instanceof THREE.PerspectiveCamera) {
+    cameraToUseOnPlay.aspect = defaultPerspectiveCamera.aspect;
+    cameraToUseOnPlay.updateProjectionMatrix();
+  } else if (cameraToUseOnPlay instanceof THREE.OrthographicCamera) {
+    cameraToUseOnPlay.left = defaultOrthographicCamera.left;
+    cameraToUseOnPlay.right = defaultOrthographicCamera.right;
+    cameraToUseOnPlay.top = defaultOrthographicCamera.top;
+    cameraToUseOnPlay.bottom = defaultOrthographicCamera.bottom;
+    cameraToUseOnPlay.updateProjectionMatrix();
+  }
 };
 
 updateCameras();

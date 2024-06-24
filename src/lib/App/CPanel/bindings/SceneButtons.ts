@@ -26,14 +26,14 @@ export const SceneButtons = ({ playingState, sceneObjects: { camera, scene } }: 
     }) as onChange
   },
   2: {
-    label: 'Show Helpers ( CAS+H )',
+    label: 'Show Helpers ( H|CAS+H )',
     title: 'Toggle Helpers',
     onClick: (() => {
       useAppStore.getState().toggleShowHelpers();
     }) as onChange
   },
   3: {
-    label: 'Show Gizmos ( CAS+G )',
+    label: 'Show Gizmos ( G|CAS+G )',
     title: 'Toggle Gizmos',
     onClick: (() => {
       useAppStore.getState().toggleShowGizmos();

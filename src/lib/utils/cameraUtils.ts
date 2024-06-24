@@ -10,8 +10,9 @@ export const focusCamera = ({
 }: {
   transformControls?: TransformControls | null;
   orbitControls?: OrbitControls | null;
-  camera: THREE.Camera;
+  camera?: THREE.Camera;
 }) => {
+  if (!camera) return;
   const focusOn = new THREE.Vector3(); // center of the stage by default
   transformControls?.['object']?.getWorldPosition(focusOn);
   if (orbitControls) {

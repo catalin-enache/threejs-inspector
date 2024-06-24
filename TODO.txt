@@ -73,6 +73,7 @@ Bug: When loading via http fbx doesn't find textures in subfolder. *DONE*
 
 Handle multiple fbx/gltf imports (when animations or other things are separated) and merge them. *DONE*
 
+See why it takes that long to select a complex object in the scene. Can cPanel be optimised or is it normal? - *DONE* It was due to TexturePlugin (internal mesh creation)
 
 
 
@@ -87,8 +88,6 @@ Allow seeing bounding boxes and spheres for objects
 The colors are different between gltf and fbx (see test_multi_features)
 
 Bug: FBXLoader: DDS loader not found for Modular Military Character fbx. (maybe a dds re-export would fix it)
-
-See why it takes that long to select a complex object in the scene. Can cPanel be optimised or is it normal?
 
 Add default textures for non mesh imports (PLY/STL) and make it a PhysicalMaterial
 

@@ -9,7 +9,6 @@ import { LightProbeHelper } from 'three/examples/jsm/helpers/LightProbeHelper';
 import { PositionalAudioHelper } from 'three/examples/jsm/helpers/PositionalAudioHelper';
 import { FlyControls } from 'lib/App/FlyControls';
 import { useAppStore } from 'src/store';
-import { focusCamera } from 'lib/utils/cameraUtils';
 
 Object.defineProperty(THREE.Object3D.prototype, '__inspectorData', {
   get: function () {
@@ -466,7 +465,6 @@ const SetUp = (props: SetUpProps) => {
   const setIsInjected = useAppStore((state) => state.setIsInjected);
   const setAutoNavControls = useAppStore((state) => state.setAutoNavControls);
 
-  const isEditorMode = useAppStore((state) => state.showGizmos || state.cPanelVisible);
   const playingState = useAppStore((state) => state.playingState);
   const cameraType = useAppStore((state) => state.cameraType);
 
@@ -623,24 +621,6 @@ const SetUp = (props: SetUpProps) => {
       orbitControlsRef.current.enabled = cameraControl === 'orbit';
     }
   }, [camera, cameraControl, attachDefaultControllersToPlayingCamera]);
-
-  // Focus camera on 'F' key press
-  useEffect(() => {
-    const doFocusCamera = (evt: KeyboardEvent) => {
-      if (!isEditorMode) return;
-      if (evt.code === 'KeyF') {
-        focusCamera({
-          transformControls: transformControlsRef.current,
-          orbitControls: orbitControlsRef.current,
-          camera
-        });
-      }
-    };
-    document.addEventListener('keydown', doFocusCamera);
-    return () => {
-      document.removeEventListener('keydown', doFocusCamera);
-    };
-  }, [camera, isEditorMode]);
 
   // On scene double click, set select object
   const onSceneDblClick = useCallback(

@@ -2,6 +2,7 @@ import * as THREE from 'three';
 
 const frustum = new THREE.Frustum();
 const cameraViewProjectionMatrix = new THREE.Matrix4();
+// not used
 export function updateFrustum(camera: THREE.PerspectiveCamera | THREE.OrthographicCamera) {
   camera.updateMatrix();
   camera.updateMatrixWorld();
@@ -13,6 +14,7 @@ export function updateFrustum(camera: THREE.PerspectiveCamera | THREE.Orthograph
 
 const box = new THREE.Box3();
 const objWorldPosition = new THREE.Vector3();
+// not used
 export function isObjectVisibleInFrustum(obj: THREE.Object3D, withBoundingBox = false) {
   if (withBoundingBox) {
     box.setFromObject(obj);

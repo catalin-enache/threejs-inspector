@@ -106,11 +106,3 @@ export const getNameAndType = (
   const fileType = getFileType(name, fileTypeMap);
   return { name, fileType };
 };
-
-// TODO: not used // maybe implement this later
-// some transforms are irrelevant for some objects (like scale for camera or light)
-export const transformExcludeMap = {
-  scale: [THREE.SpotLight, THREE.DirectionalLight],
-  rotation: [THREE.SpotLight, THREE.DirectionalLight],
-  rotate: [THREE.SpotLight, THREE.DirectionalLight]
-};

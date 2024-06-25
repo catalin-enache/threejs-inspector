@@ -3,13 +3,15 @@ import type { CommonGetterParams, onChange } from './bindingTypes';
 import { numberCommon } from './bindingHelpers';
 import { radToDegFormatter } from 'lib/utils';
 import { MaterialBindings } from 'lib/App/CPanel/bindings/MaterialBindings';
+import { useAppStore } from 'src/store';
 
 // const isSkinnedMesh = (object: THREE.Object3D) => object instanceof THREE.SkinnedMesh;
 
 export const Object3DBindings = (params: CommonGetterParams) => ({
   id: {
     label: 'ID',
-    disabled: true
+    disabled: true,
+    format: (value: number) => value.toFixed(0)
   },
   uuid: {
     label: 'UUID',
@@ -29,9 +31,8 @@ export const Object3DBindings = (params: CommonGetterParams) => ({
   removeModel: {
     label: 'Remove',
     title: 'Remove',
-    onClick: (({ object }) => {
-      params.sceneObjects.scene.__inspectorData.transformControlsRef?.current?.detach();
-      object.parent?.remove(object);
+    onClick: (() => {
+      useAppStore.getState().deleteSelectedObject();
       // inspectable objects should be cleaned up already
     }) as onChange,
     if: (object: THREE.Object3D) => !!object.parent

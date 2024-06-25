@@ -6,7 +6,8 @@ import { numberCommon } from './bindingHelpers';
 export const SceneConfigBindings = (params: CommonGetterParams) => ({
   id: {
     label: 'ID',
-    disabled: true
+    disabled: true,
+    format: (value: number) => value.toFixed(0)
   },
   uuid: {
     label: 'UUID',

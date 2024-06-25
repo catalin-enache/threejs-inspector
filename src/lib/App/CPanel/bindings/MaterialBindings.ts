@@ -81,7 +81,8 @@ export const MaterialBindings = (params: CommonGetterParams) => {
     // TODO: Add: a way to show __inspectorData, userData
     id: {
       label: 'ID',
-      disabled: true
+      disabled: true,
+      format: (value: number) => value.toFixed(0)
     },
     uuid: {
       label: 'UUID',

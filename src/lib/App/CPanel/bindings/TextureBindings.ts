@@ -13,7 +13,8 @@ export const TextureBindings = (params: CommonGetterParams) => ({
   id: {
     label: 'ID',
     view: 'text',
-    disabled: true
+    disabled: true,
+    format: (value: number) => value.toFixed(0)
   },
   uuid: {
     label: 'UUID',

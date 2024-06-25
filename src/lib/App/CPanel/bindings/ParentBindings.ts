@@ -6,7 +6,8 @@ export const ParentBindings = (_params: CommonGetterParams) => ({
     id: {
       label: 'ID',
       view: 'text',
-      disabled: true
+      disabled: true,
+      format: (value: number) => value.toFixed(0)
     },
     uuid: {
       label: 'UUID',

@@ -371,7 +371,7 @@ const _buildBindings = (folder: FolderApi, object: any, bindings: any, params: C
     // root object
     const materials = new Set<THREE.Material>();
     object.traverse((child: THREE.Object3D) => {
-      if (child === object || child.__inspectorData.isPicker) return;
+      if (child === object || child.__inspectorData.isPicker || child.__inspectorData.isHelper) return;
       if (child instanceof THREE.Mesh && child.material) {
         // console.log('Material found', child.material);
         const matArray = Array.isArray(child.material) ? child.material : [child.material];
@@ -452,7 +452,9 @@ const _buildBindings = (folder: FolderApi, object: any, bindings: any, params: C
   const objectChildren =
     object instanceof THREE.Scene
       ? []
-      : object.children?.map((child: any) => !child.__inspectorData.isPicker && child).filter(Boolean) || [];
+      : object.children
+          ?.map((child: any) => !child.__inspectorData.isPicker && !child.__inspectorData.isHelper && child)
+          .filter(Boolean) || [];
   if (objectChildren.length) {
     const childrenFolder = folder.addFolder({
       title: `Children (${objectChildren.length})`,

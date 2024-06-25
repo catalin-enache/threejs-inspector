@@ -136,7 +136,6 @@ Add plugin for Animations
 Add plugin for Layers
 Add plugin for radio buttons
 Add plugin for file upload (Texture, CubeTexture and Mesh and everything)
-Add plugin for tree view,
 Add text display plugin; to be used in showing quaternion, userData and other readonly fields
 
 Add controls for scene

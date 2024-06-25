@@ -631,12 +631,8 @@ const SetUp = (props: SetUpProps) => {
 
     // Enable/Disable orbit controls
     // The playing camera is set by the App in the scene and received here after that
-    const isPlayingCamera = getIsPlayingCamera(camera);
-    if (isPlayingCamera) {
-      orbitControlsRef.current.enabled = attachDefaultControllersToPlayingCamera && cameraControl === 'orbit';
-    } else {
-      orbitControlsRef.current.enabled = cameraControl === 'orbit';
-    }
+    orbitControlsRef.current.enabled =
+      cameraControl === 'orbit' && (!getIsPlayingCamera(camera) || attachDefaultControllersToPlayingCamera);
   }, [camera, cameraControl, attachDefaultControllersToPlayingCamera]);
 
   // On scene double click, set select object

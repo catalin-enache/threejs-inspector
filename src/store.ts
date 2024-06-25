@@ -8,6 +8,23 @@ import { setFullScreen } from 'lib/utils/fullScreenUtils';
 const cPanelCustomParamsStore: any = {};
 let selectedObject: THREE.Object3D | null = null;
 
+const showAxisHelper = localStorage.getItem('threeInspector__showAxesHelper')
+  ? localStorage.getItem('threeInspector__showAxesHelper') === 'true'
+  : true;
+
+const showGridHelper = localStorage.getItem('threeInspector__showGridHelper')
+  ? localStorage.getItem('threeInspector__showGridHelper') === 'true'
+  : true;
+
+const showGizmos = localStorage.getItem('threeInspector__showGizmos')
+  ? localStorage.getItem('threeInspector__showGizmos') === 'true'
+  : true;
+
+const showHelpers =
+  showGizmos && localStorage.getItem('threeInspector__showHelpers')
+    ? localStorage.getItem('threeInspector__showHelpers') === 'true'
+    : true;
+
 export interface AppStore {
   isInjected: boolean;
   setIsInjected: (isInjected: boolean) => void;
@@ -127,27 +144,37 @@ export const useAppStore = create<AppStore>()(
     setTransformControlsSpace: (space) => set({ transformControlsSpace: space }),
     isDraggingTransformControls: false,
     setIsDraggingTransformControls: (isDraggingTransformControls) => set({ isDraggingTransformControls }),
-    showGizmos: true,
-    setShowGizmos: (showGizmos) => set({ showGizmos, showHelpers: showGizmos }),
+    showGizmos: showGizmos,
+    setShowGizmos: (showGizmos) => {
+      set({ showGizmos, showHelpers: showGizmos });
+      localStorage.setItem('threeInspector__showGizmos', showGizmos.toString());
+      localStorage.setItem('threeInspector__showHelpers', showGizmos.toString());
+    },
     toggleShowGizmos: () => {
       set((state) => ({
         showGizmos: !state.showGizmos,
         showHelpers: !state.showGizmos
       }));
+      localStorage.setItem('threeInspector__showGizmos', get().showGizmos.toString());
+      localStorage.setItem('threeInspector__showHelpers', get().showHelpers.toString());
     },
-    showHelpers: false,
-    setShowHelpers: (showHelpers) => set({ showHelpers }),
+    showHelpers: showHelpers,
+    setShowHelpers: (showHelpers) => {
+      set({ showHelpers });
+      localStorage.setItem('threeInspector__showHelpers', showHelpers.toString());
+    },
     toggleShowHelpers: () => {
       set((state) => ({
         showHelpers: !state.showHelpers
       }));
+      localStorage.setItem('threeInspector__showHelpers', get().showHelpers.toString());
     },
     gizmoSize: +(localStorage.getItem('threeInspector__gizmoSize') || 0.25),
     setGizmoSize: (gizmoSize) => {
       set({ gizmoSize });
       localStorage.setItem('threeInspector__gizmoSize', gizmoSize.toString());
     },
-    showAxesHelper: localStorage.getItem('threeInspector__showAxesHelper') === 'true',
+    showAxesHelper: showAxisHelper,
     setShowAxesHelper: (showAxesHelper) => {
       set({ showAxesHelper });
       localStorage.setItem('threeInspector__showAxesHelper', showAxesHelper.toString());
@@ -158,7 +185,7 @@ export const useAppStore = create<AppStore>()(
       }));
       localStorage.setItem('threeInspector__showAxesHelper', get().showAxesHelper.toString());
     },
-    showGridHelper: localStorage.getItem('threeInspector__showGridHelper') === 'true',
+    showGridHelper: showGridHelper,
     setShowGridHelper: (showGridHelper) => {
       set({ showGridHelper });
       localStorage.setItem('threeInspector__showGridHelper', showGridHelper.toString());

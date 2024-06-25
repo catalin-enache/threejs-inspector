@@ -25,6 +25,10 @@ const showHelpers =
     ? localStorage.getItem('threeInspector__showHelpers') === 'true'
     : true;
 
+const angleFormat = (
+  localStorage.getItem('threeInspector__angleFormat') ? localStorage.getItem('threeInspector__angleFormat') : 'deg'
+) as 'deg' | 'rad';
+
 export interface AppStore {
   isInjected: boolean;
   setIsInjected: (isInjected: boolean) => void;
@@ -119,12 +123,17 @@ export const useAppStore = create<AppStore>()(
       if (get().isDraggingTransformControls) return;
       set({ playingState });
     },
-    angleFormat: 'deg',
-    setAngleFormat: (angleFormat) => set({ angleFormat }),
-    toggleAngleFormat: () =>
+    angleFormat: angleFormat,
+    setAngleFormat: (angleFormat) => {
+      set({ angleFormat });
+      localStorage.setItem('threeInspector__angleFormat', angleFormat);
+    },
+    toggleAngleFormat: () => {
       set((state) => ({
         angleFormat: state.angleFormat === 'deg' ? 'rad' : 'deg'
-      })),
+      }));
+      localStorage.setItem('threeInspector__angleFormat', get().angleFormat);
+    },
     shiftKeyPressed: false,
     setShiftKeyPressed: (shiftKeyPressed) => set({ shiftKeyPressed }),
     controlKeyPressed: false,

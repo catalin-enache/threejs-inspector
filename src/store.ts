@@ -95,19 +95,27 @@ export const useAppStore = create<AppStore>()(
     setIsInjected: (isInjected) => set({ isInjected }),
     outlinerSearch: '',
     setOutlinerSearch: (outlinerSearch) => set({ outlinerSearch }),
-    showAxesHelper: true,
-    setShowAxesHelper: (showAxesHelper) => set({ showAxesHelper }),
+    showAxesHelper: localStorage.getItem('threeInspector__showAxesHelper') === 'true',
+    setShowAxesHelper: (showAxesHelper) => {
+      set({ showAxesHelper });
+      localStorage.setItem('threeInspector__showAxesHelper', showAxesHelper.toString());
+    },
     toggleShowAxesHelper: () => {
       set((state) => ({
         showAxesHelper: !state.showAxesHelper
       }));
+      localStorage.setItem('threeInspector__showAxesHelper', get().showAxesHelper.toString());
     },
-    showGridHelper: true,
-    setShowGridHelper: (showGridHelper) => set({ showGridHelper }),
+    showGridHelper: localStorage.getItem('threeInspector__showGridHelper') === 'true',
+    setShowGridHelper: (showGridHelper) => {
+      set({ showGridHelper });
+      localStorage.setItem('threeInspector__showGridHelper', showGridHelper.toString());
+    },
     toggleShowGridHelper: () => {
       set((state) => ({
         showGridHelper: !state.showGridHelper
       }));
+      localStorage.setItem('threeInspector__showGridHelper', get().showGridHelper.toString());
     },
     autoNavControls: false,
     setAutoNavControls: (autoNavControls) => set({ autoNavControls }),

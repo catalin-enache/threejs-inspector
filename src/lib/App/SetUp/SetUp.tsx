@@ -688,12 +688,12 @@ const SetUp = (props: SetUpProps) => {
     }
     orbitControlsRef.current = orbitControls || (autoNavControls ? new OrbitControls(camera, gl.domElement) : null);
     if (orbitControlsRef.current) {
-      orbitControlsRef.current.enabled = true;
+      orbitControlsRef.current.enabled = cameraControl === 'orbit';
       // orbitControlsRef.current.enableDamping = true;
       // orbitControlsRef.current.dampingFactor = 0.3;
       // orbitControlsRef.current.autoRotate = true;
     }
-  }, [orbitControls, autoNavControls, camera, gl]);
+  }, [orbitControls, cameraControl, autoNavControls, camera, gl]);
 
   const isPlayingCamera = getIsPlayingCamera(camera);
   const shouldUseFlyControls =

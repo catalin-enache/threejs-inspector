@@ -29,6 +29,18 @@ const angleFormat = (
   localStorage.getItem('threeInspector__angleFormat') ? localStorage.getItem('threeInspector__angleFormat') : 'deg'
 ) as 'deg' | 'rad';
 
+const cameraControl = (
+  localStorage.getItem('threeInspector__cameraControl')
+    ? localStorage.getItem('threeInspector__cameraControl')
+    : 'orbit'
+) as 'orbit' | 'fly';
+
+const cameraType = (
+  localStorage.getItem('threeInspector__cameraType')
+    ? localStorage.getItem('threeInspector__cameraType')
+    : 'perspective'
+) as 'perspective' | 'orthographic';
+
 export interface AppStore {
   isInjected: boolean;
   setIsInjected: (isInjected: boolean) => void;
@@ -282,27 +294,31 @@ export const useAppStore = create<AppStore>()(
     },
     loadModelIsOpen: false,
     setLoadModelIsOpen: (loadModelIsOpen) => set({ loadModelIsOpen }),
-    cameraControl: 'orbit',
+    cameraControl: cameraControl,
     setCameraControl: (cameraControl) => {
       if (get().isDraggingTransformControls) return;
       set({ cameraControl });
+      localStorage.setItem('threeInspector__cameraControl', cameraControl);
     },
     toggleCameraControl: () => {
       if (get().isDraggingTransformControls) return;
       set((state) => ({
         cameraControl: state.cameraControl === 'fly' ? 'orbit' : 'fly'
       }));
+      localStorage.setItem('threeInspector__cameraControl', get().cameraControl);
     },
-    cameraType: 'perspective', // Warning: orthographic camera does not work with CubeTexture for Scene.background
+    cameraType: cameraType, // Warning: orthographic camera does not work with CubeTexture for Scene.background
     setCameraType: (cameraType) => {
       if (get().isDraggingTransformControls) return;
       set({ cameraType });
+      localStorage.setItem('threeInspector__cameraType', cameraType);
     },
     toggleCameraType: () => {
       if (get().isDraggingTransformControls) return;
       set((state) => ({
         cameraType: state.cameraType === 'perspective' ? 'orthographic' : 'perspective'
       }));
+      localStorage.setItem('threeInspector__cameraType', get().cameraType);
     },
     currentCameraStateFake: 0,
     triggerCurrentCameraChanged: () => {

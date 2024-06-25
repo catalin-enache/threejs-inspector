@@ -16,6 +16,9 @@ export interface AppStore {
   showAxesHelper: boolean;
   setShowAxesHelper: (showAxesHelper: boolean) => void;
   toggleShowAxesHelper: () => void;
+  showGridHelper: boolean;
+  setShowGridHelper: (showGridHelper: boolean) => void;
+  toggleShowGridHelper: () => void;
   autoNavControls: boolean;
   setAutoNavControls: (autoNavControls: boolean) => void;
   playingState: 'stopped' | 'playing' | 'paused';
@@ -97,6 +100,13 @@ export const useAppStore = create<AppStore>()(
     toggleShowAxesHelper: () => {
       set((state) => ({
         showAxesHelper: !state.showAxesHelper
+      }));
+    },
+    showGridHelper: true,
+    setShowGridHelper: (showGridHelper) => set({ showGridHelper }),
+    toggleShowGridHelper: () => {
+      set((state) => ({
+        showGridHelper: !state.showGridHelper
       }));
     },
     autoNavControls: false,

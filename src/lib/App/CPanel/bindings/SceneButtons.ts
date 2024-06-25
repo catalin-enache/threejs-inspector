@@ -46,6 +46,13 @@ export const SceneButtons = ({ playingState, sceneObjects: { camera, scene } }: 
       useAppStore.getState().toggleShowAxesHelper();
     }) as onChange
   },
+  5: {
+    label: 'Toggle GridHelper',
+    title: 'Toggle GridHelper',
+    onClick: ((_) => {
+      useAppStore.getState().toggleShowGridHelper();
+    }) as onChange
+  },
   gizmoSize: {
     label: 'Gizmo Size (refresh page to take effect)',
     min: 0.1,
@@ -55,7 +62,7 @@ export const SceneButtons = ({ playingState, sceneObjects: { camera, scene } }: 
       useAppStore.getState().setGizmoSize(evt.value);
     }) as onChange
   },
-  5: {
+  6: {
     label: 'Play/Pause ( Space|CAS+Space )',
     title: playingState === 'playing' ? 'Pause' : 'Play',
     onClick: (() => {
@@ -64,7 +71,7 @@ export const SceneButtons = ({ playingState, sceneObjects: { camera, scene } }: 
     }) as onChange,
     if: () => !useAppStore.getState().isInjected
   },
-  6: {
+  7: {
     label: 'Stop ( Backspace|CAS+Backspace )',
     title: 'Stop',
     onClick: (() => {
@@ -72,7 +79,7 @@ export const SceneButtons = ({ playingState, sceneObjects: { camera, scene } }: 
     }) as onChange,
     if: () => !useAppStore.getState().isInjected
   },
-  7: {
+  8: {
     label: 'Load Model',
     title: 'Load Model',
     onClick: (() => {

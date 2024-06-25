@@ -162,6 +162,7 @@ export const CPanel = () => {
   const cPanelContinuousUpdate = useAppStore((state) => state.cPanelContinuousUpdate);
   const cPanelStateFake = useAppStore((state) => state.cPanelStateFake);
   const angleFormat = useAppStore((state) => state.angleFormat);
+  const showAxesHelper = useAppStore((state) => state.showAxesHelper);
 
   const cPanelVisible = useAppStore((state) => state.cPanelVisible);
   const setCPanelOpacity = useAppStore((state) => state.setCPanelOpacity);
@@ -448,6 +449,7 @@ export const CPanel = () => {
   return (
     <>
       <LoadModel scene={scene} />
+      {showAxesHelper && <axesHelper args={[1000]} />}
     </>
   );
 };

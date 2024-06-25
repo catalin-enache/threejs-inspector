@@ -13,6 +13,9 @@ export interface AppStore {
   setIsInjected: (isInjected: boolean) => void;
   outlinerSearch: string;
   setOutlinerSearch: (outlinerSearch: string) => void;
+  showAxesHelper: boolean;
+  setShowAxesHelper: (showAxesHelper: boolean) => void;
+  toggleShowAxesHelper: () => void;
   autoNavControls: boolean;
   setAutoNavControls: (autoNavControls: boolean) => void;
   playingState: 'stopped' | 'playing' | 'paused';
@@ -89,6 +92,13 @@ export const useAppStore = create<AppStore>()(
     setIsInjected: (isInjected) => set({ isInjected }),
     outlinerSearch: '',
     setOutlinerSearch: (outlinerSearch) => set({ outlinerSearch }),
+    showAxesHelper: true,
+    setShowAxesHelper: (showAxesHelper) => set({ showAxesHelper }),
+    toggleShowAxesHelper: () => {
+      set((state) => ({
+        showAxesHelper: !state.showAxesHelper
+      }));
+    },
     autoNavControls: false,
     setAutoNavControls: (autoNavControls) => set({ autoNavControls }),
     playingState: 'stopped',

@@ -377,8 +377,6 @@ export function Experience() {
         position={[-3, 0, 0]}
       />
 
-      <axesHelper args={[10]} />
-
       <CustomControl
         name={'myBool'}
         object={customPropsRef.current}

@@ -25,6 +25,7 @@ type __inspectorData = {
   isInspectable: boolean;
   useOnPlay: boolean;
   isPicker: boolean;
+  isHelper: boolean;
   currentCamera: THREE.PerspectiveCamera | THREE.OrthographicCamera;
   isRecombined: boolean;
   transformControlsRef: { current?: TransformControls | null };

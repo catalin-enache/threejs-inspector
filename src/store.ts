@@ -11,6 +11,8 @@ let selectedObject: THREE.Object3D | null = null;
 export interface AppStore {
   isInjected: boolean;
   setIsInjected: (isInjected: boolean) => void;
+  outlinerSearch: string;
+  setOutlinerSearch: (outlinerSearch: string) => void;
   autoNavControls: boolean;
   setAutoNavControls: (autoNavControls: boolean) => void;
   playingState: 'stopped' | 'playing' | 'paused';
@@ -73,9 +75,10 @@ export interface AppStore {
   toggleAttachDefaultControllersToPlayingCamera: () => void;
   selectedObjectUUID: string;
   getSelectedObject: () => THREE.Object3D | null;
-  setSelectedObject: (object: THREE.Object3D | null) => void;
+  setSelectedObject: (object?: THREE.Object3D | null) => void;
   selectedObjectStateFake: number;
   triggerSelectedObjectChanged: () => void;
+  deleteSelectedObject: () => void;
 }
 
 export const useAppStore = create<AppStore>()(
@@ -84,6 +87,8 @@ export const useAppStore = create<AppStore>()(
   subscribeWithSelector((set, get) => ({
     isInjected: true,
     setIsInjected: (isInjected) => set({ isInjected }),
+    outlinerSearch: '',
+    setOutlinerSearch: (outlinerSearch) => set({ outlinerSearch }),
     autoNavControls: false,
     setAutoNavControls: (autoNavControls) => set({ autoNavControls }),
     playingState: 'stopped',
@@ -250,7 +255,7 @@ export const useAppStore = create<AppStore>()(
       })),
     selectedObjectUUID: '',
     getSelectedObject: () => selectedObject,
-    setSelectedObject: (_selectedObject) => {
+    setSelectedObject: (_selectedObject = null) => {
       selectedObject = _selectedObject;
       set({
         selectedObjectUUID: _selectedObject?.uuid ?? ''
@@ -260,7 +265,28 @@ export const useAppStore = create<AppStore>()(
     triggerSelectedObjectChanged: () =>
       set((state) => ({
         selectedObjectStateFake: state.selectedObjectStateFake < 100 ? state.selectedObjectStateFake + 1 : 0
-      }))
+      })),
+    deleteSelectedObject: () => {
+      const object = get().getSelectedObject();
+
+      if (!object) return;
+
+      let scene = null;
+      let walker: THREE.Object3D | null = object;
+
+      while (walker) {
+        if (walker instanceof THREE.Scene) {
+          scene = walker;
+          break;
+        }
+        walker = walker.parent;
+      }
+
+      if (!scene) return;
+
+      scene.__inspectorData.transformControlsRef?.current?.detach();
+      object.removeFromParent();
+    }
   }))
   // )
 );

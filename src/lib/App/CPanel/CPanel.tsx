@@ -21,6 +21,8 @@ import {
 } from './bindings';
 import { buildBindings, cleanupContainer, buildCustomParams } from './bindings/bindingHelpers';
 // @ts-ignore
+import { outliner } from 'lib/third_party/ui.outliner';
+// @ts-ignore
 import { html } from '../../../../README.md';
 import { CommonGetterParams } from 'lib/App/CPanel/bindings/bindingTypes';
 import { LoadModel } from 'components/LoadModel/LoadModel';
@@ -140,6 +142,14 @@ const preventContextMenu = (evt: globalThis.MouseEvent) => {
 panelContainer.addEventListener('contextmenu', preventContextMenu);
 helpContainer.addEventListener('contextmenu', preventContextMenu);
 
+const searchInput = document.createElement('input');
+searchInput.placeholder = 'Search...';
+searchInput.classList.add('outlinerSearch');
+searchInput.classList.add('tp-txtv_i'); // reuse style from Tweakpane
+searchInput.addEventListener('input', (evt) => {
+  useAppStore.getState().setOutlinerSearch((evt.target as HTMLInputElement).value);
+});
+
 export const CPanel = () => {
   const { camera, scene, gl, raycaster } = useThree();
   const playingState = useAppStore((state) => state.playingState);
@@ -162,6 +172,8 @@ export const CPanel = () => {
 
   const cPanelCustomParams = useAppStore((state) => state.getCPanelCustomParams());
   const cPanelCustomParamsStructureStateFake = useAppStore((state) => state.cPanelCustomParamsStructureStateFake);
+  const cPanelCustomParamsTabWasSelected = useRef(false);
+  const globalTabWasSelected = useRef(false);
 
   const continuousUpdateRef = useRef<ReturnType<typeof makeContinuousUpdate> | null>(null);
 
@@ -199,6 +211,7 @@ export const CPanel = () => {
       return;
     }
 
+    console.log('Creating Pane');
     // The followings in current useEffect are for the first time setup
     paneRef.current = new Pane({
       container: panelContainer
@@ -214,6 +227,12 @@ export const CPanel = () => {
     [...pane.children[0].element.children[0].children].forEach((tab) => {
       tab.classList.add('cPanel-tab'); // to style them hover-able
     });
+
+    const tabs = pane.children[0] as TabApi;
+    const objectTab = tabs.pages[0];
+
+    objectTab.element.prepend(outliner.dom);
+    objectTab.element.prepend(searchInput);
   }, [cPanelVisible, cPanelContinuousUpdate]);
 
   // Dismiss Pane on unmount
@@ -243,12 +262,14 @@ export const CPanel = () => {
     const pane = paneRef.current;
     const hasCustomParams = Object.keys(cPanelCustomParams).length;
 
-    if (hasCustomParams && !selectedObjectUUID) {
+    if (hasCustomParams && !selectedObjectUUID && !cPanelCustomParamsTabWasSelected.current) {
       setSelectedTab(pane, 1);
+      cPanelCustomParamsTabWasSelected.current = true;
     } else if (selectedObjectUUID) {
       setSelectedTab(pane, 0);
-    } else {
+    } else if (!globalTabWasSelected.current) {
       setSelectedTab(pane, 2);
+      globalTabWasSelected.current = true;
     }
   }, [cPanelCustomParamsStructureStateFake, selectedObjectUUID]);
 
@@ -262,8 +283,13 @@ export const CPanel = () => {
 
     // Cleanup prev folders and their bindings
     cleanupContainer(objectTab);
-    if (!selectedObjectUUID) return;
+    if (!selectedObjectUUID) {
+      outliner.setValue(null);
+      return;
+    }
     const selectedObject = useAppStore.getState().getSelectedObject();
+    console.log('selectedObject', selectedObject);
+    outliner.setValue(selectedObject?.id, 10);
 
     buildBindings(
       objectTab as unknown as FolderApi,

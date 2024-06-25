@@ -138,6 +138,9 @@ export function KeyListener(props: KeyListenerProps) {
               camera: scene.__inspectorData.currentCamera
             });
           break;
+        case 'Delete':
+          isEditorMode && useAppStore.getState().deleteSelectedObject();
+          break;
         case 'ShiftLeft':
         case 'ShiftRight':
           useAppStore.getState().setShiftKeyPressed(false);

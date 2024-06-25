@@ -9,6 +9,9 @@ import { LightProbeHelper } from 'three/examples/jsm/helpers/LightProbeHelper';
 import { PositionalAudioHelper } from 'three/examples/jsm/helpers/PositionalAudioHelper';
 import { FlyControls } from 'lib/App/FlyControls';
 import { useAppStore } from 'src/store';
+import { refreshOutliner } from 'lib/third_party/outlinerHelpers';
+// @ts-ignore
+import { outliner } from 'lib/third_party/ui.outliner';
 
 Object.defineProperty(THREE.Object3D.prototype, '__inspectorData', {
   get: function () {
@@ -190,6 +193,7 @@ const makeHelpers = (object: THREE.Object3D) => {
                 : new THREE.BoxGeometry(helperSize, helperSize, helperSize); // generic mesh geometry
 
   helper.name = `helper for ${object.name || object.type || ''} ${object.uuid}`;
+  helper.__inspectorData.isHelper = true;
 
   picker = new THREE.Mesh(
     meshGeometry,
@@ -358,10 +362,11 @@ const cleanupAfterRemovedObject = (object: THREE.Object3D) => {
   });
 };
 
-const isSceneObject = (object: THREE.Object3D) => {
+const isCurrentSceneObject = (object: THREE.Object3D) => {
   // traverse up to the scene
   let parent = object.parent;
-  while (parent && !(parent instanceof THREE.Scene)) {
+  while (parent && parent !== currentScene) {
+    // we have another offline scene in TexturePlugin
     parent = parent.parent;
   }
   return parent !== null;
@@ -411,21 +416,24 @@ THREE.Object3D.prototype.add = (function () {
   return function (this: THREE.Object3D, ...objects: THREE.Object3D[]) {
     originalAdd.call(this, ...objects);
     objects.forEach((object) => {
-      if (isSceneObject(this)) {
+      if (isCurrentSceneObject(this)) {
         // console.log('Is scene object already', this.name || this.type || this.uuid, this);
         object.traverse((descendant) => {
           handleObjectAdded(descendant);
         });
-      } else if (this instanceof THREE.Scene) {
+        refreshOutliner({ scene: currentScene });
+      } else if (this === currentScene) {
         // console.log('Adding to scene', object.name || object.type || object.uuid, object);
         object.traverse((descendant) => {
           handleObjectAdded(descendant);
         });
+        refreshOutliner({ scene: currentScene });
       }
       // The last branch here would be if we add to a non-scene object.
       // In that case, we don't need to do anything.
       // It will be handled when it gets added to the scene in the second branch.
     });
+
     return this;
   };
 })();
@@ -433,6 +441,7 @@ THREE.Object3D.prototype.add = (function () {
 THREE.Object3D.prototype.remove = (function () {
   const originalRemove = THREE.Object3D.prototype.remove;
   return function (this: THREE.Object3D, ...objects: THREE.Object3D[]) {
+    const isSceneObject = objects.some(isCurrentSceneObject);
     // things to skip
     if (this instanceof THREE.CubeCamera) {
       // skip children cameras of a cubeCamera
@@ -445,6 +454,10 @@ THREE.Object3D.prototype.remove = (function () {
       }
     });
     originalRemove.call(this, ...objects);
+
+    if (isSceneObject) {
+      refreshOutliner({ scene: currentScene });
+    }
     return this;
   };
 })();
@@ -502,7 +515,11 @@ const SetUp = (props: SetUpProps) => {
     scene.__inspectorData.currentCamera = camera; // used in sizeUtils when importing model and in App when !isInjected
     scene.__inspectorData.orbitControlsRef = orbitControlsRef;
     scene.__inspectorData.transformControlsRef = transformControlsRef;
-    if (scene === currentScene) return; // prevent re-adding camera helpers once they were removed when playing
+    outliner.scene = scene;
+    if (scene === currentScene) {
+      // prevent re-adding camera helpers once they were removed when playing
+      return;
+    }
     // Transferring existing helpers.
     // Helpers were added to the threeScene (due to patching Object3D) before receiving here the replacement scene.
     scene.traverse((child) => {

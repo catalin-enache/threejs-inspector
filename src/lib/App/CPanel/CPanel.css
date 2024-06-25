@@ -201,5 +201,9 @@ by dispatching "transitionend" event which it seams that Tweakpane relies on
   text-transform: none;
 }
 
+#controlPanelContent .outlinerSearch {
+  padding: 0 26px;
+}
+
 
 

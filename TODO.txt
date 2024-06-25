@@ -106,6 +106,7 @@ Add top/left/bottom/right panel options
 
 Implement snapping
 
+Commit the assets that need to be available around.
 
 
 

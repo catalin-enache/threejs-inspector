@@ -8,7 +8,7 @@ import { CPanel } from './App/CPanel/CPanel';
 import { CustomControl } from 'components/CustomControl/CustomControl';
 // KeyListener depends on CPanel (sideEffect) to add in DOM CPanel elements to listen to
 import { KeyListener } from './App/KeyListener';
-// extend(THREE);
+extend(THREE);
 
 // singleton
 let root: ReconcilerRoot<HTMLCanvasElement> | null;

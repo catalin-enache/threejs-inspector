@@ -49,6 +49,12 @@ const cPanelSize = localStorage.getItem('threeInspector__cPanelSize')
   ? +(localStorage.getItem('threeInspector__cPanelSize') || 0)
   : 0;
 
+const attachDefaultControllersToPlayingCamera = localStorage.getItem(
+  'threeInspector__attachDefaultControllersToPlayingCamera'
+)
+  ? localStorage.getItem('threeInspector__attachDefaultControllersToPlayingCamera') === 'true'
+  : true;
+
 export interface AppStore {
   isInjected: boolean;
   setIsInjected: (isInjected: boolean) => void;
@@ -340,13 +346,23 @@ export const useAppStore = create<AppStore>()(
         currentCameraStateFake: state.currentCameraStateFake < 100 ? state.currentCameraStateFake + 1 : 0
       }));
     },
-    attachDefaultControllersToPlayingCamera: true,
-    setAttachDefaultControllersToPlayingCamera: (attachDefaultControllersToPlayingCamera) =>
-      set({ attachDefaultControllersToPlayingCamera }),
-    toggleAttachDefaultControllersToPlayingCamera: () =>
+    attachDefaultControllersToPlayingCamera: attachDefaultControllersToPlayingCamera,
+    setAttachDefaultControllersToPlayingCamera: (attachDefaultControllersToPlayingCamera) => {
+      set({ attachDefaultControllersToPlayingCamera });
+      localStorage.setItem(
+        'threeInspector__attachDefaultControllersToPlayingCamera',
+        attachDefaultControllersToPlayingCamera.toString()
+      );
+    },
+    toggleAttachDefaultControllersToPlayingCamera: () => {
       set((state) => ({
         attachDefaultControllersToPlayingCamera: !state.attachDefaultControllersToPlayingCamera
-      })),
+      }));
+      localStorage.setItem(
+        'threeInspector__attachDefaultControllersToPlayingCamera',
+        get().attachDefaultControllersToPlayingCamera.toString()
+      );
+    },
     selectedObjectUUID: '',
     getSelectedObject: () => selectedObject,
     setSelectedObject: (_selectedObject = null) => {

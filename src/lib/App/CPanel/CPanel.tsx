@@ -214,7 +214,6 @@ export const CPanel = () => {
       return;
     }
 
-    console.log('Creating Pane');
     // The followings in current useEffect are for the first time setup
     paneRef.current = new Pane({
       container: panelContainer

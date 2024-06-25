@@ -32,8 +32,10 @@ export const PaneBindings = (_params: CommonGetterParams) => {
       keyScale: 1,
       min: 280, // tuned in relation with cPanel binding-value width in CSS
       max: 800,
+      format: (value: number) => value.toFixed(0),
       onChange: ((_, evt) => {
         cPanelStyle.setProperty('--cPanelWidth', `${evt.value.toFixed(2)}px`);
+        useAppStore.getState().setCPanelSize(evt.value);
       }) as onChange
     },
     cPanelShowHelp: {

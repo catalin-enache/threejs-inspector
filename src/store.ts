@@ -45,6 +45,10 @@ const cPanelOpacity = localStorage.getItem('threeInspector__cPanelOpacity')
   ? +(localStorage.getItem('threeInspector__cPanelOpacity') || 0)
   : 0;
 
+const cPanelSize = localStorage.getItem('threeInspector__cPanelSize')
+  ? +(localStorage.getItem('threeInspector__cPanelSize') || 0)
+  : 0;
+
 export interface AppStore {
   isInjected: boolean;
   setIsInjected: (isInjected: boolean) => void;
@@ -233,8 +237,11 @@ export const useAppStore = create<AppStore>()(
       set({ cPanelOpacity });
       localStorage.setItem('threeInspector__cPanelOpacity', cPanelOpacity.toString());
     },
-    cPanelSize: 0,
-    setCPanelSize: (cPanelSize) => set({ cPanelSize }),
+    cPanelSize: cPanelSize,
+    setCPanelSize: (cPanelSize) => {
+      set({ cPanelSize });
+      localStorage.setItem('threeInspector__cPanelSize', cPanelSize.toString());
+    },
     cPanelVisible: true,
     setCPanelVisible: (cPanelVisible) => set({ cPanelVisible }),
     toggleCPanelVisibility: () => {

@@ -144,6 +144,7 @@ helpContainer.addEventListener('contextmenu', preventContextMenu);
 
 const searchInput = document.createElement('input');
 searchInput.placeholder = 'Search...';
+searchInput.spellcheck = false;
 searchInput.classList.add('outlinerSearch');
 searchInput.classList.add('tp-txtv_i'); // reuse style from Tweakpane
 searchInput.addEventListener('input', (evt) => {
@@ -246,8 +247,10 @@ export const CPanel = () => {
       .trim();
     !storedCPanelOpacity && setCPanelOpacity(currentOpacity);
     storedCPanelOpacity && docStyle.setProperty('--tp-base-background-opacity', storedCPanelOpacity);
+    const storedCPanelSize = localStorage.getItem('threeInspector__cPanelSize');
     const currentSize = parseInt(getComputedStyle(cPanelContainer).getPropertyValue('--cPanelWidth').trim(), 10);
-    setCPanelSize(currentSize);
+    !storedCPanelSize && setCPanelSize(currentSize);
+    storedCPanelSize && cPanelContainer.style.setProperty('--cPanelWidth', storedCPanelSize + 'px');
     return () => {
       continuousUpdateRef.current?.stop();
       paneRef.current?.dispose();

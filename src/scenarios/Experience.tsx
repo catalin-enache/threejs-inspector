@@ -256,50 +256,54 @@ export function Experience() {
 
   return (
     <>
-      <directionalLight
-        shadow-mapSize-width={2048}
-        shadow-mapSize-height={2048}
-        shadow-radius={4}
-        // shadow-bias={-0.001}
-        shadow-blurSamples={8}
-        castShadow
-        position={[2, 2, 2]}
-        scale={1}
-        intensity={4.5}
-        ref={refDirectionalLight}
-        color={'white'}
-        __inspectorData={{ isInspectable: false }}
-      ></directionalLight>
-      {/*<hemisphereLight*/}
-      {/*  // args={[0xffffff, 0xffffff, 2]}*/}
-      {/*  intensity={2}*/}
-      {/*  color={new THREE.Color().setHSL(0.6, 1, 0.6)}*/}
-      {/*  groundColor={new THREE.Color().setHSL(0.095, 1, 0.75)}*/}
-      {/*/>*/}
-      <ambientLight color={'#ffffff'} intensity={3.5} position={[0, 1, 0]} />
-      <rectAreaLight color={'deepskyblue'} position={[-3, 0, -8]} rotation={[-2.51, 0, 0]} intensity={6} />
-      <pointLight
-        castShadow
-        // shadow-mapSize={[2048, 2048]}
-        position={[0, -2, 0]}
-        color={'orange'}
-        // decay={0}
-        scale={1}
-        intensity={Math.PI}
-        ref={refPointLight}
-        __inspectorData={{ isInspectable: false }}
-      />
+      <group name="lights group">
+        <directionalLight
+          shadow-mapSize-width={2048}
+          shadow-mapSize-height={2048}
+          shadow-radius={4}
+          // shadow-bias={-0.001}
+          shadow-blurSamples={8}
+          castShadow
+          position={[2, 2, 2]}
+          scale={1}
+          intensity={4.5}
+          ref={refDirectionalLight}
+          color={'white'}
+          __inspectorData={{ isInspectable: false }}
+        ></directionalLight>
+        {/*<hemisphereLight*/}
+        {/*  // args={[0xffffff, 0xffffff, 2]}*/}
+        {/*  intensity={2}*/}
+        {/*  color={new THREE.Color().setHSL(0.6, 1, 0.6)}*/}
+        {/*  groundColor={new THREE.Color().setHSL(0.095, 1, 0.75)}*/}
+        {/*/>*/}
+        <ambientLight color={'#ffffff'} intensity={3.5} position={[0, 1, 0]} />
+        <rectAreaLight color={'deepskyblue'} position={[-3, 0, -8]} rotation={[-2.51, 0, 0]} intensity={6} />
+        <pointLight
+          castShadow
+          // shadow-mapSize={[2048, 2048]}
+          position={[0, -2, 0]}
+          color={'orange'}
+          // decay={0}
+          scale={1}
+          intensity={Math.PI}
+          ref={refPointLight}
+          __inspectorData={{ isInspectable: false }}
+        />
 
-      <spotLight
-        castShadow
-        position={[5.5, -0.7, 0.3]}
-        scale={1}
-        intensity={5.5}
-        distance={8}
-        color="deepskyblue"
-        angle={Math.PI / 8}
-        penumbra={0.5}
-      ></spotLight>
+        <spotLight
+          castShadow
+          position={[5.5, -0.7, 0.3]}
+          scale={1}
+          intensity={5.5}
+          distance={8}
+          color="deepskyblue"
+          angle={Math.PI / 8}
+          penumbra={0.5}
+        ></spotLight>
+
+        <lightProbe color={'blue'} position={[0, 0, 3]} />
+      </group>
 
       <Box
         castShadow
@@ -359,7 +363,6 @@ export function Experience() {
         <meshPhysicalMaterial ref={doorMaterialRef} side={THREE.DoubleSide} />
       </mesh>
 
-      <lightProbe color={'blue'} position={[0, 0, 3]} />
       <positionalAudio args={[audioListenerRef.current]} position={[0, 0, 5]} />
 
       <perspectiveCamera

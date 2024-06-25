@@ -126,6 +126,7 @@
 	margin: 0px 4px;
 	vertical-align: top;
 	text-align: center;
+	cursor: pointer;
 }
 
 	#outliner .opener.open:after {

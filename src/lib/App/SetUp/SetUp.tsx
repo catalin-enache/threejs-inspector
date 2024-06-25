@@ -628,12 +628,7 @@ const SetUp = (props: SetUpProps) => {
     orbitControlsRef.current.object = camera;
     orbitControlsRef.current.target.copy(targetPositionRef.current);
     orbitControlsRef.current.update();
-
-    // Enable/Disable orbit controls
-    // The playing camera is set by the App in the scene and received here after that
-    orbitControlsRef.current.enabled =
-      cameraControl === 'orbit' && (!getIsPlayingCamera(camera) || attachDefaultControllersToPlayingCamera);
-  }, [camera, cameraControl, attachDefaultControllersToPlayingCamera]);
+  }, [camera]);
 
   // On scene double click, set select object
   const onSceneDblClick = useCallback(
@@ -677,12 +672,17 @@ const SetUp = (props: SetUpProps) => {
   }, [gl, onSceneDblClick]);
 
   useEffect(() => {
+    // Enable/Disable orbit controls
+    // The playing camera is set by the App in the scene and received here after that
+
     if (orbitControlsRef.current) {
       // prevent having more orbit controls active at the same time
       // for the case where orbit controls are injected, and we don't need our default orbit controls active
       orbitControlsRef.current.enabled = false;
     }
+
     orbitControlsRef.current = orbitControls || (autoNavControls ? new OrbitControls(camera, gl.domElement) : null);
+
     if (orbitControlsRef.current) {
       orbitControlsRef.current.enabled =
         cameraControl === 'orbit' && (!getIsPlayingCamera(camera) || attachDefaultControllersToPlayingCamera);

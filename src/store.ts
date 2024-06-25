@@ -13,12 +13,6 @@ export interface AppStore {
   setIsInjected: (isInjected: boolean) => void;
   outlinerSearch: string;
   setOutlinerSearch: (outlinerSearch: string) => void;
-  showAxesHelper: boolean;
-  setShowAxesHelper: (showAxesHelper: boolean) => void;
-  toggleShowAxesHelper: () => void;
-  showGridHelper: boolean;
-  setShowGridHelper: (showGridHelper: boolean) => void;
-  toggleShowGridHelper: () => void;
   autoNavControls: boolean;
   setAutoNavControls: (autoNavControls: boolean) => void;
   playingState: 'stopped' | 'playing' | 'paused';
@@ -46,6 +40,12 @@ export interface AppStore {
   toggleShowHelpers: () => void;
   gizmoSize: number;
   setGizmoSize: (gizmoSize: number) => void;
+  showAxesHelper: boolean;
+  setShowAxesHelper: (showAxesHelper: boolean) => void;
+  toggleShowAxesHelper: () => void;
+  showGridHelper: boolean;
+  setShowGridHelper: (showGridHelper: boolean) => void;
+  toggleShowGridHelper: () => void;
   cPanelShowHelp: boolean;
   setCPanelShowHelp: (show: boolean) => void;
   toggleCPanelShowHelp: () => void;
@@ -95,28 +95,6 @@ export const useAppStore = create<AppStore>()(
     setIsInjected: (isInjected) => set({ isInjected }),
     outlinerSearch: '',
     setOutlinerSearch: (outlinerSearch) => set({ outlinerSearch }),
-    showAxesHelper: localStorage.getItem('threeInspector__showAxesHelper') === 'true',
-    setShowAxesHelper: (showAxesHelper) => {
-      set({ showAxesHelper });
-      localStorage.setItem('threeInspector__showAxesHelper', showAxesHelper.toString());
-    },
-    toggleShowAxesHelper: () => {
-      set((state) => ({
-        showAxesHelper: !state.showAxesHelper
-      }));
-      localStorage.setItem('threeInspector__showAxesHelper', get().showAxesHelper.toString());
-    },
-    showGridHelper: localStorage.getItem('threeInspector__showGridHelper') === 'true',
-    setShowGridHelper: (showGridHelper) => {
-      set({ showGridHelper });
-      localStorage.setItem('threeInspector__showGridHelper', showGridHelper.toString());
-    },
-    toggleShowGridHelper: () => {
-      set((state) => ({
-        showGridHelper: !state.showGridHelper
-      }));
-      localStorage.setItem('threeInspector__showGridHelper', get().showGridHelper.toString());
-    },
     autoNavControls: false,
     setAutoNavControls: (autoNavControls) => set({ autoNavControls }),
     playingState: 'stopped',
@@ -168,6 +146,28 @@ export const useAppStore = create<AppStore>()(
     setGizmoSize: (gizmoSize) => {
       set({ gizmoSize });
       localStorage.setItem('threeInspector__gizmoSize', gizmoSize.toString());
+    },
+    showAxesHelper: localStorage.getItem('threeInspector__showAxesHelper') === 'true',
+    setShowAxesHelper: (showAxesHelper) => {
+      set({ showAxesHelper });
+      localStorage.setItem('threeInspector__showAxesHelper', showAxesHelper.toString());
+    },
+    toggleShowAxesHelper: () => {
+      set((state) => ({
+        showAxesHelper: !state.showAxesHelper
+      }));
+      localStorage.setItem('threeInspector__showAxesHelper', get().showAxesHelper.toString());
+    },
+    showGridHelper: localStorage.getItem('threeInspector__showGridHelper') === 'true',
+    setShowGridHelper: (showGridHelper) => {
+      set({ showGridHelper });
+      localStorage.setItem('threeInspector__showGridHelper', showGridHelper.toString());
+    },
+    toggleShowGridHelper: () => {
+      set((state) => ({
+        showGridHelper: !state.showGridHelper
+      }));
+      localStorage.setItem('threeInspector__showGridHelper', get().showGridHelper.toString());
     },
     cPanelShowHelp: false,
     setCPanelShowHelp: (cPanelShowHelp) => set({ cPanelShowHelp }),

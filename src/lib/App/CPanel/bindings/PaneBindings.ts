@@ -18,8 +18,10 @@ export const PaneBindings = (_params: CommonGetterParams) => {
       ...numberCommon,
       min: 0,
       max: 1,
+      format: (value: number) => value.toFixed(2),
       onChange: ((_, evt) => {
         docStyle.setProperty('--tp-base-background-opacity', evt.value.toFixed(2));
+        useAppStore.getState().setCPanelOpacity(evt.value.toFixed(2));
       }) as onChange
     },
     cPanelSize: {

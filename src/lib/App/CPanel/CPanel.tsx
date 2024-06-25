@@ -239,10 +239,13 @@ export const CPanel = () => {
 
   // Dismiss Pane on unmount
   useEffect(() => {
+    const docStyle = document.documentElement.style;
+    const storedCPanelOpacity = localStorage.getItem('threeInspector__cPanelOpacity');
     const currentOpacity = +getComputedStyle(document.documentElement)
       .getPropertyValue('--tp-base-background-opacity')
       .trim();
-    setCPanelOpacity(currentOpacity);
+    !storedCPanelOpacity && setCPanelOpacity(currentOpacity);
+    storedCPanelOpacity && docStyle.setProperty('--tp-base-background-opacity', storedCPanelOpacity);
     const currentSize = parseInt(getComputedStyle(cPanelContainer).getPropertyValue('--cPanelWidth').trim(), 10);
     setCPanelSize(currentSize);
     return () => {

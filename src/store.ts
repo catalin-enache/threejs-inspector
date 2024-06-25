@@ -41,6 +41,10 @@ const cameraType = (
     : 'perspective'
 ) as 'perspective' | 'orthographic';
 
+const cPanelOpacity = localStorage.getItem('threeInspector__cPanelOpacity')
+  ? +(localStorage.getItem('threeInspector__cPanelOpacity') || 0)
+  : 0;
+
 export interface AppStore {
   isInjected: boolean;
   setIsInjected: (isInjected: boolean) => void;
@@ -224,8 +228,11 @@ export const useAppStore = create<AppStore>()(
         cPanelShowHelp: !state.cPanelShowHelp
       }));
     },
-    cPanelOpacity: 0,
-    setCPanelOpacity: (cPanelOpacity) => set({ cPanelOpacity }),
+    cPanelOpacity: cPanelOpacity,
+    setCPanelOpacity: (cPanelOpacity) => {
+      set({ cPanelOpacity });
+      localStorage.setItem('threeInspector__cPanelOpacity', cPanelOpacity.toString());
+    },
     cPanelSize: 0,
     setCPanelSize: (cPanelSize) => set({ cPanelSize }),
     cPanelVisible: true,

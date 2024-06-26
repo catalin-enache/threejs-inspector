@@ -36,7 +36,10 @@ const isExcluded = (object: THREE.Object3D, exclude: Set<THREE.Object3D>) => {
       walker instanceof RectAreaLightHelper ||
       walker instanceof PositionalAudioHelper ||
       walker instanceof ViewHelper ||
-      walker instanceof OctreeHelper
+      walker instanceof OctreeHelper ||
+      walker instanceof THREE.AxesHelper ||
+      walker instanceof THREE.GridHelper ||
+      walker instanceof THREE.PolarGridHelper
     ) {
       return true;
     }

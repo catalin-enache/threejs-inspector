@@ -269,6 +269,8 @@ export const CPanel = () => {
     const pane = paneRef.current;
     const hasCustomParams = Object.keys(cPanelCustomParams).length;
 
+    // Select CustomControls or Global tab only at init time.
+    // Select Selected tab everytime an object is selected.
     if (hasCustomParams && !selectedObjectUUID && !cPanelCustomParamsTabWasSelected.current) {
       setSelectedTab(pane, 1);
       cPanelCustomParamsTabWasSelected.current = true;
@@ -295,8 +297,7 @@ export const CPanel = () => {
       return;
     }
     const selectedObject = useAppStore.getState().getSelectedObject();
-    console.log('selectedObject', selectedObject);
-    outliner.setValue(selectedObject?.id, 10);
+    outliner.setValue(selectedObject?.id || null);
 
     buildBindings(
       objectTab as unknown as FolderApi,

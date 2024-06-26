@@ -124,7 +124,7 @@ const objectHasSkeleton = (object: THREE.Object3D) => {
   return hasSkeleton;
 };
 
-const shouldOwnItsHelper = (object: THREE.Object3D) => {
+const shouldContainItsHelper = (object: THREE.Object3D) => {
   return [THREE.PositionalAudio].some((Type) => object instanceof Type);
 };
 
@@ -250,7 +250,7 @@ const makeHelpers = (object: THREE.Object3D) => {
     picker.lookAt(object.target.position);
   }
   // helper is added to the scene in handleObjectAdded function except helpers for these object types
-  if (shouldOwnItsHelper(object)) {
+  if (shouldContainItsHelper(object)) {
     object.add(helper);
   }
 
@@ -404,7 +404,7 @@ const handleObjectAdded = (object: THREE.Object3D) => {
       inspectableObjects[object.uuid] = object;
     }
     // most helpers are added to the scene but some are added to the object itself (e.g. PositionalAudioHelper)
-    if (__inspectorData.helper && !shouldOwnItsHelper(object)) {
+    if (__inspectorData.helper && !shouldContainItsHelper(object)) {
       dependantObjects[object.uuid] = [__inspectorData.helper];
       currentScene.add(__inspectorData.helper);
     }

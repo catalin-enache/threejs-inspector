@@ -10,13 +10,14 @@ import { PositionalAudioHelper } from 'three/examples/jsm/helpers/PositionalAudi
 import { FlyControls } from 'lib/App/FlyControls';
 import { useAppStore } from 'src/store';
 import { refreshOutliner } from 'lib/third_party/outlinerHelpers';
+import type { __inspectorData } from 'tsExtensions';
 // @ts-ignore
 import { outliner } from 'lib/third_party/ui.outliner';
 
 Object.defineProperty(THREE.Object3D.prototype, '__inspectorData', {
   get: function () {
     if (!this._innerInspectorData) {
-      const __inspectorData: any = {};
+      const __inspectorData: Partial<__inspectorData> = {};
       const scope = this;
       Object.defineProperty(__inspectorData, 'isInspectable', {
         get: () => {
@@ -48,6 +49,13 @@ Object.defineProperty(THREE.Object3D.prototype, '__inspectorData', {
         },
         configurable: true
       });
+      Object.defineProperty(__inspectorData, 'dependantObjects', {
+        get: () => {
+          if (!this._dependantObjects) this._dependantObjects = [];
+          return this._dependantObjects;
+        },
+        configurable: true
+      });
       this._innerInspectorData = __inspectorData;
     }
     return this._innerInspectorData;
@@ -63,7 +71,6 @@ RectAreaLightUniformsLib.init(); // required for RectAreaLight
 const defaultScene = new THREE.Scene();
 let currentScene = defaultScene;
 const inspectableObjects: Record<string, THREE.Object3D> = {};
-const dependantObjects: Record<string, THREE.Object3D[]> = {};
 
 // ----------------------------------- Cameras >> -----------------------------------
 
@@ -249,6 +256,8 @@ const makeHelpers = (object: THREE.Object3D) => {
   if (object instanceof THREE.SpotLight) {
     picker.lookAt(object.target.position);
   }
+  object.__inspectorData.dependantObjects!.push(helper);
+
   // helper is added to the scene in handleObjectAdded function except helpers for these object types
   if (shouldContainItsHelper(object)) {
     object.add(helper);
@@ -257,17 +266,6 @@ const makeHelpers = (object: THREE.Object3D) => {
   useAppStore.subscribe(
     (appStore) => appStore.selectedObjectStateFake,
     () => {
-      const update =
-        helper instanceof RectAreaLightHelper
-          ? helper.updateMatrixWorld
-          : helper instanceof LightProbeHelper
-            ? helper.onBeforeRender
-            : 'update' in helper
-              ? helper.update
-              : () => {}; // updates object.matrixWorld
-
-      // @ts-ignore
-      update.call(helper);
       if (object instanceof THREE.Light) {
         // @ts-ignore
         object.color && picker.material.color.copy(object.color);
@@ -320,8 +318,32 @@ const makeHelpers = (object: THREE.Object3D) => {
   );
 };
 
+// update helpers for selected object when it is changed
+useAppStore.subscribe(
+  (appStore) => appStore.selectedObjectStateFake,
+  () => {
+    const selectedObject = useAppStore.getState().getSelectedObject();
+    selectedObject!.traverse((descendant) => {
+      descendant.__inspectorData.dependantObjects!.forEach((dependantObject) => {
+        const update =
+          dependantObject instanceof RectAreaLightHelper
+            ? dependantObject.updateMatrixWorld
+            : dependantObject instanceof LightProbeHelper
+              ? dependantObject.onBeforeRender
+              : 'update' in dependantObject
+                ? dependantObject.update
+                : () => {}; // updates object.matrixWorld
+        // @ts-ignore
+        update.call(dependantObject);
+      });
+    });
+  }
+);
+
 const destroy = (object: any) => {
-  if (object instanceof THREE.Mesh) {
+  if ('dispose' in object) {
+    object.dispose(); // for helpers
+  } else if (object instanceof THREE.Mesh) {
     const materials = Array.isArray(object.material) ? object.material : [object.material];
     materials.forEach((mat: THREE.Material) => {
       Object.keys(mat).forEach((key) => {
@@ -341,6 +363,12 @@ const cleanupAfterRemovedObject = (object: THREE.Object3D) => {
       currentScene.__inspectorData.transformControlsRef.current.detach();
     }
 
+    while (child.__inspectorData.dependantObjects!.length) {
+      const dependantObject = child.__inspectorData.dependantObjects!.pop()!;
+      dependantObject.removeFromParent();
+      destroy(dependantObject);
+    }
+
     // no need to destroy everything, geometries and materials might be reused
     if (child.__inspectorData.isPicker && child.__inspectorData.hitRedirect !== cameraToUseOnPlay) {
       // helpers and pickers for cameraToUseOnPlay needs to stay around
@@ -352,13 +380,6 @@ const cleanupAfterRemovedObject = (object: THREE.Object3D) => {
     if (cameraToUseOnPlay === child) {
       cameraToUseOnPlay = null;
     }
-
-    (dependantObjects[child.uuid] || []).forEach((dependantObject) => {
-      dependantObject.removeFromParent();
-      (dependantObject as any).dispose?.(); // for helpers
-    });
-
-    delete dependantObjects[child.uuid];
   });
 };
 
@@ -405,7 +426,6 @@ const handleObjectAdded = (object: THREE.Object3D) => {
     }
     // most helpers are added to the scene but some are added to the object itself (e.g. PositionalAudioHelper)
     if (__inspectorData.helper && !shouldContainItsHelper(object)) {
-      dependantObjects[object.uuid] = [__inspectorData.helper];
       currentScene.add(__inspectorData.helper);
     }
   }

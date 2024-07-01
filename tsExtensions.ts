@@ -6,7 +6,7 @@ import type { TransformControls } from 'three/examples/jsm/controls/TransformCon
 import type { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import type { PositionalAudioHelper } from 'three/examples/jsm/helpers/PositionalAudioHelper';
 
-type __inspectorData = {
+export type __inspectorData = {
   fullData: any;
   animations: THREE.AnimationClip[];
   hitRedirect: THREE.Object3D;
@@ -30,6 +30,7 @@ type __inspectorData = {
   isRecombined: boolean;
   transformControlsRef: { current?: TransformControls | null };
   orbitControlsRef: { current?: OrbitControls | null };
+  readonly dependantObjects: THREE.Object3D[];
   // specific to optimiseAsset flow
   geometryHasBeenIndexed: boolean;
   isDerivedMesh: boolean;

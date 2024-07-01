@@ -84,6 +84,8 @@ However, to test with multi texture bindings later
 
 
 
+Write doc about loading models.
+
 Get all calculations from old scene
 See how we can use labels/projections in the scene leveraging Drei (we have some old helpers for that)
 
@@ -94,19 +96,24 @@ Can we make an approach to share textures and materials between objects? (this i
 Could we add a use_pmremGenerator bool to inspector ?
 
 Show loaders when loading stuff as well as when building bindings
-Add loaders so that we can start the scene after everything was loaded
+Add loaders so that we can start the scene after everything was loaded.
+
+Commit the assets that need to be available around.
+
+Unit tests !!!!!!
+
+
+
 
 Allow seeing bounding boxes and spheres for objects.
-
 Use other helpers provided by ThreeJs (for seeing normals, tangents, see the helpers in the library)
+Note: normals helper, BoxHelper are not behaving as expected (not following animations, need custom implementation)
 
 Add controls for scene
 Show scene performance and statistics
-Add top/left/bottom/right panel options
+Add top/left/bottom/right panel options (note: existing implementations are buggy) - we already have 1,7,3,9 on numeric pad for this.
 
 Implement snapping
-
-Commit the assets that need to be available around.
 
 
 
@@ -121,8 +128,6 @@ The colors are different between gltf and fbx (see test_multi_features)
 Bug: FBXLoader: DDS loader not found for Modular Military Character fbx. (maybe a dds re-export would fix it)
 
 Add default textures for non mesh imports (PLY/STL) and make it a PhysicalMaterial
-
-Write doc about loading models.
 
 Handle the case where gltf comes with lights (LightsPunctualLamp.glb)
 

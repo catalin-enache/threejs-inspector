@@ -297,6 +297,7 @@ export const CPanel = () => {
       return;
     }
     const selectedObject = useAppStore.getState().getSelectedObject();
+    console.log('selectedObject', selectedObject); // this console should stay around
     outliner.setValue(selectedObject?.id || null);
 
     buildBindings(

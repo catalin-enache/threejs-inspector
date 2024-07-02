@@ -10,6 +10,7 @@ import { PositionalAudioHelper } from 'three/examples/jsm/helpers/PositionalAudi
 import { FlyControls } from 'lib/App/FlyControls';
 import { useAppStore } from 'src/store';
 import { refreshOutliner } from 'lib/third_party/outlinerHelpers';
+import { offlineScene } from 'lib/App/CPanel/offlineScene';
 import type { __inspectorData } from 'tsExtensions';
 // @ts-ignore
 import { outliner } from 'lib/third_party/ui.outliner';
@@ -383,14 +384,14 @@ const cleanupAfterRemovedObject = (object: THREE.Object3D) => {
   });
 };
 
-const isCurrentSceneObject = (object: THREE.Object3D) => {
+const isSceneObject = (object: THREE.Object3D) => {
   // traverse up to the scene
   let parent = object.parent;
-  while (parent && parent !== currentScene) {
-    // we have another offline scene in TexturePlugin
+  while (parent && !(parent instanceof THREE.Scene)) {
     parent = parent.parent;
   }
-  return parent !== null;
+  // we have another offline scene in TexturePlugin
+  return parent !== null && parent !== offlineScene;
 };
 
 // called for every child of an object only when added to the scene
@@ -418,7 +419,7 @@ const handleObjectAdded = (object: THREE.Object3D) => {
       // if multiple cameras are useOnPlay, only the last one will be considered
       cameraToUseOnPlay = object as THREE.PerspectiveCamera | THREE.OrthographicCamera;
     }
-    // picker appears in __inspectorData after makeHelpers
+    // picker appears in __inspectorData after makeHelpers is called
     if (__inspectorData.picker) {
       inspectableObjects[__inspectorData.picker.uuid] = __inspectorData.picker;
     } else {
@@ -431,19 +432,19 @@ const handleObjectAdded = (object: THREE.Object3D) => {
   }
 };
 
+// Be aware: the patch applies to the internal scene of TexturePlugin too.
 THREE.Object3D.prototype.add = (function () {
   const originalAdd = THREE.Object3D.prototype.add;
   return function (this: THREE.Object3D, ...objects: THREE.Object3D[]) {
     originalAdd.call(this, ...objects);
     objects.forEach((object) => {
-      if (isCurrentSceneObject(this)) {
+      if (isSceneObject(this)) {
         // console.log('Is scene object already', this.name || this.type || this.uuid, this);
         object.traverse((descendant) => {
           handleObjectAdded(descendant);
         });
         refreshOutliner({ scene: currentScene });
-      } else if (this === currentScene) {
-        // console.log('Adding to scene', object.name || object.type || object.uuid, object);
+      } else if (this instanceof THREE.Scene && this !== offlineScene) {
         object.traverse((descendant) => {
           handleObjectAdded(descendant);
         });
@@ -461,7 +462,7 @@ THREE.Object3D.prototype.add = (function () {
 THREE.Object3D.prototype.remove = (function () {
   const originalRemove = THREE.Object3D.prototype.remove;
   return function (this: THREE.Object3D, ...objects: THREE.Object3D[]) {
-    const isSceneObject = objects.some(isCurrentSceneObject);
+    const _isSceneObject = objects.some(isSceneObject);
     // things to skip
     if (this instanceof THREE.CubeCamera) {
       // skip children cameras of a cubeCamera
@@ -475,7 +476,7 @@ THREE.Object3D.prototype.remove = (function () {
     });
     originalRemove.call(this, ...objects);
 
-    if (isSceneObject) {
+    if (_isSceneObject) {
       refreshOutliner({ scene: currentScene });
     }
     return this;
@@ -676,8 +677,6 @@ const SetUp = (props: SetUpProps) => {
         shouldSelectInside && !lastHitRef.current?.object.__inspectorData.isPicker
           ? lastHitRef.current?.object
           : __inspectorData?.hitRedirect || lastHitRef.current?.object || null;
-
-      console.log('selectedObject', selectedObject); // this console should stay around
 
       setSelectedObject(selectedObject);
     },

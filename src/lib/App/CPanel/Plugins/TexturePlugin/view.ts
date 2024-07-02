@@ -2,19 +2,24 @@ import { ViewProps, View, ClassName } from '@tweakpane/core';
 import * as THREE from 'three';
 import './texturePlugin.css';
 import { getWidthHeightFromTexture, thumbnailMaterial } from 'lib/utils/imageUtils';
+import { offlineScene } from 'lib/App/CPanel/offlineScene';
 
-export const canvasSize = 512;
+const offlineCanvasSize = 512;
 
-const offlineScene = new THREE.Scene();
-const camera = new THREE.OrthographicCamera(canvasSize / -2, canvasSize / 2, canvasSize / 2, canvasSize / -2);
+const offlineOrthographicCamera = new THREE.OrthographicCamera(
+  offlineCanvasSize / -2,
+  offlineCanvasSize / 2,
+  offlineCanvasSize / 2,
+  offlineCanvasSize / -2
+);
 
-camera.near = 0.0001;
-camera.far = 2;
-camera.position.z = 1;
-camera.zoom = 1;
-camera.updateProjectionMatrix();
+offlineOrthographicCamera.near = 0.0001;
+offlineOrthographicCamera.far = 2;
+offlineOrthographicCamera.position.z = 1;
+offlineOrthographicCamera.zoom = 1;
+offlineOrthographicCamera.updateProjectionMatrix();
 const offlineRenderer = new THREE.WebGLRenderer();
-offlineRenderer.setSize(canvasSize, canvasSize);
+offlineRenderer.setSize(offlineCanvasSize, offlineCanvasSize);
 
 let debugID = 1;
 const className = ClassName('texture');
@@ -48,8 +53,8 @@ export class TextureView implements View {
     this.element.appendChild(this.input);
 
     this.canvas = doc.createElement('canvas');
-    this.canvas.width = canvasSize;
-    this.canvas.height = canvasSize;
+    this.canvas.width = offlineCanvasSize;
+    this.canvas.height = offlineCanvasSize;
     this.ctx = this.canvas.getContext('2d')!;
     this.canvas.classList.add(className('canvas'));
     this.canvas.classList.add('texturePlugin_canvas');
@@ -67,7 +72,7 @@ export class TextureView implements View {
     const { width, height } = getWidthHeightFromTexture(texture);
     const isCubeTexture = texture instanceof THREE.CubeTexture;
     const ratio = height / width;
-    const geometry = new THREE.PlaneGeometry(canvasSize, canvasSize * ratio);
+    const geometry = new THREE.PlaneGeometry(offlineCanvasSize, offlineCanvasSize * ratio);
     // @ts-ignore
     const hdrJpgMaterial = texture.__hdrJpgMaterial; // handling HDRJPGLoader
     const mapTexture = !isCubeTexture
@@ -93,7 +98,7 @@ export class TextureView implements View {
   changeImage(texture: THREE.Texture) {
     const mesh = this.makeMeshFromTexture(texture);
     offlineScene.add(mesh);
-    offlineRenderer.render(offlineScene, camera);
+    offlineRenderer.render(offlineScene, offlineOrthographicCamera);
     // const snapshot = renderer.domElement.toDataURL(); // take a snapshot of the offline canvas
     this.ctx.drawImage(offlineRenderer.domElement, 0, 0);
     offlineScene.remove(mesh);

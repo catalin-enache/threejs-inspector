@@ -55,6 +55,10 @@ const attachDefaultControllersToPlayingCamera = localStorage.getItem(
   ? localStorage.getItem('threeInspector__attachDefaultControllersToPlayingCamera') === 'true'
   : true;
 
+const destroyOnRemove = localStorage.getItem('threeInspector__destroyOnRemove')
+  ? localStorage.getItem('threeInspector__destroyOnRemove') === 'true'
+  : true;
+
 export interface AppStore {
   isInjected: boolean;
   setIsInjected: (isInjected: boolean) => void;
@@ -132,6 +136,9 @@ export interface AppStore {
   selectedObjectStateFake: number;
   triggerSelectedObjectChanged: () => void;
   deleteSelectedObject: () => void;
+  destroyOnRemove: boolean;
+  setDestroyOnRemove: (destroyOnRemove: boolean) => void;
+  toggleDestroyOnRemove: () => void;
 }
 
 export const useAppStore = create<AppStore>()(
@@ -396,6 +403,15 @@ export const useAppStore = create<AppStore>()(
 
       scene.__inspectorData.transformControlsRef?.current?.detach();
       object.removeFromParent();
+    },
+    destroyOnRemove: destroyOnRemove,
+    setDestroyOnRemove: (destroyOnRemove) => {
+      set({ destroyOnRemove });
+      localStorage.setItem('threeInspector__destroyOnRemove', destroyOnRemove.toString());
+    },
+    toggleDestroyOnRemove: () => {
+      set((state) => ({ destroyOnRemove: !state.destroyOnRemove }));
+      localStorage.setItem('threeInspector__destroyOnRemove', get().destroyOnRemove.toString());
     }
   }))
   // )

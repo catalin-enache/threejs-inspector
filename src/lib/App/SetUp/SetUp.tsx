@@ -370,9 +370,15 @@ const cleanupAfterRemovedObject = (object: THREE.Object3D) => {
       destroy(dependantObject);
     }
 
-    // no need to destroy everything, geometries and materials might be reused
-    if (child.__inspectorData.isPicker && child.__inspectorData.hitRedirect !== cameraToUseOnPlay) {
+    // No need to destroy everything, geometries and materials might be reused
+    const destroyOnRemove = useAppStore.getState().destroyOnRemove;
+    if (
+      (destroyOnRemove || child.__inspectorData.isPicker) &&
+      child.__inspectorData.hitRedirect !== cameraToUseOnPlay
+    ) {
       // helpers and pickers for cameraToUseOnPlay needs to stay around
+      // TODO: investigate. Renderer Info reports that geometries and textures are less (cleaned up to some extent)
+      // but memory (reported by Stats) is not released.
       destroy(child);
     }
 

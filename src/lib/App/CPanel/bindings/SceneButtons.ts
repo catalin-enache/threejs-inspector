@@ -53,15 +53,6 @@ export const SceneButtons = ({ playingState, sceneObjects: { camera, scene } }: 
       useAppStore.getState().toggleShowGridHelper();
     }) as onChange
   },
-  gizmoSize: {
-    label: 'Gizmo Size (refresh page to take effect)',
-    min: 0.1,
-    max: 20,
-    ...numberCommon,
-    onChange: ((_, evt) => {
-      useAppStore.getState().setGizmoSize(evt.value);
-    }) as onChange
-  },
   6: {
     label: 'Play/Pause ( Space|CAS+Space )',
     title: playingState === 'playing' ? 'Pause' : 'Play',
@@ -84,6 +75,22 @@ export const SceneButtons = ({ playingState, sceneObjects: { camera, scene } }: 
     title: 'Load Model',
     onClick: (() => {
       useAppStore.getState().setLoadModelIsOpen(true);
+    }) as onChange
+  },
+  destroyOnRemove: {
+    label: 'Destroy objects on Remove',
+    view: 'toggle',
+    onChange: ((_) => {
+      useAppStore.getState().toggleDestroyOnRemove();
+    }) as onChange
+  },
+  gizmoSize: {
+    label: 'Gizmo Size (refresh page to take effect)',
+    min: 0.1,
+    max: 20,
+    ...numberCommon,
+    onChange: ((_, evt) => {
+      useAppStore.getState().setGizmoSize(evt.value);
     }) as onChange
   }
 });

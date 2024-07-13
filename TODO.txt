@@ -104,6 +104,10 @@ Unit tests !!!!!!
 
 
 
+Add optimization such that when importing a new object
+if textures are already loaded (lookup by name) they are not loaded again (use already loaded ones).
+
+Investigate how well are things cleaned up when removing an object with destroyOnRemove option set in CPanel.
 
 Allow seeing bounding boxes and spheres for objects.
 Use other helpers provided by ThreeJs (for seeing normals, tangents, see the helpers in the library)

@@ -359,7 +359,8 @@ export const CPanel = () => {
     buildBindings(
       sceneFolder,
       {
-        gizmoSize: useAppStore.getState().gizmoSize
+        gizmoSize: useAppStore.getState().gizmoSize,
+        destroyOnRemove: useAppStore.getState().destroyOnRemove
       },
       getSceneButtons(commonGetterParams),
       commonGetterParams

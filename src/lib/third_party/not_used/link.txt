@@ -1,0 +1,2 @@
+lib used in ThreeJS
+https://millermedeiros.github.io/js-signals/

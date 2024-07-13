@@ -1,9 +1,7 @@
 import * as THREE from 'three';
 import { cloneObject3D } from './cloneObject3D';
 import { BufferAttributeConstructor, TypedArrayConstructor } from 'src/types';
-// import * as BufferGeometryUtils from 'three/examples/jsm/utils/BufferGeometryUtils';
-// @ts-ignore
-import * as BufferGeometryUtils from 'lib/third_party/BufferGeometryUtils.js'; // fixed in my PR // TODO: revert to upstream after new ThreeJS release
+import * as BufferGeometryUtils from 'three/examples/jsm/utils/BufferGeometryUtils';
 
 // only good to check when we know for sure that the old mesh has not been split into multiple meshes by materialIndex
 // in which case the new generated mesh must match all the geometry details of the old mesh

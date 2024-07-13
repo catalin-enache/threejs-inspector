@@ -13,8 +13,7 @@
   import * as THREE from 'three';
   import { injectInspector } from 'src/lib/injectInspector';
   import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
-  // import { FBXLoader } from 'three/addons/loaders/FBXLoader.js';
-  import { FBXLoader } from './lib/third_party/FBXLoader.js'; // TODO: use upstream one after fix PR is merged
+  import { FBXLoader } from 'three/addons/loaders/FBXLoader.js';
   import Stats from 'three/addons/libs/stats.module.js';
 
   const manager = new THREE.LoadingManager();

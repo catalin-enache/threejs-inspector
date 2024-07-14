@@ -5,6 +5,7 @@
     "lib": ["ES2023", "DOM", "DOM.Iterable"],
     "module": "ESNext",
     "skipLibCheck": true,
+    "types": ["node", "mocha"],
 
     /* Bundler mode */
     "moduleResolution": "Node",
@@ -12,6 +13,7 @@
     "allowSyntheticDefaultImports": true,
     "resolveJsonModule": true,
     "isolatedModules": true,
+    "esModuleInterop": true,
     "noEmit": true,
     "jsx": "react-jsx",
 

@@ -226,13 +226,17 @@ export function Experience() {
       // models/MyTests/having space in path/asset with space in path.fbx
       // models/MyTests/with_non_default_textures/with_non_native_textures.fbx
       // models/NonFree/Dark Elf Blader - Game Ready/Assets/Textures/DarkElfBlader_FBX_From3DsMax.fbx
-      // loadModel('models/Free/gltf/Mixamo/Jennifer/Jennifer.glb', scene, {
-      //   filesArray: ['models/Free/gltf/Mixamo/Jennifer/Animations_gltf/Idle.glb']
-      //   // resourcePath: 'models/MyTests/with_non_native_textures/textures/'
-      // }).then((mesh) => {
-      //   if (!mesh) return;
-      //   scene.add(mesh);
-      // });
+      // models/Free/gltf/Mixamo/Jennifer/Jennifer.glb
+      loadModel('models/Free/gltf/Mixamo/Jennifer/Jennifer.glb', scene, {
+        filesArray: [
+          'models/Free/gltf/Mixamo/Jennifer/Animations_gltf/Idle.glb',
+          'models/Free/gltf/Mixamo/Jennifer/Animations_gltf/Catwalk_Walk_Forward.glb'
+        ]
+        // resourcePath: 'models/MyTests/with_non_native_textures/textures/'
+      }).then((mesh) => {
+        if (!mesh) return;
+        scene.add(mesh);
+      });
 
       const testIndexedCube3Materials = TestIndexedCube3Materials();
       // const testMorphTargets = TestMorphTargets();

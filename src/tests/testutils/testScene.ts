@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import Stats from 'three/examples/jsm/libs/stats.module.js';
+import './testScene.css';
 
 let camera: THREE.PerspectiveCamera,
   scene: THREE.Scene,
@@ -14,18 +15,19 @@ function onWindowResize() {
   camera.aspect = window.innerWidth / window.innerHeight;
   camera.updateProjectionMatrix();
   renderer.setSize(window.innerWidth, window.innerHeight);
+  // console.log('onWindowResize', window.innerWidth, window.innerHeight);
 }
 
 function animate() {
   const delta = clock.getDelta();
   if (mixer) mixer.update(delta);
   renderer.render(scene, camera);
-  stats.update();
+  stats && stats.update();
 }
 
 function init() {
-  // const container = document.createElement('div');
-  // document.body.appendChild(container);
+  const canvas = document.createElement('canvas');
+  // document.body.appendChild(canvas);
 
   camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 2000);
   camera.position.set(100, 200, 300);
@@ -64,12 +66,11 @@ function init() {
   const axis = new THREE.AxesHelper(1000);
   scene.add(axis);
 
-  renderer = new THREE.WebGLRenderer({ antialias: true });
+  renderer = new THREE.WebGLRenderer({ antialias: true, canvas });
   renderer.setPixelRatio(window.devicePixelRatio);
   renderer.setSize(window.innerWidth, window.innerHeight);
   renderer.setAnimationLoop(animate);
   renderer.shadowMap.enabled = true;
-  document.body.appendChild(renderer.domElement);
 
   const controls = new OrbitControls(camera, renderer.domElement);
   controls.target.set(0, 100, 0);
@@ -77,17 +78,46 @@ function init() {
 
   window.addEventListener('resize', onWindowResize);
 
-  // stats
   stats = new Stats();
-  document.body.appendChild(stats.dom);
+  // document.body.appendChild(stats.dom);
+
+  const removeScene = () => {
+    canvas.parentNode?.removeChild(canvas);
+    stats.dom.parentNode?.removeChild(stats.dom);
+  };
+
+  const addScene = () => {
+    document.body.appendChild(canvas);
+    document.body.appendChild(stats.dom);
+    return scene;
+  };
+
+  const withScene =
+    (timeout: number) =>
+    (
+      fn: (sceneObjects: {
+        scene: THREE.Scene;
+        camera: THREE.PerspectiveCamera;
+        mixer: THREE.AnimationMixer;
+        renderer: THREE.WebGLRenderer;
+        clock: THREE.Clock;
+      }) => () => void
+    ) => {
+      addScene();
+      const cleanUp = fn({ scene, camera, mixer, renderer, clock });
+      setTimeout(() => {
+        cleanUp && cleanUp();
+        removeScene();
+      }, timeout);
+    };
+
+  return {
+    withScene,
+    removeScene,
+    addScene
+  };
 }
 
-init();
+const { withScene } = init();
 
-export const getScene = () => ({
-  scene,
-  camera,
-  clock,
-  renderer,
-  mixer
-});
+export { withScene };

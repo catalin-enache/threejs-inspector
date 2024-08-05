@@ -205,16 +205,17 @@ export const loadModel = async (
       multiAssetSources.map(async (source) => {
         let loaded = await loader.loadAsync(source);
         if (loader instanceof GLTFLoader) {
-          loaded.scene.__inspectorData.fullData = loaded;
+          (loaded as GLTF).scene.__inspectorData.fullData = loaded;
           const { animations } = loaded as GLTF;
-          loaded = loaded.scene;
+          loaded = (loaded as GLTF).scene;
           loaded.animations = animations;
         }
-        loaded.__inspectorData.resourceName = source;
+        (loaded as THREE.Object3D).__inspectorData.resourceName = source;
         return loaded;
       })
     );
 
+    // @ts-ignore
     const rootAsset = findRootAsset(loadedAssets);
     // restAssets most of the time contain just animations
     const restAssets = loadedAssets.filter((a) => a !== rootAsset);
@@ -225,6 +226,7 @@ export const loadModel = async (
     name = rootAsset.__inspectorData.resourceName!;
 
     restAssets.forEach((externalAnimationAsset) => {
+      // @ts-ignore
       mergeAnimationsFromRestAssets(result as THREE.Group, externalAnimationAsset);
     });
 

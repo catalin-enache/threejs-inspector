@@ -1,3 +1,4 @@
+/// <reference types="vitest" />
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react-swc';
 import { Mode, plugin as mdPlugin } from 'vite-plugin-markdown';
@@ -42,5 +43,14 @@ export default defineConfig({
     },
     extensions: ['.js', '.jsx', '.ts', '.tsx', '.json']
   },
-  assetsInclude: []
+  assetsInclude: [],
+  test: {
+    browser: {
+      provider: 'playwright', // 'webdriverio' | 'playwright'
+      enabled: true,
+      name: 'chromium', // browser name is required
+      headless: false,
+      providerOptions: {}
+    }
+  }
 });

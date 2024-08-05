@@ -5,7 +5,7 @@
     "lib": ["ES2023", "DOM", "DOM.Iterable"],
     "module": "ESNext",
     "skipLibCheck": true,
-    "types": ["node", "mocha"],
+    "types": ["node", "@vitest/browser/providers/playwright"],
 
     /* Bundler mode */
     "moduleResolution": "Node",

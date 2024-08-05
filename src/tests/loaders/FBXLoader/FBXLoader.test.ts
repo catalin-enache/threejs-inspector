@@ -1,7 +1,7 @@
 import * as THREE from 'three';
-import { FBXLoader } from 'three/examples/jsm/loaders/FBXLoader.js';
-import { withScene } from '../../testutils/testScene';
 import { expect, describe, it } from 'vitest';
+import { withScene } from 'testutils/testScene';
+import { FBXLoader } from 'three/examples/jsm/loaders/FBXLoader.js';
 
 describe('FBXLoader', () => {
   it('geometry.attributes.position.count === geometry.morphAttributes.position[0].count', () =>

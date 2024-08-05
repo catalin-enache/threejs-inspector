@@ -29,6 +29,7 @@
       "components/*": ["src/components/*"],
       "lib/*": ["src/lib/*"],
       "scenarios/*": ["src/scenarios/*"],
+      "testutils/*": ["src/tests/testutils/*"],
     }
   },
   "include": [

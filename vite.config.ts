@@ -50,8 +50,10 @@ export default defineConfig({
       provider: 'playwright', // 'webdriverio' | 'playwright'
       enabled: true,
       name: 'chromium', // browser name is required
-      headless: false,
+      headless: false, // overridden in CLI
+      viewport: { width: 800, height: 600 },
       providerOptions: {}
-    }
+    },
+    allowOnly: true
   }
 });

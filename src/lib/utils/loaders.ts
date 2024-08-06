@@ -64,13 +64,17 @@ loadingManager.setURLModifier((resource) => {
   return url;
 });
 
+loadingManager.onStart = (url, itemsLoaded, itemsTotal) => {
+  window.dispatchEvent(new CustomEvent('LoadingManager.onStart', { detail: { url, itemsLoaded, itemsTotal } }));
+};
+
 loadingManager.onLoad = () => {
-  // console.log('defaultLoadingManager onLoad', { objectURLs, blobs });
   objectURLs.forEach((url) => URL.revokeObjectURL(url));
   objectURLs.length = 0;
   Object.keys(blobs).forEach((key) => {
     delete blobs[key];
   });
+  window.dispatchEvent(new CustomEvent('LoadingManager.onLoad', { detail: {} }));
 };
 
 const gl = new THREE.WebGLRenderer({ antialias: true });

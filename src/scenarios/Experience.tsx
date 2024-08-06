@@ -306,7 +306,7 @@ export function Experience() {
           penumbra={0.5}
         ></spotLight>
 
-        <lightProbe color={'blue'} position={[0, 0, 3]} />
+        <lightProbe color={'blue'} position={[0, 0, 3]} name={'myLightProbe'} />
       </group>
 
       <Box
@@ -374,7 +374,7 @@ export function Experience() {
         position={[-12.98, 3.963, 4.346]}
         name="myPerspectiveCamera"
         rotation={[degToRad(-42.342), degToRad(-65.604), degToRad(-39.706)]} // 25.86 , -46.13, 19.26
-        __inspectorData={{ useOnPlay: false }}
+        __inspectorData={{ useOnPlay: true }}
       />
 
       <cubeCamera

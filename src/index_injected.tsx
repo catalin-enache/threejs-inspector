@@ -13,6 +13,7 @@ const params = {
 };
 const assets = ['one', 'two', 'three'];
 
+// TODO: Note, these custom params are merged with custom params from Experience scenario
 const customParams = {
   asset: {
     object: params,

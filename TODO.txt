@@ -82,7 +82,8 @@ However, to test with multi texture bindings later
 
 
 
-
+Investigate why the tab is moved from Custom Controls tab to Selected tab
+when having a selected object in scene and clicking on checkboxes in Custom tab.
 
 Write doc about loading models.
 

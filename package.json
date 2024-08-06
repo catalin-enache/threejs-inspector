@@ -8,11 +8,8 @@
     "dev": "vite",
     "build": "tsc && vite build",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
-    "test-wtr": "web-test-runner --node-resolve",
-    "test-wtr-watch": "web-test-runner --node-resolve --watch",
-    "test-server": "node test-server.js",
-    "test-server-wds": "wds --node-resolve --watch --open /tests/",
-    "vitest": "vitest",
+    "vitest-headless": "vitest run --browser.headless",
+    "vitest-watch": "vitest",
     "preview": "vite preview",
     "predeploy": "npm run build",
     "deploy": "gh-pages -d dist"

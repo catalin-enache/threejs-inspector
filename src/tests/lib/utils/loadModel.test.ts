@@ -8,7 +8,7 @@ describe('loadModel', () => {
     it('loads non native textures', () =>
       new Promise<void>((done, rej) => {
         withScene(
-          10000,
+          0,
           true
         )(async ({ scene }) => {
           const fbx = await loadModel('/models/MyTests/with_non_native_textures/with_non_native_textures.fbx', scene, {

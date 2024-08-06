@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import Stats from 'three/examples/jsm/libs/stats.module.js';
+import 'lib/App/SetUp/patchThree';
 import './testScene.css';
 
 let camera: THREE.PerspectiveCamera,
@@ -35,6 +36,7 @@ function init() {
   scene = new THREE.Scene();
   scene.background = new THREE.Color(0xa0a0a0);
   // scene.fog = new THREE.Fog(0xa0a0a0, 200, 1000);
+  scene.__inspectorData.currentCamera = camera;
 
   const hemiLight = new THREE.HemisphereLight(0xffffff, 0x444444, 5);
   hemiLight.position.set(0, 200, 0);
@@ -93,20 +95,21 @@ function init() {
   };
 
   const withScene =
-    (timeout: number) =>
-    (
+    (timeout: number = 0, clear: boolean = true) =>
+    async (
       fn: (sceneObjects: {
         scene: THREE.Scene;
         camera: THREE.PerspectiveCamera;
         mixer: THREE.AnimationMixer;
         renderer: THREE.WebGLRenderer;
         clock: THREE.Clock;
-      }) => () => void
+      }) => Promise<(() => void | undefined) | void | undefined>
     ) => {
       addScene();
-      const cleanUp = fn({ scene, camera, mixer, renderer, clock });
+      const cleanUp = await fn({ scene, camera, mixer, renderer, clock });
       setTimeout(() => {
         cleanUp && cleanUp();
+        clear && scene.clear();
         removeScene();
       }, timeout);
     };

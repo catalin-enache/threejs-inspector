@@ -1,6 +1,10 @@
 import * as THREE from 'three';
-import { expect, describe, it } from 'vitest';
+import { expect, describe, it, vi } from 'vitest';
 import { withScene } from 'testutils/testScene';
+import { offlineScene } from 'lib/App/CPanel/offlineScene';
+import patchThree from 'lib/App/SetUp/patchThree';
+
+const { isMainScene, isSceneObject } = patchThree;
 
 describe('patchThree', () => {
   describe('__inspectorData', () => {
@@ -140,5 +144,172 @@ describe('patchThree', () => {
         });
       });
     });
+  });
+
+  describe('isSceneObject', () => {
+    it('when object is a main scene object it returns true, esle false', () =>
+      new Promise<void>((done) => {
+        withScene(
+          0,
+          true
+        )(async ({ scene }) => {
+          const mesh1 = new THREE.Mesh();
+          const mesh2 = new THREE.Mesh();
+          expect(isSceneObject(mesh1)).toBeFalsy();
+          expect(isSceneObject(mesh2)).toBeFalsy();
+          scene.add(mesh1);
+          offlineScene.add(mesh2);
+          expect(mesh1.parent instanceof THREE.Scene).toBeTruthy();
+          expect(mesh2.parent instanceof THREE.Scene).toBeTruthy();
+          expect(isSceneObject(mesh1)).toBeTruthy();
+          expect(isSceneObject(mesh2)).toBeFalsy();
+          done();
+        });
+      }));
+  });
+
+  describe('isMainScene', () => {
+    it('when object is a main scene object it returns true, esle false', () =>
+      new Promise<void>((done) => {
+        withScene(
+          0,
+          true
+        )(async ({ scene }) => {
+          expect(isMainScene(scene)).toBeTruthy();
+          expect(isMainScene(offlineScene)).toBeFalsy();
+          done();
+        });
+      }));
+  });
+
+  describe('Object3D.prototype.add', () => {
+    it('does not call handleObjectAdded when not adding to the scene', () =>
+      new Promise<void>((done) => {
+        withScene(
+          0,
+          true
+        )(async ({ scene: _ }) => {
+          const spy = vi.spyOn(patchThree, 'handleObjectAdded');
+          const mesh1 = new THREE.Mesh();
+          const mesh2 = new THREE.Mesh();
+          mesh1.add(mesh2);
+          expect(spy).not.toHaveBeenCalled();
+          spy.mockRestore();
+          done();
+        });
+      }));
+
+    it('does not call handleObjectAdded when adding to the offlineScene', () =>
+      new Promise<void>((done) => {
+        withScene(
+          0,
+          true
+        )(async ({ scene: _ }) => {
+          const spy = vi.spyOn(patchThree, 'handleObjectAdded');
+          const mesh1 = new THREE.Mesh();
+          const mesh2 = new THREE.Mesh();
+          mesh1.add(mesh2);
+          offlineScene.add(mesh1);
+          expect(spy).not.toHaveBeenCalled();
+          spy.mockRestore();
+          done();
+        });
+      }));
+
+    it('calls handleObjectAdded when adding to the scene', () =>
+      new Promise<void>((done) => {
+        withScene(
+          0,
+          true
+        )(async ({ scene }) => {
+          const spy = vi.spyOn(patchThree, 'handleObjectAdded');
+          const mesh1 = new THREE.Mesh();
+          scene.add(mesh1);
+          expect(spy).toHaveBeenCalledTimes(1);
+          expect(spy).toHaveBeenCalledWith(mesh1);
+          spy.mockRestore();
+          done();
+        });
+      }));
+
+    it('calls handleObjectAdded recursively when adding to the scene', () =>
+      new Promise<void>((done) => {
+        withScene(
+          0,
+          true
+        )(async ({ scene }) => {
+          const spy = vi.spyOn(patchThree, 'handleObjectAdded');
+          const mesh1 = new THREE.Mesh();
+          const mesh2 = new THREE.Mesh();
+          const mesh3 = new THREE.Mesh();
+          mesh2.add(mesh3);
+          mesh1.add(mesh2);
+          scene.add(mesh1);
+          expect(spy).toHaveBeenCalledTimes(3);
+          expect(spy).toHaveBeenNthCalledWith(1, mesh1);
+          expect(spy).toHaveBeenNthCalledWith(2, mesh2);
+          expect(spy).toHaveBeenNthCalledWith(3, mesh3);
+          spy.mockRestore();
+          done();
+        });
+      }));
+  });
+
+  describe('Object3D.prototype.remove', () => {
+    it('does not call cleanupAfterRemovedObject for children of THREE.CubeCamera', () =>
+      new Promise<void>((done) => {
+        withScene(
+          0,
+          true
+        )(async ({ scene: _ }) => {
+          const spy = vi.spyOn(patchThree, 'cleanupAfterRemovedObject');
+          const cubeCamera = new THREE.CubeCamera(0, 0, new THREE.WebGLCubeRenderTarget(0));
+          const camera = new THREE.PerspectiveCamera();
+          cubeCamera.add(camera);
+          cubeCamera.remove(camera);
+          expect(spy).not.toHaveBeenCalled();
+          spy.mockRestore();
+          done();
+        });
+      }));
+
+    it('calls cleanupAfterRemovedObject even object is not added to the scene', () =>
+      new Promise<void>((done) => {
+        withScene(
+          0,
+          true
+        )(async ({ scene: _ }) => {
+          const spy = vi.spyOn(patchThree, 'cleanupAfterRemovedObject');
+          const mesh1 = new THREE.Mesh();
+          const mesh2 = new THREE.Mesh();
+          mesh1.add(mesh2);
+          mesh1.remove(mesh2);
+          expect(spy).toHaveBeenCalledTimes(1);
+          expect(spy).toHaveBeenCalledWith(mesh2);
+          spy.mockRestore();
+          done();
+        });
+      }));
+
+    it('calls cleanupAfterRemovedObject for the objects directly removed, not recursively through children', () =>
+      new Promise<void>((done) => {
+        withScene(
+          0,
+          true
+        )(async ({ scene }) => {
+          const spy = vi.spyOn(patchThree, 'cleanupAfterRemovedObject');
+          const mesh1 = new THREE.Mesh();
+          const mesh2 = new THREE.Mesh();
+          const mesh3 = new THREE.Mesh();
+          mesh2.add(mesh3);
+          mesh1.add(mesh2);
+          scene.add(mesh1);
+          scene.remove(mesh1);
+          expect(spy).toHaveBeenCalledTimes(1);
+          expect(spy).toHaveBeenCalledWith(mesh1);
+          spy.mockRestore();
+          done();
+        });
+      }));
   });
 });

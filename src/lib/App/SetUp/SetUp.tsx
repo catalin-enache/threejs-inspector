@@ -6,7 +6,12 @@ import { TransformControls } from 'three/examples/jsm/controls/TransformControls
 import { RectAreaLightUniformsLib } from 'three/examples/jsm/lights/RectAreaLightUniformsLib';
 import { FlyControls } from 'lib/App/FlyControls';
 import { useAppStore } from 'src/store';
-import {
+import patchThree from 'lib/App/SetUp/patchThree';
+
+// @ts-ignore
+import { outliner } from 'lib/third_party/ui.outliner';
+
+const {
   currentScene,
   setCurrentScene,
   inspectableObjects,
@@ -15,9 +20,7 @@ import {
   updateCameras,
   defaultPerspectiveCamera,
   defaultOrthographicCamera
-} from './patchThree';
-// @ts-ignore
-import { outliner } from 'lib/third_party/ui.outliner';
+} = patchThree;
 
 RectAreaLightUniformsLib.init(); // required for RectAreaLight
 

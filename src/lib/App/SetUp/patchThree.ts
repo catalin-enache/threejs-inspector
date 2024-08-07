@@ -187,6 +187,20 @@ const module: Module = {
 
   // ----------------------------------- << Cameras -----------------------------------
 
+  isSceneObject(object: THREE.Object3D) {
+    // traverse up to the scene
+    let parent = object.parent;
+    while (parent && !(parent instanceof THREE.Scene)) {
+      parent = parent.parent;
+    }
+    // we have another offline scene in TexturePlugin
+    return parent !== null && parent !== offlineScene;
+  },
+
+  isMainScene(scene: any) {
+    return scene instanceof THREE.Scene && scene !== offlineScene;
+  },
+
   objectHasSkeleton(object: THREE.Object3D) {
     let hasSkeleton = false;
     object.traverse((descendant) => {
@@ -431,20 +445,6 @@ const module: Module = {
         this.cameraToUseOnPlay = null;
       }
     });
-  },
-
-  isSceneObject(object: THREE.Object3D) {
-    // traverse up to the scene
-    let parent = object.parent;
-    while (parent && !(parent instanceof THREE.Scene)) {
-      parent = parent.parent;
-    }
-    // we have another offline scene in TexturePlugin
-    return parent !== null && parent !== offlineScene;
-  },
-
-  isMainScene(scene: any) {
-    return scene instanceof THREE.Scene && scene !== offlineScene;
   },
 
   // called for every child of an object only when added to the scene

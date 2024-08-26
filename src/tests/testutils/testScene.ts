@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import Stats from 'three/examples/jsm/libs/stats.module.js';
-import 'lib/App/SetUp/patchThree';
+import patchThree from 'lib/App/SetUp/patchThree';
 import './testScene.css';
 
 let camera: THREE.PerspectiveCamera,
@@ -37,6 +37,7 @@ function init() {
   scene.background = new THREE.Color(0xa0a0a0);
   // scene.fog = new THREE.Fog(0xa0a0a0, 200, 1000);
   scene.__inspectorData.currentCamera = camera;
+  patchThree.setCurrentScene(scene);
 
   const hemiLight = new THREE.HemisphereLight(0xffffff, 0x444444, 5);
   hemiLight.position.set(0, 200, 0);

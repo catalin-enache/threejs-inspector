@@ -329,4 +329,120 @@ describe('patchThree', () => {
         });
       }));
   });
+
+  describe('handleObjectAdded', () => {
+    describe('when object is (PerspectiveCamera || OrthographicCamera)', () => {
+      describe('when not object.__inspectorData.useOnPlay', () => {
+        it('does not set cameraToUseOnPlay', () =>
+          new Promise<void>((done) => {
+            withScene(
+              0,
+              true
+            )(async ({ scene }) => {
+              const perspectiveCamera = new THREE.PerspectiveCamera();
+              const orthographicCamera = new THREE.OrthographicCamera();
+              scene.add(perspectiveCamera);
+              scene.add(orthographicCamera);
+              expect(patchThree.cameraToUseOnPlay).toBe(null);
+              done();
+            });
+          }));
+      });
+
+      describe('when object.__inspectorData.useOnPlay === true', () => {
+        it('sets cameraToUseOnPlay to object', () =>
+          new Promise<void>((done) => {
+            withScene(
+              0,
+              true
+            )(async ({ scene }) => {
+              const perspectiveCamera = new THREE.PerspectiveCamera();
+              const orthographicCamera = new THREE.OrthographicCamera();
+              orthographicCamera.__inspectorData.useOnPlay = true;
+              perspectiveCamera.__inspectorData.useOnPlay = true;
+              scene.add(perspectiveCamera);
+              expect(patchThree.cameraToUseOnPlay).toBe(perspectiveCamera);
+              scene.add(orthographicCamera);
+              expect(patchThree.cameraToUseOnPlay).toBe(orthographicCamera);
+              scene.remove(orthographicCamera);
+              expect(patchThree.cameraToUseOnPlay).toBe(null);
+              done();
+            });
+          }));
+      });
+    });
+
+    describe('when object.__inspectorData.picker', () => {
+      it('adds picker object to inspectableObjects', () =>
+        new Promise<void>((done) => {
+          withScene(
+            0,
+            true
+          )(async ({ scene }) => {
+            const perspectiveCamera = new THREE.PerspectiveCamera();
+            scene.add(perspectiveCamera);
+            expect(perspectiveCamera.__inspectorData.picker!.__inspectorData.isPicker).toBe(true);
+            expect(patchThree.inspectableObjects[perspectiveCamera.__inspectorData.picker!.uuid]).toBe(
+              perspectiveCamera.__inspectorData.picker
+            );
+            scene.remove(perspectiveCamera);
+            expect(patchThree.inspectableObjects[perspectiveCamera.__inspectorData.picker!.uuid]).toBe(undefined);
+            done();
+          });
+        }));
+    });
+
+    describe('when object.__inspectorData.isInspectable', () => {
+      it('adds object to inspectableObjects', () =>
+        new Promise<void>((done) => {
+          withScene(
+            0,
+            true
+          )(async ({ scene }) => {
+            const mesh = new THREE.Mesh();
+            mesh.__inspectorData.isInspectable = true;
+            scene.add(mesh);
+            expect(patchThree.inspectableObjects[mesh.uuid]).toBe(mesh);
+            scene.remove(mesh);
+            expect(patchThree.inspectableObjects[mesh.uuid]).toBe(undefined);
+            done();
+          });
+        }));
+    });
+
+    describe('when not object.__inspectorData.isInspectable', () => {
+      it('does not add object to inspectableObjects', () =>
+        new Promise<void>((done) => {
+          withScene(
+            0,
+            true
+          )(async ({ scene }) => {
+            const mesh = new THREE.Mesh();
+            scene.add(mesh);
+            expect(patchThree.inspectableObjects[mesh.uuid]).toBe(undefined);
+            scene.remove(mesh);
+            expect(patchThree.inspectableObjects[mesh.uuid]).toBe(undefined);
+            done();
+          });
+        }));
+    });
+
+    describe('when object.__inspectorData.helper', () => {
+      it('adds helper to scene', () =>
+        new Promise<void>((done) => {
+          withScene(
+            0,
+            true
+          )(async ({ scene }) => {
+            const perspectiveCamera = new THREE.PerspectiveCamera();
+            scene.add(perspectiveCamera);
+            expect(perspectiveCamera.__inspectorData.helper).toBeTruthy();
+            expect(scene.children).toContain(perspectiveCamera.__inspectorData.helper);
+            scene.remove(perspectiveCamera);
+            expect(scene.children).not.toContain(perspectiveCamera.__inspectorData.helper);
+            done();
+          });
+        }));
+    });
+  });
 });

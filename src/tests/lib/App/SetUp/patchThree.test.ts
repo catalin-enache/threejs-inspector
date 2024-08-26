@@ -3,6 +3,7 @@ import { expect, describe, it, vi } from 'vitest';
 import { withScene } from 'testutils/testScene';
 import { offlineScene } from 'lib/App/CPanel/offlineScene';
 import patchThree from 'lib/App/SetUp/patchThree';
+import { useAppStore } from 'src/store';
 
 const { isMainScene, isSceneObject } = patchThree;
 
@@ -308,6 +309,22 @@ describe('patchThree', () => {
           expect(spy).toHaveBeenCalledTimes(1);
           expect(spy).toHaveBeenCalledWith(mesh1);
           spy.mockRestore();
+          done();
+        });
+      }));
+
+    it('sets selected object to null', () =>
+      new Promise<void>((done) => {
+        withScene(
+          0,
+          true
+        )(async ({ scene }) => {
+          const mesh1 = new THREE.Mesh();
+          scene.add(mesh1);
+          useAppStore.getState().setSelectedObject(mesh1);
+          expect(useAppStore.getState().getSelectedObject()).toBe(mesh1);
+          scene.remove(mesh1);
+          expect(useAppStore.getState().getSelectedObject()).toBe(null);
           done();
         });
       }));

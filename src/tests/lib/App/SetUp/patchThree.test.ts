@@ -147,7 +147,7 @@ describe('patchThree', () => {
   });
 
   describe('isSceneObject', () => {
-    it('when object is a main scene object it returns true, esle false', () =>
+    it('when object is a main scene object it returns true, else false', () =>
       new Promise<void>((done) => {
         withScene(
           0,
@@ -169,7 +169,7 @@ describe('patchThree', () => {
   });
 
   describe('isMainScene', () => {
-    it('when object is a main scene object it returns true, esle false', () =>
+    it('when object is a main scene object it returns true, else false', () =>
       new Promise<void>((done) => {
         withScene(
           0,

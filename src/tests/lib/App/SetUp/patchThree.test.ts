@@ -4,6 +4,7 @@ import { withScene } from 'testutils/testScene';
 import { offlineScene } from 'lib/App/CPanel/offlineScene';
 import patchThree from 'lib/App/SetUp/patchThree';
 import { useAppStore } from 'src/store';
+import { TransformControls } from 'three/examples/jsm/controls/TransformControls';
 
 const { isMainScene, isSceneObject } = patchThree;
 
@@ -442,6 +443,100 @@ describe('patchThree', () => {
             expect(scene.children).not.toContain(perspectiveCamera.__inspectorData.helper);
             done();
           });
+        }));
+    });
+  });
+
+  describe('cleanupAfterRemovedObject', () => {
+    describe('when object.__inspectorData.helper', () => {
+      it('removes helper from scene', () =>
+        new Promise<void>((done) => {
+          withScene(
+            0,
+            true
+          )(async ({ scene }) => {
+            const perspectiveCamera = new THREE.PerspectiveCamera();
+            scene.add(perspectiveCamera);
+            expect(scene.children).toContain(perspectiveCamera.__inspectorData.helper);
+            scene.remove(perspectiveCamera);
+            expect(scene.children).not.toContain(perspectiveCamera.__inspectorData.helper);
+            done();
+          });
+        }));
+    });
+
+    describe('when object.__inspectorData.picker', () => {
+      it('removes picker from inspectableObjects', () =>
+        new Promise<void>((done) => {
+          withScene(
+            0,
+            true
+          )(async ({ scene }) => {
+            const perspectiveCamera = new THREE.PerspectiveCamera();
+            scene.add(perspectiveCamera);
+            expect(patchThree.inspectableObjects[perspectiveCamera.__inspectorData.picker!.uuid]).toBe(
+              perspectiveCamera.__inspectorData.picker
+            );
+            scene.remove(perspectiveCamera);
+            expect(patchThree.inspectableObjects[perspectiveCamera.__inspectorData.picker!.uuid]).toBe(undefined);
+            done();
+          });
+        }));
+    });
+
+    describe('when object.__inspectorData.isInspectable', () => {
+      it('removes object from inspectableObjects', () =>
+        new Promise<void>((done) => {
+          withScene(
+            0,
+            true
+          )(async ({ scene }) => {
+            const mesh = new THREE.Mesh();
+            mesh.__inspectorData.isInspectable = true;
+            scene.add(mesh);
+            expect(patchThree.inspectableObjects[mesh.uuid]).toBe(mesh);
+            scene.remove(mesh);
+            expect(patchThree.inspectableObjects[mesh.uuid]).toBe(undefined);
+            done();
+          });
+        }));
+    });
+
+    describe('when object.__inspectorData.useOnPlay', () => {
+      it('set patchTree.cameraToUseOnPlay to null', async () =>
+        withScene(
+          0,
+          true
+        )(async ({ scene }) => {
+          const perspectiveCamera = new THREE.PerspectiveCamera();
+          perspectiveCamera.__inspectorData.useOnPlay = true;
+          scene.add(perspectiveCamera);
+          expect(patchThree.cameraToUseOnPlay).toBe(perspectiveCamera);
+          scene.remove(perspectiveCamera);
+          expect.soft(patchThree.cameraToUseOnPlay).toBe(null);
+        }));
+    });
+
+    describe('when transformControls are attached to object', () => {
+      it('they are detached', async () =>
+        withScene(
+          0,
+          true
+        )(async ({ scene, canvas }) => {
+          const mesh = new THREE.Mesh();
+          const camera = new THREE.PerspectiveCamera();
+          scene.add(mesh);
+          const transformControls = new TransformControls(camera, canvas);
+          transformControls.detach = vi.fn();
+          scene.__inspectorData.transformControlsRef = { current: transformControls };
+          transformControls.attach(mesh);
+          scene.remove(mesh);
+          try {
+            expect(transformControls.detach).toHaveBeenCalled();
+          } catch (e) {
+            scene.__inspectorData.transformControlsRef = undefined;
+            throw e;
+          }
         }));
     });
   });

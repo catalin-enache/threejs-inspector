@@ -539,5 +539,29 @@ describe('patchThree', () => {
           }
         }));
     });
+
+    describe('when child.__inspectorData.dependantObjects', () => {
+      it('dependantObjects are removed and destroyed', async () =>
+        withScene(
+          0,
+          true
+        )(async ({ scene }) => {
+          const parent = new THREE.Object3D();
+          const child = new THREE.Object3D();
+          const spy = vi.spyOn(patchThree, 'destroy');
+          parent.add(child);
+          scene.add(parent);
+          const dependantObject = new THREE.Object3D();
+          child.__inspectorData.dependantObjects!.push(dependantObject);
+          scene.remove(parent);
+          try {
+            expect(child.__inspectorData.dependantObjects).toEqual([]);
+            expect(spy).toHaveBeenCalledWith(dependantObject);
+          } catch (e) {
+            spy.mockRestore();
+            throw e;
+          }
+        }));
+    });
   });
 });

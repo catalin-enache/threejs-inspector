@@ -33,7 +33,7 @@ export const Object3DBindings = (params: CommonGetterParams) => ({
     title: 'Remove',
     onClick: (() => {
       useAppStore.getState().deleteSelectedObject();
-      // inspectable objects should be cleaned up already
+      // interactable objects should be cleaned up already
     }) as onChange,
     if: (object: THREE.Object3D) => !!object.parent
   },

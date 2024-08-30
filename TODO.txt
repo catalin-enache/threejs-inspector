@@ -85,7 +85,9 @@ However, to test with multi texture bindings later
 Investigate why the tab is moved from Custom Controls tab to Selected tab
 when having a selected object in scene and clicking on checkboxes in Custom tab.
 
-Helper and picker for camera are invisible when playing even if camera is not useOnPlay
+Helper and picker for camera are invisible when playing even if camera is not useOnPlay.
+
+Investigate why cameraToUseOnPlay is not used when playing.
 
 Write doc about loading models.
 

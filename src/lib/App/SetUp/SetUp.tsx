@@ -14,7 +14,7 @@ import { outliner } from 'lib/third_party/ui.outliner';
 const {
   currentScene,
   setCurrentScene,
-  inspectableObjects,
+  interactableObjects,
   getIsPlayingCamera,
   cameraToUseOnPlay,
   updateCameras,
@@ -207,7 +207,7 @@ const SetUp = (props: SetUpProps) => {
       hits.length = 0;
 
       raycaster.setFromCamera(pointer, camera);
-      raycaster.intersectObjects(Object.values(inspectableObjects), false, hits);
+      raycaster.intersectObjects(Object.values(interactableObjects), false, hits);
 
       lastHitRef.current = hits[0] || null;
       const __inspectorData = lastHitRef.current?.object?.__inspectorData;

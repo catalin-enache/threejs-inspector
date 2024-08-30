@@ -129,7 +129,7 @@ defaultOrthographicCamera.name = 'DefaultOrthographicCamera';
 type Module = {
   currentScene: THREE.Scene;
   setCurrentScene: (scene: THREE.Scene) => void;
-  inspectableObjects: Record<string, THREE.Object3D>;
+  interactableObjects: Record<string, THREE.Object3D>;
   updateCameras: () => void;
   defaultPerspectiveCamera: THREE.PerspectiveCamera;
   defaultOrthographicCamera: THREE.OrthographicCamera;
@@ -150,7 +150,7 @@ const module: Module = {
   setCurrentScene(scene: THREE.Scene) {
     this.currentScene = scene;
   },
-  inspectableObjects: {},
+  interactableObjects: {},
 
   // ----------------------------------- Cameras >> -----------------------------------
 
@@ -390,7 +390,7 @@ const module: Module = {
             this.currentScene.remove(helper);
           } else {
             pickerIsNeeded && object.add(picker);
-            this.inspectableObjects[picker.uuid] = picker;
+            this.interactableObjects[picker.uuid] = picker;
             this.currentScene.add(helper);
           }
         }
@@ -439,7 +439,7 @@ const module: Module = {
         this.destroy(child);
       }
 
-      delete this.inspectableObjects[child.uuid];
+      delete this.interactableObjects[child.uuid];
 
       if (this.cameraToUseOnPlay === child) {
         this.cameraToUseOnPlay = null;
@@ -474,9 +474,9 @@ const module: Module = {
       }
       // picker appears in __inspectorData after makeHelpers is called
       if (__inspectorData.picker) {
-        this.inspectableObjects[__inspectorData.picker.uuid] = __inspectorData.picker;
+        this.interactableObjects[__inspectorData.picker.uuid] = __inspectorData.picker;
       } else {
-        this.inspectableObjects[object.uuid] = object;
+        this.interactableObjects[object.uuid] = object;
       }
       // most helpers are added to the scene but some are added to the object itself (e.g. PositionalAudioHelper)
       if (__inspectorData.helper && !this.shouldContainItsHelper(object)) {

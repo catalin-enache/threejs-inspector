@@ -374,7 +374,7 @@ describe('patchThree', () => {
     });
 
     describe('when object.__inspectorData.picker', () => {
-      it('adds picker object to inspectableObjects', () =>
+      it('adds picker object to interactableObjects', () =>
         new Promise<void>((done) => {
           withScene(
             0,
@@ -383,18 +383,18 @@ describe('patchThree', () => {
             const perspectiveCamera = new THREE.PerspectiveCamera();
             scene.add(perspectiveCamera);
             expect(perspectiveCamera.__inspectorData.picker!.__inspectorData.isPicker).toBe(true);
-            expect(patchThree.inspectableObjects[perspectiveCamera.__inspectorData.picker!.uuid]).toBe(
+            expect(patchThree.interactableObjects[perspectiveCamera.__inspectorData.picker!.uuid]).toBe(
               perspectiveCamera.__inspectorData.picker
             );
             scene.remove(perspectiveCamera);
-            expect(patchThree.inspectableObjects[perspectiveCamera.__inspectorData.picker!.uuid]).toBe(undefined);
+            expect(patchThree.interactableObjects[perspectiveCamera.__inspectorData.picker!.uuid]).toBe(undefined);
             done();
           });
         }));
     });
 
     describe('when object.__inspectorData.isInspectable', () => {
-      it('adds object to inspectableObjects', () =>
+      it('adds object to interactableObjects', () =>
         new Promise<void>((done) => {
           withScene(
             0,
@@ -403,16 +403,16 @@ describe('patchThree', () => {
             const mesh = new THREE.Mesh();
             mesh.__inspectorData.isInspectable = true;
             scene.add(mesh);
-            expect(patchThree.inspectableObjects[mesh.uuid]).toBe(mesh);
+            expect(patchThree.interactableObjects[mesh.uuid]).toBe(mesh);
             scene.remove(mesh);
-            expect(patchThree.inspectableObjects[mesh.uuid]).toBe(undefined);
+            expect(patchThree.interactableObjects[mesh.uuid]).toBe(undefined);
             done();
           });
         }));
     });
 
     describe('when not object.__inspectorData.isInspectable', () => {
-      it('does not add object to inspectableObjects', () =>
+      it('does not add object to interactableObjects', () =>
         new Promise<void>((done) => {
           withScene(
             0,
@@ -420,9 +420,9 @@ describe('patchThree', () => {
           )(async ({ scene }) => {
             const mesh = new THREE.Mesh();
             scene.add(mesh);
-            expect(patchThree.inspectableObjects[mesh.uuid]).toBe(undefined);
+            expect(patchThree.interactableObjects[mesh.uuid]).toBe(undefined);
             scene.remove(mesh);
-            expect(patchThree.inspectableObjects[mesh.uuid]).toBe(undefined);
+            expect(patchThree.interactableObjects[mesh.uuid]).toBe(undefined);
             done();
           });
         }));
@@ -466,7 +466,7 @@ describe('patchThree', () => {
     });
 
     describe('when object.__inspectorData.picker', () => {
-      it('removes picker from inspectableObjects', () =>
+      it('removes picker from interactableObjects', () =>
         new Promise<void>((done) => {
           withScene(
             0,
@@ -474,18 +474,18 @@ describe('patchThree', () => {
           )(async ({ scene }) => {
             const perspectiveCamera = new THREE.PerspectiveCamera();
             scene.add(perspectiveCamera);
-            expect(patchThree.inspectableObjects[perspectiveCamera.__inspectorData.picker!.uuid]).toBe(
+            expect(patchThree.interactableObjects[perspectiveCamera.__inspectorData.picker!.uuid]).toBe(
               perspectiveCamera.__inspectorData.picker
             );
             scene.remove(perspectiveCamera);
-            expect(patchThree.inspectableObjects[perspectiveCamera.__inspectorData.picker!.uuid]).toBe(undefined);
+            expect(patchThree.interactableObjects[perspectiveCamera.__inspectorData.picker!.uuid]).toBe(undefined);
             done();
           });
         }));
     });
 
     describe('when object.__inspectorData.isInspectable', () => {
-      it('removes object from inspectableObjects', () =>
+      it('removes object from interactableObjects', () =>
         new Promise<void>((done) => {
           withScene(
             0,
@@ -494,9 +494,9 @@ describe('patchThree', () => {
             const mesh = new THREE.Mesh();
             mesh.__inspectorData.isInspectable = true;
             scene.add(mesh);
-            expect(patchThree.inspectableObjects[mesh.uuid]).toBe(mesh);
+            expect(patchThree.interactableObjects[mesh.uuid]).toBe(mesh);
             scene.remove(mesh);
-            expect(patchThree.inspectableObjects[mesh.uuid]).toBe(undefined);
+            expect(patchThree.interactableObjects[mesh.uuid]).toBe(undefined);
             done();
           });
         }));

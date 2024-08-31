@@ -80,7 +80,7 @@ After loading from scene config the binding reader fires continuously.
 Not happening anymore since using correct internal lastValue.
 However, to test with multi texture bindings later
 
-
+Investigate memory leak that happens even is not doing anything.
 
 Investigate why the tab is moved from Custom Controls tab to Selected tab
 when having a selected object in scene and clicking on checkboxes in Custom tab.

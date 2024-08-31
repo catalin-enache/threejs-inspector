@@ -12,6 +12,7 @@ if (!Object.getPrototypeOf(THREE.Object3D.prototype).__inspectorData) {
     get: function () {
       if (!this._innerInspectorData) {
         const __inspectorData: Partial<__inspectorData> = {};
+        // eslint-disable-next-line @typescript-eslint/no-this-alias
         const scope = this;
         Object.defineProperty(__inspectorData, 'isInspectable', {
           get: () => {
@@ -128,12 +129,14 @@ defaultOrthographicCamera.name = 'DefaultOrthographicCamera';
 
 type Module = {
   currentScene: THREE.Scene;
+  getCurrentScene: () => THREE.Scene;
   setCurrentScene: (scene: THREE.Scene) => void;
   interactableObjects: Record<string, THREE.Object3D>;
   updateCameras: () => void;
   defaultPerspectiveCamera: THREE.PerspectiveCamera;
   defaultOrthographicCamera: THREE.OrthographicCamera;
   cameraToUseOnPlay: THREE.PerspectiveCamera | THREE.OrthographicCamera | null;
+  getCameraToUseOnPlay: () => THREE.PerspectiveCamera | THREE.OrthographicCamera | null;
   getIsPlayingCamera: (camera: THREE.Camera) => boolean;
   objectHasSkeleton: (object: THREE.Object3D) => boolean;
   shouldContainItsHelper: (object: THREE.Object3D) => boolean;
@@ -147,6 +150,9 @@ type Module = {
 
 const module: Module = {
   currentScene: defaultScene,
+  getCurrentScene() {
+    return this.currentScene;
+  },
   setCurrentScene(scene: THREE.Scene) {
     this.currentScene = scene;
   },
@@ -157,6 +163,9 @@ const module: Module = {
   defaultPerspectiveCamera,
   defaultOrthographicCamera,
   cameraToUseOnPlay: null,
+  getCameraToUseOnPlay() {
+    return this.cameraToUseOnPlay;
+  },
 
   updateCameras() {
     defaultPerspectiveCamera.aspect = window.innerWidth / window.innerHeight;
@@ -168,7 +177,7 @@ const module: Module = {
     defaultOrthographicCamera.bottom = window.innerHeight / -2;
     defaultOrthographicCamera.updateProjectionMatrix();
 
-    // update currentCamera knowledge about window re-size that might happened before play
+    // update cameraToUseOnPlay knowledge about window re-size that might happened before play
     if (this.cameraToUseOnPlay instanceof THREE.PerspectiveCamera) {
       this.cameraToUseOnPlay.aspect = defaultPerspectiveCamera.aspect;
       this.cameraToUseOnPlay.updateProjectionMatrix();
@@ -216,11 +225,7 @@ const module: Module = {
   },
 
   makeHelpers(object: THREE.Object3D) {
-    let helper: THREE.Object3D['__inspectorData']['helper'];
-
-    let picker: THREE.Mesh;
-
-    let hasSkeleton = this.objectHasSkeleton(object);
+    const hasSkeleton = this.objectHasSkeleton(object);
 
     if (
       !(
@@ -242,7 +247,7 @@ const module: Module = {
 
     const helperSize = useAppStore.getState().gizmoSize;
     // TODO: check other included helpers (e.g. OctreeHelper)
-    helper = hasSkeleton
+    const helper: THREE.Object3D['__inspectorData']['helper'] = hasSkeleton
       ? new THREE.SkeletonHelper(object)
       : object instanceof THREE.Camera
         ? new THREE.CameraHelper(object)
@@ -282,7 +287,7 @@ const module: Module = {
     helper.name = `helper for ${object.name || object.type || ''} ${object.uuid}`;
     helper.__inspectorData.isHelper = true;
 
-    picker = new THREE.Mesh(
+    const picker: THREE.Mesh = new THREE.Mesh(
       meshGeometry,
       new THREE.MeshBasicMaterial({
         color:
@@ -427,13 +432,14 @@ const module: Module = {
         this.destroy(dependantObject);
       }
 
+      // TODO: continue unit testing here
       // No need to destroy everything, geometries and materials might be reused
       const destroyOnRemove = useAppStore.getState().destroyOnRemove;
       if (
         (destroyOnRemove || child.__inspectorData.isPicker) &&
         child.__inspectorData.hitRedirect !== this.cameraToUseOnPlay
       ) {
-        // helpers and pickers for cameraToUseOnPlay needs to stay around
+        // helpers and pickers for cameraToUseOnPlay needs to stay around (TODO: find out the reason for this requirement)
         // TODO: investigate. Renderer Info reports that geometries and textures are less (cleaned up to some extent)
         // but memory (reported by Stats) is not released.
         this.destroy(child);
@@ -471,6 +477,7 @@ const module: Module = {
       ) {
         // if multiple cameras are useOnPlay, only the last one will be considered
         this.cameraToUseOnPlay = object as THREE.PerspectiveCamera | THREE.OrthographicCamera;
+        useAppStore.getState().triggerCurrentCameraChanged();
       }
       // picker appears in __inspectorData after makeHelpers is called
       if (__inspectorData.picker) {

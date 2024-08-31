@@ -33,11 +33,11 @@ function Box(
   usePlay((playingState, _state, delta) => {
     // console.log('Box usePlay', { playingState, _state, delta });
     if (playingState === 'playing') {
-      refMesh.current.rotation.x += delta;
+      refMesh.current && (refMesh.current.rotation.x += delta);
       // refMesh.current.position.x = Math.sin(Date.now() / 1000);
       // refMesh?.current && (refMesh.current.position.z = 2);
     } else if (playingState === 'stopped') {
-      refMesh.current.rotation.x = 0;
+      refMesh.current && (refMesh.current.rotation.x = 0);
     }
   });
 

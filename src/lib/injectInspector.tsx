@@ -64,6 +64,8 @@ export const Inspector = memo(
     const customParamsElements = useMemo(() => {
       if (!customParams) return null;
       return buildCustomParamsElements({ customParams });
+      // updateInspector is called with the same customParams object reference
+      // eslint-disable-next-line react-hooks/exhaustive-deps -- version is needed because customParams are mutated
     }, [customParams, version]);
 
     return (
@@ -89,7 +91,12 @@ type InjectInspectorParams = {
 
 const configureAndRender = (params: InjectInspectorParams) => {
   const { renderer, scene, camera, frameloop, orbitControls, autoNavControls, customParams } = params;
-
+  /*
+  similar to:
+  <canvas camera scene gl frameloop ...>
+    <Inspector />
+  </canvas>
+  */
   root?.configure({
     events,
     camera,

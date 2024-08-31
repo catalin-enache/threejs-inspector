@@ -12,12 +12,13 @@ import patchThree from 'lib/App/SetUp/patchThree';
 import { outliner } from 'lib/third_party/ui.outliner';
 
 const {
-  currentScene,
+  getCurrentScene,
   setCurrentScene,
-  interactableObjects,
   getIsPlayingCamera,
-  cameraToUseOnPlay,
+  getCameraToUseOnPlay,
+  shouldContainItsHelper,
   updateCameras,
+  interactableObjects,
   defaultPerspectiveCamera,
   defaultOrthographicCamera
 } = patchThree;
@@ -73,23 +74,36 @@ const SetUp = (props: SetUpProps) => {
     };
   }, [gl]);
 
+  // Transferring certain objects from the defaultScene to the scene when scene is changed
   useEffect(() => {
     scene.__inspectorData.currentCamera = camera; // used in sizeUtils when importing model and in App when !isInjected
     scene.__inspectorData.orbitControlsRef = orbitControlsRef;
     scene.__inspectorData.transformControlsRef = transformControlsRef;
     outliner.scene = scene;
-    if (scene === currentScene) {
+
+    if (scene === getCurrentScene()) {
       // prevent re-adding camera helpers once they were removed when playing
       return;
     }
+
     // Transferring existing helpers.
-    // Helpers were added to the threeScene (due to patching Object3D) before receiving here the replacement scene.
+    // Helpers for objects in the scene were added to the threeScene (defaultScene)
+    // - due to patching Object3D - before receiving here the actual scene used by the app
+    // into which the Inspector was injected.
     scene.traverse((child) => {
-      if (child.__inspectorData.helper) {
+      if (child.__inspectorData.helper && !shouldContainItsHelper(child)) {
         scene.add(child.__inspectorData.helper);
       }
     });
     setCurrentScene(scene);
+    // TODO: do we really need this ? does it makes sense ? when ? related to App TODO when using useInspector hook.
+    // it is used in useInspector hook to update the scene and return it.
+    // But useInspector is only used by the main app (when we want to build an app with this framework).
+    // useInspector is not used in the apps where the Inspector is injected.
+    // The scene changes when the Inspector is injected into another app,
+    // so it is not needed to update the scene in useInspector
+    // since useInspector is not used in another app.
+    useAppStore.getState().triggerCurrentSceneChanged();
   }, [scene, camera]);
 
   const render = useCallback(() => {
@@ -104,7 +118,7 @@ const SetUp = (props: SetUpProps) => {
     // It is ignored when injectInspector is used.
     const sceneInspectorData = scene.__inspectorData;
     if (['playing', 'paused'].includes(playingState)) {
-      sceneInspectorData.currentCamera = cameraToUseOnPlay || sceneInspectorData.currentCamera;
+      sceneInspectorData.currentCamera = getCameraToUseOnPlay() || sceneInspectorData.currentCamera;
     } else {
       sceneInspectorData.currentCamera =
         cameraType === 'perspective' ? defaultPerspectiveCamera : defaultOrthographicCamera;
@@ -261,4 +275,4 @@ const SetUp = (props: SetUpProps) => {
 };
 
 // eslint-disable-next-line
-export { SetUp, currentScene };
+export { SetUp, getCurrentScene };

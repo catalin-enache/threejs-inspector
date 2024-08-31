@@ -3,7 +3,7 @@ import { RootState, useFrame } from '@react-three/fiber';
 import { _XRFrame } from '@react-three/fiber/dist/declarations/src/core/utils';
 import { AppStore, useAppStore } from 'src/store';
 import { useEffect, useState } from 'react';
-import { currentScene, SetUp } from 'lib/App/SetUp/SetUp';
+import { getCurrentScene, SetUp } from 'lib/App/SetUp/SetUp';
 import { CPanel } from 'lib/App/CPanel/CPanel';
 import { KeyListener } from 'lib/App/KeyListener';
 
@@ -27,13 +27,22 @@ export const usePlay = (
   useFrame(playingState === 'playing' ? boundCallback : boundNoop, renderPriority);
 };
 
-export const useDefaultScene = () => {
+export const useInspector = () => {
   const currentCameraStateFake = useAppStore((state) => state.currentCameraStateFake);
-  const [camera, setCamera] = useState(currentScene.__inspectorData.currentCamera);
+  const currentSceneStateFake = useAppStore((state) => state.currentSceneStateFake);
+  const [camera, setCamera] = useState(getCurrentScene().__inspectorData.currentCamera);
+  const [scene, setScene] = useState(getCurrentScene());
 
   useEffect(() => {
-    setCamera(currentScene.__inspectorData.currentCamera);
+    setCamera(getCurrentScene().__inspectorData.currentCamera);
   }, [currentCameraStateFake]);
+
+  // TODO: why wold we need to listen to scene change since useInspector is only used in the main App ?
+  // and in a normal scenario a scene will change when another app is injecting the inspector.
+  // related to TODO in SetUp => setCurrentScene
+  useEffect(() => {
+    setScene(getCurrentScene());
+  }, [currentSceneStateFake]);
 
   const inspector = useMemo(
     () => (
@@ -48,7 +57,7 @@ export const useDefaultScene = () => {
 
   return {
     camera,
-    scene: currentScene,
+    scene,
     inspector
   };
 };

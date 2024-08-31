@@ -127,6 +127,8 @@ export interface AppStore {
   toggleCameraType: () => void;
   currentCameraStateFake: number;
   triggerCurrentCameraChanged: () => void;
+  currentSceneStateFake: number;
+  triggerCurrentSceneChanged: () => void;
   attachDefaultControllersToPlayingCamera: boolean;
   setAttachDefaultControllersToPlayingCamera: (attachDefaultControllersToPlayingCamera: boolean) => void;
   toggleAttachDefaultControllersToPlayingCamera: () => void;
@@ -351,6 +353,12 @@ export const useAppStore = create<AppStore>()(
     triggerCurrentCameraChanged: () => {
       set((state) => ({
         currentCameraStateFake: state.currentCameraStateFake < 100 ? state.currentCameraStateFake + 1 : 0
+      }));
+    },
+    currentSceneStateFake: 0,
+    triggerCurrentSceneChanged: () => {
+      set((state) => ({
+        currentSceneStateFake: state.currentSceneStateFake < 100 ? state.currentSceneStateFake + 1 : 0
       }));
     },
     attachDefaultControllersToPlayingCamera: attachDefaultControllersToPlayingCamera,

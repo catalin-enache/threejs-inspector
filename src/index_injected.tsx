@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { ReactNode, StrictMode, useState, useCallback } from 'react';
+import { ReactNode, StrictMode, useState, useCallback, useEffect } from 'react';
 import { createRoot } from 'react-dom/client';
 import { Canvas } from '@react-three/fiber';
 import { OrbitControls } from '@react-three/drei';
@@ -31,6 +31,30 @@ const customParams = {
   }
 };
 
+const glOptions = { antialias: true, precision: 'highp' };
+
+const scene1 = new THREE.Scene();
+scene1.fog = new THREE.Fog(0xa0a0a0, 2, 100);
+
+const scene2 = new THREE.Scene();
+scene2.fog = new THREE.Fog(0xff0000, 2, 100);
+
+const cameraPosition = new THREE.Vector3(0, 0, 12);
+const camera1 = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+camera1.position.copy(cameraPosition);
+
+const camera2 = new THREE.OrthographicCamera(
+  window.innerWidth / -2,
+  window.innerWidth / 2,
+  window.innerHeight / 2,
+  window.innerHeight / -2,
+  0.1,
+  1000
+);
+camera2.position.copy(cameraPosition);
+camera2.zoom = 45;
+camera2.updateProjectionMatrix();
+
 interface AppProps {
   children?: ReactNode;
 }
@@ -38,19 +62,30 @@ interface AppProps {
 export function App(props: AppProps) {
   const { children } = props;
   const [orbitControls, setOrbitControls] = useState<OrbitControlsImpl | null | undefined>(null);
+  // @ts-ignore
+  const [scene, setScene] = useState(scene1);
+  // @ts-ignore
+  const [camera, setCamera] = useState<THREE.PerspectiveCamera | THREE.OrthographicCamera>(camera1);
 
   const setOrbitControlsRef = useCallback((ctrl: any) => {
     setOrbitControls(ctrl);
   }, []);
 
+  useEffect(() => {
+    const intervalId = setInterval(() => {
+      // setScene((prevScene) => {
+      //   // TODO: investigate the huge memory leak caused by this
+      //   return prevScene === scene1 ? scene2 : scene1;
+      // });
+      // setCamera((prevCamera) => {
+      //   return prevCamera === camera1 ? camera2 : camera1;
+      // });
+    }, 4000);
+    return () => clearInterval(intervalId);
+  }, []);
+
   return (
-    <Canvas
-      camera={{ fov: 75, near: 0.1, far: 1000, position: [0, 0, 15] }}
-      scene={{ fog: new THREE.Fog(0xa0a0a0, 2, 100) }}
-      shadows={'soft'}
-      gl={{ antialias: true, precision: 'highp' }}
-      frameloop={'always'}
-    >
+    <Canvas key={scene.uuid} camera={camera} scene={scene} shadows={'soft'} gl={glOptions} frameloop={'always'}>
       <Inspector autoNavControls={true} orbitControls={orbitControls} customParams={customParams} />
       <OrbitControls makeDefault ref={setOrbitControlsRef} enableDamping={false} />
       {children}

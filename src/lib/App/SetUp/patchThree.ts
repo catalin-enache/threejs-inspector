@@ -146,6 +146,7 @@ type Module = {
   handleObjectAdded: (object: THREE.Object3D) => void;
   destroy: (object: any) => void;
   cleanupAfterRemovedObject: (object: THREE.Object3D) => void;
+  subscriptions: Record<string, (() => void)[]>;
 };
 
 const module: Module = {
@@ -157,7 +158,7 @@ const module: Module = {
     this.currentScene = scene;
   },
   interactableObjects: {},
-
+  subscriptions: {},
   // ----------------------------------- Cameras >> -----------------------------------
 
   defaultPerspectiveCamera,
@@ -337,31 +338,36 @@ const module: Module = {
     pickerInspectorData.isPicker = true;
 
     pickerIsNeeded && object.add(picker);
+    pickerIsNeeded && object.__inspectorData.dependantObjects!.push(picker);
+    object.__inspectorData.dependantObjects!.push(helper);
 
     if (object instanceof THREE.SpotLight) {
       picker.lookAt(object.target.position);
     }
-    object.__inspectorData.dependantObjects!.push(helper);
 
     // helper is added to the scene in handleObjectAdded function except helpers for these object types
     if (this.shouldContainItsHelper(object)) {
       object.add(helper);
     }
 
-    useAppStore.subscribe(
-      (appStore) => appStore.selectedObjectStateFake,
-      () => {
-        if (object instanceof THREE.Light) {
-          // @ts-ignore
-          object.color && picker.material.color.copy(object.color);
+    this.subscriptions[object.uuid] = this.subscriptions[object.uuid] || [];
+
+    this.subscriptions[object.uuid].push(
+      useAppStore.subscribe(
+        (appStore) => appStore.selectedObjectStateFake,
+        () => {
+          if (object instanceof THREE.Light) {
+            // @ts-ignore
+            object.color && picker.material.color.copy(object.color);
+          }
+          if (object instanceof THREE.SpotLight) {
+            picker.lookAt(object.target.position);
+          } else if (object instanceof THREE.RectAreaLight) {
+            picker.geometry.dispose();
+            picker.geometry = new THREE.PlaneGeometry(object.width, object.height);
+          }
         }
-        if (object instanceof THREE.SpotLight) {
-          picker.lookAt(object.target.position);
-        } else if (object instanceof THREE.RectAreaLight) {
-          picker.geometry.dispose();
-          picker.geometry = new THREE.PlaneGeometry(object.width, object.height);
-        }
-      }
+      )
     );
 
     const showHelpers = useAppStore.getState().showHelpers;
@@ -369,37 +375,42 @@ const module: Module = {
     helper.visible = showGizmos && showHelpers;
     picker.visible = showGizmos;
 
-    useAppStore.subscribe(
-      (appStore) => appStore.showGizmos,
-      (showGizmos) => {
-        helper.visible = showGizmos;
-        picker.visible = showGizmos;
-      }
+    this.subscriptions[object.uuid].push(
+      useAppStore.subscribe(
+        (appStore) => appStore.showGizmos,
+        (showGizmos) => {
+          helper.visible = showGizmos;
+          picker.visible = showGizmos;
+        }
+      )
     );
 
-    useAppStore.subscribe(
-      (appStore) => appStore.showHelpers && appStore.showGizmos,
-      (showHelpers) => {
-        helper.visible = showHelpers;
-      }
+    this.subscriptions[object.uuid].push(
+      useAppStore.subscribe(
+        (appStore) => appStore.showHelpers && appStore.showGizmos,
+        (showHelpers) => {
+          helper.visible = showHelpers;
+        }
+      )
     );
 
-    useAppStore.subscribe(
-      (appStore) => appStore.playingState,
-      (playingState) => {
-        // we don't need to remove helpers for default cameras since R3F does not add cameras to scene
-        if (objectInspectorData.useOnPlay) {
-          if (['playing', 'paused'].includes(playingState)) {
-            pickerIsNeeded && object.remove(picker);
-            // since threeScene is global, we can access its latest value here
-            this.currentScene.remove(helper);
-          } else {
-            pickerIsNeeded && object.add(picker);
-            this.interactableObjects[picker.uuid] = picker;
-            this.currentScene.add(helper);
+    this.subscriptions[object.uuid].push(
+      useAppStore.subscribe(
+        (appStore) => appStore.playingState,
+        (playingState) => {
+          // we don't need to remove helpers for default cameras since R3F does not add cameras to scene
+          if (objectInspectorData.useOnPlay) {
+            if (['playing', 'paused'].includes(playingState)) {
+              pickerIsNeeded && object.remove(picker);
+              this.currentScene.remove(helper);
+            } else {
+              pickerIsNeeded && object.add(picker);
+              this.interactableObjects[picker.uuid] = picker;
+              this.currentScene.add(helper);
+            }
           }
         }
-      }
+      )
     );
   },
 
@@ -424,6 +435,11 @@ const module: Module = {
     object.traverse((child) => {
       if (this.currentScene.__inspectorData.transformControlsRef?.current?.object === child) {
         this.currentScene.__inspectorData.transformControlsRef.current.detach();
+      }
+
+      // unsubscribe
+      while (this.subscriptions[child.uuid]?.length) {
+        this.subscriptions[child.uuid].pop()!();
       }
 
       while (child.__inspectorData.dependantObjects!.length) {

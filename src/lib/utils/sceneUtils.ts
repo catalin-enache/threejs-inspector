@@ -8,7 +8,6 @@ export function disposeMaterial(material: THREE.Material) {
       value.dispose();
     }
   }
-  // Finally, dispose the material itself
   material.dispose();
 }
 
@@ -27,12 +26,12 @@ export function deepCleanScene(scene: THREE.Scene) {
         disposeMaterial(object.material);
       }
     }
+
     if ('dispose' in object) {
       object.dispose();
     }
   });
 
-  // Remove all children from the scene
   while (scene.children.length > 0) {
     scene.remove(scene.children[0]);
   }

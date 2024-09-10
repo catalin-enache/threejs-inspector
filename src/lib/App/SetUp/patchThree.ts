@@ -270,7 +270,10 @@ const module: Module = {
                         ? new PositionalAudioHelper(object as THREE.PositionalAudio, helperSize)
                         : new THREE.Mesh(); // meaningless helper
 
-    const meshGeometry =
+    helper.name = `helper for ${object.name || object.type || ''} ${object.uuid}`;
+    helper.__inspectorData.isHelper = true;
+
+    const pickerGeometry =
       object instanceof THREE.DirectionalLight
         ? new THREE.PlaneGeometry(helperSize * 4, helperSize * 4)
         : object instanceof THREE.RectAreaLight
@@ -285,11 +288,8 @@ const module: Module = {
                   ? new THREE.BoxGeometry(helperSize, helperSize, helperSize)
                   : new THREE.BoxGeometry(helperSize, helperSize, helperSize); // generic mesh geometry
 
-    helper.name = `helper for ${object.name || object.type || ''} ${object.uuid}`;
-    helper.__inspectorData.isHelper = true;
-
     const picker: THREE.Mesh = new THREE.Mesh(
-      meshGeometry,
+      pickerGeometry,
       new THREE.MeshBasicMaterial({
         color:
           (object as THREE.Light).color || // camera doesn't have color

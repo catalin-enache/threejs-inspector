@@ -437,6 +437,7 @@ const module: Module = {
         this.currentScene.__inspectorData.transformControlsRef.current.detach();
       }
 
+      // TODO: continue unit testing here
       // unsubscribe
       while (this.subscriptions[child.uuid]?.length) {
         this.subscriptions[child.uuid].pop()!();
@@ -448,7 +449,6 @@ const module: Module = {
         this.destroy(dependantObject);
       }
 
-      // TODO: continue unit testing here
       // No need to destroy everything, geometries and materials might be reused
       const destroyOnRemove = useAppStore.getState().destroyOnRemove;
       if (

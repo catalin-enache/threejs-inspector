@@ -75,6 +75,8 @@ const SetUp = (props: SetUpProps) => {
   }, [gl]);
 
   // Transferring certain objects from the defaultScene to the scene when scene is changed
+  // defaultScene will be replaced by new scene when injected, and it will happen only once.
+  // R3F does not support changing the scene after the initial configuration.
   useEffect(() => {
     scene.__inspectorData.currentCamera = camera; // used in sizeUtils when importing model and in App when !isInjected
     scene.__inspectorData.orbitControlsRef = orbitControlsRef;

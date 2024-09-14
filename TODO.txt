@@ -82,6 +82,13 @@ However, to test with multi texture bindings later
 
 Investigate memory leak that happens even is not doing anything.
 
+Need to add some cleanups when scene is changed.
+
+Make sure we can use Experience and lib helpers without patchingThree or without using Setup and Inspector
+
+Ensure CustomParams do not leak
+
+
 Investigate why the tab is moved from Custom Controls tab to Selected tab
 when having a selected object in scene and clicking on checkboxes in Custom tab.
 

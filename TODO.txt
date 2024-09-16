@@ -80,6 +80,8 @@ After loading from scene config the binding reader fires continuously.
 Not happening anymore since using correct internal lastValue.
 However, to test with multi texture bindings later
 
+Investigate when Loading and deleting Jeniffer the textures are increasing by 1.
+
 Investigate memory leak that happens even is not doing anything.
 
 Need to add some cleanups when scene is changed.

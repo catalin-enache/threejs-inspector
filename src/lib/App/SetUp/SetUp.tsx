@@ -98,13 +98,7 @@ const SetUp = (props: SetUpProps) => {
       }
     });
     setCurrentScene(scene);
-    // TODO: do we really need this ? does it makes sense ? when ? related to App TODO when using useInspector hook.
-    // it is used in useInspector hook to update the scene and return it.
-    // But useInspector is only used by the main app (when we want to build an app with this framework).
-    // useInspector is not used in the apps where the Inspector is injected.
-    // The scene changes when the Inspector is injected into another app,
-    // so it is not needed to update the scene in useInspector
-    // since useInspector is not used in another app.
+    // For now no one is interested in this event.
     useAppStore.getState().triggerCurrentSceneChanged();
   }, [scene, camera]);
 

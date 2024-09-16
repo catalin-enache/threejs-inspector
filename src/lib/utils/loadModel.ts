@@ -205,7 +205,6 @@ export const loadModel = async (
       multiAssetSources.map(async (source) => {
         let loaded = await loader.loadAsync(source);
         if (loader instanceof GLTFLoader) {
-          (loaded as GLTF).scene.__inspectorData.fullData = loaded;
           const { animations } = loaded as GLTF;
           loaded = (loaded as GLTF).scene;
           loaded.animations = animations;

@@ -1,8 +1,8 @@
-import { useMemo } from 'react';
+import * as THREE from 'three';
+import { useMemo, useEffect, useState } from 'react';
 import { RootState, useFrame } from '@react-three/fiber';
 import { _XRFrame } from '@react-three/fiber/dist/declarations/src/core/utils';
 import { AppStore, useAppStore } from 'src/store';
-import { useEffect, useState } from 'react';
 import { getCurrentScene, SetUp } from 'lib/App/SetUp/SetUp';
 import { CPanel } from 'lib/App/CPanel/CPanel';
 import { KeyListener } from 'lib/App/KeyListener';
@@ -27,37 +27,42 @@ export const usePlay = (
   useFrame(playingState === 'playing' ? boundCallback : boundNoop, renderPriority);
 };
 
-export const useInspector = () => {
-  const currentCameraStateFake = useAppStore((state) => state.currentCameraStateFake);
-  const currentSceneStateFake = useAppStore((state) => state.currentSceneStateFake);
-  const [camera, setCamera] = useState(getCurrentScene().__inspectorData.currentCamera);
-  const [scene, setScene] = useState(getCurrentScene());
+type UseInspector = ({ cameraType }: { cameraType?: 'perspective' | 'orthographic' }) => {
+  camera?: THREE.PerspectiveCamera | THREE.OrthographicCamera;
+  scene: THREE.Scene;
+  inspector: JSX.Element;
+};
 
+// Note: when using useInspector hook, the App !MUST! use the scene and camera from the hook.
+// If that's not desired do not use useInspector hook but inject the <Inspector /> component instead.
+export const useInspector: UseInspector = ({ cameraType } = {}) => {
+  const currentCameraStateFake = useAppStore((state) => state.currentCameraStateFake);
+  const [camera, setCamera] = useState(getCurrentScene().__inspectorData.currentCamera);
+
+  useEffect(() => {
+    if (cameraType) {
+      useAppStore.getState().setCameraType(cameraType);
+    }
+  }, [cameraType]);
+
+  // cameraType in SetUp drives the currentCameraStateFake change
   useEffect(() => {
     setCamera(getCurrentScene().__inspectorData.currentCamera);
   }, [currentCameraStateFake]);
 
-  // TODO: why wold we need to listen to scene change since useInspector is only used in the main App ?
-  // and in a normal scenario a scene will change when another app is injecting the inspector.
-  // related to TODO in SetUp => setCurrentScene
-  useEffect(() => {
-    setScene(getCurrentScene());
-  }, [currentSceneStateFake]);
-
-  const inspector = useMemo(
-    () => (
+  const inspector = useMemo(() => {
+    return (
       <>
         <SetUp isInjected={false} autoNavControls />
         <CPanel />
         <KeyListener isInjected={false} autoNavControls />
       </>
-    ),
-    []
-  );
+    );
+  }, []);
 
   return {
     camera,
-    scene,
+    scene: getCurrentScene(),
     inspector
   };
 };

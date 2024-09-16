@@ -191,8 +191,8 @@ const module: Module = {
     }
   },
 
-  getIsPlayingCamera(camera: THREE.Camera) {
-    return camera !== defaultPerspectiveCamera && camera !== defaultOrthographicCamera;
+  getIsPlayingCamera(camera: THREE.Camera): boolean {
+    return !!camera.__inspectorData.useOnPlay;
   },
 
   // ----------------------------------- << Cameras -----------------------------------
@@ -493,7 +493,7 @@ const module: Module = {
       ) {
         // if multiple cameras are useOnPlay, only the last one will be considered
         this.cameraToUseOnPlay = object as THREE.PerspectiveCamera | THREE.OrthographicCamera;
-        useAppStore.getState().triggerCurrentCameraChanged();
+        // current camera did not change just yet, only cameraToUseOnPlay is updated
       }
       // picker appears in __inspectorData after makeHelpers is called
       if (__inspectorData.picker) {

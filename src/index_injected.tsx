@@ -33,11 +33,8 @@ const customParams = {
 
 const glOptions = { antialias: true, precision: 'highp' };
 
-const scene1 = new THREE.Scene();
-scene1.fog = new THREE.Fog(0xa0a0a0, 2, 100);
-
-const scene2 = new THREE.Scene();
-scene2.fog = new THREE.Fog(0xff0000, 2, 100);
+const scene = new THREE.Scene();
+scene.fog = new THREE.Fog(0xa0a0a0, 2, 100);
 
 const cameraPosition = new THREE.Vector3(0, 0, 12);
 const camera1 = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
@@ -63,20 +60,13 @@ export function App(props: AppProps) {
   const { children } = props;
   const [orbitControls, setOrbitControls] = useState<OrbitControlsImpl | null | undefined>(null);
   // @ts-ignore
-  const [scene, setScene] = useState(scene1);
-  // @ts-ignore
   const [camera, setCamera] = useState<THREE.PerspectiveCamera | THREE.OrthographicCamera>(camera1);
-
   const setOrbitControlsRef = useCallback((ctrl: any) => {
     setOrbitControls(ctrl);
   }, []);
 
   useEffect(() => {
     const intervalId = setInterval(() => {
-      // setScene((prevScene) => {
-      //   // TODO: investigate the huge memory leak caused by this
-      //   return prevScene === scene1 ? scene2 : scene1;
-      // });
       // setCamera((prevCamera) => {
       //   return prevCamera === camera1 ? camera2 : camera1;
       // });
@@ -85,7 +75,7 @@ export function App(props: AppProps) {
   }, []);
 
   return (
-    <Canvas key={scene.uuid} camera={camera} scene={scene} shadows={'soft'} gl={glOptions} frameloop={'always'}>
+    <Canvas camera={camera} scene={scene} shadows={'soft'} gl={glOptions} frameloop={'always'}>
       <Inspector autoNavControls={true} orbitControls={orbitControls} customParams={customParams} />
       <OrbitControls makeDefault ref={setOrbitControlsRef} enableDamping={false} />
       {children}

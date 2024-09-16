@@ -28,7 +28,7 @@ export const CameraStoreBindings = (_params: CommonGetterParams) => ({
     onChange: ((_, evt: any) => {
       useAppStore.getState().setCameraType(evt.value);
     }) as onChange,
-    if: () => !useAppStore.getState().isInjected
+    if: () => !useAppStore.getState().isInjected && useAppStore.getState().playingState === 'stopped'
   },
   attachDefaultControllersToPlayingCamera: {
     label: 'Attach default controllers when Playing custom camera ( ] )',

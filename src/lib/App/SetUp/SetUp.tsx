@@ -122,6 +122,8 @@ const SetUp = (props: SetUpProps) => {
     if (['playing', 'paused'].includes(playingState)) {
       sceneInspectorData.currentCamera = getCameraToUseOnPlay() || sceneInspectorData.currentCamera;
     } else {
+      // Note: when using useInspector hook, the App !MUST! use the scene and camera from the hook.
+      // If that's not desired do not use useInspector hook but inject the <Inspector /> component instead.
       sceneInspectorData.currentCamera =
         cameraType === 'perspective' ? defaultPerspectiveCamera : defaultOrthographicCamera;
     }

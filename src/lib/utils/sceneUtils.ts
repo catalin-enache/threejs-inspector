@@ -6,12 +6,23 @@ export function disposeMaterial(material: THREE.Material) {
     const value = material[key] ?? {};
     if (value instanceof THREE.Texture) {
       value.dispose();
+      // @ts-ignore
+      delete value._listeners; // internals to Three, deleting just in case
     }
   }
   material.dispose();
 }
 
 export function deepCleanScene(scene: THREE.Scene) {
+  if (scene.background instanceof THREE.Texture) {
+    scene.background.dispose();
+  }
+  if (scene.environment) {
+    scene.environment.dispose();
+  }
+  scene.background = null;
+  scene.environment = null;
+
   scene.traverse((object: any) => {
     if (object.geometry) {
       object.geometry.dispose();

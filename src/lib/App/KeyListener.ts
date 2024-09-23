@@ -1,5 +1,5 @@
 // React component that listens for key presses and calls a callback when a key is pressed.
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 import { useAppStore } from 'src/store';
 import { focusCamera, resetCamera } from 'lib/utils/cameraUtils';
 import { useThree } from '@react-three/fiber';
@@ -31,7 +31,7 @@ export function KeyListener(props: KeyListenerProps) {
   const cPanelVisible = useAppStore((state) => state.cPanelVisible);
   const isEditorMode = useAppStore((state) => state.showGizmos || state.cPanelVisible);
   const { scene } = useThree();
-  const keysPressed: any = {};
+  const keysPressed: any = useMemo(() => ({}), []);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -159,6 +159,6 @@ export function KeyListener(props: KeyListenerProps) {
       window.removeEventListener('keydown', handleKeyDown);
       window.removeEventListener('keyup', handleKeyUp);
     };
-  }, [isEditorMode, cPanelVisible]);
+  }, [isEditorMode, cPanelVisible, scene, autoNavControls, isInjected, keysPressed]);
   return null;
 }

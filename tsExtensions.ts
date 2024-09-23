@@ -22,6 +22,7 @@ export type __inspectorData = {
     | LightProbeHelper
     | PositionalAudioHelper
     | THREE.Mesh; // fallback meaningless helper
+  preventDestroy: boolean;
   isInspectable: boolean;
   useOnPlay: boolean;
   isPicker: boolean;

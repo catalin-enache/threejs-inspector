@@ -457,7 +457,7 @@ export const CPanel = () => {
 
   return (
     <>
-      <LoadModel scene={scene} />
+      <LoadModel scene={scene} camera={camera} />
       {showAxesHelper && <axesHelper args={[1000]} />}
       {showGridHelper && <gridHelper args={[1000, 1000]} />}
     </>

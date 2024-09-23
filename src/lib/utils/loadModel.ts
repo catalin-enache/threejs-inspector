@@ -138,9 +138,10 @@ const mergeAnimationsFromRestAssets = (
 // https://github.com/mrdoob/three.js/issues/28258
 export const loadModel = async (
   rootFile: File | string,
-  scene: THREE.Scene,
   {
     filesArray = [],
+    scene,
+    camera,
     changeGeometry,
     recombineByMaterial = true,
     autoScaleRatio = 0.4,
@@ -149,6 +150,8 @@ export const loadModel = async (
     debug
   }: {
     filesArray?: (File | string)[];
+    scene?: THREE.Scene;
+    camera?: THREE.Camera;
     changeGeometry?: 'indexed' | 'non-indexed';
     recombineByMaterial?: boolean;
     autoScaleRatio?: number;
@@ -158,7 +161,9 @@ export const loadModel = async (
   } = {}
 ) => {
   const rootSource = rootFile instanceof File ? rootFile.name : rootFile;
-  let { name, fileType } = getNameAndType(rootSource, fileTypeMap);
+  const nameAndFileType = getNameAndType(rootSource, fileTypeMap);
+  let { name } = nameAndFileType;
+  const { fileType } = nameAndFileType;
 
   debug &&
     console.log('loadModel start', {
@@ -331,9 +336,9 @@ export const loadModel = async (
 
   debug && console.log('loadModel done', { name, fileType, result, root });
 
-  if (autoScaleRatio) {
+  if (autoScaleRatio && scene && camera) {
     const meshSize = getBoundingBoxSize(root);
-    const sceneSize = getSceneBoundingBoxSize(scene, scene.__inspectorData.currentCamera!, new Set([root]), true);
+    const sceneSize = getSceneBoundingBoxSize(scene, camera, new Set([root]), true);
     const scaleFactor = calculateScaleFactor(meshSize, sceneSize, autoScaleRatio);
     root.scale.set(scaleFactor, scaleFactor, scaleFactor);
   }

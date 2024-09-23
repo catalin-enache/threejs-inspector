@@ -26,11 +26,12 @@ const allowedExtensions = [
 
 interface LoadModelProps {
   scene: THREE.Scene;
+  camera: THREE.PerspectiveCamera | THREE.OrthographicCamera;
 }
 
 // Using imperative DOM since we cannot use React predefined elements inside R3F canvas.
 export const LoadModel = (props: LoadModelProps) => {
-  const { scene } = props;
+  const { scene, camera } = props;
   const loadAssetIsOpen = useAppStore((state) => state.loadModelIsOpen);
   const setLoadAssetIsOpen = useAppStore((state) => state.setLoadModelIsOpen);
   const contentRef = useRef<any>(null);
@@ -126,8 +127,10 @@ export const LoadModel = (props: LoadModelProps) => {
       // reset input so we can upload the same file again
       uploadInput.value = '';
       if (!rootFile) return;
-      loadModel(rootFile, scene, {
+      loadModel(rootFile, {
         filesArray,
+        scene,
+        camera,
         changeGeometry: changeGeometry.current, // 'indexed' | 'non-indexed'
         recombineByMaterial: recombineByMaterial.current,
         autoScaleRatio: autoScaleRatio.current, // 0..1 percentage

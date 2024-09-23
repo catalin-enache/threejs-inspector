@@ -19,6 +19,12 @@ const objectMatchesSearch = (object: THREE.Object3D): boolean => {
     Array.isArray((object as THREE.Mesh).material) ? (object as THREE.Mesh).material : [(object as THREE.Mesh).material]
   ) as THREE.Material[];
 
+  const textures = objectMaterials.map((material) => {
+    if (!material) return [];
+    const _textures = Object.values(material).filter((value) => value instanceof THREE.Texture);
+    return _textures.map((texture) => [texture.name, texture.id, texture.uuid]);
+  });
+
   const searchIn = [
     object.name,
     object.type,
@@ -29,7 +35,8 @@ const objectMatchesSearch = (object: THREE.Object3D): boolean => {
     (object as THREE.Mesh).geometry?.uuid,
     ...objectMaterials.map((material) => material?.name),
     ...objectMaterials.map((material) => material?.id),
-    ...objectMaterials.map((material) => material?.uuid)
+    ...objectMaterials.map((material) => material?.uuid),
+    ...textures.flat(2)
   ].map((s) => (s ?? '').toString().toLowerCase());
 
   const objectIsMatch = searchIn.some((entry) => entry.includes(outlinerSearch));

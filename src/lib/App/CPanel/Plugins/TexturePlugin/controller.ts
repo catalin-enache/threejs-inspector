@@ -9,8 +9,14 @@ const cleanUp = (self: TextureController) => {
   if (!useAppStore.getState().getSelectedObject()) {
     cacheMeshMap.forEach((value) => {
       value.mesh.geometry.dispose();
-      (value.mesh.material as THREE.MeshStandardMaterial).map?.dispose();
-      (value.mesh.material as THREE.MeshStandardMaterial).dispose();
+      const materials = Array.isArray(value.mesh.material) ? value.mesh.material : [value.mesh.material];
+      materials.forEach((material) => {
+        const textures = Object.values(material).filter((value) => value instanceof THREE.Texture);
+        textures.forEach((texture) => {
+          (texture as THREE.Texture).dispose();
+        });
+        (material as THREE.Material).dispose();
+      });
       value.mapTexture.dispose();
     });
     cacheMeshMap.clear();

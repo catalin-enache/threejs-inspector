@@ -415,6 +415,9 @@ const module: Module = {
   },
 
   destroy(object: any) {
+    if (object.__inspectorData?.preventDestroy) {
+      return;
+    }
     if ('dispose' in object) {
       object.dispose(); // for helpers
     } else if (object instanceof THREE.Mesh) {
@@ -431,6 +434,7 @@ const module: Module = {
     }
   },
 
+  // Note: this is also called from offlineScene
   cleanupAfterRemovedObject(object: THREE.Object3D) {
     object.traverse((child) => {
       if (this.currentScene.__inspectorData.transformControlsRef?.current?.object === child) {
@@ -455,7 +459,8 @@ const module: Module = {
         (destroyOnRemove || child.__inspectorData.isPicker) &&
         child.__inspectorData.hitRedirect !== this.cameraToUseOnPlay
       ) {
-        // helpers and pickers for cameraToUseOnPlay needs to stay around (TODO: find out the reason for this requirement)
+        // helpers and pickers for cameraToUseOnPlay needs to stay around
+        // (when switching between play stop they are removed only temporarily)
         // TODO: investigate. Renderer Info reports that geometries and textures are less (cleaned up to some extent)
         // but memory (reported by Stats) is not released.
         this.destroy(child);

@@ -88,7 +88,9 @@ export class TextureView implements View {
     mapTexture.needsUpdate = true;
     const material = hdrJpgMaterial || thumbnailMaterial;
     const newMesh = new THREE.Mesh(geometry, material);
-    newMesh.name = 'TexturePluginMesh';
+    newMesh.name = `TexturePluginMesh for texture ${texture.uuid}`;
+    // cleanupAfterRemovedObject will dispose the geometry and material, but we prevent that here
+    newMesh.__inspectorData.preventDestroy = true;
     // caching the mesh since it seems it takes long to create it and influences CPanel re-rendering
     // when certain things change (things that trigger CPanel re-construction like rad/deg rotation, TMode, TSpace, ...)
     cacheMeshMap.set(texture.uuid, { mesh: newMesh, mapTexture });
@@ -101,6 +103,8 @@ export class TextureView implements View {
     offlineRenderer.render(offlineScene, offlineOrthographicCamera);
     // const snapshot = renderer.domElement.toDataURL(); // take a snapshot of the offline canvas
     this.ctx.drawImage(offlineRenderer.domElement, 0, 0);
+    // Note: even if we would not remove it, it will be removed by the next add.
+    // In Three when something is added, it is first removed from parent.
     offlineScene.remove(mesh);
     // we dispose everything in cacheMeshMap in controller when no current object is selected
   }

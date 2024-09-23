@@ -10,9 +10,11 @@ describe('loadModel', () => {
         withScene(
           0,
           true
-        )(async ({ scene }) => {
-          const fbx = await loadModel('/models/MyTests/with_non_native_textures/with_non_native_textures.fbx', scene, {
-            autoScaleRatio: 0.01
+        )(async ({ scene, camera }) => {
+          const fbx = await loadModel('/models/MyTests/with_non_native_textures/with_non_native_textures.fbx', {
+            autoScaleRatio: 0.01,
+            scene,
+            camera
           });
 
           if (!fbx) {

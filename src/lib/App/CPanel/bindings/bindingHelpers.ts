@@ -572,6 +572,7 @@ export const cleanupContainer = (container: any) => {
         }
       })
     );
+    child.dispose(); // prevent mem leak
     container.remove(child);
   });
 };

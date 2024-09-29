@@ -30,7 +30,7 @@ export function KeyListener(props: KeyListenerProps) {
   const { isInjected = true, autoNavControls = false } = props;
   const cPanelVisible = useAppStore((state) => state.cPanelVisible);
   const isEditorMode = useAppStore((state) => state.showGizmos || state.cPanelVisible);
-  const { scene } = useThree();
+  const { scene, camera } = useThree();
   const keysPressed: any = useMemo(() => ({}), []);
 
   useEffect(() => {
@@ -126,7 +126,7 @@ export function KeyListener(props: KeyListenerProps) {
           isEditorMode &&
             resetCamera({
               code: e.code,
-              camera: scene.__inspectorData.currentCamera,
+              camera,
               orbitControls: scene.__inspectorData.orbitControlsRef?.current
             });
           break;
@@ -135,7 +135,7 @@ export function KeyListener(props: KeyListenerProps) {
             focusCamera({
               transformControls: scene.__inspectorData.transformControlsRef?.current,
               orbitControls: scene.__inspectorData.orbitControlsRef?.current,
-              camera: scene.__inspectorData.currentCamera
+              camera
             });
           break;
         case 'Delete':
@@ -159,6 +159,6 @@ export function KeyListener(props: KeyListenerProps) {
       window.removeEventListener('keydown', handleKeyDown);
       window.removeEventListener('keyup', handleKeyUp);
     };
-  }, [isEditorMode, cPanelVisible, scene, autoNavControls, isInjected, keysPressed]);
+  }, [isEditorMode, cPanelVisible, scene, camera, autoNavControls, isInjected, keysPressed]);
   return null;
 }

@@ -77,7 +77,6 @@ const handleMouseUp = (e: MouseEvent) => {
 };
 
 export const manipulateMouseSpeed = (e: MouseEvent) => {
-  console.log('handleMouseDown', e);
   if (!e.isTrusted) return e;
   e.stopPropagation();
   if (e.button !== 0) return;

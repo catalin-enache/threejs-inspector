@@ -441,22 +441,31 @@ const module: Module = {
         this.currentScene.__inspectorData.transformControlsRef.current.detach();
       }
 
-      // TODO: continue unit testing here
-      // unsubscribe
+      // unsubscribing
       while (this.subscriptions[child.uuid]?.length) {
         this.subscriptions[child.uuid].pop()!();
       }
 
       while (child.__inspectorData.dependantObjects!.length) {
         const dependantObject = child.__inspectorData.dependantObjects!.pop()!;
+        // normally dependantObject should have a parent
+        // however what if dependantObject does not have a parent?
+        if (!dependantObject.parent) {
+          // ensuring here that removeFromParent will trigger destroy
+          child.add(dependantObject);
+          dependantObject.__inspectorData.isMarkedForDestroy = true;
+        }
+        // this will re-trigger cleanupAfterRemovedObject for dependantObject which will go through destroy
         dependantObject.removeFromParent();
-        this.destroy(dependantObject);
       }
 
       // No need to destroy everything, geometries and materials might be reused
       const destroyOnRemove = useAppStore.getState().destroyOnRemove;
       if (
-        (destroyOnRemove || child.__inspectorData.isPicker) &&
+        (destroyOnRemove ||
+          child.__inspectorData.isMarkedForDestroy ||
+          child.__inspectorData.isPicker ||
+          child.__inspectorData.isHelper) &&
         child.__inspectorData.hitRedirect !== this.cameraToUseOnPlay
       ) {
         // helpers and pickers for cameraToUseOnPlay needs to stay around

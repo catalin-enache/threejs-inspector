@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import Stats from 'three/examples/jsm/libs/stats.module.js';
 import patchThree from 'lib/App/SetUp/patchThree';
+import { useAppStore } from 'src/store';
 import './testScene.css';
 
 let camera: THREE.PerspectiveCamera,
@@ -83,6 +84,8 @@ function init() {
 
   stats = new Stats();
   // document.body.appendChild(stats.dom);
+
+  useAppStore.getState().setDestroyOnRemove(true);
 
   const removeScene = () => {
     canvas.parentNode?.removeChild(canvas);

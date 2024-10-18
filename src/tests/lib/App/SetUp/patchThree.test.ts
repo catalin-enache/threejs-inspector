@@ -19,7 +19,7 @@ describe('patchThree', () => {
           )(async ({ scene: _ }) => {
             const mesh = new THREE.Mesh();
             mesh.__inspectorData.isInspectable = true;
-            expect(mesh.__inspectorData.isInspectable).toBeTruthy();
+            expect(mesh.__inspectorData.isInspectable).toBe(true);
             done();
           });
         }));
@@ -36,8 +36,8 @@ describe('patchThree', () => {
             parent.add(child);
             child.add(grandchild);
             parent.__inspectorData.isInspectable = true;
-            expect(child.__inspectorData.isInspectable).toBeTruthy();
-            expect(grandchild.__inspectorData.isInspectable).toBeTruthy();
+            expect(child.__inspectorData.isInspectable).toBe(true);
+            expect(grandchild.__inspectorData.isInspectable).toBe(true);
             done();
           });
         }));
@@ -161,10 +161,10 @@ describe('patchThree', () => {
           expect(isSceneObject(mesh2)).toBeFalsy();
           scene.add(mesh1);
           offlineScene.add(mesh2);
-          expect(mesh1.parent instanceof THREE.Scene).toBeTruthy();
-          expect(mesh2.parent instanceof THREE.Scene).toBeTruthy();
-          expect(isSceneObject(mesh1)).toBeTruthy();
-          expect(isSceneObject(mesh2)).toBeFalsy();
+          expect(mesh1.parent instanceof THREE.Scene).toBe(true);
+          expect(mesh2.parent instanceof THREE.Scene).toBe(true);
+          expect(isSceneObject(mesh1)).toBe(true);
+          expect(isSceneObject(mesh2)).toBe(false);
           done();
         });
       }));
@@ -294,6 +294,7 @@ describe('patchThree', () => {
       }));
 
     it('calls cleanupAfterRemovedObject for the objects directly removed, not recursively through children', () =>
+      // because cleanupAfterRemovedObject will traverse all children
       new Promise<void>((done) => {
         withScene(
           0,
@@ -448,6 +449,40 @@ describe('patchThree', () => {
   });
 
   describe('cleanupAfterRemovedObject', () => {
+    describe('when object has subscriptions', () => {
+      it('clears subscriptions for the  object', () =>
+        new Promise<void>((done) => {
+          withScene(
+            0,
+            true
+          )(async ({ scene }) => {
+            const perspectiveCamera = new THREE.PerspectiveCamera();
+            scene.add(perspectiveCamera);
+            expect(patchThree.subscriptions[perspectiveCamera.uuid].length).toBe(4);
+            scene.remove(perspectiveCamera);
+            expect(patchThree.subscriptions[perspectiveCamera.uuid].length).toBe(0);
+            done();
+          });
+        }));
+    });
+
+    describe('when object has dependant objects', () => {
+      it('clears dependant objects', () =>
+        new Promise<void>((done) => {
+          withScene(
+            0,
+            true
+          )(async ({ scene }) => {
+            const perspectiveCamera = new THREE.PerspectiveCamera();
+            scene.add(perspectiveCamera);
+            expect(perspectiveCamera.__inspectorData.dependantObjects!.length).toBe(2);
+            scene.remove(perspectiveCamera);
+            expect(perspectiveCamera.__inspectorData.dependantObjects!.length).toBe(0);
+            done();
+          });
+        }));
+    });
+
     describe('when object.__inspectorData.helper', () => {
       it('removes helper from scene', () =>
         new Promise<void>((done) => {
@@ -466,25 +501,90 @@ describe('patchThree', () => {
     });
 
     describe('when object.__inspectorData.picker', () => {
-      it('removes picker from interactableObjects', () =>
+      it('removes picker from interactableObjects and destroys it', () =>
         new Promise<void>((done) => {
           withScene(
             0,
             true
           )(async ({ scene }) => {
+            const destroyOnRemove = useAppStore.getState().destroyOnRemove;
+            useAppStore.getState().setDestroyOnRemove(true);
             const perspectiveCamera = new THREE.PerspectiveCamera();
             scene.add(perspectiveCamera);
             expect(patchThree.interactableObjects[perspectiveCamera.__inspectorData.picker!.uuid]).toBe(
               perspectiveCamera.__inspectorData.picker
             );
+            const spyOnDestroy = vi.spyOn(patchThree, 'destroy');
             scene.remove(perspectiveCamera);
+            expect(spyOnDestroy).toHaveBeenCalledTimes(3);
+            expect(spyOnDestroy).toHaveBeenCalledWith(perspectiveCamera.__inspectorData.picker);
+            expect(spyOnDestroy).toHaveBeenCalledWith(perspectiveCamera.__inspectorData.helper);
+            expect(spyOnDestroy).toHaveBeenCalledWith(perspectiveCamera);
             expect(patchThree.interactableObjects[perspectiveCamera.__inspectorData.picker!.uuid]).toBe(undefined);
+            spyOnDestroy.mockRestore();
+            useAppStore.getState().setDestroyOnRemove(destroyOnRemove);
             done();
           });
         }));
     });
 
-    describe('when object.__inspectorData.isInspectable', () => {
+    describe('when useAppStore.getState().destroyOnRemove === false', () => {
+      it('does not destroy the object', () =>
+        new Promise<void>((done) => {
+          withScene(
+            0,
+            true
+          )(async ({ scene }) => {
+            const destroyOnRemove = useAppStore.getState().destroyOnRemove;
+            useAppStore.getState().setDestroyOnRemove(false);
+            const spyOnDestroy = vi.spyOn(patchThree, 'destroy');
+
+            const object = new THREE.Object3D();
+            scene.add(object);
+            scene.remove(object);
+
+            expect(spyOnDestroy).not.toHaveBeenCalled();
+
+            spyOnDestroy.mockRestore();
+            useAppStore.getState().setDestroyOnRemove(destroyOnRemove);
+            done();
+          });
+        }));
+    });
+
+    describe('when useAppStore.getState().destroyOnRemove === true', () => {
+      it('destroys the object recursively', () =>
+        new Promise<void>((done) => {
+          withScene(
+            0,
+            true
+          )(async ({ scene }) => {
+            const destroyOnRemove = useAppStore.getState().destroyOnRemove;
+            useAppStore.getState().setDestroyOnRemove(true);
+            const spyOnDestroy = vi.spyOn(patchThree, 'destroy');
+
+            const object = new THREE.Object3D();
+            const child = new THREE.Object3D();
+            const grandChild = new THREE.Object3D();
+            object.add(child);
+            child.add(grandChild);
+
+            scene.add(object);
+            scene.remove(object);
+
+            expect(spyOnDestroy).toHaveBeenCalledTimes(3);
+            expect(spyOnDestroy).toHaveBeenCalledWith(object);
+            expect(spyOnDestroy).toHaveBeenCalledWith(child);
+            expect(spyOnDestroy).toHaveBeenCalledWith(grandChild);
+
+            spyOnDestroy.mockRestore();
+            useAppStore.getState().setDestroyOnRemove(destroyOnRemove);
+            done();
+          });
+        }));
+    });
+
+    describe('when object is in interactableObjects', () => {
       it('removes object from interactableObjects', () =>
         new Promise<void>((done) => {
           withScene(
@@ -492,8 +592,8 @@ describe('patchThree', () => {
             true
           )(async ({ scene }) => {
             const mesh = new THREE.Mesh();
-            mesh.__inspectorData.isInspectable = true;
             scene.add(mesh);
+            patchThree.interactableObjects[mesh.uuid] = mesh;
             expect(patchThree.interactableObjects[mesh.uuid]).toBe(mesh);
             scene.remove(mesh);
             expect(patchThree.interactableObjects[mesh.uuid]).toBe(undefined);
@@ -546,6 +646,8 @@ describe('patchThree', () => {
           0,
           true
         )(async ({ scene }) => {
+          const destroyOnRemove = useAppStore.getState().destroyOnRemove;
+          useAppStore.getState().setDestroyOnRemove(false);
           const parent = new THREE.Object3D();
           const child = new THREE.Object3D();
           const spy = vi.spyOn(patchThree, 'destroy');
@@ -554,6 +656,7 @@ describe('patchThree', () => {
           const dependantObject = new THREE.Object3D();
           child.__inspectorData.dependantObjects!.push(dependantObject);
           scene.remove(parent);
+          useAppStore.getState().setDestroyOnRemove(destroyOnRemove);
           try {
             expect(child.__inspectorData.dependantObjects).toEqual([]);
             expect(spy).toHaveBeenCalledWith(dependantObject);

@@ -1,5 +1,4 @@
-const lerp = (start: number, end: number, t: number) =>
-  start + (end - start) * t;
+const lerp = (start: number, end: number, t: number) => start + (end - start) * t;
 
 let initialPivotX = 0;
 let currentPivotX = 0;
@@ -77,7 +76,8 @@ const handleMouseUp = (e: MouseEvent) => {
   cumulatedDistanceX = 0;
 };
 
-const handleMouseDown = (e: MouseEvent) => {
+export const manipulateMouseSpeed = (e: MouseEvent) => {
+  console.log('handleMouseDown', e);
   if (!e.isTrusted) return e;
   e.stopPropagation();
   if (e.button !== 0) return;
@@ -97,7 +97,3 @@ const handleMouseDown = (e: MouseEvent) => {
   });
   e.target?.dispatchEvent(event);
 };
-
-// prettier-ignore
-// @ts-ignore
-document.querySelector('#controlPanelContent')?.addEventListener('mousedown', handleMouseDown, true);

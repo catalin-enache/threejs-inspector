@@ -8,7 +8,8 @@ import { Draggable } from 'gsap/Draggable';
 import { useAppStore } from 'src/store';
 import { makeContinuousUpdate } from './continuousUpdate';
 import TexturePlugin from './Plugins/TexturePlugin';
-import './manipulateMouseSpeed';
+import { manipulateMouseSpeed } from './manipulateMouseSpeed';
+
 import {
   getObject3DBindings,
   getRendererBindings,
@@ -48,6 +49,10 @@ const helpContainer = document.getElementById('help')!;
 // "public/textures" is used in GitHub repo description while "textures" is used in running app in help section.
 // We share the same README.md file for both, so we need to replace the path in the help section.
 helpContainer.innerHTML = html.replaceAll('public/textures', 'textures');
+
+// prettier-ignore
+// @ts-ignore
+document.querySelector('#controlPanelContent')?.addEventListener('mousedown', manipulateMouseSpeed, true);
 
 // ----------------------- >> Remember last scroll position >> --------------------------------
 

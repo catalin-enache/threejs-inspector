@@ -27,6 +27,7 @@ export type __inspectorData = {
   useOnPlay: boolean;
   isPicker: boolean;
   isHelper: boolean;
+  isMarkedForDestroy: boolean;
   currentCamera: THREE.PerspectiveCamera | THREE.OrthographicCamera;
   isRecombined: boolean;
   transformControlsRef: { current?: TransformControls | null };

@@ -466,7 +466,9 @@ const module: Module = {
           child.__inspectorData.isMarkedForDestroy ||
           child.__inspectorData.isPicker ||
           child.__inspectorData.isHelper) &&
-        child.__inspectorData.hitRedirect !== this.cameraToUseOnPlay
+        child.__inspectorData.hitRedirect !== this.cameraToUseOnPlay &&
+        // @ts-ignore CameraHelper as a field camera pointing to the related camera
+        child.camera !== this.cameraToUseOnPlay
       ) {
         // helpers and pickers for cameraToUseOnPlay needs to stay around
         // (when switching between play stop they are removed only temporarily)

@@ -582,6 +582,29 @@ describe('patchThree', () => {
             done();
           });
         }));
+
+      it.only('does NOT destroy helpers and pickers for cameraToUseOnPlay', () => {
+        withScene(
+          0,
+          true
+        )(async ({ scene }) => {
+          const destroyOnRemove = useAppStore.getState().destroyOnRemove;
+          useAppStore.getState().setDestroyOnRemove(true);
+          const spyOnDestroy = vi.spyOn(patchThree, 'destroy');
+
+          const perspectiveCamera = new THREE.PerspectiveCamera();
+          perspectiveCamera.__inspectorData.useOnPlay = true;
+          scene.add(perspectiveCamera);
+          scene.remove(perspectiveCamera);
+
+          expect(spyOnDestroy).toHaveBeenCalledTimes(1);
+          expect(spyOnDestroy).toHaveBeenCalledWith(perspectiveCamera);
+          // destroy has not been called for helper and picker
+
+          spyOnDestroy.mockRestore();
+          useAppStore.getState().setDestroyOnRemove(destroyOnRemove);
+        });
+      });
     });
 
     describe('when object is in interactableObjects', () => {

@@ -28,6 +28,9 @@ export function deepCleanScene(scene: THREE.Scene) {
       object.geometry.dispose();
     }
 
+    // @ts-ignore
+    object.skeleton?.boneTexture?.dispose();
+
     if (object.material) {
       if (Array.isArray(object.material)) {
         object.material.forEach((material: THREE.Material) => {

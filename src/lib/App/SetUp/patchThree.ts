@@ -3,6 +3,7 @@ import { RectAreaLightHelper } from 'three/examples/jsm/helpers/RectAreaLightHel
 import { LightProbeHelper } from 'three/examples/jsm/helpers/LightProbeHelper';
 import { PositionalAudioHelper } from 'three/examples/jsm/helpers/PositionalAudioHelper';
 import { refreshOutliner } from 'lib/third_party/outlinerHelpers';
+import { destroyObject } from 'lib/utils/cleanUp';
 import { useAppStore } from 'src/store';
 import { offlineScene } from 'lib/App/CPanel/offlineScene';
 import type { __inspectorData } from 'tsExtensions';
@@ -418,26 +419,8 @@ const module: Module = {
     );
   },
 
-  destroy(object: any) {
-    if (object.__inspectorData?.preventDestroy) {
-      return;
-    }
-    if ('dispose' in object) {
-      object.dispose(); // for helpers
-    } else if (object instanceof THREE.Mesh) {
-      const materials = Array.isArray(object.material) ? object.material : [object.material];
-      materials.forEach((mat: THREE.Material) => {
-        Object.keys(mat).forEach((key) => {
-          if ((mat as any)[key] instanceof THREE.Texture) {
-            (mat as any)[key].dispose(); // texture dispose
-          }
-        });
-        mat.dispose(); // material dispose
-      });
-      object.geometry?.dispose(); // geometry dispose
-      // @ts-ignore
-      object.skeleton?.boneTexture?.dispose();
-    }
+  destroy(object: THREE.Object3D) {
+    destroyObject(object);
   },
 
   // Note: this is also called from offlineScene
@@ -466,6 +449,7 @@ const module: Module = {
       }
 
       // No need to destroy everything, geometries and materials might be reused
+      // Set destroyOnRemove false to destroy manually and be able to chose what to destroy (materials, textures, geometries, skeletons)
       const destroyOnRemove = useAppStore.getState().destroyOnRemove;
       if (
         (destroyOnRemove ||

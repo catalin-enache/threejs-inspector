@@ -478,8 +478,6 @@ const module: Module = {
       ) {
         // helpers and pickers for cameraToUseOnPlay needs to stay around
         // (when switching between play stop they are removed only temporarily)
-        // TODO: investigate. Renderer Info reports that geometries and textures are less (cleaned up to some extent)
-        // but memory (reported by Stats) is not released.
         this.destroy(child);
       }
 

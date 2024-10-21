@@ -350,6 +350,10 @@ const module: Module = {
       object.add(helper);
     }
 
+    if (!pickerIsNeeded) {
+      this.destroy(picker);
+    }
+
     this.subscriptions[object.uuid] = this.subscriptions[object.uuid] || [];
 
     this.subscriptions[object.uuid].push(
@@ -405,7 +409,7 @@ const module: Module = {
               this.currentScene.remove(helper);
             } else {
               pickerIsNeeded && object.add(picker);
-              this.interactableObjects[picker.uuid] = picker;
+              pickerIsNeeded && (this.interactableObjects[picker.uuid] = picker);
               this.currentScene.add(helper);
             }
           }
@@ -431,6 +435,8 @@ const module: Module = {
         mat.dispose(); // material dispose
       });
       object.geometry?.dispose(); // geometry dispose
+      // @ts-ignore
+      object.skeleton?.boneTexture?.dispose();
     }
   },
 

@@ -583,7 +583,7 @@ describe('patchThree', () => {
           });
         }));
 
-      it.only('does NOT destroy helpers and pickers for cameraToUseOnPlay', () => {
+      it('does NOT destroy helpers and pickers for cameraToUseOnPlay', () => {
         withScene(
           0,
           true

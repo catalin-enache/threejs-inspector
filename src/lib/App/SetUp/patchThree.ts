@@ -355,6 +355,11 @@ const module: Module = {
       this.destroy(picker);
     }
 
+    const showHelpers = useAppStore.getState().showHelpers;
+    const showGizmos = useAppStore.getState().showGizmos;
+    helper.visible = showGizmos && showHelpers;
+    picker.visible = showGizmos;
+
     this.subscriptions[object.uuid] = this.subscriptions[object.uuid] || [];
 
     this.subscriptions[object.uuid].push(
@@ -378,11 +383,6 @@ const module: Module = {
         }
       )
     );
-
-    const showHelpers = useAppStore.getState().showHelpers;
-    const showGizmos = useAppStore.getState().showGizmos;
-    helper.visible = showGizmos && showHelpers;
-    picker.visible = showGizmos;
 
     this.subscriptions[object.uuid].push(
       useAppStore.subscribe(

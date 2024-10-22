@@ -298,7 +298,7 @@ const module: Module = {
         visible: true,
         side: THREE.DoubleSide,
         transparent: true,
-        opacity: 0.1,
+        opacity: 1,
         fog: false,
         toneMapped: false,
         wireframe: true
@@ -361,10 +361,14 @@ const module: Module = {
       useAppStore.subscribe(
         (appStore) => appStore.selectedObjectStateFake,
         () => {
+          const selectedObject = useAppStore.getState().getSelectedObject();
+          if (selectedObject !== object) return;
+
           if (object instanceof THREE.Light) {
             // @ts-ignore
             object.color && picker.material.color.copy(object.color);
           }
+
           if (object instanceof THREE.SpotLight) {
             picker.lookAt(object.target.position);
           } else if (object instanceof THREE.RectAreaLight) {

@@ -458,7 +458,7 @@ describe('patchThree', () => {
           )(async ({ scene }) => {
             const perspectiveCamera = new THREE.PerspectiveCamera();
             scene.add(perspectiveCamera);
-            expect(patchThree.subscriptions[perspectiveCamera.uuid].length).toBe(4);
+            expect(patchThree.subscriptions[perspectiveCamera.uuid].length).toBe(3);
             scene.remove(perspectiveCamera);
             expect(patchThree.subscriptions[perspectiveCamera.uuid].length).toBe(0);
             done();

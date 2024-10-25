@@ -364,28 +364,6 @@ const module: Module = {
 
     this.subscriptions[object.uuid].push(
       useAppStore.subscribe(
-        (appStore) => appStore.selectedObjectStateFake,
-        () => {
-          const selectedObject = useAppStore.getState().getSelectedObject();
-          if (selectedObject !== object) return;
-
-          if (object instanceof THREE.Light) {
-            // @ts-ignore
-            object.color && picker.material.color.copy(object.color);
-          }
-
-          if (object instanceof THREE.SpotLight) {
-            picker.lookAt(object.target.position);
-          } else if (object instanceof THREE.RectAreaLight) {
-            picker.geometry.dispose();
-            picker.geometry = new THREE.PlaneGeometry(object.width, object.height);
-          }
-        }
-      )
-    );
-
-    this.subscriptions[object.uuid].push(
-      useAppStore.subscribe(
         (appStore) => appStore.showGizmos,
         (showGizmos) => {
           helper.visible = showGizmos;
@@ -528,19 +506,39 @@ useAppStore.subscribe(
   (appStore) => appStore.selectedObjectStateFake,
   () => {
     const selectedObject = useAppStore.getState().getSelectedObject();
-    selectedObject!.traverse((descendant) => {
-      descendant.__inspectorData.dependantObjects!.forEach((dependantObject) => {
+
+    if (!selectedObject) return; // should not be the case because selectedObjectStateFake implies selectedObject
+
+    selectedObject.traverse((object) => {
+      const picker = object.__inspectorData.picker;
+      const helper = object.__inspectorData.helper;
+
+      if (helper) {
         const update =
-          dependantObject instanceof RectAreaLightHelper
-            ? dependantObject.updateMatrixWorld
-            : dependantObject instanceof LightProbeHelper
-              ? dependantObject.onBeforeRender
-              : 'update' in dependantObject
-                ? dependantObject.update
+          helper instanceof RectAreaLightHelper
+            ? helper.updateMatrixWorld
+            : helper instanceof LightProbeHelper
+              ? helper.onBeforeRender
+              : 'update' in helper
+                ? helper.update
                 : () => {}; // updates object.matrixWorld
         // @ts-ignore
-        update.call(dependantObject);
-      });
+        update.call(helper);
+      }
+
+      if (picker) {
+        if (object instanceof THREE.Light) {
+          // @ts-ignore
+          object.color && picker.material.color.copy(object.color);
+        }
+
+        if (object instanceof THREE.SpotLight) {
+          picker.lookAt(object.target.position);
+        } else if (object instanceof THREE.RectAreaLight) {
+          picker.geometry.dispose();
+          picker.geometry = new THREE.PlaneGeometry(object.width, object.height);
+        }
+      }
     });
   }
 );

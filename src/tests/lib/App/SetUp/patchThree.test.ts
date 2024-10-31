@@ -885,7 +885,6 @@ describe('patchThree', () => {
             (helper as THREE.SpotLightHelper).update();
             useAppStore.getState().setSelectedObject(spotLight);
             useAppStore.getState().triggerSelectedObjectChanged();
-            console.log({ helper, picker });
 
             expect(picker.rotation.x.toFixed(1)).toBe('-0.8');
             expect(picker.rotation.y.toFixed(1)).toBe('0.6');
@@ -921,9 +920,9 @@ describe('patchThree', () => {
         )(async ({ scene }) => {
           return new Promise((done) => {
             // TODO: continue here
-            const state = useAppStore.getState();
-            const helperSize = state.gizmoSize;
-            console.log('when object is a DirectionalLight', { helperSize });
+            // const state = useAppStore.getState();
+            // const helperSize = state.gizmoSize;
+            // console.log('when object is a DirectionalLight', { helperSize });
             done();
           });
         });

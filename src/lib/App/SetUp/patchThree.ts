@@ -280,7 +280,7 @@ const module: Module = {
         : object instanceof THREE.RectAreaLight
           ? new THREE.PlaneGeometry(object.width, object.height)
           : object instanceof THREE.SpotLight
-            ? new THREE.ConeGeometry(helperSize * 2, 1, 4)
+            ? new THREE.ConeGeometry(helperSize * 2, helperSize * 2, 4)
             : object instanceof THREE.Camera
               ? new THREE.ConeGeometry(helperSize * 2, 1, 8)
               : object instanceof THREE.PointLight

@@ -54,6 +54,7 @@ export default defineConfig({
       viewport: { width: 800, height: 600 },
       providerOptions: {}
     },
-    allowOnly: true
+    allowOnly: true,
+    restoreMocks: true
   }
 });

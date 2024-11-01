@@ -940,6 +940,10 @@ describe('patchThree', () => {
             useAppStore.getState().triggerSelectedObjectChanged();
             (helper as THREE.DirectionalLightHelper).update();
 
+            expect(roundArray((helper.children[0] as THREE.Line).geometry.attributes.position.array)).toEqual([
+              -100, 100, 0, 100, 100, 0, 100, -100, 0, -100, -100, 0, -100, 100, 0
+            ]);
+
             expect(directionalLight.__inspectorData.dependantObjects).toContain(helper);
             expect(directionalLight.__inspectorData.dependantObjects).toContain(picker);
 

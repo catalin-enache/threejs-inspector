@@ -696,7 +696,7 @@ describe('patchThree', () => {
 
   describe('makeHelpers', () => {
     describe('when object is a Camera', () => {
-      it.only('adds helper to dependantObjects which react to object changes', () => {
+      it('adds helper to dependantObjects which react to object changes', () => {
         const originalGetState = useAppStore.getState.bind(useAppStore);
         vi.spyOn(useAppStore, 'getState').mockImplementation(() => {
           return {
@@ -1160,6 +1160,72 @@ describe('patchThree', () => {
             expect((picker.material as THREE.MeshBasicMaterial).color.g).toBe(1);
 
             expect(roundArray(helper.matrixWorld.elements)).toEqual([1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]);
+            expect(roundArray(picker.matrixWorld.elements)).toEqual([1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]);
+
+            done();
+          });
+        });
+      });
+    });
+
+    describe('when object is a HemisphereLight', () => {
+      it('adds helper and picker to dependantObjects which react to object changes', () => {
+        const originalGetState = useAppStore.getState.bind(useAppStore);
+        vi.spyOn(useAppStore, 'getState').mockImplementation(() => {
+          return {
+            ...originalGetState(),
+            gizmoSize: 50
+          };
+        });
+
+        withScene(
+          0,
+          true
+        )(async ({ scene }) => {
+          return new Promise((done) => {
+            const hemisphereLight = new THREE.HemisphereLight();
+            hemisphereLight.color = new THREE.Color(0xff0000);
+            hemisphereLight.groundColor = new THREE.Color(0x00ff00);
+            hemisphereLight.intensity = 5;
+            hemisphereLight.position.set(10, 15, 20);
+            scene.add(hemisphereLight);
+
+            const helper = hemisphereLight.__inspectorData.helper!;
+            const picker = hemisphereLight.__inspectorData.picker!;
+
+            hemisphereLight.updateMatrixWorld();
+            useAppStore.getState().setSelectedObject(hemisphereLight);
+            useAppStore.getState().triggerSelectedObjectChanged();
+            (helper as THREE.HemisphereLightHelper).update();
+
+            expect(hemisphereLight.__inspectorData.dependantObjects).toContain(helper);
+            expect(hemisphereLight.__inspectorData.dependantObjects).toContain(picker);
+
+            expect((picker.material as THREE.MeshBasicMaterial).color.r).toBe(1);
+            expect((picker.material as THREE.MeshBasicMaterial).color.g).toBe(0);
+
+            expect(roundArray(picker.geometry.attributes.position.array)).toEqual([
+              25, 25, 25, 25, 25, -25, 25, -25, 25, 25, -25, -25, -25, 25, -25, -25, 25, 25, -25, -25, -25, -25, -25,
+              25, -25, 25, -25, 25, 25, -25, -25, 25, 25, 25, 25, 25, -25, -25, 25, 25, -25, 25, -25, -25, -25, 25, -25,
+              -25, -25, 25, 25, 25, 25, 25, -25, -25, 25, 25, -25, 25, 25, 25, -25, -25, 25, -25, 25, -25, -25, -25,
+              -25, -25
+            ]);
+
+            expect(roundArray(picker.matrixWorld.elements)).toEqual([
+              1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 10, 15, 20, 1
+            ]);
+
+            hemisphereLight.color = new THREE.Color(0x00ff00);
+            hemisphereLight.groundColor = new THREE.Color(0xff0000);
+            hemisphereLight.position.set(0, 0, 0);
+            hemisphereLight.updateMatrixWorld();
+            useAppStore.getState().setSelectedObject(hemisphereLight);
+            useAppStore.getState().triggerSelectedObjectChanged();
+            (helper as THREE.HemisphereLightHelper).update();
+
+            expect((picker.material as THREE.MeshBasicMaterial).color.r).toBe(0);
+            expect((picker.material as THREE.MeshBasicMaterial).color.g).toBe(1);
+
             expect(roundArray(picker.matrixWorld.elements)).toEqual([1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]);
 
             done();

@@ -1018,5 +1018,80 @@ describe('patchThree', () => {
         });
       });
     });
+
+    describe('when object is a PointLight', () => {
+      it('adds helper and picker to dependantObjects which react to object changes', () => {
+        const originalGetState = useAppStore.getState.bind(useAppStore);
+        vi.spyOn(useAppStore, 'getState').mockImplementation(() => {
+          return {
+            ...originalGetState(),
+            gizmoSize: 50
+          };
+        });
+
+        withScene(
+          0,
+          true
+        )(async ({ scene }) => {
+          return new Promise((done) => {
+            const pointLight = new THREE.PointLight();
+            pointLight.color = new THREE.Color(0xff0000);
+            pointLight.intensity = 5;
+            pointLight.distance = 10;
+            pointLight.position.set(10, 15, 20);
+            scene.add(pointLight);
+
+            const helper = pointLight.__inspectorData.helper!;
+            const picker = pointLight.__inspectorData.picker!;
+
+            pointLight.updateMatrixWorld();
+            useAppStore.getState().setSelectedObject(pointLight);
+            useAppStore.getState().triggerSelectedObjectChanged();
+            (helper as THREE.PointLightHelper).update();
+            helper.updateWorldMatrix(true, false);
+
+            expect(pointLight.__inspectorData.dependantObjects).toContain(helper);
+            expect(pointLight.__inspectorData.dependantObjects).toContain(picker);
+
+            expect(((helper as THREE.Mesh).material as THREE.MeshBasicMaterial).color.r).toBe(1);
+            expect(((helper as THREE.Mesh).material as THREE.MeshBasicMaterial).color.g).toBe(0);
+            expect((picker.material as THREE.MeshBasicMaterial).color.r).toBe(1);
+            expect((picker.material as THREE.MeshBasicMaterial).color.g).toBe(0);
+
+            expect(roundArray((helper as THREE.Mesh).geometry.attributes.position.array)).toEqual([
+              0, 50, 0, 0, 50, 0, 0, 50, 0, 0, 50, 0, 0, 50, 0, -50, 0, 0, 0, 0, 50, 50, 0, 0, 0, 0, -50, -50, 0, 0, 0,
+              -50, 0, 0, -50, 0, 0, -50, 0, 0, -50, 0, 0, -50, 0
+            ]);
+            expect(roundArray(picker.geometry.attributes.position.array)).toEqual([
+              0, 50, 0, 0, 50, 0, 0, 50, 0, 0, 50, 0, 0, 50, 0, -50, 0, 0, 0, 0, 50, 50, 0, 0, 0, 0, -50, -50, 0, 0, 0,
+              -50, 0, 0, -50, 0, 0, -50, 0, 0, -50, 0, 0, -50, 0
+            ]);
+            expect(roundArray(helper.matrixWorld.elements)).toEqual([
+              1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 10, 15, 20, 1
+            ]);
+            expect(roundArray(picker.matrixWorld.elements)).toEqual([
+              1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 10, 15, 20, 1
+            ]);
+
+            pointLight.color = new THREE.Color(0x00ff00);
+            pointLight.position.set(0, 0, 0);
+            pointLight.updateMatrixWorld();
+            (helper as THREE.PointLightHelper).update();
+            useAppStore.getState().triggerSelectedObjectChanged();
+            helper.updateWorldMatrix(true, false);
+
+            expect(((helper as THREE.Mesh).material as THREE.MeshBasicMaterial).color.r).toBe(0);
+            expect(((helper as THREE.Mesh).material as THREE.MeshBasicMaterial).color.g).toBe(1);
+            expect((picker.material as THREE.MeshBasicMaterial).color.r).toBe(0);
+            expect((picker.material as THREE.MeshBasicMaterial).color.g).toBe(1);
+
+            expect(roundArray(helper.matrixWorld.elements)).toEqual([1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]);
+            expect(roundArray(picker.matrixWorld.elements)).toEqual([1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]);
+
+            done();
+          });
+        });
+      });
+    });
   });
 });

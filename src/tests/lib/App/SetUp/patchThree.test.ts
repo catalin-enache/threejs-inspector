@@ -695,6 +695,80 @@ describe('patchThree', () => {
   });
 
   describe('makeHelpers', () => {
+    describe('when object is a Camera', () => {
+      it.only('adds helper to dependantObjects which react to object changes', () => {
+        const originalGetState = useAppStore.getState.bind(useAppStore);
+        vi.spyOn(useAppStore, 'getState').mockImplementation(() => {
+          return {
+            ...originalGetState(),
+            gizmoSize: 50
+          };
+        });
+        withScene(
+          0,
+          true
+        )(async ({ scene }) => {
+          return new Promise((done) => {
+            const perspectiveCamera = new THREE.PerspectiveCamera();
+            perspectiveCamera.position.set(10, 15, 20);
+            perspectiveCamera.lookAt(0, 100, 10);
+            scene.add(perspectiveCamera);
+
+            const helper = perspectiveCamera.__inspectorData.helper!;
+            const picker = perspectiveCamera.__inspectorData.picker!;
+            perspectiveCamera.updateMatrixWorld();
+            useAppStore.getState().setSelectedObject(perspectiveCamera);
+            useAppStore.getState().triggerSelectedObjectChanged();
+            helper.updateWorldMatrix(true, false);
+
+            expect(perspectiveCamera.__inspectorData.dependantObjects).toContain(helper);
+            expect(perspectiveCamera.__inspectorData.dependantObjects).toContain(picker);
+
+            expect(roundArray(picker.geometry.attributes.position.array)).toEqual([
+              0, 0, 49.5, 0, 0, 49.5, 0, 0, 49.5, 0, 0, 49.5, 0, 0, 49.5, 0, 0, 49.5, 0, 0, 49.5, 0, 0, 49.5, 0, 0,
+              49.5, 0, -100, -50.5, 70.7, -70.7, -50.5, 100, 0, -50.5, 70.7, 70.7, -50.5, 0, 100, -50.5, -70.7, 70.7,
+              -50.5, -100, 0, -50.5, -70.7, -70.7, -50.5, 0, -100, -50.5, 0, 0, -50.5, 0, 0, -50.5, 0, 0, -50.5, 0, 0,
+              -50.5, 0, 0, -50.5, 0, 0, -50.5, 0, 0, -50.5, 0, 0, -50.5, 0, -100, -50.5, 70.7, -70.7, -50.5, 100, 0,
+              -50.5, 70.7, 70.7, -50.5, 0, 100, -50.5, -70.7, 70.7, -50.5, -100, 0, -50.5, -70.7, -70.7, -50.5, 0, -100,
+              -50.5
+            ]);
+
+            expect(roundArray(helper.matrixWorld.elements)).toEqual([
+              0.7, 0, -0.7, 0, 0.7, 0.2, 0.7, 0, 0.1, -1, 0.1, 0, 10, 15, 20, 1
+            ]);
+            expect(roundArray(picker.matrixWorld.elements)).toEqual([
+              0.7, 0, -0.7, 0, 0.7, 0.2, 0.7, 0, 0.1, -1, 0.1, 0, 10, 15, 20, 1
+            ]);
+
+            perspectiveCamera.lookAt(0, 0, 0);
+            perspectiveCamera.updateMatrixWorld();
+            useAppStore.getState().setSelectedObject(perspectiveCamera);
+            useAppStore.getState().triggerSelectedObjectChanged();
+            helper.updateWorldMatrix(true, false);
+
+            expect(roundArray(helper.matrixWorld.elements)).toEqual([
+              0.9, 0, -0.4, 0, -0.2, 0.8, -0.5, 0, 0.4, 0.6, 0.7, 0, 10, 15, 20, 1
+            ]);
+            expect(roundArray(picker.matrixWorld.elements)).toEqual([
+              0.9, 0, -0.4, 0, -0.2, 0.8, -0.5, 0, 0.4, 0.6, 0.7, 0, 10, 15, 20, 1
+            ]);
+
+            perspectiveCamera.position.set(0, 0, 0);
+            perspectiveCamera.rotation.set(0, 0, 0);
+            perspectiveCamera.updateMatrixWorld();
+            useAppStore.getState().setSelectedObject(perspectiveCamera);
+            useAppStore.getState().triggerSelectedObjectChanged();
+            helper.updateWorldMatrix(true, false);
+
+            expect(roundArray(helper.matrixWorld.elements)).toEqual([1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]);
+            expect(roundArray(picker.matrixWorld.elements)).toEqual([1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]);
+
+            done();
+          });
+        });
+      });
+    });
+
     describe('when object is a RectAreaLight', () => {
       it('adds helper and picker to dependantObjects which react to object changes', () => {
         // testing width, height, position, color

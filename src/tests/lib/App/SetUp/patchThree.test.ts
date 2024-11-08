@@ -836,6 +836,113 @@ describe('patchThree', () => {
       });
     });
 
+    describe('when object is a DirectionalLight', () => {
+      it('adds helper and picker to dependantObjects which react to object changes', () => {
+        const originalGetState = useAppStore.getState.bind(useAppStore);
+        vi.spyOn(useAppStore, 'getState').mockImplementation(() => {
+          return {
+            ...originalGetState(),
+            gizmoSize: 50
+          };
+        });
+
+        withScene(
+          0,
+          true
+        )(async ({ scene }) => {
+          return new Promise((done) => {
+            const directionalLight = new THREE.DirectionalLight();
+            directionalLight.color = new THREE.Color(0xff0000);
+            directionalLight.intensity = 5;
+            directionalLight.position.set(10, 15, 20);
+            scene.add(directionalLight);
+
+            const helper = directionalLight.__inspectorData.helper!;
+            const picker = directionalLight.__inspectorData.picker!;
+            directionalLight.updateMatrixWorld();
+            useAppStore.getState().setSelectedObject(directionalLight);
+            useAppStore.getState().triggerSelectedObjectChanged();
+            (helper as THREE.DirectionalLightHelper).update();
+
+            expect(roundArray((helper.children[0] as THREE.Line).geometry.attributes.position.array)).toEqual([
+              -100, 100, 0, 100, 100, 0, 100, -100, 0, -100, -100, 0, -100, 100, 0
+            ]);
+
+            expect(directionalLight.__inspectorData.dependantObjects).toContain(helper);
+            expect(directionalLight.__inspectorData.dependantObjects).toContain(picker);
+
+            expect(((helper.children[0] as THREE.Mesh).material as THREE.MeshBasicMaterial).color.r).toBe(1);
+            expect(((helper.children[0] as THREE.Mesh).material as THREE.MeshBasicMaterial).color.g).toBe(0);
+            expect((picker.material as THREE.MeshBasicMaterial).color.r).toBe(1);
+            expect((picker.material as THREE.MeshBasicMaterial).color.g).toBe(0);
+
+            expect(picker.rotation.x.toFixed(1)).toBe('2.5');
+            expect(picker.rotation.y.toFixed(1)).toBe('-0.4');
+            expect(picker.rotation.z.toFixed(1)).toBe('2.9');
+
+            expect(helper.children[0].rotation.x.toFixed(1)).toBe('2.5');
+            expect(helper.children[0].rotation.y.toFixed(1)).toBe('-0.4');
+            expect(helper.children[0].rotation.z.toFixed(1)).toBe('2.9');
+
+            expect(roundArray(picker.matrix.elements)).toEqual([
+              -0.9, 0, 0.4, 0, -0.2, 0.8, -0.5, 0, -0.4, -0.6, -0.7, 0, 0, 0, 0, 1
+            ]);
+            expect(roundArray(helper.children[0].matrixWorld.elements)).toEqual([
+              -0.9, 0, 0.4, 0, -0.2, 0.8, -0.5, 0, -0.4, -0.6, -0.7, 0, 10, 15, 20, 1
+            ]);
+
+            directionalLight.color = new THREE.Color(0x00ff00);
+            directionalLight.target.position.set(20, 20, 20);
+            directionalLight.updateMatrixWorld();
+            (helper as THREE.SpotLightHelper).update();
+            useAppStore.getState().triggerSelectedObjectChanged();
+
+            expect(((helper.children[0] as THREE.Mesh).material as THREE.MeshBasicMaterial).color.r).toBe(0);
+            expect(((helper.children[0] as THREE.Mesh).material as THREE.MeshBasicMaterial).color.g).toBe(1);
+            expect((picker.material as THREE.MeshBasicMaterial).color.r).toBe(0);
+            expect((picker.material as THREE.MeshBasicMaterial).color.g).toBe(1);
+
+            expect(picker.rotation.x.toFixed(1)).toBe('-1.6');
+            expect(picker.rotation.y.toFixed(1)).toBe('1.1');
+            expect(picker.rotation.z.toFixed(1)).toBe('1.6');
+
+            expect(helper.children[0].rotation.x.toFixed(1)).toBe('-1.6');
+            expect(helper.children[0].rotation.y.toFixed(1)).toBe('1.1');
+            expect(helper.children[0].rotation.z.toFixed(1)).toBe('1.6');
+
+            expect(roundArray(picker.matrix.elements)).toEqual([
+              0, 0, -1, 0, -0.4, 0.9, 0, 0, 0.9, 0.4, 0, 0, 0, 0, 0, 1
+            ]);
+            expect(roundArray(helper.children[0].matrixWorld.elements)).toEqual([
+              0, 0, -1, 0, -0.4, 0.9, 0, 0, 0.9, 0.4, 0, 0, 10, 15, 20, 1
+            ]);
+
+            directionalLight.position.set(0, 0, 0);
+            directionalLight.updateMatrixWorld();
+            (helper as THREE.SpotLightHelper).update();
+            useAppStore.getState().triggerSelectedObjectChanged();
+
+            expect(picker.rotation.x.toFixed(1)).toBe('-0.8');
+            expect(picker.rotation.y.toFixed(1)).toBe('0.6');
+            expect(picker.rotation.z.toFixed(1)).toBe('0.5');
+
+            expect(helper.children[0].rotation.x.toFixed(1)).toBe('-0.8');
+            expect(helper.children[0].rotation.y.toFixed(1)).toBe('0.6');
+            expect(helper.children[0].rotation.z.toFixed(1)).toBe('0.5');
+
+            expect(roundArray(picker.matrix.elements)).toEqual([
+              0.7, 0, -0.7, 0, -0.4, 0.8, -0.4, 0, 0.6, 0.6, 0.6, 0, 0, 0, 0, 1
+            ]);
+            expect(roundArray(helper.children[0].matrixWorld.elements)).toEqual([
+              0.7, 0, -0.7, 0, -0.4, 0.8, -0.4, 0, 0.6, 0.6, 0.6, 0, 0, 0, 0, 1
+            ]);
+
+            done();
+          });
+        });
+      });
+    });
+
     describe('when object is a SpotLight', () => {
       it('adds helper and picker to dependantObjects which react to object changes', () => {
         // vi.mock('../../../../store', async (importOriginal) => {
@@ -986,7 +1093,7 @@ describe('patchThree', () => {
       });
     });
 
-    describe('when object is a DirectionalLight', () => {
+    describe('when object is a HemisphereLight', () => {
       it('adds helper and picker to dependantObjects which react to object changes', () => {
         const originalGetState = useAppStore.getState.bind(useAppStore);
         vi.spyOn(useAppStore, 'getState').mockImplementation(() => {
@@ -1001,91 +1108,50 @@ describe('patchThree', () => {
           true
         )(async ({ scene }) => {
           return new Promise((done) => {
-            const directionalLight = new THREE.DirectionalLight();
-            directionalLight.color = new THREE.Color(0xff0000);
-            directionalLight.intensity = 5;
-            directionalLight.position.set(10, 15, 20);
-            scene.add(directionalLight);
+            const hemisphereLight = new THREE.HemisphereLight();
+            hemisphereLight.color = new THREE.Color(0xff0000);
+            hemisphereLight.groundColor = new THREE.Color(0x00ff00);
+            hemisphereLight.intensity = 5;
+            hemisphereLight.position.set(10, 15, 20);
+            scene.add(hemisphereLight);
 
-            const helper = directionalLight.__inspectorData.helper!;
-            const picker = directionalLight.__inspectorData.picker!;
-            directionalLight.updateMatrixWorld();
-            useAppStore.getState().setSelectedObject(directionalLight);
+            const helper = hemisphereLight.__inspectorData.helper!;
+            const picker = hemisphereLight.__inspectorData.picker!;
+
+            hemisphereLight.updateMatrixWorld();
+            useAppStore.getState().setSelectedObject(hemisphereLight);
             useAppStore.getState().triggerSelectedObjectChanged();
-            (helper as THREE.DirectionalLightHelper).update();
+            (helper as THREE.HemisphereLightHelper).update();
 
-            expect(roundArray((helper.children[0] as THREE.Line).geometry.attributes.position.array)).toEqual([
-              -100, 100, 0, 100, 100, 0, 100, -100, 0, -100, -100, 0, -100, 100, 0
-            ]);
+            expect(hemisphereLight.__inspectorData.dependantObjects).toContain(helper);
+            expect(hemisphereLight.__inspectorData.dependantObjects).toContain(picker);
 
-            expect(directionalLight.__inspectorData.dependantObjects).toContain(helper);
-            expect(directionalLight.__inspectorData.dependantObjects).toContain(picker);
-
-            expect(((helper.children[0] as THREE.Mesh).material as THREE.MeshBasicMaterial).color.r).toBe(1);
-            expect(((helper.children[0] as THREE.Mesh).material as THREE.MeshBasicMaterial).color.g).toBe(0);
             expect((picker.material as THREE.MeshBasicMaterial).color.r).toBe(1);
             expect((picker.material as THREE.MeshBasicMaterial).color.g).toBe(0);
 
-            expect(picker.rotation.x.toFixed(1)).toBe('2.5');
-            expect(picker.rotation.y.toFixed(1)).toBe('-0.4');
-            expect(picker.rotation.z.toFixed(1)).toBe('2.9');
-
-            expect(helper.children[0].rotation.x.toFixed(1)).toBe('2.5');
-            expect(helper.children[0].rotation.y.toFixed(1)).toBe('-0.4');
-            expect(helper.children[0].rotation.z.toFixed(1)).toBe('2.9');
-
-            expect(roundArray(picker.matrix.elements)).toEqual([
-              -0.9, 0, 0.4, 0, -0.2, 0.8, -0.5, 0, -0.4, -0.6, -0.7, 0, 0, 0, 0, 1
-            ]);
-            expect(roundArray(helper.children[0].matrixWorld.elements)).toEqual([
-              -0.9, 0, 0.4, 0, -0.2, 0.8, -0.5, 0, -0.4, -0.6, -0.7, 0, 10, 15, 20, 1
+            expect(roundArray(picker.geometry.attributes.position.array)).toEqual([
+              25, 25, 25, 25, 25, -25, 25, -25, 25, 25, -25, -25, -25, 25, -25, -25, 25, 25, -25, -25, -25, -25, -25,
+              25, -25, 25, -25, 25, 25, -25, -25, 25, 25, 25, 25, 25, -25, -25, 25, 25, -25, 25, -25, -25, -25, 25, -25,
+              -25, -25, 25, 25, 25, 25, 25, -25, -25, 25, 25, -25, 25, 25, 25, -25, -25, 25, -25, 25, -25, -25, -25,
+              -25, -25
             ]);
 
-            directionalLight.color = new THREE.Color(0x00ff00);
-            directionalLight.target.position.set(20, 20, 20);
-            directionalLight.updateMatrixWorld();
-            (helper as THREE.SpotLightHelper).update();
+            expect(roundArray(picker.matrixWorld.elements)).toEqual([
+              1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 10, 15, 20, 1
+            ]);
+
+            hemisphereLight.color = new THREE.Color(0x00ff00);
+            hemisphereLight.groundColor = new THREE.Color(0xff0000);
+            hemisphereLight.position.set(0, 0, 0);
+            hemisphereLight.updateMatrixWorld();
+            useAppStore.getState().setSelectedObject(hemisphereLight);
             useAppStore.getState().triggerSelectedObjectChanged();
+            (helper as THREE.HemisphereLightHelper).update();
 
-            expect(((helper.children[0] as THREE.Mesh).material as THREE.MeshBasicMaterial).color.r).toBe(0);
-            expect(((helper.children[0] as THREE.Mesh).material as THREE.MeshBasicMaterial).color.g).toBe(1);
             expect((picker.material as THREE.MeshBasicMaterial).color.r).toBe(0);
             expect((picker.material as THREE.MeshBasicMaterial).color.g).toBe(1);
 
-            expect(picker.rotation.x.toFixed(1)).toBe('-1.6');
-            expect(picker.rotation.y.toFixed(1)).toBe('1.1');
-            expect(picker.rotation.z.toFixed(1)).toBe('1.6');
-
-            expect(helper.children[0].rotation.x.toFixed(1)).toBe('-1.6');
-            expect(helper.children[0].rotation.y.toFixed(1)).toBe('1.1');
-            expect(helper.children[0].rotation.z.toFixed(1)).toBe('1.6');
-
-            expect(roundArray(picker.matrix.elements)).toEqual([
-              0, 0, -1, 0, -0.4, 0.9, 0, 0, 0.9, 0.4, 0, 0, 0, 0, 0, 1
-            ]);
-            expect(roundArray(helper.children[0].matrixWorld.elements)).toEqual([
-              0, 0, -1, 0, -0.4, 0.9, 0, 0, 0.9, 0.4, 0, 0, 10, 15, 20, 1
-            ]);
-
-            directionalLight.position.set(0, 0, 0);
-            directionalLight.updateMatrixWorld();
-            (helper as THREE.SpotLightHelper).update();
-            useAppStore.getState().triggerSelectedObjectChanged();
-
-            expect(picker.rotation.x.toFixed(1)).toBe('-0.8');
-            expect(picker.rotation.y.toFixed(1)).toBe('0.6');
-            expect(picker.rotation.z.toFixed(1)).toBe('0.5');
-
-            expect(helper.children[0].rotation.x.toFixed(1)).toBe('-0.8');
-            expect(helper.children[0].rotation.y.toFixed(1)).toBe('0.6');
-            expect(helper.children[0].rotation.z.toFixed(1)).toBe('0.5');
-
-            expect(roundArray(picker.matrix.elements)).toEqual([
-              0.7, 0, -0.7, 0, -0.4, 0.8, -0.4, 0, 0.6, 0.6, 0.6, 0, 0, 0, 0, 1
-            ]);
-            expect(roundArray(helper.children[0].matrixWorld.elements)).toEqual([
-              0.7, 0, -0.7, 0, -0.4, 0.8, -0.4, 0, 0.6, 0.6, 0.6, 0, 0, 0, 0, 1
-            ]);
+            expect(roundArray(picker.matrixWorld.elements)).toEqual([1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]);
 
             done();
           });
@@ -1160,72 +1226,6 @@ describe('patchThree', () => {
             expect((picker.material as THREE.MeshBasicMaterial).color.g).toBe(1);
 
             expect(roundArray(helper.matrixWorld.elements)).toEqual([1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]);
-            expect(roundArray(picker.matrixWorld.elements)).toEqual([1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]);
-
-            done();
-          });
-        });
-      });
-    });
-
-    describe('when object is a HemisphereLight', () => {
-      it('adds helper and picker to dependantObjects which react to object changes', () => {
-        const originalGetState = useAppStore.getState.bind(useAppStore);
-        vi.spyOn(useAppStore, 'getState').mockImplementation(() => {
-          return {
-            ...originalGetState(),
-            gizmoSize: 50
-          };
-        });
-
-        withScene(
-          0,
-          true
-        )(async ({ scene }) => {
-          return new Promise((done) => {
-            const hemisphereLight = new THREE.HemisphereLight();
-            hemisphereLight.color = new THREE.Color(0xff0000);
-            hemisphereLight.groundColor = new THREE.Color(0x00ff00);
-            hemisphereLight.intensity = 5;
-            hemisphereLight.position.set(10, 15, 20);
-            scene.add(hemisphereLight);
-
-            const helper = hemisphereLight.__inspectorData.helper!;
-            const picker = hemisphereLight.__inspectorData.picker!;
-
-            hemisphereLight.updateMatrixWorld();
-            useAppStore.getState().setSelectedObject(hemisphereLight);
-            useAppStore.getState().triggerSelectedObjectChanged();
-            (helper as THREE.HemisphereLightHelper).update();
-
-            expect(hemisphereLight.__inspectorData.dependantObjects).toContain(helper);
-            expect(hemisphereLight.__inspectorData.dependantObjects).toContain(picker);
-
-            expect((picker.material as THREE.MeshBasicMaterial).color.r).toBe(1);
-            expect((picker.material as THREE.MeshBasicMaterial).color.g).toBe(0);
-
-            expect(roundArray(picker.geometry.attributes.position.array)).toEqual([
-              25, 25, 25, 25, 25, -25, 25, -25, 25, 25, -25, -25, -25, 25, -25, -25, 25, 25, -25, -25, -25, -25, -25,
-              25, -25, 25, -25, 25, 25, -25, -25, 25, 25, 25, 25, 25, -25, -25, 25, 25, -25, 25, -25, -25, -25, 25, -25,
-              -25, -25, 25, 25, 25, 25, 25, -25, -25, 25, 25, -25, 25, 25, 25, -25, -25, 25, -25, 25, -25, -25, -25,
-              -25, -25
-            ]);
-
-            expect(roundArray(picker.matrixWorld.elements)).toEqual([
-              1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 10, 15, 20, 1
-            ]);
-
-            hemisphereLight.color = new THREE.Color(0x00ff00);
-            hemisphereLight.groundColor = new THREE.Color(0xff0000);
-            hemisphereLight.position.set(0, 0, 0);
-            hemisphereLight.updateMatrixWorld();
-            useAppStore.getState().setSelectedObject(hemisphereLight);
-            useAppStore.getState().triggerSelectedObjectChanged();
-            (helper as THREE.HemisphereLightHelper).update();
-
-            expect((picker.material as THREE.MeshBasicMaterial).color.r).toBe(0);
-            expect((picker.material as THREE.MeshBasicMaterial).color.g).toBe(1);
-
             expect(roundArray(picker.matrixWorld.elements)).toEqual([1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]);
 
             done();

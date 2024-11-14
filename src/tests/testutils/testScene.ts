@@ -104,6 +104,8 @@ function init() {
       fn: (sceneObjects: {
         scene: THREE.Scene;
         camera: THREE.PerspectiveCamera;
+        dirLight: THREE.DirectionalLight;
+        hemiLight: THREE.HemisphereLight;
         mixer: THREE.AnimationMixer;
         renderer: THREE.WebGLRenderer;
         clock: THREE.Clock;
@@ -111,7 +113,7 @@ function init() {
       }) => Promise<(() => void | undefined) | void | undefined>
     ) => {
       addScene();
-      const cleanUp = await fn({ scene, camera, mixer, renderer, clock, canvas });
+      const cleanUp = await fn({ scene, dirLight, hemiLight, camera, mixer, renderer, clock, canvas });
       setTimeout(() => {
         cleanUp && cleanUp();
         clear && scene.clear();

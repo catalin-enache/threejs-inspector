@@ -5,12 +5,9 @@ import { loadModel } from 'lib/utils/loadModel';
 
 describe('loadModel', () => {
   describe('FBXLoader', () => {
-    it('loads non native textures', () =>
+    it('loads non native textures', async () =>
       new Promise<void>((done, rej) => {
-        withScene(
-          0,
-          true
-        )(async ({ scene, camera }) => {
+        withScene(true)(async ({ scene, camera }) => {
           const fbx = await loadModel('/models/MyTests/with_non_native_textures/with_non_native_textures.fbx', {
             autoScaleRatio: 0.01,
             scene,
@@ -23,13 +20,16 @@ describe('loadModel', () => {
 
           scene.add(fbx);
 
-          window.addEventListener('LoadingManager.onLoad', () => {
+          const onLoad = () => {
             const isOK = fbx.children.every((child) => {
               return ((child as THREE.Mesh).material as THREE.MeshPhongMaterial).map?.source.data.width === 512;
             });
             expect(isOK).toBeTruthy();
+            window.removeEventListener('LoadingManager.onLoad', onLoad);
             done();
-          });
+          };
+
+          window.addEventListener('LoadingManager.onLoad', onLoad);
         });
       }));
   });

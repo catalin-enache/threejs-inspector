@@ -4,12 +4,9 @@ import { withScene } from 'testutils/testScene';
 import { FBXLoader } from 'three/examples/jsm/loaders/FBXLoader.js';
 
 describe('FBXLoader', () => {
-  it('geometry.attributes.position.count === geometry.morphAttributes.position[0].count', () =>
+  it('geometry.attributes.position.count === geometry.morphAttributes.position[0].count', async () =>
     new Promise<void>((done, rej) => {
-      withScene(
-        0,
-        false
-      )(async ({ scene }) => {
+      withScene(true)(async ({ scene }) => {
         const fbxLoader = new FBXLoader();
         fbxLoader.load(
           '/models/MyTests/morph_test/morph_test.fbx',

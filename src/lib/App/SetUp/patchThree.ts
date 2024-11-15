@@ -285,9 +285,11 @@ const module: Module = {
               ? new THREE.ConeGeometry(helperSize * 2, helperSize * 2, 8)
               : object instanceof THREE.PointLight
                 ? new THREE.SphereGeometry(helperSize, 4, 1)
-                : object instanceof THREE.CubeCamera
-                  ? new THREE.BoxGeometry(helperSize, helperSize, helperSize)
-                  : new THREE.BoxGeometry(helperSize, helperSize, helperSize); // generic mesh geometry
+                : object instanceof THREE.LightProbe
+                  ? new THREE.SphereGeometry(helperSize, 6, 6)
+                  : object instanceof THREE.CubeCamera
+                    ? new THREE.BoxGeometry(helperSize, helperSize, helperSize)
+                    : new THREE.BoxGeometry(helperSize, helperSize, helperSize); // generic mesh geometry
 
     const picker: THREE.Mesh = new THREE.Mesh(
       pickerGeometry,

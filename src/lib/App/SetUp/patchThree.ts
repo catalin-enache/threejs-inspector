@@ -223,7 +223,7 @@ const module: Module = {
   },
 
   shouldContainItsHelper(object: THREE.Object3D) {
-    return [THREE.PositionalAudio].some((Type) => object instanceof Type);
+    return [THREE.PositionalAudio, THREE.CubeCamera].some((Type) => object instanceof Type);
   },
 
   makeHelpers(object: THREE.Object3D) {
@@ -266,7 +266,10 @@ const module: Module = {
                   : object instanceof THREE.PointLight
                     ? new THREE.PointLightHelper(object as THREE.PointLight, helperSize)
                     : object instanceof THREE.CubeCamera
-                      ? new THREE.Mesh()
+                      ? new THREE.Mesh(
+                          new THREE.BoxGeometry(helperSize, helperSize, helperSize),
+                          new THREE.MeshLambertMaterial({ color: 0xffffff, envMap: object.renderTarget.texture })
+                        )
                       : object instanceof THREE.PositionalAudio
                         ? new PositionalAudioHelper(object as THREE.PositionalAudio, helperSize)
                         : new THREE.Mesh(); // meaningless helper

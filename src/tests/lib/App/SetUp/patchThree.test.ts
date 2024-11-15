@@ -7,6 +7,7 @@ import patchThree from 'lib/App/SetUp/patchThree';
 import { useAppStore } from '../../../../store';
 import { TransformControls } from 'three/examples/jsm/controls/TransformControls';
 import { LightProbeGenerator } from 'three/examples/jsm/lights/LightProbeGenerator';
+import { RGBELoader } from 'three/examples/jsm/loaders/RGBELoader';
 
 // vi.mock('../../../../store');
 
@@ -1222,6 +1223,65 @@ describe('patchThree', () => {
             expect(((helper as THREE.Mesh).material as THREE.MeshBasicMaterial).color.g).toBe(1);
             expect((picker.material as THREE.MeshBasicMaterial).color.r).toBe(0);
             expect((picker.material as THREE.MeshBasicMaterial).color.g).toBe(1);
+
+            expect(roundArray(helper.matrixWorld.elements)).toEqual([1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]);
+            expect(roundArray(picker.matrixWorld.elements)).toEqual([1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]);
+
+            done();
+          });
+        });
+      });
+    });
+
+    describe('when object is a CubeCamera', () => {
+      it('adds helper and picker to dependantObjects which react to object changes', { timeout: 10000 }, async () => {
+        const originalGetState = useAppStore.getState.bind(useAppStore);
+        vi.spyOn(useAppStore, 'getState').mockImplementation(() => {
+          return {
+            ...originalGetState(),
+            gizmoSize: 50
+          };
+        });
+        await withScene()(async ({ scene, renderer }) => {
+          return new Promise((done) => {
+            const cubeRenderTarget = new THREE.WebGLCubeRenderTarget(256);
+            cubeRenderTarget.texture.type = THREE.HalfFloatType;
+
+            const cubeCamera = new THREE.CubeCamera(1, 1000, cubeRenderTarget);
+
+            cubeCamera.position.set(10, 15, 20);
+            scene.add(cubeCamera);
+
+            const helper = cubeCamera.__inspectorData.helper!;
+            const picker = cubeCamera.__inspectorData.picker!;
+            cubeCamera.updateMatrixWorld();
+
+            new RGBELoader()
+              .setPath('/textures/background/equirectangular/')
+              .load('quarry_01_1k.hdr', function (texture) {
+                texture.mapping = THREE.EquirectangularReflectionMapping;
+
+                scene.background = texture;
+                scene.environment = texture;
+                // https://discourse.threejs.org/t/gl-invalid-operation-feedback-loop-formed-between-framebuffer-and-active-texture/66411
+                // https://stackoverflow.com/questions/69710407/three-js-error-feedback-loop-formed-between-framebuffer-and-active-texture
+                helper.visible = false;
+                cubeCamera.update(renderer, scene);
+                helper.visible = true;
+              });
+
+            expect(cubeCamera.__inspectorData.dependantObjects).toContain(helper);
+            expect(cubeCamera.__inspectorData.dependantObjects).toContain(picker);
+
+            expect(roundArray(helper.matrixWorld.elements)).toEqual([
+              1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 10, 15, 20, 1
+            ]);
+            expect(roundArray(picker.matrixWorld.elements)).toEqual([
+              1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 10, 15, 20, 1
+            ]);
+
+            cubeCamera.position.set(0, 0, 0);
+            cubeCamera.updateMatrixWorld();
 
             expect(roundArray(helper.matrixWorld.elements)).toEqual([1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]);
             expect(roundArray(picker.matrixWorld.elements)).toEqual([1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]);

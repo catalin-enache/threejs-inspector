@@ -6,6 +6,7 @@ import { offlineScene } from 'lib/App/CPanel/offlineScene';
 import patchThree from 'lib/App/SetUp/patchThree';
 import { useAppStore } from '../../../../store';
 import { TransformControls } from 'three/examples/jsm/controls/TransformControls';
+import { LightProbeGenerator } from 'three/examples/jsm/lights/LightProbeGenerator';
 
 // vi.mock('../../../../store');
 
@@ -14,12 +15,9 @@ const { isMainScene, isSceneObject } = patchThree;
 describe('patchThree', () => {
   describe('__inspectorData', () => {
     describe('isInspectable', () => {
-      it('is settable', () =>
+      it('is settable', async () =>
         new Promise<void>((done) => {
-          withScene(
-            0,
-            true
-          )(async ({ scene: _ }) => {
+          withScene(true)(async ({ scene: _ }) => {
             const mesh = new THREE.Mesh();
             mesh.__inspectorData.isInspectable = true;
             expect(mesh.__inspectorData.isInspectable).toBe(true);
@@ -27,12 +25,9 @@ describe('patchThree', () => {
           });
         }));
 
-      it('is propagated to children', () =>
+      it('is propagated to children', async () =>
         new Promise<void>((done) => {
-          withScene(
-            0,
-            true
-          )(async ({ scene: _ }) => {
+          withScene(true)(async ({ scene: _ }) => {
             const parent = new THREE.Object3D();
             const child = new THREE.Object3D();
             const grandchild = new THREE.Object3D();
@@ -45,12 +40,9 @@ describe('patchThree', () => {
           });
         }));
 
-      it('sets hitRedirect to parent if it was not set to something else', () =>
+      it('sets hitRedirect to parent if it was not set to something else', async () =>
         new Promise<void>((done) => {
-          withScene(
-            0,
-            true
-          )(async ({ scene: _ }) => {
+          withScene(true)(async ({ scene: _ }) => {
             const parent = new THREE.Object3D();
             const child = new THREE.Object3D();
             const grandchild = new THREE.Object3D();
@@ -63,12 +55,9 @@ describe('patchThree', () => {
           });
         }));
 
-      it('does not set hitRedirect if it was set to something else', () =>
+      it('does not set hitRedirect if it was set to something else', async () =>
         new Promise<void>((done) => {
-          withScene(
-            0,
-            true
-          )(async ({ scene: _ }) => {
+          withScene(true)(async ({ scene: _ }) => {
             const hitRedirect = new THREE.Object3D();
             const parent = new THREE.Object3D();
             const child = new THREE.Object3D();
@@ -85,12 +74,9 @@ describe('patchThree', () => {
     });
 
     describe('hitRedirect', () => {
-      it('is settable', () =>
+      it('is settable', async () =>
         new Promise<void>((done) => {
-          withScene(
-            0,
-            true
-          )(async ({ scene: _ }) => {
+          withScene(true)(async ({ scene: _ }) => {
             const mesh = new THREE.Mesh();
             const hitRedirect = new THREE.Object3D();
             mesh.__inspectorData.hitRedirect = hitRedirect;
@@ -99,12 +85,9 @@ describe('patchThree', () => {
           });
         }));
 
-      it('is propagated to children overriding prev value', () =>
+      it('is propagated to children overriding prev value', async () =>
         new Promise<void>((done) => {
-          withScene(
-            0,
-            true
-          )(async ({ scene: _ }) => {
+          withScene(true)(async ({ scene: _ }) => {
             const hitRedirect = new THREE.Object3D();
             const otherHitRedirect = new THREE.Object3D();
             const parent = new THREE.Object3D();
@@ -122,12 +105,9 @@ describe('patchThree', () => {
     });
 
     describe('dependantObjects', () => {
-      it('is an array already provided', () =>
+      it('is an array already provided', async () =>
         new Promise<void>((done) => {
-          withScene(
-            0,
-            true
-          )(async ({ scene: _ }) => {
+          withScene(true)(async ({ scene: _ }) => {
             const mesh = new THREE.Mesh();
             const dependantObject = new THREE.Object3D();
             mesh.__inspectorData.dependantObjects!.push(dependantObject);
@@ -136,11 +116,8 @@ describe('patchThree', () => {
           });
         }));
 
-      it('is not settable', () => {
-        withScene(
-          0,
-          true
-        )(async ({ scene: _ }) => {
+      it('is not settable', async () => {
+        await withScene(true)(async ({ scene: _ }) => {
           const mesh = new THREE.Mesh();
           expect(() => {
             // @ts-expect-error
@@ -152,12 +129,9 @@ describe('patchThree', () => {
   });
 
   describe('isSceneObject', () => {
-    it('when object is a main scene object it returns true, else false', () =>
+    it('when object is a main scene object it returns true, else false', async () =>
       new Promise<void>((done) => {
-        withScene(
-          0,
-          true
-        )(async ({ scene }) => {
+        withScene(true)(async ({ scene }) => {
           const mesh1 = new THREE.Mesh();
           const mesh2 = new THREE.Mesh();
           expect(isSceneObject(mesh1)).toBeFalsy();
@@ -174,12 +148,9 @@ describe('patchThree', () => {
   });
 
   describe('isMainScene', () => {
-    it('when object is a main scene object it returns true, else false', () =>
+    it('when object is a main scene object it returns true, else false', async () =>
       new Promise<void>((done) => {
-        withScene(
-          0,
-          true
-        )(async ({ scene }) => {
+        withScene(true)(async ({ scene }) => {
           expect(isMainScene(scene)).toBeTruthy();
           expect(isMainScene(offlineScene)).toBeFalsy();
           done();
@@ -188,12 +159,9 @@ describe('patchThree', () => {
   });
 
   describe('Object3D.prototype.add', () => {
-    it('does not call handleObjectAdded when not adding to the scene', () =>
+    it('does not call handleObjectAdded when not adding to the scene', async () =>
       new Promise<void>((done) => {
-        withScene(
-          0,
-          true
-        )(async ({ scene: _ }) => {
+        withScene(true)(async ({ scene: _ }) => {
           const spy = vi.spyOn(patchThree, 'handleObjectAdded');
           const mesh1 = new THREE.Mesh();
           const mesh2 = new THREE.Mesh();
@@ -204,12 +172,9 @@ describe('patchThree', () => {
         });
       }));
 
-    it('does not call handleObjectAdded when adding to the offlineScene', () =>
+    it('does not call handleObjectAdded when adding to the offlineScene', async () =>
       new Promise<void>((done) => {
-        withScene(
-          0,
-          true
-        )(async ({ scene: _ }) => {
+        withScene(true)(async ({ scene: _ }) => {
           const spy = vi.spyOn(patchThree, 'handleObjectAdded');
           const mesh1 = new THREE.Mesh();
           const mesh2 = new THREE.Mesh();
@@ -221,12 +186,9 @@ describe('patchThree', () => {
         });
       }));
 
-    it('calls handleObjectAdded when adding to the scene', () =>
+    it('calls handleObjectAdded when adding to the scene', async () =>
       new Promise<void>((done) => {
-        withScene(
-          0,
-          true
-        )(async ({ scene }) => {
+        withScene(true)(async ({ scene }) => {
           const spy = vi.spyOn(patchThree, 'handleObjectAdded');
           const mesh1 = new THREE.Mesh();
           scene.add(mesh1);
@@ -237,12 +199,9 @@ describe('patchThree', () => {
         });
       }));
 
-    it('calls handleObjectAdded recursively when adding to the scene', () =>
+    it('calls handleObjectAdded recursively when adding to the scene', async () =>
       new Promise<void>((done) => {
-        withScene(
-          0,
-          true
-        )(async ({ scene }) => {
+        withScene(true)(async ({ scene }) => {
           const spy = vi.spyOn(patchThree, 'handleObjectAdded');
           const mesh1 = new THREE.Mesh();
           const mesh2 = new THREE.Mesh();
@@ -261,12 +220,9 @@ describe('patchThree', () => {
   });
 
   describe('Object3D.prototype.remove', () => {
-    it('does not call cleanupAfterRemovedObject for children of THREE.CubeCamera', () =>
+    it('does not call cleanupAfterRemovedObject for children of THREE.CubeCamera', async () =>
       new Promise<void>((done) => {
-        withScene(
-          0,
-          true
-        )(async ({ scene: _ }) => {
+        withScene(true)(async ({ scene: _ }) => {
           const spy = vi.spyOn(patchThree, 'cleanupAfterRemovedObject');
           const cubeCamera = new THREE.CubeCamera(0, 0, new THREE.WebGLCubeRenderTarget(0));
           const camera = new THREE.PerspectiveCamera();
@@ -278,12 +234,9 @@ describe('patchThree', () => {
         });
       }));
 
-    it('calls cleanupAfterRemovedObject even object is not added to the scene', () =>
+    it('calls cleanupAfterRemovedObject even object is not added to the scene', async () =>
       new Promise<void>((done) => {
-        withScene(
-          0,
-          true
-        )(async ({ scene: _ }) => {
+        withScene(true)(async ({ scene: _ }) => {
           const spy = vi.spyOn(patchThree, 'cleanupAfterRemovedObject');
           const mesh1 = new THREE.Mesh();
           const mesh2 = new THREE.Mesh();
@@ -296,13 +249,10 @@ describe('patchThree', () => {
         });
       }));
 
-    it('calls cleanupAfterRemovedObject for the objects directly removed, not recursively through children', () =>
+    it('calls cleanupAfterRemovedObject for the objects directly removed, not recursively through children', async () =>
       // because cleanupAfterRemovedObject will traverse all children
       new Promise<void>((done) => {
-        withScene(
-          0,
-          true
-        )(async ({ scene }) => {
+        withScene(true)(async ({ scene }) => {
           const spy = vi.spyOn(patchThree, 'cleanupAfterRemovedObject');
           const mesh1 = new THREE.Mesh();
           const mesh2 = new THREE.Mesh();
@@ -318,12 +268,9 @@ describe('patchThree', () => {
         });
       }));
 
-    it('sets selected object to null', () =>
+    it('sets selected object to null', async () =>
       new Promise<void>((done) => {
-        withScene(
-          0,
-          true
-        )(async ({ scene }) => {
+        withScene(true)(async ({ scene }) => {
           const mesh1 = new THREE.Mesh();
           scene.add(mesh1);
           useAppStore.getState().setSelectedObject(mesh1);
@@ -338,12 +285,9 @@ describe('patchThree', () => {
   describe('handleObjectAdded', () => {
     describe('when object is (PerspectiveCamera || OrthographicCamera)', () => {
       describe('when not object.__inspectorData.useOnPlay', () => {
-        it('does not set cameraToUseOnPlay', () =>
+        it('does not set cameraToUseOnPlay', async () =>
           new Promise<void>((done) => {
-            withScene(
-              0,
-              true
-            )(async ({ scene }) => {
+            withScene(true)(async ({ scene }) => {
               const perspectiveCamera = new THREE.PerspectiveCamera();
               const orthographicCamera = new THREE.OrthographicCamera();
               scene.add(perspectiveCamera);
@@ -355,12 +299,9 @@ describe('patchThree', () => {
       });
 
       describe('when object.__inspectorData.useOnPlay === true', () => {
-        it('sets cameraToUseOnPlay to object', () =>
+        it('sets cameraToUseOnPlay to object', async () =>
           new Promise<void>((done) => {
-            withScene(
-              0,
-              true
-            )(async ({ scene }) => {
+            withScene(true)(async ({ scene }) => {
               const perspectiveCamera = new THREE.PerspectiveCamera();
               const orthographicCamera = new THREE.OrthographicCamera();
               orthographicCamera.__inspectorData.useOnPlay = true;
@@ -378,12 +319,9 @@ describe('patchThree', () => {
     });
 
     describe('when object.__inspectorData.picker', () => {
-      it('adds picker object to interactableObjects', () =>
+      it('adds picker object to interactableObjects', async () =>
         new Promise<void>((done) => {
-          withScene(
-            0,
-            true
-          )(async ({ scene }) => {
+          withScene(true)(async ({ scene }) => {
             const perspectiveCamera = new THREE.PerspectiveCamera();
             scene.add(perspectiveCamera);
             expect(perspectiveCamera.__inspectorData.picker!.__inspectorData.isPicker).toBe(true);
@@ -398,12 +336,9 @@ describe('patchThree', () => {
     });
 
     describe('when object.__inspectorData.isInspectable', () => {
-      it('adds object to interactableObjects', () =>
+      it('adds object to interactableObjects', async () =>
         new Promise<void>((done) => {
-          withScene(
-            0,
-            true
-          )(async ({ scene }) => {
+          withScene(true)(async ({ scene }) => {
             const mesh = new THREE.Mesh();
             mesh.__inspectorData.isInspectable = true;
             scene.add(mesh);
@@ -416,12 +351,9 @@ describe('patchThree', () => {
     });
 
     describe('when not object.__inspectorData.isInspectable', () => {
-      it('does not add object to interactableObjects', () =>
+      it('does not add object to interactableObjects', async () =>
         new Promise<void>((done) => {
-          withScene(
-            0,
-            true
-          )(async ({ scene }) => {
+          withScene(true)(async ({ scene }) => {
             const mesh = new THREE.Mesh();
             scene.add(mesh);
             expect(patchThree.interactableObjects[mesh.uuid]).toBe(undefined);
@@ -433,12 +365,9 @@ describe('patchThree', () => {
     });
 
     describe('when object.__inspectorData.helper', () => {
-      it('adds helper to scene', () =>
+      it('adds helper to scene', async () =>
         new Promise<void>((done) => {
-          withScene(
-            0,
-            true
-          )(async ({ scene }) => {
+          withScene(true)(async ({ scene }) => {
             const perspectiveCamera = new THREE.PerspectiveCamera();
             scene.add(perspectiveCamera);
             expect(perspectiveCamera.__inspectorData.helper).toBeTruthy();
@@ -453,12 +382,9 @@ describe('patchThree', () => {
 
   describe('cleanupAfterRemovedObject', () => {
     describe('when object has subscriptions', () => {
-      it('clears subscriptions for the  object', () =>
+      it('clears subscriptions for the  object', async () =>
         new Promise<void>((done) => {
-          withScene(
-            0,
-            true
-          )(async ({ scene }) => {
+          withScene(true)(async ({ scene }) => {
             const perspectiveCamera = new THREE.PerspectiveCamera();
             scene.add(perspectiveCamera);
             expect(patchThree.subscriptions[perspectiveCamera.uuid].length).toBe(3);
@@ -470,12 +396,9 @@ describe('patchThree', () => {
     });
 
     describe('when object has dependant objects', () => {
-      it('clears dependant objects', () =>
+      it('clears dependant objects', async () =>
         new Promise<void>((done) => {
-          withScene(
-            0,
-            true
-          )(async ({ scene }) => {
+          withScene(true)(async ({ scene }) => {
             const perspectiveCamera = new THREE.PerspectiveCamera();
             scene.add(perspectiveCamera);
             expect(perspectiveCamera.__inspectorData.dependantObjects!.length).toBe(2);
@@ -487,12 +410,9 @@ describe('patchThree', () => {
     });
 
     describe('when object.__inspectorData.helper', () => {
-      it('removes helper from scene', () =>
+      it('removes helper from scene', async () =>
         new Promise<void>((done) => {
-          withScene(
-            0,
-            true
-          )(async ({ scene }) => {
+          withScene(true)(async ({ scene }) => {
             const perspectiveCamera = new THREE.PerspectiveCamera();
             scene.add(perspectiveCamera);
             expect(scene.children).toContain(perspectiveCamera.__inspectorData.helper);
@@ -504,12 +424,9 @@ describe('patchThree', () => {
     });
 
     describe('when object.__inspectorData.picker', () => {
-      it('removes picker from interactableObjects and destroys it', () =>
+      it('removes picker from interactableObjects and destroys it', async () =>
         new Promise<void>((done) => {
-          withScene(
-            0,
-            true
-          )(async ({ scene }) => {
+          withScene(true)(async ({ scene }) => {
             const destroyOnRemove = useAppStore.getState().destroyOnRemove;
             useAppStore.getState().setDestroyOnRemove(true);
             const perspectiveCamera = new THREE.PerspectiveCamera();
@@ -532,12 +449,9 @@ describe('patchThree', () => {
     });
 
     describe('when useAppStore.getState().destroyOnRemove === false', () => {
-      it('does not destroy the object', () =>
+      it('does not destroy the object', async () =>
         new Promise<void>((done) => {
-          withScene(
-            0,
-            true
-          )(async ({ scene }) => {
+          withScene(true)(async ({ scene }) => {
             const destroyOnRemove = useAppStore.getState().destroyOnRemove;
             useAppStore.getState().setDestroyOnRemove(false);
             const spyOnDestroy = vi.spyOn(patchThree, 'destroy');
@@ -556,12 +470,9 @@ describe('patchThree', () => {
     });
 
     describe('when useAppStore.getState().destroyOnRemove === true', () => {
-      it('destroys the object recursively', () =>
+      it('destroys the object recursively', async () =>
         new Promise<void>((done) => {
-          withScene(
-            0,
-            true
-          )(async ({ scene }) => {
+          withScene(true)(async ({ scene }) => {
             const destroyOnRemove = useAppStore.getState().destroyOnRemove;
             useAppStore.getState().setDestroyOnRemove(true);
             const spyOnDestroy = vi.spyOn(patchThree, 'destroy');
@@ -586,11 +497,8 @@ describe('patchThree', () => {
           });
         }));
 
-      it('does NOT destroy helpers and pickers for cameraToUseOnPlay', () => {
-        withScene(
-          0,
-          true
-        )(async ({ scene }) => {
+      it('does NOT destroy helpers and pickers for cameraToUseOnPlay', async () => {
+        await withScene(true)(async ({ scene }) => {
           const destroyOnRemove = useAppStore.getState().destroyOnRemove;
           useAppStore.getState().setDestroyOnRemove(true);
           const spyOnDestroy = vi.spyOn(patchThree, 'destroy');
@@ -611,12 +519,9 @@ describe('patchThree', () => {
     });
 
     describe('when object is in interactableObjects', () => {
-      it('removes object from interactableObjects', () =>
+      it('removes object from interactableObjects', async () =>
         new Promise<void>((done) => {
-          withScene(
-            0,
-            true
-          )(async ({ scene }) => {
+          withScene(true)(async ({ scene }) => {
             const mesh = new THREE.Mesh();
             scene.add(mesh);
             patchThree.interactableObjects[mesh.uuid] = mesh;
@@ -630,10 +535,7 @@ describe('patchThree', () => {
 
     describe('when object.__inspectorData.useOnPlay', () => {
       it('set patchTree.cameraToUseOnPlay to null', async () =>
-        withScene(
-          0,
-          true
-        )(async ({ scene }) => {
+        await withScene(true)(async ({ scene }) => {
           const perspectiveCamera = new THREE.PerspectiveCamera();
           perspectiveCamera.__inspectorData.useOnPlay = true;
           scene.add(perspectiveCamera);
@@ -645,10 +547,7 @@ describe('patchThree', () => {
 
     describe('when transformControls are attached to object', () => {
       it('they are detached', async () =>
-        withScene(
-          0,
-          true
-        )(async ({ scene, canvas }) => {
+        await withScene(true)(async ({ scene, canvas }) => {
           const mesh = new THREE.Mesh();
           const camera = new THREE.PerspectiveCamera();
           scene.add(mesh);
@@ -668,10 +567,7 @@ describe('patchThree', () => {
 
     describe('when child.__inspectorData.dependantObjects', () => {
       it('dependantObjects are removed and destroyed', async () =>
-        withScene(
-          0,
-          true
-        )(async ({ scene }) => {
+        await withScene(true)(async ({ scene }) => {
           const destroyOnRemove = useAppStore.getState().destroyOnRemove;
           useAppStore.getState().setDestroyOnRemove(false);
           const parent = new THREE.Object3D();
@@ -696,7 +592,7 @@ describe('patchThree', () => {
 
   describe('makeHelpers', () => {
     describe('when object is a Camera', () => {
-      it('adds helper to dependantObjects which react to object changes', () => {
+      it('adds helper to dependantObjects which react to object changes', async () => {
         const originalGetState = useAppStore.getState.bind(useAppStore);
         vi.spyOn(useAppStore, 'getState').mockImplementation(() => {
           return {
@@ -704,10 +600,7 @@ describe('patchThree', () => {
             gizmoSize: 50
           };
         });
-        withScene(
-          0,
-          true
-        )(async ({ scene }) => {
+        await withScene(true)(async ({ scene }) => {
           return new Promise((done) => {
             const perspectiveCamera = new THREE.PerspectiveCamera();
             perspectiveCamera.position.set(10, 15, 20);
@@ -770,12 +663,9 @@ describe('patchThree', () => {
     });
 
     describe('when object is a RectAreaLight', () => {
-      it('adds helper and picker to dependantObjects which react to object changes', () => {
+      it('adds helper and picker to dependantObjects which react to object changes', async () => {
         // testing width, height, position, color
-        withScene(
-          0,
-          true
-        )(async ({ scene }) => {
+        await withScene(true)(async ({ scene }) => {
           return new Promise((done) => {
             const rectAreaLight = new THREE.RectAreaLight();
             rectAreaLight.color = new THREE.Color(0xff0000);
@@ -837,7 +727,7 @@ describe('patchThree', () => {
     });
 
     describe('when object is a DirectionalLight', () => {
-      it('adds helper and picker to dependantObjects which react to object changes', () => {
+      it('adds helper and picker to dependantObjects which react to object changes', async () => {
         const originalGetState = useAppStore.getState.bind(useAppStore);
         vi.spyOn(useAppStore, 'getState').mockImplementation(() => {
           return {
@@ -846,10 +736,7 @@ describe('patchThree', () => {
           };
         });
 
-        withScene(
-          0,
-          true
-        )(async ({ scene }) => {
+        await withScene(true)(async ({ scene }) => {
           return new Promise((done) => {
             const directionalLight = new THREE.DirectionalLight();
             directionalLight.color = new THREE.Color(0xff0000);
@@ -895,6 +782,7 @@ describe('patchThree', () => {
             directionalLight.target.position.set(20, 20, 20);
             directionalLight.updateMatrixWorld();
             (helper as THREE.SpotLightHelper).update();
+            useAppStore.getState().setSelectedObject(directionalLight);
             useAppStore.getState().triggerSelectedObjectChanged();
 
             expect(((helper.children[0] as THREE.Mesh).material as THREE.MeshBasicMaterial).color.r).toBe(0);
@@ -920,6 +808,7 @@ describe('patchThree', () => {
             directionalLight.position.set(0, 0, 0);
             directionalLight.updateMatrixWorld();
             (helper as THREE.SpotLightHelper).update();
+            useAppStore.getState().setSelectedObject(directionalLight);
             useAppStore.getState().triggerSelectedObjectChanged();
 
             expect(picker.rotation.x.toFixed(1)).toBe('-0.8');
@@ -944,7 +833,7 @@ describe('patchThree', () => {
     });
 
     describe('when object is a SpotLight', () => {
-      it('adds helper and picker to dependantObjects which react to object changes', () => {
+      it('adds helper and picker to dependantObjects which react to object changes', async () => {
         // vi.mock('../../../../store', async (importOriginal) => {
         //   const mod = (await importOriginal()) as typeof import('../../../../store');
         //   return {
@@ -969,10 +858,7 @@ describe('patchThree', () => {
           };
         });
 
-        withScene(
-          0,
-          true
-        )(async ({ scene }) => {
+        await withScene(true)(async ({ scene }) => {
           return new Promise((done) => {
             const spotLight = new THREE.SpotLight();
             spotLight.color = new THREE.Color(0xff0000);
@@ -1094,7 +980,7 @@ describe('patchThree', () => {
     });
 
     describe('when object is a HemisphereLight', () => {
-      it('adds helper and picker to dependantObjects which react to object changes', () => {
+      it('adds helper and picker to dependantObjects which react to object changes', async () => {
         const originalGetState = useAppStore.getState.bind(useAppStore);
         vi.spyOn(useAppStore, 'getState').mockImplementation(() => {
           return {
@@ -1103,10 +989,7 @@ describe('patchThree', () => {
           };
         });
 
-        withScene(
-          0,
-          true
-        )(async ({ scene }) => {
+        await withScene(true)(async ({ scene }) => {
           return new Promise((done) => {
             const hemisphereLight = new THREE.HemisphereLight();
             hemisphereLight.color = new THREE.Color(0xff0000);
@@ -1159,8 +1042,125 @@ describe('patchThree', () => {
       });
     });
 
+    describe('when object is a LightProbe', () => {
+      it('adds helper and picker to dependantObjects which react to object changes', { timeout: 5000 }, async () => {
+        const originalGetState = useAppStore.getState.bind(useAppStore);
+        vi.spyOn(useAppStore, 'getState').mockImplementation(() => {
+          return {
+            ...originalGetState(),
+            gizmoSize: 2
+          };
+        });
+
+        await withScene(true)(async ({ scene, dirLight, hemiLight, renderer }) => {
+          return new Promise((done) => {
+            // linear color space
+            const API = {
+              lightProbeIntensity: 1,
+              directionalLightIntensity: 0.6,
+              envMapIntensity: 1
+            };
+
+            const directionalLight = new THREE.DirectionalLight(0xffffff, API.directionalLightIntensity);
+            directionalLight.position.set(10, 10, 10);
+            scene.add(directionalLight);
+
+            const lightProbe = new THREE.LightProbe();
+            lightProbe.position.set(10, 15, 20);
+            scene.add(lightProbe);
+
+            const helper = lightProbe.__inspectorData.helper!;
+            const picker = lightProbe.__inspectorData.picker!;
+            lightProbe.updateMatrixWorld();
+            lightProbe.updateWorldMatrix(true, false);
+            useAppStore.getState().setSelectedObject(lightProbe);
+            useAppStore.getState().triggerSelectedObjectChanged();
+            helper.updateWorldMatrix(true, false);
+
+            expect(lightProbe.__inspectorData.dependantObjects).toContain(helper);
+            expect(lightProbe.__inspectorData.dependantObjects).toContain(picker);
+
+            expect(roundArray(picker.matrixWorld.elements)).toEqual([
+              1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 10, 15, 20, 1
+            ]);
+            expect(roundArray(helper.matrixWorld.elements)).toEqual([
+              2, 0, 0, 0, 0, 2, 0, 0, 0, 0, 2, 0, 10, 15, 20, 1
+            ]);
+
+            // envmap
+            const genCubeUrls = function (prefix: string, postfix: string) {
+              return [
+                prefix + 'px' + postfix,
+                prefix + 'nx' + postfix,
+                prefix + 'py' + postfix,
+                prefix + 'ny' + postfix,
+                prefix + 'pz' + postfix,
+                prefix + 'nz' + postfix
+              ];
+            };
+
+            const urls = genCubeUrls('/textures/background/cube/pisa/', '.png');
+
+            new THREE.CubeTextureLoader().load(urls, (cubeTexture) => {
+              // const currentSceneBg = scene.background;
+              // const currentSceneEnv = scene.environment;
+              // const rendererToneMapping = renderer.toneMapping;
+              dirLight.visible = false;
+              hemiLight.visible = false;
+
+              // cubeTexture.mapping = THREE.CubeRefractionMapping; // THREE.EquirectangularRefractionMapping / THREE.CubeReflectionMapping
+              scene.background = cubeTexture;
+              // scene.environment = cubeTexture;
+              renderer.toneMapping = THREE.NoToneMapping;
+
+              lightProbe.copy(LightProbeGenerator.fromCubeTexture(cubeTexture));
+              lightProbe.position.set(-10, 0, 0);
+              lightProbe.updateMatrixWorld();
+              lightProbe.updateWorldMatrix(true, false);
+              lightProbe.intensity = API.lightProbeIntensity;
+              useAppStore.getState().setSelectedObject(lightProbe);
+              useAppStore.getState().triggerSelectedObjectChanged();
+              helper.updateWorldMatrix(true, false);
+              picker.updateWorldMatrix(true, false);
+              picker.updateMatrixWorld();
+
+              expect(roundArray(picker.matrixWorld.elements)).toEqual([
+                1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, -10, 0, 0, 1
+              ]);
+
+              expect(roundArray(helper.matrixWorld.elements)).toEqual([
+                2, 0, 0, 0, 0, 2, 0, 0, 0, 0, 2, 0, -10, 0, 0, 1
+              ]);
+
+              // const geometry = new THREE.SphereGeometry(5, 64, 32);
+              const geometry = new THREE.TorusKnotGeometry(4, 1.5, 256, 32, 2, 3);
+
+              const material = new THREE.MeshStandardMaterial({
+                color: 0xffffff,
+                metalness: 0,
+                roughness: 0,
+                envMap: cubeTexture,
+                envMapIntensity: API.envMapIntensity
+              });
+
+              const mesh = new THREE.Mesh(geometry, material);
+              scene.add(mesh);
+
+              // revert changes
+              // scene.background = currentSceneBg;
+              // scene.environment = currentSceneEnv;
+              // renderer.toneMapping = rendererToneMapping;
+              // dirLight.visible = true;
+              // hemiLight.visible = true;
+              done();
+            });
+          });
+        });
+      });
+    });
+
     describe('when object is a PointLight', () => {
-      it('adds helper and picker to dependantObjects which react to object changes', () => {
+      it('adds helper and picker to dependantObjects which react to object changes', async () => {
         const originalGetState = useAppStore.getState.bind(useAppStore);
         vi.spyOn(useAppStore, 'getState').mockImplementation(() => {
           return {
@@ -1169,10 +1169,7 @@ describe('patchThree', () => {
           };
         });
 
-        withScene(
-          0,
-          true
-        )(async ({ scene }) => {
+        await withScene(true)(async ({ scene }) => {
           return new Promise((done) => {
             const pointLight = new THREE.PointLight();
             pointLight.color = new THREE.Color(0xff0000);
@@ -1217,6 +1214,7 @@ describe('patchThree', () => {
             pointLight.position.set(0, 0, 0);
             pointLight.updateMatrixWorld();
             (helper as THREE.PointLightHelper).update();
+            useAppStore.getState().setSelectedObject(pointLight);
             useAppStore.getState().triggerSelectedObjectChanged();
             helper.updateWorldMatrix(true, false);
 

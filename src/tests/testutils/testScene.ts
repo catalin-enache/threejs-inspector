@@ -108,7 +108,7 @@ function init() {
 }
 
 const withScene =
-  (clear: boolean = true) =>
+  () =>
   async (
     fn: (sceneObjects: {
       scene: THREE.Scene;
@@ -136,7 +136,7 @@ const withScene =
     addResizeHandler();
     const cleanUp = await fn({ scene, dirLight, hemiLight, camera, renderer, clock, canvas, controls });
     cleanUp && cleanUp();
-    clear && scene.clear();
+    scene.clear();
     removeResizeHandler();
   };
 

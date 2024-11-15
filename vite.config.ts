@@ -55,6 +55,12 @@ export default defineConfig({
       providerOptions: {}
     },
     allowOnly: true,
-    restoreMocks: true
+    maxConcurrency: 1,
+    minWorkers: 1,
+    testTimeout: 5000,
+    restoreMocks: true,
+    sequence: {
+      concurrent: false
+    }
   }
 });

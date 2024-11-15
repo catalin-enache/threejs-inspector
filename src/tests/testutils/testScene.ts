@@ -5,36 +5,46 @@ import patchThree from 'lib/App/SetUp/patchThree';
 import { useAppStore } from 'src/store';
 import './testScene.css';
 
-let camera: THREE.PerspectiveCamera,
-  scene: THREE.Scene,
-  renderer: THREE.WebGLRenderer,
-  stats: Stats,
-  mixer: THREE.AnimationMixer;
+const stats = new Stats();
+const canvas = document.createElement('canvas');
 
-const clock = new THREE.Clock();
-
-function onWindowResize() {
-  camera.aspect = window.innerWidth / window.innerHeight;
-  camera.updateProjectionMatrix();
-  renderer.setSize(window.innerWidth, window.innerHeight);
-  // console.log('onWindowResize', window.innerWidth, window.innerHeight);
-}
-
-function animate() {
-  const delta = clock.getDelta();
-  if (mixer) mixer.update(delta);
-  renderer.render(scene, camera);
-  stats && stats.update();
-}
+document.body.appendChild(canvas);
+document.body.appendChild(stats.dom);
 
 function init() {
-  const canvas = document.createElement('canvas');
-  // document.body.appendChild(canvas);
+  // Note: Vitest does not allow resizing the window
+  const onWindowResize = () => {
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+  };
 
-  camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 2000);
+  const addResizeHandler = () => {
+    // document.body.appendChild(canvas);
+    // document.body.appendChild(stats.dom);
+    (window.top || window).addEventListener('resize', onWindowResize);
+  };
+
+  const removeResizeHandler = () => {
+    // canvas.parentNode?.removeChild(canvas);
+    // stats.dom.parentNode?.removeChild(stats.dom);
+    (window.top || window).removeEventListener('resize', onWindowResize);
+  };
+
+  const animate = () => {
+    // const delta = clock.getDelta();
+    // if (mixer) mixer.update(delta);
+    renderer.render(scene, camera);
+    stats && stats.update();
+  };
+
+  const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 2000);
   camera.position.set(100, 200, 300);
 
-  scene = new THREE.Scene();
+  // const mixer: THREE.AnimationMixer = new THREE.AnimationMixer();
+  const clock = new THREE.Clock();
+
+  const scene = new THREE.Scene();
   scene.background = new THREE.Color(0xa0a0a0);
   // scene.fog = new THREE.Fog(0xa0a0a0, 200, 1000);
   scene.__inspectorData.currentCamera = camera;
@@ -70,7 +80,7 @@ function init() {
   const axis = new THREE.AxesHelper(1000);
   scene.add(axis);
 
-  renderer = new THREE.WebGLRenderer({ antialias: true, canvas });
+  const renderer = new THREE.WebGLRenderer({ antialias: true, canvas });
   renderer.setPixelRatio(window.devicePixelRatio);
   renderer.setSize(window.innerWidth, window.innerHeight);
   renderer.setAnimationLoop(animate);
@@ -80,54 +90,54 @@ function init() {
   controls.target.set(0, 100, 0);
   controls.update();
 
-  window.addEventListener('resize', onWindowResize);
-
-  stats = new Stats();
-  // document.body.appendChild(stats.dom);
-
   useAppStore.getState().setDestroyOnRemove(true);
 
-  const removeScene = () => {
-    canvas.parentNode?.removeChild(canvas);
-    stats.dom.parentNode?.removeChild(stats.dom);
-  };
-
-  const addScene = () => {
-    document.body.appendChild(canvas);
-    document.body.appendChild(stats.dom);
-    return scene;
-  };
-
-  const withScene =
-    (timeout: number = 0, clear: boolean = true) =>
-    async (
-      fn: (sceneObjects: {
-        scene: THREE.Scene;
-        camera: THREE.PerspectiveCamera;
-        dirLight: THREE.DirectionalLight;
-        hemiLight: THREE.HemisphereLight;
-        mixer: THREE.AnimationMixer;
-        renderer: THREE.WebGLRenderer;
-        clock: THREE.Clock;
-        canvas: HTMLCanvasElement;
-      }) => Promise<(() => void | undefined) | void | undefined>
-    ) => {
-      addScene();
-      const cleanUp = await fn({ scene, dirLight, hemiLight, camera, mixer, renderer, clock, canvas });
-      setTimeout(() => {
-        cleanUp && cleanUp();
-        clear && scene.clear();
-        removeScene();
-      }, timeout);
-    };
-
   return {
-    withScene,
-    removeScene,
-    addScene
+    addResizeHandler,
+    removeResizeHandler,
+    scene,
+    camera,
+    dirLight,
+    hemiLight,
+    renderer,
+    clock,
+    canvas,
+    stats,
+    controls
   };
 }
 
-const { withScene } = init();
+const withScene =
+  (clear: boolean = true) =>
+  async (
+    fn: (sceneObjects: {
+      scene: THREE.Scene;
+      camera: THREE.PerspectiveCamera;
+      dirLight: THREE.DirectionalLight;
+      hemiLight: THREE.HemisphereLight;
+      renderer: THREE.WebGLRenderer;
+      clock: THREE.Clock;
+      canvas: HTMLCanvasElement;
+      controls: OrbitControls;
+    }) => Promise<(() => void | undefined) | void | undefined>
+  ) => {
+    const {
+      scene,
+      camera,
+      dirLight,
+      hemiLight,
+      renderer,
+      clock,
+      canvas,
+      controls,
+      addResizeHandler,
+      removeResizeHandler
+    } = init();
+    addResizeHandler();
+    const cleanUp = await fn({ scene, dirLight, hemiLight, camera, renderer, clock, canvas, controls });
+    cleanUp && cleanUp();
+    clear && scene.clear();
+    removeResizeHandler();
+  };
 
 export { withScene };

@@ -542,9 +542,6 @@ useAppStore.subscribe(
         } else if (object instanceof THREE.RectAreaLight) {
           picker.geometry.dispose();
           picker.geometry = new THREE.PlaneGeometry(object.width, object.height);
-        } else if (object instanceof THREE.DirectionalLight) {
-          // only for unit testing purposes
-          picker.matrix.decompose(picker.position, picker.quaternion, picker.scale);
         }
       }
     });

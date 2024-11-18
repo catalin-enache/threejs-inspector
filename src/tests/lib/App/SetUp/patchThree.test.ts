@@ -784,6 +784,8 @@ describe('patchThree', () => {
             expect((picker.material as THREE.MeshBasicMaterial).color.r).toBe(1);
             expect((picker.material as THREE.MeshBasicMaterial).color.g).toBe(0);
 
+            picker.matrix.decompose(picker.position, picker.quaternion, picker.scale);
+
             expect(picker.rotation.x.toFixed(1)).toBe('2.5');
             expect(picker.rotation.y.toFixed(1)).toBe('-0.4');
             expect(picker.rotation.z.toFixed(1)).toBe('2.9');
@@ -811,6 +813,8 @@ describe('patchThree', () => {
             expect((picker.material as THREE.MeshBasicMaterial).color.r).toBe(0);
             expect((picker.material as THREE.MeshBasicMaterial).color.g).toBe(1);
 
+            picker.matrix.decompose(picker.position, picker.quaternion, picker.scale);
+
             expect(picker.rotation.x.toFixed(1)).toBe('-1.6');
             expect(picker.rotation.y.toFixed(1)).toBe('1.1');
             expect(picker.rotation.z.toFixed(1)).toBe('1.6');
@@ -831,6 +835,8 @@ describe('patchThree', () => {
             (helper as THREE.SpotLightHelper).update();
             useAppStore.getState().setSelectedObject(directionalLight);
             useAppStore.getState().triggerSelectedObjectChanged();
+
+            picker.matrix.decompose(picker.position, picker.quaternion, picker.scale);
 
             expect(picker.rotation.x.toFixed(1)).toBe('-0.8');
             expect(picker.rotation.y.toFixed(1)).toBe('0.6');

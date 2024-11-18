@@ -1291,5 +1291,50 @@ describe('patchThree', () => {
         });
       });
     });
+
+    describe('when object is a PositionalAudio', () => {
+      it.only('adds helper and picker to dependantObjects which react to object changes', async () => {
+        const originalGetState = useAppStore.getState.bind(useAppStore);
+        vi.spyOn(useAppStore, 'getState').mockImplementation(() => {
+          return {
+            ...originalGetState(),
+            gizmoSize: 50
+          };
+        });
+
+        await withScene()(async ({ scene }) => {
+          return new Promise((done) => {
+            const audioListener = new THREE.AudioListener();
+            const positionalAudio = new THREE.PositionalAudio(audioListener);
+            const audioLoader = new THREE.AudioLoader();
+            audioLoader.load('/sounds/ping_pong.mp3', (buffer) => {
+              positionalAudio.setBuffer(buffer);
+              positionalAudio.setRefDistance(20);
+              positionalAudio.setRolloffFactor(1);
+              // positionalAudio.setLoop(true);
+              // positionalAudio.play();
+            });
+
+            positionalAudio.position.set(10, 15, 20);
+            scene.add(positionalAudio);
+
+            const helper = positionalAudio.__inspectorData.helper!;
+            const picker = positionalAudio.__inspectorData.picker!;
+            positionalAudio.updateMatrixWorld();
+
+            expect(positionalAudio.__inspectorData.dependantObjects).toContain(helper);
+            expect(positionalAudio.__inspectorData.dependantObjects).toContain(picker);
+
+            expect(roundArray(helper.matrixWorld.elements)).toEqual([
+              1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 10, 15, 20, 1
+            ]);
+            expect(roundArray(picker.matrixWorld.elements)).toEqual([
+              1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 10, 15, 20, 1
+            ]);
+            done();
+          });
+        });
+      });
+    });
   });
 });

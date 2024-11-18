@@ -16,6 +16,35 @@ const TILT_LIMIT = Math.cos(70 * MathUtils.DEG2RAD);
 
 // This patched version locks the pointer on RMB to compensate for pointerup not being fired outside the window
 
+// const fixOrbitControls = () => {
+//   let cx = 0;
+//   let cy = 0;
+//   let locked = false;
+//   const canvas = document.querySelector('#main canvas') as HTMLCanvasElement;
+//   document.addEventListener('pointerdown', (e) => {
+//     if (e.button !== 2 || e.target !== canvas) return;
+//     // console.log('mousedown', e);
+//     canvas.requestPointerLock();
+//     cx = e.clientX;
+//     cy = e.clientY;
+//     locked = true;
+//   });
+//   document.addEventListener('pointerup', (e) => {
+//     if (e.button !== 2) return;
+//     // console.log('mouseup', e);
+//     document.exitPointerLock();
+//     locked = false;
+//   });
+//   document.addEventListener('pointermove', (e) => {
+//     if (!locked) return;
+//     e.stopPropagation();
+//     cx += e.movementX;
+//     cy += e.movementY;
+//     // console.log('mousemove', { e, cx, cy });
+//     canvas.dispatchEvent(new PointerEvent('pointermove', { ...e, clientX: cx, clientY: cy }));
+//   });
+// };
+
 class OrbitControls extends EventDispatcher {
   constructor(object, domElement) {
     super();

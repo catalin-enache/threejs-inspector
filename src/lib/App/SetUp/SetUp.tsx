@@ -2,7 +2,6 @@ import * as THREE from 'three';
 import { useThree } from '@react-three/fiber';
 import { useCallback, useEffect, useRef } from 'react';
 // import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
-// @ts-ignore
 import { OrbitControls } from 'lib/third_party/OrbitControls';
 import { TransformControls } from 'three/examples/jsm/controls/TransformControls';
 import { RectAreaLightUniformsLib } from 'three/examples/jsm/lights/RectAreaLightUniformsLib';

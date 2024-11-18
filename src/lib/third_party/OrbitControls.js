@@ -14,6 +14,8 @@ const _ray = new Ray();
 const _plane = new Plane();
 const TILT_LIMIT = Math.cos(70 * MathUtils.DEG2RAD);
 
+// This patched version locks the pointer on RMB to compensate for pointerup not being fired outside the window
+
 class OrbitControls extends EventDispatcher {
   constructor(object, domElement) {
     super();

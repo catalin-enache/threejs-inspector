@@ -8,6 +8,7 @@ import { useAppStore } from '../../../../store';
 import { TransformControls } from 'three/examples/jsm/controls/TransformControls';
 import { LightProbeGenerator } from 'three/examples/jsm/lights/LightProbeGenerator';
 import { RGBELoader } from 'three/examples/jsm/loaders/RGBELoader';
+import { loadModel } from 'lib/utils/loadModel';
 
 // vi.mock('../../../../store');
 
@@ -592,6 +593,25 @@ describe('patchThree', () => {
   });
 
   describe('makeHelpers', () => {
+    describe('when object object has skeleton', () => {
+      it.only('creates skeletonHelper', { timeout: 10000 }, async () => {
+        return await withScene()(async ({ scene }) => {
+          return new Promise<void>((done) => {
+            loadModel('/models/MyTests/test_multi_features/test_multi_features.fbx', { isInspectable: true }).then(
+              (fbx) => {
+                if (!fbx) return;
+                scene.add(fbx);
+                // const showHelpers = useAppStore.getState().showHelpers;
+                // const showGizmos = useAppStore.getState().showGizmos;
+                expect(fbx.__inspectorData.helper).toBeInstanceOf(THREE.SkeletonHelper);
+                done();
+              }
+            );
+          });
+        });
+      });
+    });
+
     describe('when object is a Camera', () => {
       it('adds helper to dependantObjects which react to object changes', async () => {
         const originalGetState = useAppStore.getState.bind(useAppStore);
@@ -1234,7 +1254,7 @@ describe('patchThree', () => {
     });
 
     describe('when object is a CubeCamera', () => {
-      it('adds helper and picker to dependantObjects which react to object changes', { timeout: 10000 }, async () => {
+      it('adds helper and picker to dependantObjects which react to object changes', { timeout: 1000 }, async () => {
         const originalGetState = useAppStore.getState.bind(useAppStore);
         vi.spyOn(useAppStore, 'getState').mockImplementation(() => {
           return {
@@ -1293,7 +1313,7 @@ describe('patchThree', () => {
     });
 
     describe('when object is a PositionalAudio', () => {
-      it.only('adds helper and picker to dependantObjects which react to object changes', async () => {
+      it('adds helper and picker to dependantObjects which react to object changes', async () => {
         const originalGetState = useAppStore.getState.bind(useAppStore);
         vi.spyOn(useAppStore, 'getState').mockImplementation(() => {
           return {

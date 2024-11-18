@@ -594,7 +594,7 @@ describe('patchThree', () => {
 
   describe('makeHelpers', () => {
     describe('when object object has skeleton', () => {
-      it.only('creates skeletonHelper', { timeout: 10000 }, async () => {
+      it('creates skeletonHelper', { timeout: 10000 }, async () => {
         return await withScene()(async ({ scene }) => {
           return new Promise<void>((done) => {
             loadModel('/models/MyTests/test_multi_features/test_multi_features.fbx', { isInspectable: true }).then(

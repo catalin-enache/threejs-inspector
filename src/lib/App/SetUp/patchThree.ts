@@ -116,14 +116,19 @@ THREE.Object3D.prototype.remove = (function () {
 
 // ==============================================================================
 
-const defaultScene = new THREE.Scene();
+export const defaultScene = new THREE.Scene();
 const cameraPosition = new THREE.Vector3(0, 0, 12);
-const defaultPerspectiveCamera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 10000);
+export const defaultPerspectiveCamera = new THREE.PerspectiveCamera(
+  75,
+  window.innerWidth / window.innerHeight,
+  0.1,
+  10000
+);
 defaultPerspectiveCamera.position.copy(cameraPosition);
 defaultPerspectiveCamera.zoom = 1;
 defaultPerspectiveCamera.name = 'DefaultPerspectiveCamera';
 
-const defaultOrthographicCamera = new THREE.OrthographicCamera(-0, 0, 0, -0, 0.1, 10000);
+export const defaultOrthographicCamera = new THREE.OrthographicCamera(-0, 0, 0, -0, 0.1, 10000);
 defaultOrthographicCamera.position.copy(cameraPosition);
 defaultOrthographicCamera.zoom = 45;
 defaultOrthographicCamera.name = 'DefaultOrthographicCamera';

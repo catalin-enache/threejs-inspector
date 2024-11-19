@@ -835,12 +835,12 @@ class OrbitControls extends EventDispatcher {
         scope.domElement.setPointerCapture(event.pointerId);
 
         // ========> patch ==========>
-        if (event.button === 2) {
-          scope.domElement.requestPointerLock();
-          this.cx = event.clientX;
-          this.cy = event.clientY;
-          this.locked = true;
-        }
+
+        scope.domElement.requestPointerLock();
+        this.cx = event.clientX;
+        this.cy = event.clientY;
+        this.locked = true;
+
         // <======== patch <==========
 
         scope.domElement.addEventListener('pointermove', onPointerMove);
@@ -884,10 +884,10 @@ class OrbitControls extends EventDispatcher {
       removePointer(event);
 
       // ========> patch ==========>
-      if (event.button === 2) {
-        document.exitPointerLock();
-        this.locked = false;
-      }
+
+      document.exitPointerLock();
+      this.locked = false;
+
       // <======== patch <==========
 
       switch (pointers.length) {

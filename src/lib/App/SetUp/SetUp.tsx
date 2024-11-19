@@ -252,8 +252,19 @@ const SetUp = (props: SetUpProps) => {
       // for the case where orbit controls are injected, and we don't need our default orbit controls active
       orbitControlsRef.current.enabled = false;
     }
+    const oldOrbitControls = orbitControlsRef.current;
 
-    orbitControlsRef.current = orbitControls || (autoNavControls ? new OrbitControls(camera, gl.domElement) : null);
+    orbitControlsRef.current =
+      orbitControls ||
+      (autoNavControls && !orbitControlsRef.current
+        ? new OrbitControls(camera, gl.domElement)
+        : orbitControlsRef.current);
+
+    if (oldOrbitControls && oldOrbitControls !== orbitControlsRef.current) {
+      // @ts-ignore
+      oldOrbitControls.disconnect?.();
+      oldOrbitControls.dispose();
+    }
 
     if (orbitControlsRef.current) {
       orbitControlsRef.current.enabled =

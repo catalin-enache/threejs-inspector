@@ -57,6 +57,44 @@ describe('SetUp', () => {
     });
   });
 
+  it('Does not require OrbitControls', { timeout: 1000 }, async () => {
+    return new Promise<void>((done) => {
+      const handleSetupEffect: SetUpProps['onSetupEffect'] = (effect, data) => {
+        if (effect === SETUP_EFFECT.ORBIT_CONTROLS) {
+          expect(data.orbitControlsInUse).toBe(null);
+          res.unmount();
+          done();
+        }
+      };
+
+      const res = render(
+        <TestApp useDreiOrbitControls={false} autoNavControls={false} onSetupEffect={handleSetupEffect}></TestApp>,
+        {
+          container: document.getElementById('main')!
+        }
+      );
+    });
+  });
+
+  it('Can use internal OrbitControls when autoNavControls is true', { timeout: 1000 }, async () => {
+    return new Promise<void>((done) => {
+      const handleSetupEffect: SetUpProps['onSetupEffect'] = (effect, data) => {
+        if (effect === SETUP_EFFECT.ORBIT_CONTROLS) {
+          expect(data.orbitControlsInUse).toBeInstanceOf(InternalOrbitControls);
+          res.unmount();
+          done();
+        }
+      };
+
+      const res = render(
+        <TestApp useDreiOrbitControls={false} autoNavControls={true} onSetupEffect={handleSetupEffect}></TestApp>,
+        {
+          container: document.getElementById('main')!
+        }
+      );
+    });
+  });
+
   it('Can be used with external OrbitControls', { timeout: 1000 }, async () => {
     return new Promise<void>((done) => {
       let calls = 0;
@@ -100,44 +138,6 @@ describe('SetUp', () => {
 
       const res = render(
         <TestApp useDreiOrbitControls={true} autoNavControls={true} onSetupEffect={handleSetupEffect}></TestApp>,
-        {
-          container: document.getElementById('main')!
-        }
-      );
-    });
-  });
-
-  it('Can use internal OrbitControls when autoNavControls is true', { timeout: 1000 }, async () => {
-    return new Promise<void>((done) => {
-      const handleSetupEffect: SetUpProps['onSetupEffect'] = (effect, data) => {
-        if (effect === SETUP_EFFECT.ORBIT_CONTROLS) {
-          expect(data.orbitControlsInUse).toBeInstanceOf(InternalOrbitControls);
-          res.unmount();
-          done();
-        }
-      };
-
-      const res = render(
-        <TestApp useDreiOrbitControls={false} autoNavControls={true} onSetupEffect={handleSetupEffect}></TestApp>,
-        {
-          container: document.getElementById('main')!
-        }
-      );
-    });
-  });
-
-  it('Does not require OrbitControls', { timeout: 1000 }, async () => {
-    return new Promise<void>((done) => {
-      const handleSetupEffect: SetUpProps['onSetupEffect'] = (effect, data) => {
-        if (effect === SETUP_EFFECT.ORBIT_CONTROLS) {
-          expect(data.orbitControlsInUse).toBe(null);
-          res.unmount();
-          done();
-        }
-      };
-
-      const res = render(
-        <TestApp useDreiOrbitControls={false} autoNavControls={false} onSetupEffect={handleSetupEffect}></TestApp>,
         {
           container: document.getElementById('main')!
         }

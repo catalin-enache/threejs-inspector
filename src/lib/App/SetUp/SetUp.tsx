@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { useThree } from '@react-three/fiber';
+import { RootState, useThree } from '@react-three/fiber';
 import { useCallback, useEffect, useRef } from 'react';
 // import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import { OrbitControls } from 'lib/third_party/OrbitControls';
@@ -30,14 +30,25 @@ const preventContextMenu = (evt: MouseEvent) => {
   evt.preventDefault();
 };
 
-interface SetUpProps {
+export enum SETUP_EFFECT {
+  ORBIT_CONTROLS = 'OrbitControlsEffect'
+}
+
+const threeFields = ['camera', 'gl', 'raycaster', 'pointer', 'scene'] as (keyof RootState)[];
+
+export interface SetUpProps {
   orbitControls?: OrbitControls | null;
   autoNavControls: boolean; // considered when orbitControls is falsy
   isInjected?: boolean;
+  // for tests
+  onThreeChange?: (changed: any, three: RootState) => void;
+  onSetupEffect?: (effect: SETUP_EFFECT, data: Record<string, any>) => void;
 }
+
 const SetUp = (props: SetUpProps) => {
-  const { orbitControls = null, autoNavControls = false, isInjected = true } = props;
-  const { camera, gl, raycaster, pointer, scene } = useThree();
+  const { orbitControls = null, autoNavControls = false, isInjected = true, onSetupEffect, onThreeChange } = props;
+  const three = useThree();
+  const { camera, gl, raycaster, pointer, scene } = three;
 
   const setIsInjected = useAppStore((state) => state.setIsInjected);
   const setAutoNavControls = useAppStore((state) => state.setAutoNavControls);
@@ -62,6 +73,20 @@ const SetUp = (props: SetUpProps) => {
   const hitsRef = useRef<THREE.Intersection<THREE.Object3D>[]>([]);
   const lastHitRef = useRef<THREE.Intersection<THREE.Object3D> | null>(null);
   const targetPositionRef = useRef<THREE.Vector3>(new THREE.Vector3());
+
+  const cacheRef = useRef<any>({});
+
+  useEffect(() => {
+    (threeFields as (keyof RootState)[]).forEach((key) => {
+      if (three[key] !== cacheRef.current[key]) {
+        const val = three[key];
+        onThreeChange?.(key, three);
+        if (cacheRef.current) {
+          cacheRef.current[key] = val;
+        }
+      }
+    });
+  }, [threeFields.map((f) => three[f]), onThreeChange]);
 
   useEffect(() => {
     setIsInjected(isInjected);
@@ -273,7 +298,20 @@ const SetUp = (props: SetUpProps) => {
       // orbitControlsRef.current.dampingFactor = 0.3;
       // orbitControlsRef.current.autoRotate = true;
     }
-  }, [orbitControls, cameraControl, autoNavControls, camera, gl, attachDefaultControllersToPlayingCamera]);
+
+    onSetupEffect?.(SETUP_EFFECT.ORBIT_CONTROLS, {
+      orbitControlsInUse: orbitControlsRef.current,
+      orbitControlsReceived: orbitControls
+    });
+  }, [
+    orbitControls,
+    cameraControl,
+    autoNavControls,
+    camera,
+    gl,
+    attachDefaultControllersToPlayingCamera,
+    onSetupEffect
+  ]);
 
   const isPlayingCamera = getIsPlayingCamera(camera);
   const shouldUseFlyControls =

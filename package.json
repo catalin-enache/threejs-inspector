@@ -16,8 +16,8 @@
   },
   "dependencies": {
     "@monogrid/gainmap-js": "^3.0.5",
-    "@react-three/drei": "^9.102.6",
-    "@react-three/fiber": "^8.16.0",
+    "@react-three/drei": "^9.117.2",
+    "@react-three/fiber": "^8.17.10",
     "@redux-devtools/extension": "^3.3.0",
     "@tweakpane/core": "2.0.3",
     "@tweakpane/plugin-essentials": "^0.2.1",
@@ -53,6 +53,7 @@
     "typescript": "^5.5.3",
     "vite": "^5.2.10",
     "vite-plugin-markdown": "^2.2.0",
-    "vitest": "^2.1.3"
+    "vitest": "^2.1.3",
+    "vitest-browser-react": "^0.0.3"
   }
 }

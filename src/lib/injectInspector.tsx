@@ -1,9 +1,7 @@
 import * as THREE from 'three';
 import React, { ReactNode, memo, useMemo } from 'react';
-// @ts-ignore
 import { extend, createRoot, events, ReconcilerRoot } from '@react-three/fiber';
-import type { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
-import { SetUp } from './App/SetUp/SetUp'; // patching Object3D
+import { SetUp, SetUpProps } from './App/SetUp/SetUp'; // patching Object3D
 import { CPanel } from './App/CPanel/CPanel';
 import { CustomControl } from 'components/CustomControl/CustomControl';
 // KeyListener depends on CPanel (sideEffect) to add in DOM CPanel elements to listen to
@@ -53,14 +51,24 @@ export const buildCustomParamsElements = ({
 };
 
 interface InspectorProps {
-  orbitControls?: OrbitControls | null;
+  orbitControls?: any;
   autoNavControls?: boolean;
   customParams?: any;
   version?: number;
+  // for testing
+  onSetupEffect?: SetUpProps['onSetupEffect'];
+  onThreeChange?: SetUpProps['onThreeChange'];
 }
 
 export const Inspector = memo(
-  ({ orbitControls, autoNavControls = false, customParams, version = 0 }: InspectorProps) => {
+  ({
+    orbitControls,
+    autoNavControls = false,
+    customParams,
+    onSetupEffect,
+    onThreeChange,
+    version = 0
+  }: InspectorProps) => {
     const customParamsElements = useMemo(() => {
       if (!customParams) return null;
       return buildCustomParamsElements({ customParams });
@@ -70,7 +78,13 @@ export const Inspector = memo(
 
     return (
       <>
-        <SetUp orbitControls={orbitControls} isInjected={true} autoNavControls={autoNavControls} />
+        <SetUp
+          orbitControls={orbitControls}
+          isInjected={true}
+          autoNavControls={autoNavControls}
+          onSetupEffect={onSetupEffect}
+          onThreeChange={onThreeChange}
+        />
         <CPanel />
         <KeyListener isInjected={true} autoNavControls={autoNavControls} />
         {customParamsElements}
@@ -84,7 +98,7 @@ type InjectInspectorParams = {
   scene: THREE.Scene;
   camera: THREE.PerspectiveCamera | THREE.OrthographicCamera;
   frameloop?: 'always' | 'demand' | 'never';
-  orbitControls?: OrbitControls | null;
+  orbitControls?: any;
   autoNavControls?: boolean;
   customParams?: any;
 };

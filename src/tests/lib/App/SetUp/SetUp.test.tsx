@@ -82,7 +82,7 @@ describe('SetUp', () => {
     });
   });
 
-  it('Can be used with external OrbitControls even autoNavControls is true', { timeout: 1000 }, async () => {
+  it('Can be used with external OrbitControls even when autoNavControls is true', { timeout: 1000 }, async () => {
     return new Promise<void>((done) => {
       let calls = 0;
       const handleSetupEffect: SetUpProps['onSetupEffect'] = (effect, data) => {

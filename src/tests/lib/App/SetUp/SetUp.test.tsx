@@ -107,7 +107,7 @@ describe('SetUp', () => {
     });
   });
 
-  it.only('Can use internal OrbitControls when autoNavControls is true', { timeout: 1000 }, async () => {
+  it('Can use internal OrbitControls when autoNavControls is true', { timeout: 1000 }, async () => {
     return new Promise<void>((done) => {
       const handleSetupEffect: SetUpProps['onSetupEffect'] = (effect, data) => {
         if (effect === SETUP_EFFECT.ORBIT_CONTROLS) {
@@ -126,7 +126,7 @@ describe('SetUp', () => {
     });
   });
 
-  it.only('Does not require OrbitControls', { timeout: 1000 }, async () => {
+  it('Does not require OrbitControls', { timeout: 1000 }, async () => {
     return new Promise<void>((done) => {
       const handleSetupEffect: SetUpProps['onSetupEffect'] = (effect, data) => {
         if (effect === SETUP_EFFECT.ORBIT_CONTROLS) {

@@ -70,6 +70,7 @@ html, body {
   -moz-osx-font-smoothing: grayscale;
   -webkit-text-size-adjust: 100%;
   -webkit-tap-highlight-color: transparent;
+  z-index: 99999; /* 1 is enough but if used in other apps we need to be sure is on top of everything */
 }
 
 #dragMe {

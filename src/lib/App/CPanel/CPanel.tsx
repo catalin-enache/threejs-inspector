@@ -156,7 +156,12 @@ searchInput.addEventListener('input', (evt) => {
   useAppStore.getState().setOutlinerSearch((evt.target as HTMLInputElement).value);
 });
 
-export const CPanel = () => {
+export interface CPanelProps {
+  onCPanelReady?: (pane: Pane) => void;
+}
+
+export const CPanel = (props: CPanelProps) => {
+  const { onCPanelReady } = props;
   const { camera, scene, gl, raycaster } = useThree();
   const playingState = useAppStore((state) => state.playingState);
   const paneRef = useRef<Pane | null>(null);
@@ -255,6 +260,7 @@ export const CPanel = () => {
     const currentSize = parseInt(getComputedStyle(cPanelContainer).getPropertyValue('--cPanelWidth').trim(), 10);
     !storedCPanelSize && setCPanelSize(currentSize);
     storedCPanelSize && cPanelContainer.style.setProperty('--cPanelWidth', storedCPanelSize + 'px');
+    onCPanelReady?.(paneRef.current!);
     return () => {
       continuousUpdateRef.current?.stop();
       paneRef.current?.dispose();

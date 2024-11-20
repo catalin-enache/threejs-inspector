@@ -835,14 +835,16 @@ class OrbitControls extends EventDispatcher {
         scope.domElement.setPointerCapture(event.pointerId);
 
         // ========> patch ==========>
+        if (event.button === 2) {
+          // need to be button 2 so that LMB double click still works to select objects
+          scope.domElement.requestPointerLock({ unadjustedMovement: true });
+          this.locked = true;
+        }
 
-        scope.domElement.requestPointerLock({ unadjustedMovement: true });
         this.cx = event.clientX;
         this.cy = event.clientY;
         this.px = event.pageX;
         this.py = event.pageY;
-        this.locked = true;
-
         // <======== patch <==========
 
         scope.domElement.addEventListener('pointermove', onPointerMove);
@@ -872,20 +874,16 @@ class OrbitControls extends EventDispatcher {
       } else {
         onMouseMove(newEvent);
       }
-      if (scope.events.length) {
-        requestAnimationFrame(() => fireEvents(event));
-      }
+      requestAnimationFrame(() => fireEvents(event));
     };
 
     function onPointerMove(event) {
       if (scope.enabled === false) return;
-      // ========> patch ==========>
 
+      // ========> patch ==========>
       const useAntialias = false;
 
       if (this.locked) {
-        scope.events = [];
-
         const prevCX = this.cx;
         const prevCY = this.cy;
         const prevPX = this.px;
@@ -897,6 +895,7 @@ class OrbitControls extends EventDispatcher {
         this.py += event.movementY;
 
         if (useAntialias) {
+          scope.events = [];
           const interpolationSteps = 4; // Number of points to interpolate
           for (let i = 1; i <= interpolationSteps; i++) {
             const t = i / interpolationSteps;
@@ -920,7 +919,6 @@ class OrbitControls extends EventDispatcher {
           event = { ...event, clientX: this.cx, clientY: this.cy, pageX: this.px, pageY: this.py };
         }
       }
-
       // <======== patch <==========
 
       if (event.pointerType === 'touch') {
@@ -934,10 +932,10 @@ class OrbitControls extends EventDispatcher {
       removePointer(event);
 
       // ========> patch ==========>
-
-      scope.domElement.ownerDocument.exitPointerLock();
-      this.locked = false;
-
+      if (event.button === 2) {
+        scope.domElement.ownerDocument.exitPointerLock();
+        this.locked = false;
+      }
       // <======== patch <==========
 
       switch (pointers.length) {

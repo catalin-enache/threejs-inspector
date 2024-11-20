@@ -136,6 +136,7 @@ const withScene =
     } = init();
     addResizeHandler();
     const cleanUp = await fn({ scene, dirLight, hemiLight, camera, renderer, clock, canvas, controls });
+    scene.__inspectorData.orbitControlsRef?.current?.dispose();
     cleanUp && cleanUp();
     scene.clear();
     removeResizeHandler();

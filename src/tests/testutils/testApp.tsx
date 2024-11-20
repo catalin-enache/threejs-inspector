@@ -115,7 +115,10 @@ export function TestApp(props: TestAppProps) {
   const threeStateRef = useRef<RootState | null>(null);
 
   useEffect(() => {
-    return () => threeStateRef.current?.gl.dispose();
+    return () => {
+      threeStateRef.current?.gl.dispose();
+      threeStateRef.current?.scene.__inspectorData.orbitControlsRef?.current?.dispose();
+    };
   }, []);
 
   const handleThreeChange = useCallback<NonNullable<SetUpProps['onThreeChange']>>(

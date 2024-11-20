@@ -6,6 +6,8 @@ import { OrbitControls as InternalOrbitControls } from 'lib/third_party/OrbitCon
 import { OrbitControls as OrbitControlsImpl } from 'three-stdlib';
 import { SETUP_EFFECT, SetUpProps } from 'lib/App/SetUp/SetUp';
 import { useAppStore } from 'src/store';
+import { screen, within, waitFor } from '@testing-library/dom';
+import { CPanelProps } from 'lib/App/CPanel/CPanel';
 
 describe('SetUp', () => {
   beforeEach(() => {
@@ -165,6 +167,94 @@ describe('SetUp', () => {
         useAppStore.getState().setCameraControl('fly');
         const res = render(
           <TestApp useDreiOrbitControls={false} autoNavControls={true} onSetupEffect={handleSetupEffect}></TestApp>,
+          {
+            container: document.getElementById('main')!
+          }
+        );
+      });
+    });
+
+    it('Can switch from Fly control to Orbit control', { timeout: 1000 }, async () => {
+      return new Promise<void>((done) => {
+        let calls = 0;
+        const _data: any[] = [];
+        const handleSetupEffect: SetUpProps['onSetupEffect'] = async (effect, data) => {
+          if (effect === SETUP_EFFECT.ORBIT_CONTROLS) {
+            _data.push([useAppStore.getState().cameraControl, data.orbitControlsInUse.enabled]);
+
+            calls += 1;
+
+            if (calls === 2) {
+              expect(_data).toEqual([
+                ['fly', false],
+                ['orbit', true]
+              ]);
+              res.unmount();
+              done();
+            }
+          }
+        };
+
+        const handleCPanelReady: CPanelProps['onCPanelReady'] = async () => {
+          expect(useAppStore.getState().cameraControl).toBe('fly');
+          const cameraControl = await screen.findByText('Camera Control');
+          const orbitButton = within(cameraControl.parentElement!.parentElement!).getByText('Orbit');
+          orbitButton.click();
+          await waitFor(() => expect(useAppStore.getState().cameraControl).toBe('orbit'));
+        };
+
+        useAppStore.getState().setCameraControl('fly');
+        const res = render(
+          <TestApp
+            useDreiOrbitControls={true}
+            autoNavControls={true}
+            onSetupEffect={handleSetupEffect}
+            onCPanelReady={handleCPanelReady}
+          ></TestApp>,
+          {
+            container: document.getElementById('main')!
+          }
+        );
+      });
+    });
+
+    it('Can switch from Orbit control to Fly control', { timeout: 1000 }, async () => {
+      return new Promise<void>((done) => {
+        let calls = 0;
+        const _data: any[] = [];
+        const handleSetupEffect: SetUpProps['onSetupEffect'] = async (effect, data) => {
+          if (effect === SETUP_EFFECT.ORBIT_CONTROLS) {
+            _data.push([useAppStore.getState().cameraControl, data.orbitControlsInUse.enabled]);
+
+            calls += 1;
+
+            if (calls === 2) {
+              expect(_data).toEqual([
+                ['orbit', true],
+                ['fly', false]
+              ]);
+              res.unmount();
+              done();
+            }
+          }
+        };
+
+        const handleCPanelReady: CPanelProps['onCPanelReady'] = async () => {
+          expect(useAppStore.getState().cameraControl).toBe('orbit');
+          const cameraControl = await screen.findByText('Camera Control');
+          const flyButton = within(cameraControl.parentElement!.parentElement!).getByText('Fly');
+          flyButton.click();
+          await waitFor(() => expect(useAppStore.getState().cameraControl).toBe('fly'));
+        };
+
+        useAppStore.getState().setCameraControl('orbit');
+        const res = render(
+          <TestApp
+            useDreiOrbitControls={false}
+            autoNavControls={true}
+            onSetupEffect={handleSetupEffect}
+            onCPanelReady={handleCPanelReady}
+          ></TestApp>,
           {
             container: document.getElementById('main')!
           }

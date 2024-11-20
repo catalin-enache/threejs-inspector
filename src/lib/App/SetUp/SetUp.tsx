@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { RootState, useThree } from '@react-three/fiber';
+import { RootState, useThree, useFrame } from '@react-three/fiber';
 import { useCallback, useEffect, useRef } from 'react';
 // import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import { OrbitControls } from 'lib/third_party/OrbitControls';
@@ -75,6 +75,12 @@ const SetUp = (props: SetUpProps) => {
   const targetPositionRef = useRef<THREE.Vector3>(new THREE.Vector3());
 
   const cacheRef = useRef<any>({});
+
+  useFrame(() => {
+    if (orbitControlsRef.current?.enableDamping) {
+      orbitControlsRef.current?.update();
+    }
+  });
 
   useEffect(() => {
     (threeFields as (keyof RootState)[]).forEach((key) => {
@@ -294,8 +300,10 @@ const SetUp = (props: SetUpProps) => {
     if (orbitControlsRef.current) {
       orbitControlsRef.current.enabled =
         cameraControl === 'orbit' && (!getIsPlayingCamera(camera) || attachDefaultControllersToPlayingCamera);
-      // orbitControlsRef.current.enableDamping = true;
-      // orbitControlsRef.current.dampingFactor = 0.3;
+      orbitControlsRef.current.enableDamping =
+        orbitControlsRef.current === orbitControls ? orbitControls.enableDamping : true;
+      orbitControlsRef.current.dampingFactor =
+        orbitControlsRef.current === orbitControls ? orbitControls.dampingFactor : 0.2;
       // orbitControlsRef.current.autoRotate = true;
     }
 

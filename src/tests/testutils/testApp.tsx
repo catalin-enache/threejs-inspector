@@ -6,6 +6,7 @@ import { OrbitControls } from '@react-three/drei';
 import { defaultScene, defaultPerspectiveCamera, defaultOrthographicCamera } from 'lib/App/SetUp/patchThree';
 import { SetUpProps } from 'lib/App/SetUp/SetUp';
 import { useAppStore } from 'src/store';
+import { CPanelProps } from 'lib/App/CPanel/CPanel';
 
 const styleContent = `
 :root {
@@ -84,6 +85,7 @@ export interface TestAppProps {
   useDefaultOrthographicCamera?: boolean;
   onSetupEffect?: SetUpProps['onSetupEffect'];
   onThreeChange?: SetUpProps['onThreeChange'];
+  onCPanelReady?: CPanelProps['onCPanelReady'];
 }
 
 export function TestApp(props: TestAppProps) {
@@ -110,7 +112,8 @@ export function TestApp(props: TestAppProps) {
     useDefaultPerspectiveCamera = false,
     useDefaultOrthographicCamera = false,
     onSetupEffect,
-    onThreeChange
+    onThreeChange,
+    onCPanelReady
   } = props;
   const [orbitControls, setOrbitControls] = useState<any>(null);
   const threeStateRef = useRef<RootState | null>(null);
@@ -154,6 +157,7 @@ export function TestApp(props: TestAppProps) {
         orbitControls={orbitControls}
         onSetupEffect={onSetupEffect}
         onThreeChange={handleThreeChange}
+        onCPanelReady={onCPanelReady}
       />
       {useDreiOrbitControls ? <OrbitControls makeDefault ref={setOrbitControls} enableDamping={false} /> : null}
       {includeDirLight ? (

@@ -270,7 +270,9 @@ const SetUp = (props: SetUpProps) => {
   useEffect(() => {
     gl.domElement.addEventListener('dblclick', onSceneDblClick);
     return () => {
+      orbitControlsRef.current?.dispose();
       gl.domElement.removeEventListener('dblclick', onSceneDblClick);
+      gl.dispose();
     };
   }, [gl, onSceneDblClick]);
 

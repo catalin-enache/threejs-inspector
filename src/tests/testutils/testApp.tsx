@@ -116,8 +116,9 @@ export function TestApp(props: TestAppProps) {
 
   useEffect(() => {
     return () => {
-      threeStateRef.current?.gl.dispose();
-      threeStateRef.current?.scene.__inspectorData.orbitControlsRef?.current?.dispose();
+      // should dbe covered by SetUp unmount
+      // threeStateRef.current?.gl.dispose();
+      // threeStateRef.current?.scene.__inspectorData.orbitControlsRef?.current?.dispose();
     };
   }, []);
 

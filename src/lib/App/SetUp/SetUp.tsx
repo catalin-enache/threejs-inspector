@@ -77,7 +77,7 @@ const SetUp = (props: SetUpProps) => {
   const cacheRef = useRef<any>({});
 
   useFrame(() => {
-    if (orbitControlsRef.current?.enableDamping) {
+    if (orbitControlsRef.current?.enabled && orbitControlsRef.current?.enableDamping) {
       orbitControlsRef.current?.update();
     }
   });

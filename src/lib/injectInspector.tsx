@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import React, { ReactNode, memo, useMemo } from 'react';
 import { extend, createRoot, events, ReconcilerRoot } from '@react-three/fiber';
 import { SetUp, SetUpProps } from './App/SetUp/SetUp'; // patching Object3D
-import { CPanel } from './App/CPanel/CPanel';
+import { CPanel, CPanelProps } from './App/CPanel/CPanel';
 import { CustomControl } from 'components/CustomControl/CustomControl';
 // KeyListener depends on CPanel (sideEffect) to add in DOM CPanel elements to listen to
 import { KeyListener } from './App/KeyListener';
@@ -58,6 +58,7 @@ interface InspectorProps {
   // for testing
   onSetupEffect?: SetUpProps['onSetupEffect'];
   onThreeChange?: SetUpProps['onThreeChange'];
+  onCPanelReady?: CPanelProps['onCPanelReady'];
 }
 
 export const Inspector = memo(
@@ -67,6 +68,7 @@ export const Inspector = memo(
     customParams,
     onSetupEffect,
     onThreeChange,
+    onCPanelReady,
     version = 0
   }: InspectorProps) => {
     const customParamsElements = useMemo(() => {
@@ -85,7 +87,7 @@ export const Inspector = memo(
           onSetupEffect={onSetupEffect}
           onThreeChange={onThreeChange}
         />
-        <CPanel />
+        <CPanel onCPanelReady={onCPanelReady} />
         <KeyListener isInjected={true} autoNavControls={autoNavControls} />
         {customParamsElements}
       </>

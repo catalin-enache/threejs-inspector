@@ -5,6 +5,7 @@ import { Inspector } from 'lib/injectInspector';
 import { OrbitControls } from '@react-three/drei';
 import { defaultScene, defaultPerspectiveCamera, defaultOrthographicCamera } from 'lib/App/SetUp/patchThree';
 import { SetUpProps } from 'lib/App/SetUp/SetUp';
+import { useAppStore } from 'src/store';
 
 const styleContent = `
 :root {
@@ -116,6 +117,9 @@ export function TestApp(props: TestAppProps) {
 
   useEffect(() => {
     return () => {
+      // reset
+      useAppStore.getState().setDestroyOnRemove(true);
+      useAppStore.getState().setCameraControl('orbit');
       // should dbe covered by SetUp unmount
       // threeStateRef.current?.gl.dispose();
       // threeStateRef.current?.scene.__inspectorData.orbitControlsRef?.current?.dispose();

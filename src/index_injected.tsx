@@ -77,7 +77,8 @@ export function App(props: AppProps) {
   return (
     <Canvas camera={camera} scene={scene} shadows={'soft'} gl={glOptions} frameloop={'always'}>
       <Inspector autoNavControls={true} orbitControls={orbitControls} customParams={customParams} />
-      <OrbitControls makeDefault ref={setOrbitControlsRef} enableDamping={false} />
+      {/*dampingFactor={0.05} is default*/}
+      <OrbitControls makeDefault ref={setOrbitControlsRef} enableDamping={true} dampingFactor={0.1} />
       {children}
     </Canvas>
   );

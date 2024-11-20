@@ -836,9 +836,11 @@ class OrbitControls extends EventDispatcher {
 
         // ========> patch ==========>
 
-        scope.domElement.requestPointerLock();
+        scope.domElement.requestPointerLock({ unadjustedMovement: true });
         this.cx = event.clientX;
         this.cy = event.clientY;
+        this.px = event.pageX;
+        this.py = event.pageY;
         this.locked = true;
 
         // <======== patch <==========
@@ -862,15 +864,63 @@ class OrbitControls extends EventDispatcher {
       }
     }
 
+    const fireEvents = (event) => {
+      if (!scope.events.length) return;
+      const newEvent = scope.events.shift();
+      if (event.pointerType === 'touch') {
+        onTouchMove(newEvent);
+      } else {
+        onMouseMove(newEvent);
+      }
+      if (scope.events.length) {
+        requestAnimationFrame(() => fireEvents(event));
+      }
+    };
+
     function onPointerMove(event) {
       if (scope.enabled === false) return;
-
       // ========> patch ==========>
+
+      const useAntialias = false;
+
       if (this.locked) {
+        scope.events = [];
+
+        const prevCX = this.cx;
+        const prevCY = this.cy;
+        const prevPX = this.px;
+        const prevPY = this.py;
+
         this.cx += event.movementX;
         this.cy += event.movementY;
-        event = { ...event, clientX: this.cx, clientY: this.cy };
+        this.px += event.movementX;
+        this.py += event.movementY;
+
+        if (useAntialias) {
+          const interpolationSteps = 4; // Number of points to interpolate
+          for (let i = 1; i <= interpolationSteps; i++) {
+            const t = i / interpolationSteps;
+            const interpolatedCX = prevCX + (this.cx - prevCX) * t;
+            const interpolatedCY = prevCY + (this.cy - prevCY) * t;
+            const interpolatedPX = prevPX + (this.px - prevPX) * t;
+            const interpolatedPY = prevPY + (this.py - prevPY) * t;
+
+            event = {
+              ...event,
+              clientX: interpolatedCX,
+              clientY: interpolatedCY,
+              pageX: interpolatedPX,
+              pageY: interpolatedPY
+            };
+            scope.events.push(event);
+          }
+          fireEvents(event);
+          return;
+        } else {
+          event = { ...event, clientX: this.cx, clientY: this.cy, pageX: this.px, pageY: this.py };
+        }
       }
+
       // <======== patch <==========
 
       if (event.pointerType === 'touch') {
@@ -885,7 +935,7 @@ class OrbitControls extends EventDispatcher {
 
       // ========> patch ==========>
 
-      document.exitPointerLock();
+      scope.domElement.ownerDocument.exitPointerLock();
       this.locked = false;
 
       // <======== patch <==========

@@ -88,7 +88,7 @@ export const Inspector = memo(
           onThreeChange={onThreeChange}
         />
         <CPanel onCPanelReady={onCPanelReady} />
-        <KeyListener isInjected={true} autoNavControls={autoNavControls} />
+        <KeyListener />
         {customParamsElements}
       </>
     );

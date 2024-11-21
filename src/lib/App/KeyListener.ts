@@ -21,15 +21,11 @@ const getAllMetaPressed = (e: KeyboardEvent) => {
   return e.altKey && e.ctrlKey && e.shiftKey;
 };
 
-interface KeyListenerProps {
-  isInjected?: boolean;
-  autoNavControls?: boolean;
-}
-
-export function KeyListener(props: KeyListenerProps) {
-  const { isInjected = true, autoNavControls = false } = props;
+export function KeyListener() {
   const cPanelVisible = useAppStore((state) => state.cPanelVisible);
   const isEditorMode = useAppStore((state) => state.showGizmos || state.cPanelVisible);
+  const isInjected = useAppStore((state) => state.isInjected);
+  const autoNavControls = useAppStore((state) => state.autoNavControls);
   const { scene, camera } = useThree();
   const keysPressed: any = useMemo(() => ({}), []);
 

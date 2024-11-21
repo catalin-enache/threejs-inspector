@@ -53,9 +53,9 @@ export const useDefaultSetup: UseInspector = ({ cameraType } = {}) => {
   const inspector = useMemo(() => {
     return (
       <>
-        <SetUp isInjected={false} autoNavControls />
+        <SetUp isInjected={false} autoNavControls={true} />
         <CPanel />
-        <KeyListener isInjected={false} autoNavControls />
+        <KeyListener />
       </>
     );
   }, []);

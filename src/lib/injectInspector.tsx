@@ -51,8 +51,10 @@ export const buildCustomParamsElements = ({
 };
 
 interface InspectorProps {
-  orbitControls?: any;
+  // autoNavControls enable OrbitControls and FlyControls
   autoNavControls?: boolean;
+  // if orbitControls are provided, they replace internal OrbitControls when autoNavControls is true
+  orbitControls?: any;
   customParams?: any;
   version?: number;
   // for testing
@@ -100,8 +102,10 @@ type InjectInspectorParams = {
   scene: THREE.Scene;
   camera: THREE.PerspectiveCamera | THREE.OrthographicCamera;
   frameloop?: 'always' | 'demand' | 'never';
-  orbitControls?: any;
+  // autoNavControls enable OrbitControls and FlyControls
   autoNavControls?: boolean;
+  // if orbitControls are provided, they replace internal OrbitControls when autoNavControls is true
+  orbitControls?: any;
   customParams?: any;
 };
 

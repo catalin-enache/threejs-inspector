@@ -145,6 +145,7 @@ const SetUp = (props: SetUpProps) => {
     // The currentCamera that we set here is only used in App.
     // It is ignored when injectInspector is used.
     const sceneInspectorData = scene.__inspectorData;
+    // TODO: find out if we still actually need currentCamera and for what exactly
     if (['playing', 'paused'].includes(playingState)) {
       sceneInspectorData.currentCamera = getCameraToUseOnPlay() || sceneInspectorData.currentCamera;
     } else {
@@ -270,11 +271,21 @@ const SetUp = (props: SetUpProps) => {
   useEffect(() => {
     gl.domElement.addEventListener('dblclick', onSceneDblClick);
     return () => {
-      orbitControlsRef.current?.dispose();
       gl.domElement.removeEventListener('dblclick', onSceneDblClick);
-      gl.dispose();
     };
   }, [gl, onSceneDblClick]);
+
+  useEffect(() => {
+    return () => {
+      gl.dispose();
+    };
+  }, [gl]);
+
+  useEffect(() => {
+    return () => {
+      orbitControlsRef.current?.dispose();
+    };
+  }, []);
 
   useEffect(() => {
     // Enable/Disable orbit controls

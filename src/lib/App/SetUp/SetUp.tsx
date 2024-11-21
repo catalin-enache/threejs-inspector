@@ -19,6 +19,7 @@ const {
   getCameraToUseOnPlay,
   shouldContainItsHelper,
   updateCameras,
+  shouldUseFlyControls,
   interactableObjects,
   defaultPerspectiveCamera,
   defaultOrthographicCamera
@@ -333,13 +334,7 @@ const SetUp = (props: SetUpProps) => {
     onSetupEffect
   ]);
 
-  const isPlayingCamera = getIsPlayingCamera(camera);
-  const shouldUseFlyControls =
-    autoNavControls &&
-    ((isPlayingCamera && attachDefaultControllersToPlayingCamera && cameraControl === 'fly') ||
-      (!isPlayingCamera && cameraControl === 'fly'));
-
-  return <>{shouldUseFlyControls && <FlyControls />}</>;
+  return <>{shouldUseFlyControls(camera) && <FlyControls />}</>;
 };
 
 // eslint-disable-next-line

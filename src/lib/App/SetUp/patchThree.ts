@@ -143,6 +143,7 @@ type Module = {
   defaultOrthographicCamera: THREE.OrthographicCamera;
   cameraToUseOnPlay: THREE.PerspectiveCamera | THREE.OrthographicCamera | null;
   getCameraToUseOnPlay: () => THREE.PerspectiveCamera | THREE.OrthographicCamera | null;
+  shouldUseFlyControls: (camera: THREE.Camera) => boolean;
   getIsPlayingCamera: (camera: THREE.Camera) => boolean;
   objectHasSkeleton: (object: THREE.Object3D) => boolean;
   shouldContainItsHelper: (object: THREE.Object3D) => boolean;
@@ -174,6 +175,18 @@ const module: Module = {
   cameraToUseOnPlay: null,
   getCameraToUseOnPlay() {
     return this.cameraToUseOnPlay;
+  },
+
+  shouldUseFlyControls(camera: THREE.Camera) {
+    const isPlayingCamera = this.getIsPlayingCamera(camera);
+    const autoNavControls = useAppStore.getState().autoNavControls;
+    const attachDefaultControllersToPlayingCamera = useAppStore.getState().attachDefaultControllersToPlayingCamera;
+    const cameraControl = useAppStore.getState().cameraControl;
+    return (
+      autoNavControls &&
+      ((isPlayingCamera && attachDefaultControllersToPlayingCamera && cameraControl === 'fly') ||
+        (!isPlayingCamera && cameraControl === 'fly'))
+    );
   },
 
   updateCameras() {

@@ -1,6 +1,6 @@
 import { expect, describe, it, beforeEach, afterEach } from 'vitest';
 import { render } from 'vitest-browser-react';
-import { TestInjectedInspectorApp, initDOM, clearDOM } from 'testutils/testApp';
+import { TestInjectedInspectorApp, TestDefaultApp, initDOM, clearDOM } from 'testutils/testApp';
 import { defaultScene, defaultPerspectiveCamera } from 'lib/App/SetUp/patchThree';
 import { OrbitControls as InternalOrbitControls } from 'lib/third_party/OrbitControls';
 import { OrbitControls as OrbitControlsImpl } from 'three-stdlib';
@@ -8,6 +8,7 @@ import { SETUP_EFFECT, SetUpProps } from 'lib/App/SetUp/SetUp';
 import { useAppStore } from 'src/store';
 import { screen, within, waitFor } from '@testing-library/dom';
 import { CPanelProps } from 'lib/App/CPanel/CPanel';
+import { degToRad } from 'lib/utils';
 
 describe('SetUp', () => {
   beforeEach(() => {
@@ -288,33 +289,61 @@ describe('SetUp', () => {
       });
     });
 
-    // it.only(
-    //   'OrbitControls are disabled when isPlayingCamera and not attachDefaultControllersToPlayingCamera',
-    //   { timeout: 60000 },
-    //   async () => {
-    //     return new Promise((done) => {
-    //       const handleCPanelReady: CPanelProps['onCPanelReady'] = async () => {
-    //         expect(useAppStore.getState().cameraControl).toBe('orbit');
-    //         // const cameraControl = await screen.findByText('Camera Control');
-    //         // const flyButton = within(cameraControl.parentElement!.parentElement!).getByText('Fly');
-    //         // flyButton.click();
-    //         // await waitFor(() => expect(useAppStore.getState().cameraControl).toBe('fly'));
-    //       };
-    //
-    //       const res = render(
-    //         <TestApp
-    //           useDreiOrbitControls={false}
-    //           autoNavControls={true}
-    //           _isInjected={false}
-    //           // onSetupEffect={handleSetupEffect}
-    //           // onCPanelReady={handleCPanelReady}
-    //         ></TestApp>,
-    //         {
-    //           container: document.getElementById('main')!
-    //         }
-    //       );
-    //     });
-    //   }
-    // );
+    it(
+      'OrbitControls are disabled when isPlayingCamera and not attachDefaultControllersToPlayingCamera',
+      { timeout: 1000 },
+      async () => {
+        return new Promise<void>((done) => {
+          const cPanelReady = { current: false };
+          const handleSetupEffect: SetUpProps['onSetupEffect'] = async (effect, data) => {
+            if (effect === SETUP_EFFECT.ORBIT_CONTROLS) {
+              if (!cPanelReady.current) return;
+
+              if (!data.orbitControlsInUse.enabled) {
+                useAppStore.getState().setPlaying('stopped');
+                res.unmount();
+                cPanelReady.current = false;
+              }
+            }
+          };
+
+          const handleCPanelReady: CPanelProps['onCPanelReady'] = async () => {
+            expect(useAppStore.getState().cameraControl).toBe('orbit');
+            expect(useAppStore.getState().attachDefaultControllersToPlayingCamera).toBe(false);
+            const playButton = await screen.findByText('Play');
+            await waitFor(() => expect(useAppStore.getState().playingState).toBe('stopped'));
+            // before play orbit controls are enabled
+            playButton.click();
+            // after play orbit controls are disabled
+            await waitFor(() => expect(useAppStore.getState().playingState).toBe('playing'));
+            cPanelReady.current = true;
+          };
+
+          const handleCPanelUnmounted: CPanelProps['onCPanelUnmounted'] = async () => {
+            done();
+          };
+
+          useAppStore.getState().setAttachDefaultControllersToPlayingCamera(false);
+          const res = render(
+            <TestDefaultApp
+              onSetupEffect={handleSetupEffect}
+              onCPanelReady={handleCPanelReady}
+              onCPanelUnmounted={handleCPanelUnmounted}
+            >
+              <perspectiveCamera
+                args={[75, 1, 0.1, 100]} // window.innerWidth / window.innerHeight
+                position={[-12.98, 3.963, 4.346]}
+                name="myPerspectiveCamera"
+                rotation={[degToRad(-42.342), degToRad(-65.604), degToRad(-39.706)]} // 25.86 , -46.13, 19.26
+                __inspectorData={{ useOnPlay: true }}
+              />
+            </TestDefaultApp>,
+            {
+              container: document.getElementById('main')!
+            }
+          );
+        });
+      }
+    );
   });
 });

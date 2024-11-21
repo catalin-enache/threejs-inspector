@@ -3,8 +3,8 @@ import { useMemo, useEffect, useState } from 'react';
 import { RootState, useFrame } from '@react-three/fiber';
 import { _XRFrame } from '@react-three/fiber/dist/declarations/src/core/utils';
 import { AppStore, useAppStore } from 'src/store';
-import { getCurrentScene, SetUp } from 'lib/App/SetUp/SetUp';
-import { CPanel } from 'lib/App/CPanel/CPanel';
+import { getCurrentScene, SetUp, SetUpProps } from 'lib/App/SetUp/SetUp';
+import { CPanel, CPanelProps } from 'lib/App/CPanel/CPanel';
 import { KeyListener } from 'lib/App/KeyListener';
 
 let lastState: RootState;
@@ -27,7 +27,20 @@ export const usePlay = (
   useFrame(playingState === 'playing' ? boundCallback : boundNoop, renderPriority);
 };
 
-type UseInspector = ({ cameraType }: { cameraType?: 'perspective' | 'orthographic' }) => {
+type UseInspector = ({
+  cameraType,
+  onSetupEffect,
+  onThreeChange,
+  onCPanelReady,
+  onCPanelUnmounted
+}: {
+  cameraType?: 'perspective' | 'orthographic';
+  // for testing
+  onSetupEffect?: SetUpProps['onSetupEffect'];
+  onThreeChange?: SetUpProps['onThreeChange'];
+  onCPanelReady?: CPanelProps['onCPanelReady'];
+  onCPanelUnmounted?: CPanelProps['onCPanelUnmounted'];
+}) => {
   camera?: THREE.PerspectiveCamera | THREE.OrthographicCamera;
   scene: THREE.Scene;
   inspector: JSX.Element;
@@ -35,7 +48,13 @@ type UseInspector = ({ cameraType }: { cameraType?: 'perspective' | 'orthographi
 
 // Note: when using useDefaultSetup hook, the App !MUST! use the scene and camera from the hook.
 // If that's not desired do not use useDefaultSetup hook but inject the <Inspector /> component instead.
-export const useDefaultSetup: UseInspector = ({ cameraType } = {}) => {
+export const useDefaultSetup: UseInspector = ({
+  cameraType,
+  onSetupEffect,
+  onThreeChange,
+  onCPanelReady,
+  onCPanelUnmounted
+} = {}) => {
   const currentCameraStateFake = useAppStore((state) => state.currentCameraStateFake);
   const [camera, setCamera] = useState(getCurrentScene().__inspectorData.currentCamera);
 
@@ -53,8 +72,8 @@ export const useDefaultSetup: UseInspector = ({ cameraType } = {}) => {
   const inspector = useMemo(() => {
     return (
       <>
-        <SetUp isInjected={false} autoNavControls={true} />
-        <CPanel />
+        <SetUp isInjected={false} autoNavControls={true} onSetupEffect={onSetupEffect} onThreeChange={onThreeChange} />
+        <CPanel onCPanelReady={onCPanelReady} onCPanelUnmounted={onCPanelUnmounted} />
         <KeyListener />
       </>
     );

@@ -74,7 +74,7 @@ export const clearDOM = () => {
   }
 };
 
-export interface TestAppProps {
+export interface TestInjectedInspectorAppProps {
   children?: ReactNode;
   useDreiOrbitControls?: boolean;
   autoNavControls?: boolean;
@@ -88,7 +88,7 @@ export interface TestAppProps {
   onCPanelReady?: CPanelProps['onCPanelReady'];
 }
 
-export function TestInjectedInspectorApp(props: TestAppProps) {
+export function TestInjectedInspectorApp(props: TestInjectedInspectorAppProps) {
   const { scene, camera, glOptions } = useMemo(() => {
     const glOptions = { antialias: true, precision: 'highp' };
     const scene = new THREE.Scene();

@@ -7,6 +7,7 @@ import { defaultScene, defaultPerspectiveCamera, defaultOrthographicCamera } fro
 import { SetUpProps } from 'lib/App/SetUp/SetUp';
 import { useAppStore } from 'src/store';
 import { CPanelProps } from 'lib/App/CPanel/CPanel';
+import { useDefaultSetup } from 'lib/hooks';
 
 const styleContent = `
 :root {
@@ -74,6 +75,8 @@ export const clearDOM = () => {
   }
 };
 
+const glOptions = { antialias: true, precision: 'highp' };
+
 export interface TestInjectedInspectorAppProps {
   children?: ReactNode;
   useDreiOrbitControls?: boolean;
@@ -89,16 +92,14 @@ export interface TestInjectedInspectorAppProps {
 }
 
 export function TestInjectedInspectorApp(props: TestInjectedInspectorAppProps) {
-  const { scene, camera, glOptions } = useMemo(() => {
-    const glOptions = { antialias: true, precision: 'highp' };
+  const { scene, camera } = useMemo(() => {
     const scene = new THREE.Scene();
 
     const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
     camera.position.set(0, 0, 12);
     return {
       scene,
-      camera,
-      glOptions
+      camera
     };
   }, []);
 
@@ -123,6 +124,7 @@ export function TestInjectedInspectorApp(props: TestInjectedInspectorAppProps) {
       // reset
       useAppStore.getState().setDestroyOnRemove(true);
       useAppStore.getState().setCameraControl('orbit');
+      useAppStore.getState().setAttachDefaultControllersToPlayingCamera(true);
       // should dbe covered by SetUp unmount
       // threeStateRef.current?.gl.dispose();
       // threeStateRef.current?.scene.__inspectorData.orbitControlsRef?.current?.dispose();
@@ -169,6 +171,50 @@ export function TestInjectedInspectorApp(props: TestInjectedInspectorAppProps) {
           <meshStandardMaterial color={'white'} roughness={0.2} metalness={0} side={THREE.FrontSide} />
         </mesh>
       ) : null}
+      {children}
+    </Canvas>
+  );
+}
+
+interface TestDefaultAppProps {
+  children?: ReactNode;
+  cameraType?: 'perspective' | 'orthographic';
+  onSetupEffect?: SetUpProps['onSetupEffect'];
+  onThreeChange?: SetUpProps['onThreeChange'];
+  onCPanelReady?: CPanelProps['onCPanelReady'];
+  onCPanelUnmounted?: CPanelProps['onCPanelUnmounted'];
+}
+
+export function TestDefaultApp(props: TestDefaultAppProps) {
+  const {
+    children,
+    cameraType = 'perspective',
+    onThreeChange,
+    onSetupEffect,
+    onCPanelReady,
+    onCPanelUnmounted
+  } = props;
+
+  const { camera, scene, inspector } = useDefaultSetup({
+    onSetupEffect,
+    onThreeChange,
+    onCPanelReady,
+    onCPanelUnmounted,
+    cameraType
+  });
+
+  useEffect(() => {
+    return () => {
+      // reset
+      useAppStore.getState().setDestroyOnRemove(true);
+      useAppStore.getState().setCameraControl('orbit');
+      useAppStore.getState().setAttachDefaultControllersToPlayingCamera(true);
+    };
+  }, []);
+
+  return (
+    <Canvas camera={camera} scene={scene} shadows={'soft'} gl={glOptions} frameloop={'always'}>
+      {inspector}
       {children}
     </Canvas>
   );

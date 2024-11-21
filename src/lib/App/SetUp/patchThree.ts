@@ -169,6 +169,8 @@ const module: Module = {
 
   defaultPerspectiveCamera,
   defaultOrthographicCamera,
+  // cameraToUseOnPlay feature is specific to useDefaultSetup
+  // using the framework as App - not when injecting Inspector in another App
   cameraToUseOnPlay: null,
   getCameraToUseOnPlay() {
     return this.cameraToUseOnPlay;

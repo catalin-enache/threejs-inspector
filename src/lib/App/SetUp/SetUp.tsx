@@ -145,14 +145,12 @@ const SetUp = (props: SetUpProps) => {
     // The currentCamera that we set here is only used in App.
     // It is passed to R3F when useDefaultSetup notifies camera changed.
     // It is ignored when injectInspector is used.
-    const sceneInspectorData = scene.__inspectorData;
-    // TODO: find out if we still actually need currentCamera and for what exactly
     if (['playing', 'paused'].includes(playingState)) {
-      sceneInspectorData.currentCamera = getCameraToUseOnPlay() || sceneInspectorData.currentCamera;
+      scene.__inspectorData.currentCamera = getCameraToUseOnPlay() || scene.__inspectorData.currentCamera;
     } else {
       // Note: when using useDefaultSetup hook, the App !MUST! use the scene and camera from the hook.
       // If that's not desired do not use useDefaultSetup hook but inject the <Inspector /> component instead.
-      sceneInspectorData.currentCamera =
+      scene.__inspectorData.currentCamera =
         cameraType === 'perspective' ? defaultPerspectiveCamera : defaultOrthographicCamera;
     }
     // notify main App to re-render and send new camera into canvas

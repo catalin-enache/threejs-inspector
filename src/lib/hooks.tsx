@@ -33,8 +33,8 @@ type UseInspector = ({ cameraType }: { cameraType?: 'perspective' | 'orthographi
   inspector: JSX.Element;
 };
 
-// Note: when using useInspector hook, the App !MUST! use the scene and camera from the hook.
-// If that's not desired do not use useInspector hook but inject the <Inspector /> component instead.
+// Note: when using useDefaultSetup hook, the App !MUST! use the scene and camera from the hook.
+// If that's not desired do not use useDefaultSetup hook but inject the <Inspector /> component instead.
 export const useDefaultSetup: UseInspector = ({ cameraType } = {}) => {
   const currentCameraStateFake = useAppStore((state) => state.currentCameraStateFake);
   const [camera, setCamera] = useState(getCurrentScene().__inspectorData.currentCamera);

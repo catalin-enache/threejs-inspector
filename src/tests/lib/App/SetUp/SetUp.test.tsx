@@ -261,5 +261,34 @@ describe('SetUp', () => {
         );
       });
     });
+
+    // it.only(
+    //   'OrbitControls are disabled when isPlayingCamera and not attachDefaultControllersToPlayingCamera',
+    //   { timeout: 60000 },
+    //   async () => {
+    //     return new Promise((done) => {
+    //       const handleCPanelReady: CPanelProps['onCPanelReady'] = async () => {
+    //         expect(useAppStore.getState().cameraControl).toBe('orbit');
+    //         // const cameraControl = await screen.findByText('Camera Control');
+    //         // const flyButton = within(cameraControl.parentElement!.parentElement!).getByText('Fly');
+    //         // flyButton.click();
+    //         // await waitFor(() => expect(useAppStore.getState().cameraControl).toBe('fly'));
+    //       };
+    //
+    //       const res = render(
+    //         <TestApp
+    //           useDreiOrbitControls={false}
+    //           autoNavControls={true}
+    //           _isInjected={false}
+    //           // onSetupEffect={handleSetupEffect}
+    //           // onCPanelReady={handleCPanelReady}
+    //         ></TestApp>,
+    //         {
+    //           container: document.getElementById('main')!
+    //         }
+    //       );
+    //     });
+    //   }
+    // );
   });
 });

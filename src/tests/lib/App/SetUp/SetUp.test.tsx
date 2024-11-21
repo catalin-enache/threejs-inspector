@@ -1,6 +1,6 @@
 import { expect, describe, it, beforeEach, afterEach } from 'vitest';
 import { render } from 'vitest-browser-react';
-import { TestApp, initDOM, clearDOM } from 'testutils/testApp';
+import { TestInjectedInspectorApp, initDOM, clearDOM } from 'testutils/testApp';
 import { defaultScene, defaultPerspectiveCamera } from 'lib/App/SetUp/patchThree';
 import { OrbitControls as InternalOrbitControls } from 'lib/third_party/OrbitControls';
 import { OrbitControls as OrbitControlsImpl } from 'three-stdlib';
@@ -31,12 +31,12 @@ describe('SetUp', () => {
           }
         };
         const res = render(
-          <TestApp
+          <TestInjectedInspectorApp
             useDreiOrbitControls={false}
             onThreeChange={handleThreeChange}
             useDefaultPerspectiveCamera={true}
             useDefaultScene={true}
-          ></TestApp>,
+          ></TestInjectedInspectorApp>,
           {
             container: document.getElementById('main')!
           }
@@ -55,9 +55,15 @@ describe('SetUp', () => {
             done();
           }
         };
-        const res = render(<TestApp useDreiOrbitControls={false} onThreeChange={handleThreeChange}></TestApp>, {
-          container: document.getElementById('main')!
-        });
+        const res = render(
+          <TestInjectedInspectorApp
+            useDreiOrbitControls={false}
+            onThreeChange={handleThreeChange}
+          ></TestInjectedInspectorApp>,
+          {
+            container: document.getElementById('main')!
+          }
+        );
       });
     });
 
@@ -72,7 +78,11 @@ describe('SetUp', () => {
         };
 
         const res = render(
-          <TestApp useDreiOrbitControls={false} autoNavControls={false} onSetupEffect={handleSetupEffect}></TestApp>,
+          <TestInjectedInspectorApp
+            useDreiOrbitControls={false}
+            autoNavControls={false}
+            onSetupEffect={handleSetupEffect}
+          ></TestInjectedInspectorApp>,
           {
             container: document.getElementById('main')!
           }
@@ -91,7 +101,11 @@ describe('SetUp', () => {
         };
 
         const res = render(
-          <TestApp useDreiOrbitControls={false} autoNavControls={true} onSetupEffect={handleSetupEffect}></TestApp>,
+          <TestInjectedInspectorApp
+            useDreiOrbitControls={false}
+            autoNavControls={true}
+            onSetupEffect={handleSetupEffect}
+          ></TestInjectedInspectorApp>,
           {
             container: document.getElementById('main')!
           }
@@ -116,7 +130,11 @@ describe('SetUp', () => {
         };
 
         const res = render(
-          <TestApp useDreiOrbitControls={true} autoNavControls={false} onSetupEffect={handleSetupEffect}></TestApp>,
+          <TestInjectedInspectorApp
+            useDreiOrbitControls={true}
+            autoNavControls={false}
+            onSetupEffect={handleSetupEffect}
+          ></TestInjectedInspectorApp>,
           {
             container: document.getElementById('main')!
           }
@@ -141,7 +159,11 @@ describe('SetUp', () => {
         };
 
         const res = render(
-          <TestApp useDreiOrbitControls={true} autoNavControls={true} onSetupEffect={handleSetupEffect}></TestApp>,
+          <TestInjectedInspectorApp
+            useDreiOrbitControls={true}
+            autoNavControls={true}
+            onSetupEffect={handleSetupEffect}
+          ></TestInjectedInspectorApp>,
           {
             container: document.getElementById('main')!
           }
@@ -166,7 +188,11 @@ describe('SetUp', () => {
 
         useAppStore.getState().setCameraControl('fly');
         const res = render(
-          <TestApp useDreiOrbitControls={false} autoNavControls={true} onSetupEffect={handleSetupEffect}></TestApp>,
+          <TestInjectedInspectorApp
+            useDreiOrbitControls={false}
+            autoNavControls={true}
+            onSetupEffect={handleSetupEffect}
+          ></TestInjectedInspectorApp>,
           {
             container: document.getElementById('main')!
           }
@@ -205,12 +231,12 @@ describe('SetUp', () => {
 
         useAppStore.getState().setCameraControl('fly');
         const res = render(
-          <TestApp
+          <TestInjectedInspectorApp
             useDreiOrbitControls={true}
             autoNavControls={true}
             onSetupEffect={handleSetupEffect}
             onCPanelReady={handleCPanelReady}
-          ></TestApp>,
+          ></TestInjectedInspectorApp>,
           {
             container: document.getElementById('main')!
           }
@@ -249,12 +275,12 @@ describe('SetUp', () => {
 
         useAppStore.getState().setCameraControl('orbit');
         const res = render(
-          <TestApp
+          <TestInjectedInspectorApp
             useDreiOrbitControls={false}
             autoNavControls={true}
             onSetupEffect={handleSetupEffect}
             onCPanelReady={handleCPanelReady}
-          ></TestApp>,
+          ></TestInjectedInspectorApp>,
           {
             container: document.getElementById('main')!
           }

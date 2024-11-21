@@ -88,7 +88,7 @@ export interface TestAppProps {
   onCPanelReady?: CPanelProps['onCPanelReady'];
 }
 
-export function TestApp(props: TestAppProps) {
+export function TestInjectedInspectorApp(props: TestAppProps) {
   const { scene, camera, glOptions } = useMemo(() => {
     const glOptions = { antialias: true, precision: 'highp' };
     const scene = new THREE.Scene();

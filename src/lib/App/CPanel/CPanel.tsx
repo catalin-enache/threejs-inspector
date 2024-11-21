@@ -158,10 +158,11 @@ searchInput.addEventListener('input', (evt) => {
 
 export interface CPanelProps {
   onCPanelReady?: (pane: Pane) => void;
+  onCPanelUnmounted?: () => void;
 }
 
 export const CPanel = (props: CPanelProps) => {
-  const { onCPanelReady } = props;
+  const { onCPanelReady, onCPanelUnmounted } = props;
   const { camera, scene, gl, raycaster } = useThree();
   const playingState = useAppStore((state) => state.playingState);
   const paneRef = useRef<Pane | null>(null);
@@ -264,6 +265,7 @@ export const CPanel = (props: CPanelProps) => {
     return () => {
       continuousUpdateRef.current?.stop();
       paneRef.current?.dispose();
+      onCPanelUnmounted?.();
     };
   }, []);
 

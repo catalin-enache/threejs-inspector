@@ -290,7 +290,7 @@ describe('SetUp', () => {
     });
 
     it(
-      'OrbitControls are disabled when isPlayingCamera and not attachDefaultControllersToPlayingCamera',
+      'OrbitControls are disabled when playing and useOnPlay camera and not attachDefaultControllersToPlayingCamera',
       { timeout: 1000 },
       async () => {
         return new Promise<void>((done) => {

@@ -532,24 +532,36 @@ describe('SetUp', () => {
   });
 
   describe('camera change', () => {
-    it('updates TransformControls camera when camera is changed', { timeout: 1000 }, async () => {
-      return new Promise<void>((done) => {
-        const handleSetupEffect: SetUpProps['onSetupEffect'] = async (effect, data) => {
-          if (effect === SETUP_EFFECT.TRANSFORM_CONTROLS) {
-            expect(data.transformControls.camera).toBe(defaultPerspectiveCamera);
-            useAppStore.getState().setCameraType('orthographic');
-            await waitFor(() => expect(data.transformControls.camera).toBe(defaultOrthographicCamera));
-            res.unmount();
-          }
-        };
+    it(
+      'updates TransformControls camera and OrbitControls object with camera when camera is changed',
+      { timeout: 1000 },
+      async () => {
+        return new Promise<void>((done) => {
+          const handleSetupEffect: SetUpProps['onSetupEffect'] = async (effect, data) => {
+            if (effect === SETUP_EFFECT.TRANSFORM_CONTROLS) {
+              expect(data.transformControls.camera).toBe(defaultPerspectiveCamera);
+              useAppStore.getState().setCameraType('orthographic');
+              await waitFor(() => expect(data.transformControls.camera).toBe(defaultOrthographicCamera));
+              expect(data.transformControls.parent.__inspectorData.orbitControlsRef.current.object).toBe(
+                defaultOrthographicCamera
+              );
+              useAppStore.getState().setCameraType('perspective');
+              await waitFor(() => expect(data.transformControls.camera).toBe(defaultPerspectiveCamera));
+              expect(data.transformControls.parent.__inspectorData.orbitControlsRef.current.object).toBe(
+                defaultPerspectiveCamera
+              );
+              res.unmount();
+            }
+          };
 
-        const res = render(
-          <TestDefaultApp onSetupEffect={handleSetupEffect} onCPanelUnmounted={done}></TestDefaultApp>,
-          {
-            container: document.getElementById('main')!
-          }
-        );
-      });
-    });
+          const res = render(
+            <TestDefaultApp onSetupEffect={handleSetupEffect} onCPanelUnmounted={done}></TestDefaultApp>,
+            {
+              container: document.getElementById('main')!
+            }
+          );
+        });
+      }
+    );
   });
 });

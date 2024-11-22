@@ -5,7 +5,7 @@ import { Inspector } from 'lib/injectInspector';
 import { OrbitControls } from '@react-three/drei';
 import { defaultScene, defaultPerspectiveCamera, defaultOrthographicCamera } from 'lib/App/SetUp/patchThree';
 import { SetUpProps } from 'lib/App/SetUp/SetUp';
-import { useAppStore } from 'src/store';
+import { clearLocalStorage } from 'src/store';
 import { CPanelProps } from 'lib/App/CPanel/CPanel';
 import { useDefaultSetup } from 'lib/hooks';
 
@@ -89,6 +89,7 @@ export interface TestInjectedInspectorAppProps {
   onSetupEffect?: SetUpProps['onSetupEffect'];
   onThreeChange?: SetUpProps['onThreeChange'];
   onCPanelReady?: CPanelProps['onCPanelReady'];
+  onCPanelUnmounted?: CPanelProps['onCPanelUnmounted'];
 }
 
 export function TestInjectedInspectorApp(props: TestInjectedInspectorAppProps) {
@@ -114,17 +115,15 @@ export function TestInjectedInspectorApp(props: TestInjectedInspectorAppProps) {
     useDefaultOrthographicCamera = false,
     onSetupEffect,
     onThreeChange,
-    onCPanelReady
+    onCPanelReady,
+    onCPanelUnmounted
   } = props;
   const [orbitControls, setOrbitControls] = useState<any>(null);
   const threeStateRef = useRef<RootState | null>(null);
 
   useEffect(() => {
     return () => {
-      // reset
-      useAppStore.getState().setDestroyOnRemove(true);
-      useAppStore.getState().setCameraControl('orbit');
-      useAppStore.getState().setAttachDefaultControllersToPlayingCamera(true);
+      clearLocalStorage();
       // should dbe covered by SetUp unmount
       // threeStateRef.current?.gl.dispose();
       // threeStateRef.current?.scene.__inspectorData.orbitControlsRef?.current?.dispose();
@@ -160,6 +159,7 @@ export function TestInjectedInspectorApp(props: TestInjectedInspectorAppProps) {
         onSetupEffect={onSetupEffect}
         onThreeChange={handleThreeChange}
         onCPanelReady={onCPanelReady}
+        onCPanelUnmounted={onCPanelUnmounted}
       />
       {useDreiOrbitControls ? <OrbitControls makeDefault ref={setOrbitControls} enableDamping={false} /> : null}
       {includeDirLight ? (
@@ -205,10 +205,7 @@ export function TestDefaultApp(props: TestDefaultAppProps) {
 
   useEffect(() => {
     return () => {
-      // reset
-      useAppStore.getState().setDestroyOnRemove(true);
-      useAppStore.getState().setCameraControl('orbit');
-      useAppStore.getState().setAttachDefaultControllersToPlayingCamera(true);
+      clearLocalStorage();
     };
   }, []);
 

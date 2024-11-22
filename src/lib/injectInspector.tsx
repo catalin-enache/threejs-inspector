@@ -61,6 +61,7 @@ interface InspectorProps {
   onSetupEffect?: SetUpProps['onSetupEffect'];
   onThreeChange?: SetUpProps['onThreeChange'];
   onCPanelReady?: CPanelProps['onCPanelReady'];
+  onCPanelUnmounted?: CPanelProps['onCPanelUnmounted'];
 }
 
 export const Inspector = memo(
@@ -71,6 +72,7 @@ export const Inspector = memo(
     onSetupEffect,
     onThreeChange,
     onCPanelReady,
+    onCPanelUnmounted,
     version = 0
   }: InspectorProps) => {
     const customParamsElements = useMemo(() => {
@@ -89,7 +91,7 @@ export const Inspector = memo(
           onSetupEffect={onSetupEffect}
           onThreeChange={onThreeChange}
         />
-        <CPanel onCPanelReady={onCPanelReady} />
+        <CPanel onCPanelReady={onCPanelReady} onCPanelUnmounted={onCPanelUnmounted} />
         <KeyListener />
         {customParamsElements}
       </>

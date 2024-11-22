@@ -11,6 +11,7 @@ import patchThree from 'lib/App/SetUp/patchThree';
 
 import { CPanelProps } from 'lib/App/CPanel/CPanel';
 import { degToRad } from 'lib/utils';
+import { loadModel } from 'lib/utils/loadModel';
 
 describe('SetUp', () => {
   beforeEach(() => {
@@ -387,5 +388,78 @@ describe('SetUp', () => {
         });
       }
     );
+  });
+
+  describe('onSceneDblClick', () => {
+    it('set selected object', { timeout: 1000 }, async () => {
+      return new Promise<void>((done) => {
+        const sceneReady = { current: false };
+        const handleThreeChange: SetUpProps['onThreeChange'] = async (changed, three) => {
+          if (sceneReady.current) return;
+          if (changed === 'scene') {
+            sceneReady.current = true;
+            const { scene, camera, gl } = three;
+            loadModel('/models/MyTests/test_multi_features/test_multi_features.fbx', {
+              isInspectable: true,
+              scene,
+              camera
+            }).then((fbx) => {
+              if (!fbx) return;
+              fbx.name = 'fbx';
+              scene.add(fbx);
+              setTimeout(() => {
+                // it seems we need to dispatch twice to get the correct three.pointer
+                gl.domElement.dispatchEvent(
+                  new MouseEvent('click', {
+                    bubbles: true,
+                    clientX: 360,
+                    clientY: 200,
+                    shiftKey: false
+                  })
+                );
+                gl.domElement.dispatchEvent(
+                  new MouseEvent('dblclick', {
+                    bubbles: true,
+                    clientX: 360,
+                    clientY: 200,
+                    shiftKey: false // selects root object
+                  })
+                );
+                // three.pointer.x = -0.1;
+                // three.pointer.y = 0.35;
+                let selectedObject = useAppStore.getState().getSelectedObject()!;
+                expect(selectedObject).toBe(fbx);
+                expect(selectedObject.name).toBe('fbx');
+                useAppStore.getState().setSelectedObject(null);
+                gl.domElement.dispatchEvent(
+                  new MouseEvent('dblclick', {
+                    bubbles: true,
+                    clientX: 360,
+                    clientY: 200,
+                    shiftKey: true // selects inside object
+                  })
+                );
+                selectedObject = useAppStore.getState().getSelectedObject()!;
+                expect(selectedObject.parent).toBe(fbx);
+                expect(selectedObject.name).toBe('Armor_2_0');
+                res.unmount();
+              }, 0);
+            });
+          }
+        };
+
+        const res = render(
+          <TestInjectedInspectorApp
+            useDefaultPerspectiveCamera={true}
+            useDefaultScene={true}
+            onThreeChange={handleThreeChange}
+            onCPanelUnmounted={done}
+          ></TestInjectedInspectorApp>,
+          {
+            container: document.getElementById('main')!
+          }
+        );
+      });
+    });
   });
 });

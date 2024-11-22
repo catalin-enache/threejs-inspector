@@ -19,6 +19,7 @@ describe('SetUp', () => {
 
   afterEach(() => {
     clearDOM();
+    useAppStore.getState().reset();
   });
 
   describe('OrbitControls', () => {
@@ -30,15 +31,20 @@ describe('SetUp', () => {
             expect(scene).toBe(defaultScene);
             expect(scene.__inspectorData.currentCamera).toBe(defaultPerspectiveCamera);
             res.unmount();
-            done();
           }
         };
+
+        const handleCPanelUnmounted: CPanelProps['onCPanelUnmounted'] = async () => {
+          done();
+        };
+
         const res = render(
           <TestInjectedInspectorApp
             useDreiOrbitControls={false}
             onThreeChange={handleThreeChange}
             useDefaultPerspectiveCamera={true}
             useDefaultScene={true}
+            onCPanelUnmounted={handleCPanelUnmounted}
           ></TestInjectedInspectorApp>,
           {
             container: document.getElementById('main')!
@@ -55,13 +61,18 @@ describe('SetUp', () => {
             expect(scene).not.toBe(defaultScene);
             expect(scene.__inspectorData.currentCamera).not.toBe(defaultPerspectiveCamera);
             res.unmount();
-            done();
           }
         };
+
+        const handleCPanelUnmounted: CPanelProps['onCPanelUnmounted'] = async () => {
+          done();
+        };
+
         const res = render(
           <TestInjectedInspectorApp
             useDreiOrbitControls={false}
             onThreeChange={handleThreeChange}
+            onCPanelUnmounted={handleCPanelUnmounted}
           ></TestInjectedInspectorApp>,
           {
             container: document.getElementById('main')!
@@ -76,8 +87,11 @@ describe('SetUp', () => {
           if (effect === SETUP_EFFECT.ORBIT_CONTROLS) {
             expect(data.orbitControlsInUse).toBe(null);
             res.unmount();
-            done();
           }
+        };
+
+        const handleCPanelUnmounted: CPanelProps['onCPanelUnmounted'] = async () => {
+          done();
         };
 
         const res = render(
@@ -85,6 +99,7 @@ describe('SetUp', () => {
             useDreiOrbitControls={false}
             autoNavControls={false}
             onSetupEffect={handleSetupEffect}
+            onCPanelUnmounted={handleCPanelUnmounted}
           ></TestInjectedInspectorApp>,
           {
             container: document.getElementById('main')!
@@ -99,8 +114,11 @@ describe('SetUp', () => {
           if (effect === SETUP_EFFECT.ORBIT_CONTROLS) {
             expect(data.orbitControlsInUse).toBeInstanceOf(InternalOrbitControls);
             res.unmount();
-            done();
           }
+        };
+
+        const handleCPanelUnmounted: CPanelProps['onCPanelUnmounted'] = async () => {
+          done();
         };
 
         const res = render(
@@ -108,6 +126,7 @@ describe('SetUp', () => {
             useDreiOrbitControls={false}
             autoNavControls={true}
             onSetupEffect={handleSetupEffect}
+            onCPanelUnmounted={handleCPanelUnmounted}
           ></TestInjectedInspectorApp>,
           {
             container: document.getElementById('main')!
@@ -126,10 +145,13 @@ describe('SetUp', () => {
             } else if (calls === 1) {
               expect(data.orbitControlsInUse).toBeInstanceOf(OrbitControlsImpl);
               res.unmount();
-              done();
             }
             calls += 1;
           }
+        };
+
+        const handleCPanelUnmounted: CPanelProps['onCPanelUnmounted'] = async () => {
+          done();
         };
 
         const res = render(
@@ -137,6 +159,7 @@ describe('SetUp', () => {
             useDreiOrbitControls={true}
             autoNavControls={false}
             onSetupEffect={handleSetupEffect}
+            onCPanelUnmounted={handleCPanelUnmounted}
           ></TestInjectedInspectorApp>,
           {
             container: document.getElementById('main')!
@@ -155,10 +178,13 @@ describe('SetUp', () => {
             } else if (calls === 1) {
               expect(data.orbitControlsInUse).toBeInstanceOf(OrbitControlsImpl);
               res.unmount();
-              done();
             }
             calls += 1;
           }
+        };
+
+        const handleCPanelUnmounted: CPanelProps['onCPanelUnmounted'] = async () => {
+          done();
         };
 
         const res = render(
@@ -166,6 +192,7 @@ describe('SetUp', () => {
             useDreiOrbitControls={true}
             autoNavControls={true}
             onSetupEffect={handleSetupEffect}
+            onCPanelUnmounted={handleCPanelUnmounted}
           ></TestInjectedInspectorApp>,
           {
             container: document.getElementById('main')!
@@ -183,10 +210,13 @@ describe('SetUp', () => {
               expect(data.orbitControlsInUse).toBeInstanceOf(InternalOrbitControls);
               expect(data.orbitControlsInUse.enabled).toBe(false);
               res.unmount();
-              done();
             }
             calls += 1;
           }
+        };
+
+        const handleCPanelUnmounted: CPanelProps['onCPanelUnmounted'] = async () => {
+          done();
         };
 
         useAppStore.getState().setCameraControl('fly');
@@ -195,6 +225,7 @@ describe('SetUp', () => {
             useDreiOrbitControls={false}
             autoNavControls={true}
             onSetupEffect={handleSetupEffect}
+            onCPanelUnmounted={handleCPanelUnmounted}
           ></TestInjectedInspectorApp>,
           {
             container: document.getElementById('main')!
@@ -219,7 +250,6 @@ describe('SetUp', () => {
                 ['orbit', true]
               ]);
               res.unmount();
-              done();
             }
           }
         };
@@ -232,6 +262,10 @@ describe('SetUp', () => {
           await waitFor(() => expect(useAppStore.getState().cameraControl).toBe('orbit'));
         };
 
+        const handleCPanelUnmounted: CPanelProps['onCPanelUnmounted'] = async () => {
+          done();
+        };
+
         useAppStore.getState().setCameraControl('fly');
         const res = render(
           <TestInjectedInspectorApp
@@ -239,6 +273,7 @@ describe('SetUp', () => {
             autoNavControls={true}
             onSetupEffect={handleSetupEffect}
             onCPanelReady={handleCPanelReady}
+            onCPanelUnmounted={handleCPanelUnmounted}
           ></TestInjectedInspectorApp>,
           {
             container: document.getElementById('main')!
@@ -263,7 +298,6 @@ describe('SetUp', () => {
                 ['fly', false]
               ]);
               res.unmount();
-              done();
             }
           }
         };
@@ -276,6 +310,10 @@ describe('SetUp', () => {
           await waitFor(() => expect(useAppStore.getState().cameraControl).toBe('fly'));
         };
 
+        const handleCPanelUnmounted: CPanelProps['onCPanelUnmounted'] = async () => {
+          done();
+        };
+
         useAppStore.getState().setCameraControl('orbit');
         const res = render(
           <TestInjectedInspectorApp
@@ -283,6 +321,7 @@ describe('SetUp', () => {
             autoNavControls={true}
             onSetupEffect={handleSetupEffect}
             onCPanelReady={handleCPanelReady}
+            onCPanelUnmounted={handleCPanelUnmounted}
           ></TestInjectedInspectorApp>,
           {
             container: document.getElementById('main')!

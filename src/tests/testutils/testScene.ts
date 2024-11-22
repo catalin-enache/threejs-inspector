@@ -91,7 +91,7 @@ function init() {
   controls.target.set(0, 100, 0);
   controls.update();
 
-  useAppStore.getState().setDestroyOnRemove(true);
+  useAppStore.getState().reset();
 
   return {
     addResizeHandler,

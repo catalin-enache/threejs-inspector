@@ -25,6 +25,8 @@ const showHelpers =
     ? localStorage.getItem('threeInspector__showHelpers') === 'true'
     : true;
 
+const gizmoSize = +(localStorage.getItem('threeInspector__gizmoSize') || 0.25);
+
 const angleFormat = (
   localStorage.getItem('threeInspector__angleFormat') ? localStorage.getItem('threeInspector__angleFormat') : 'deg'
 ) as 'deg' | 'rad';
@@ -74,6 +76,7 @@ export const clearLocalStorage = () => {
 };
 
 export interface AppStore {
+  reset: () => void;
   isInjected: boolean;
   setIsInjected: (isInjected: boolean) => void;
   outlinerSearch: string;
@@ -161,6 +164,45 @@ export const useAppStore = create<AppStore>()(
   // devtools makes cPanel continuous update (when playing) very slow when displaying materials (hard to serialize). So we're disabling it.
   // devtools(
   subscribeWithSelector((set, get) => ({
+    reset: () => {
+      clearLocalStorage();
+      set({
+        isInjected: true,
+        outlinerSearch: '',
+        autoNavControls: false,
+        playingState: 'stopped',
+        angleFormat: angleFormat,
+        shiftKeyPressed: false,
+        controlKeyPressed: false,
+        isFullscreen:
+          // @ts-ignore
+          document.fullscreenElement || document.webkitFullscreenElement,
+        transformControlsMode: 'translate',
+        transformControlsSpace: 'world',
+        isDraggingTransformControls: false,
+        showGizmos: showGizmos,
+        showHelpers: showHelpers,
+        gizmoSize: gizmoSize,
+        showAxesHelper: showAxisHelper,
+        showGridHelper: showGridHelper,
+        cPanelShowHelp: false,
+        cPanelOpacity: cPanelOpacity,
+        cPanelSize: cPanelSize,
+        cPanelVisible: true,
+        cPanelContinuousUpdate: true,
+        cPanelStateFake: 0,
+        cPanelCustomParamsStructureStateFake: 0,
+        loadModelIsOpen: false,
+        cameraControl: cameraControl,
+        cameraType: cameraType,
+        currentCameraStateFake: 0,
+        currentSceneStateFake: 0,
+        attachDefaultControllersToPlayingCamera: attachDefaultControllersToPlayingCamera,
+        selectedObjectUUID: '',
+        selectedObjectStateFake: 0,
+        destroyOnRemove: destroyOnRemove
+      });
+    },
     isInjected: true,
     setIsInjected: (isInjected) => set({ isInjected }),
     outlinerSearch: '',
@@ -227,7 +269,7 @@ export const useAppStore = create<AppStore>()(
       }));
       localStorage.setItem('threeInspector__showHelpers', get().showHelpers.toString());
     },
-    gizmoSize: +(localStorage.getItem('threeInspector__gizmoSize') || 0.25),
+    gizmoSize: gizmoSize,
     setGizmoSize: (gizmoSize) => {
       set({ gizmoSize });
       localStorage.setItem('threeInspector__gizmoSize', gizmoSize.toString());

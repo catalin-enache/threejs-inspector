@@ -5,7 +5,7 @@ import { Inspector } from 'lib/injectInspector';
 import { OrbitControls } from '@react-three/drei';
 import { defaultScene, defaultPerspectiveCamera, defaultOrthographicCamera } from 'lib/App/SetUp/patchThree';
 import { SetUpProps } from 'lib/App/SetUp/SetUp';
-import { clearLocalStorage } from 'src/store';
+import { useAppStore } from 'src/store';
 import { CPanelProps } from 'lib/App/CPanel/CPanel';
 import { useDefaultSetup } from 'lib/hooks';
 
@@ -123,7 +123,7 @@ export function TestInjectedInspectorApp(props: TestInjectedInspectorAppProps) {
 
   useEffect(() => {
     return () => {
-      clearLocalStorage();
+      useAppStore.getState().reset();
       // should dbe covered by SetUp unmount
       // threeStateRef.current?.gl.dispose();
       // threeStateRef.current?.scene.__inspectorData.orbitControlsRef?.current?.dispose();
@@ -205,7 +205,7 @@ export function TestDefaultApp(props: TestDefaultAppProps) {
 
   useEffect(() => {
     return () => {
-      clearLocalStorage();
+      useAppStore.getState().reset();
     };
   }, []);
 

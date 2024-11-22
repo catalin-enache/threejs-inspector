@@ -59,6 +59,20 @@ const destroyOnRemove = localStorage.getItem('threeInspector__destroyOnRemove')
   ? localStorage.getItem('threeInspector__destroyOnRemove') === 'true'
   : true;
 
+export const clearLocalStorage = () => {
+  localStorage.removeItem('threeInspector__showAxesHelper');
+  localStorage.removeItem('threeInspector__showGridHelper');
+  localStorage.removeItem('threeInspector__showGizmos');
+  localStorage.removeItem('threeInspector__showHelpers');
+  localStorage.removeItem('threeInspector__angleFormat');
+  localStorage.removeItem('threeInspector__cameraControl');
+  localStorage.removeItem('threeInspector__cameraType');
+  localStorage.removeItem('threeInspector__cPanelOpacity');
+  localStorage.removeItem('threeInspector__cPanelSize');
+  localStorage.removeItem('threeInspector__attachDefaultControllersToPlayingCamera');
+  localStorage.removeItem('threeInspector__destroyOnRemove');
+};
+
 export interface AppStore {
   isInjected: boolean;
   setIsInjected: (isInjected: boolean) => void;

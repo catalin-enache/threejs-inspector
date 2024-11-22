@@ -50,6 +50,7 @@ export interface SetUpProps {
 const SetUp = (props: SetUpProps) => {
   const { orbitControls = null, autoNavControls = false, isInjected = true, onSetupEffect, onThreeChange } = props;
   const three = useThree();
+  // The scene received here is settled and will not change. It is either the defaultScene or the scene from the App where Inspector is injected
   const { camera, gl, raycaster, pointer, scene } = three;
 
   const setIsInjected = useAppStore((state) => state.setIsInjected);

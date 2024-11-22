@@ -2,7 +2,7 @@ import { expect, describe, it, beforeEach, afterEach } from 'vitest';
 import { render } from 'vitest-browser-react';
 import { screen, within, waitFor } from '@testing-library/dom';
 import { TestInjectedInspectorApp, TestDefaultApp, initDOM, clearDOM } from 'testutils/testApp';
-import { defaultScene, defaultPerspectiveCamera } from 'lib/App/SetUp/patchThree';
+import { defaultScene, defaultPerspectiveCamera, defaultOrthographicCamera } from 'lib/App/SetUp/patchThree';
 import { OrbitControls as InternalOrbitControls } from 'lib/third_party/OrbitControls';
 import { OrbitControls as OrbitControlsImpl } from 'three-stdlib';
 import { SETUP_EFFECT, SetUpProps } from 'lib/App/SetUp/SetUp';
@@ -485,6 +485,28 @@ describe('SetUp', () => {
             onThreeChange={handleThreeChange}
             onCPanelUnmounted={done}
           ></TestInjectedInspectorApp>,
+          {
+            container: document.getElementById('main')!
+          }
+        );
+      });
+    });
+  });
+
+  describe('camera change', () => {
+    it('updates TransformControls camera when camera is changed', { timeout: 1000 }, async () => {
+      return new Promise<void>((done) => {
+        const handleSetupEffect: SetUpProps['onSetupEffect'] = async (effect, data) => {
+          if (effect === SETUP_EFFECT.TRANSFORM_CONTROLS) {
+            expect(data.transformControls.camera).toBe(defaultPerspectiveCamera);
+            useAppStore.getState().setCameraType('orthographic');
+            await waitFor(() => expect(data.transformControls.camera).toBe(defaultOrthographicCamera));
+            res.unmount();
+          }
+        };
+
+        const res = render(
+          <TestDefaultApp onSetupEffect={handleSetupEffect} onCPanelUnmounted={done}></TestDefaultApp>,
           {
             container: document.getElementById('main')!
           }

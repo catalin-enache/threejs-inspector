@@ -32,7 +32,8 @@ const preventContextMenu = (evt: MouseEvent) => {
 };
 
 export enum SETUP_EFFECT {
-  ORBIT_CONTROLS = 'OrbitControlsEffect'
+  ORBIT_CONTROLS = 'OrbitControlsEffect',
+  TRANSFORM_CONTROLS = 'TransformControlsEffect'
 }
 
 const threeFields = ['camera', 'gl', 'raycaster', 'pointer', 'scene'] as (keyof RootState)[];
@@ -179,6 +180,9 @@ const SetUp = (props: SetUpProps) => {
       }
     });
     scene.add(transformControlsRef.current);
+    onSetupEffect?.(SETUP_EFFECT.TRANSFORM_CONTROLS, {
+      transformControls: transformControlsRef.current
+    });
     // eslint-disable-next-line
   }, []);
 

@@ -1,12 +1,14 @@
 import { expect, describe, it, beforeEach, afterEach } from 'vitest';
 import { render } from 'vitest-browser-react';
+import { screen, within, waitFor } from '@testing-library/dom';
 import { TestInjectedInspectorApp, TestDefaultApp, initDOM, clearDOM } from 'testutils/testApp';
 import { defaultScene, defaultPerspectiveCamera } from 'lib/App/SetUp/patchThree';
 import { OrbitControls as InternalOrbitControls } from 'lib/third_party/OrbitControls';
 import { OrbitControls as OrbitControlsImpl } from 'three-stdlib';
 import { SETUP_EFFECT, SetUpProps } from 'lib/App/SetUp/SetUp';
 import { useAppStore } from 'src/store';
-import { screen, within, waitFor } from '@testing-library/dom';
+import patchThree from 'lib/App/SetUp/patchThree';
+
 import { CPanelProps } from 'lib/App/CPanel/CPanel';
 import { degToRad } from 'lib/utils';
 
@@ -330,6 +332,51 @@ describe('SetUp', () => {
               onCPanelReady={handleCPanelReady}
               onCPanelUnmounted={handleCPanelUnmounted}
             >
+              <perspectiveCamera
+                args={[75, 1, 0.1, 100]} // window.innerWidth / window.innerHeight
+                position={[-12.98, 3.963, 4.346]}
+                name="myPerspectiveCamera"
+                rotation={[degToRad(-42.342), degToRad(-65.604), degToRad(-39.706)]} // 25.86 , -46.13, 19.26
+                __inspectorData={{ useOnPlay: true }}
+              />
+            </TestDefaultApp>,
+            {
+              container: document.getElementById('main')!
+            }
+          );
+        });
+      }
+    );
+  });
+
+  describe('shouldUseFlyControls', () => {
+    it(
+      'is true when cameraControl is `fly` and autoNavControls and not isPlaying or isPlaying and attachDefaultControllersToPlayingCamera is true',
+      { timeout: 1000 },
+      async () => {
+        return new Promise<void>((done) => {
+          const handleThreeChange: SetUpProps['onThreeChange'] = async (changed, three) => {
+            const { camera } = three;
+            if (changed === 'camera' && camera.name === 'DefaultPerspectiveCamera') {
+              await waitFor(() => expect(patchThree.shouldUseFlyControls(camera)).toBe(true));
+              useAppStore.getState().setPlaying('playing'); // will change camera to myPerspectiveCamera because is useOnPlay
+            }
+            if (changed === 'camera' && camera.name === 'myPerspectiveCamera') {
+              await waitFor(() => expect(patchThree.shouldUseFlyControls(camera)).toBe(false)); // because not attaching controls to playing camera
+              useAppStore.getState().setAttachDefaultControllersToPlayingCamera(true);
+              await waitFor(() => expect(patchThree.shouldUseFlyControls(camera)).toBe(true));
+              res.unmount();
+            }
+          };
+
+          const handleCPanelUnmounted: CPanelProps['onCPanelUnmounted'] = async () => {
+            done();
+          };
+
+          useAppStore.getState().setCameraControl('fly');
+          useAppStore.getState().setAttachDefaultControllersToPlayingCamera(false);
+          const res = render(
+            <TestDefaultApp onThreeChange={handleThreeChange} onCPanelUnmounted={handleCPanelUnmounted}>
               <perspectiveCamera
                 args={[75, 1, 0.1, 100]} // window.innerWidth / window.innerHeight
                 position={[-12.98, 3.963, 4.346]}

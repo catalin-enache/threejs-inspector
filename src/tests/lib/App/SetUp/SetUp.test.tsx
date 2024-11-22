@@ -34,17 +34,13 @@ describe('SetUp', () => {
           }
         };
 
-        const handleCPanelUnmounted: CPanelProps['onCPanelUnmounted'] = async () => {
-          done();
-        };
-
         const res = render(
           <TestInjectedInspectorApp
             useDreiOrbitControls={false}
             onThreeChange={handleThreeChange}
             useDefaultPerspectiveCamera={true}
             useDefaultScene={true}
-            onCPanelUnmounted={handleCPanelUnmounted}
+            onCPanelUnmounted={done}
           ></TestInjectedInspectorApp>,
           {
             container: document.getElementById('main')!
@@ -64,15 +60,11 @@ describe('SetUp', () => {
           }
         };
 
-        const handleCPanelUnmounted: CPanelProps['onCPanelUnmounted'] = async () => {
-          done();
-        };
-
         const res = render(
           <TestInjectedInspectorApp
             useDreiOrbitControls={false}
             onThreeChange={handleThreeChange}
-            onCPanelUnmounted={handleCPanelUnmounted}
+            onCPanelUnmounted={done}
           ></TestInjectedInspectorApp>,
           {
             container: document.getElementById('main')!
@@ -90,16 +82,12 @@ describe('SetUp', () => {
           }
         };
 
-        const handleCPanelUnmounted: CPanelProps['onCPanelUnmounted'] = async () => {
-          done();
-        };
-
         const res = render(
           <TestInjectedInspectorApp
             useDreiOrbitControls={false}
             autoNavControls={false}
             onSetupEffect={handleSetupEffect}
-            onCPanelUnmounted={handleCPanelUnmounted}
+            onCPanelUnmounted={done}
           ></TestInjectedInspectorApp>,
           {
             container: document.getElementById('main')!
@@ -117,16 +105,12 @@ describe('SetUp', () => {
           }
         };
 
-        const handleCPanelUnmounted: CPanelProps['onCPanelUnmounted'] = async () => {
-          done();
-        };
-
         const res = render(
           <TestInjectedInspectorApp
             useDreiOrbitControls={false}
             autoNavControls={true}
             onSetupEffect={handleSetupEffect}
-            onCPanelUnmounted={handleCPanelUnmounted}
+            onCPanelUnmounted={done}
           ></TestInjectedInspectorApp>,
           {
             container: document.getElementById('main')!
@@ -150,16 +134,12 @@ describe('SetUp', () => {
           }
         };
 
-        const handleCPanelUnmounted: CPanelProps['onCPanelUnmounted'] = async () => {
-          done();
-        };
-
         const res = render(
           <TestInjectedInspectorApp
             useDreiOrbitControls={true}
             autoNavControls={false}
             onSetupEffect={handleSetupEffect}
-            onCPanelUnmounted={handleCPanelUnmounted}
+            onCPanelUnmounted={done}
           ></TestInjectedInspectorApp>,
           {
             container: document.getElementById('main')!
@@ -183,16 +163,12 @@ describe('SetUp', () => {
           }
         };
 
-        const handleCPanelUnmounted: CPanelProps['onCPanelUnmounted'] = async () => {
-          done();
-        };
-
         const res = render(
           <TestInjectedInspectorApp
             useDreiOrbitControls={true}
             autoNavControls={true}
             onSetupEffect={handleSetupEffect}
-            onCPanelUnmounted={handleCPanelUnmounted}
+            onCPanelUnmounted={done}
           ></TestInjectedInspectorApp>,
           {
             container: document.getElementById('main')!
@@ -215,17 +191,13 @@ describe('SetUp', () => {
           }
         };
 
-        const handleCPanelUnmounted: CPanelProps['onCPanelUnmounted'] = async () => {
-          done();
-        };
-
         useAppStore.getState().setCameraControl('fly');
         const res = render(
           <TestInjectedInspectorApp
             useDreiOrbitControls={false}
             autoNavControls={true}
             onSetupEffect={handleSetupEffect}
-            onCPanelUnmounted={handleCPanelUnmounted}
+            onCPanelUnmounted={done}
           ></TestInjectedInspectorApp>,
           {
             container: document.getElementById('main')!
@@ -262,10 +234,6 @@ describe('SetUp', () => {
           await waitFor(() => expect(useAppStore.getState().cameraControl).toBe('orbit'));
         };
 
-        const handleCPanelUnmounted: CPanelProps['onCPanelUnmounted'] = async () => {
-          done();
-        };
-
         useAppStore.getState().setCameraControl('fly');
         const res = render(
           <TestInjectedInspectorApp
@@ -273,7 +241,7 @@ describe('SetUp', () => {
             autoNavControls={true}
             onSetupEffect={handleSetupEffect}
             onCPanelReady={handleCPanelReady}
-            onCPanelUnmounted={handleCPanelUnmounted}
+            onCPanelUnmounted={done}
           ></TestInjectedInspectorApp>,
           {
             container: document.getElementById('main')!
@@ -310,10 +278,6 @@ describe('SetUp', () => {
           await waitFor(() => expect(useAppStore.getState().cameraControl).toBe('fly'));
         };
 
-        const handleCPanelUnmounted: CPanelProps['onCPanelUnmounted'] = async () => {
-          done();
-        };
-
         useAppStore.getState().setCameraControl('orbit');
         const res = render(
           <TestInjectedInspectorApp
@@ -321,7 +285,7 @@ describe('SetUp', () => {
             autoNavControls={true}
             onSetupEffect={handleSetupEffect}
             onCPanelReady={handleCPanelReady}
-            onCPanelUnmounted={handleCPanelUnmounted}
+            onCPanelUnmounted={done}
           ></TestInjectedInspectorApp>,
           {
             container: document.getElementById('main')!
@@ -360,16 +324,12 @@ describe('SetUp', () => {
             cPanelReady.current = true;
           };
 
-          const handleCPanelUnmounted: CPanelProps['onCPanelUnmounted'] = async () => {
-            done();
-          };
-
           useAppStore.getState().setAttachDefaultControllersToPlayingCamera(false);
           const res = render(
             <TestDefaultApp
               onSetupEffect={handleSetupEffect}
               onCPanelReady={handleCPanelReady}
-              onCPanelUnmounted={handleCPanelUnmounted}
+              onCPanelUnmounted={done}
             >
               <perspectiveCamera
                 args={[75, 1, 0.1, 100]} // window.innerWidth / window.innerHeight
@@ -408,14 +368,10 @@ describe('SetUp', () => {
             }
           };
 
-          const handleCPanelUnmounted: CPanelProps['onCPanelUnmounted'] = async () => {
-            done();
-          };
-
           useAppStore.getState().setCameraControl('fly');
           useAppStore.getState().setAttachDefaultControllersToPlayingCamera(false);
           const res = render(
-            <TestDefaultApp onThreeChange={handleThreeChange} onCPanelUnmounted={handleCPanelUnmounted}>
+            <TestDefaultApp onThreeChange={handleThreeChange} onCPanelUnmounted={done}>
               <perspectiveCamera
                 args={[75, 1, 0.1, 100]} // window.innerWidth / window.innerHeight
                 position={[-12.98, 3.963, 4.346]}

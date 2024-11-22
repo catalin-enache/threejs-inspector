@@ -513,6 +513,8 @@ const module: Module = {
         this.interactableObjects[object.uuid] = object;
       }
       // most helpers are added to the scene but some are added to the object itself (e.g. PositionalAudioHelper)
+      // patchThree acts early and adds helpers to defaultScene before instantiating the scene to inject the Inspector into,
+      // when injected, helpers that were added to defaultScene are transferred to currentScene
       if (__inspectorData.helper && !this.shouldContainItsHelper(object)) {
         this.currentScene.add(__inspectorData.helper);
       }

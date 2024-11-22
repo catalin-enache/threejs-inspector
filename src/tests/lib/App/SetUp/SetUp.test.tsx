@@ -407,7 +407,10 @@ describe('SetUp', () => {
               if (!fbx) return;
               fbx.name = 'fbx';
               scene.add(fbx);
-              setTimeout(() => {
+
+              expect(scene.__inspectorData.transformControlsRef!.current!.object).toBe(undefined);
+
+              setTimeout(async () => {
                 // it seems we need to dispatch twice to get the correct three.pointer
                 gl.domElement.dispatchEvent(
                   new MouseEvent('click', {
@@ -430,6 +433,10 @@ describe('SetUp', () => {
                 let selectedObject = useAppStore.getState().getSelectedObject()!;
                 expect(selectedObject).toBe(fbx);
                 expect(selectedObject.name).toBe('fbx');
+                await waitFor(() =>
+                  expect(scene.__inspectorData.transformControlsRef!.current!.object).toBe(selectedObject)
+                );
+
                 useAppStore.getState().setSelectedObject(null);
                 gl.domElement.dispatchEvent(
                   new MouseEvent('dblclick', {
@@ -439,13 +446,17 @@ describe('SetUp', () => {
                     shiftKey: true // selects inside object when not isPicker
                   })
                 );
+
                 selectedObject = useAppStore.getState().getSelectedObject()!;
                 expect(selectedObject.parent).toBe(fbx);
                 expect(selectedObject.name).toBe('Armor_2_0');
+                await waitFor(() =>
+                  expect(scene.__inspectorData.transformControlsRef!.current!.object).toBe(selectedObject)
+                );
 
-                useAppStore.getState().setSelectedObject(null);
+                // make the child be a picker
                 selectedObject.__inspectorData.isPicker = true;
-
+                useAppStore.getState().setSelectedObject(null);
                 gl.domElement.dispatchEvent(
                   new MouseEvent('dblclick', {
                     bubbles: true,
@@ -454,9 +465,13 @@ describe('SetUp', () => {
                     shiftKey: true // ignored when isPicker
                   })
                 );
+
                 selectedObject = useAppStore.getState().getSelectedObject()!;
                 expect(selectedObject).toBe(fbx);
                 expect(selectedObject.name).toBe('fbx');
+                await waitFor(() =>
+                  expect(scene.__inspectorData.transformControlsRef!.current!.object).toBe(selectedObject)
+                );
                 res.unmount();
               }, 0);
             });

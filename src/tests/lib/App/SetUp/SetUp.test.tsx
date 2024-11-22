@@ -456,10 +456,11 @@ describe('SetUp', () => {
                     shiftKey: false
                   })
                 );
-                // proving unselecting the object after clicking outside
+                // proving unselecting the object after clicking outside and transform controls were detached
                 await waitFor(() =>
                   expect(scene.__inspectorData.transformControlsRef!.current!.object).toBe(undefined)
                 );
+                expect(useAppStore.getState().getSelectedObject()).toBe(null);
 
                 // dblclick on one of the object children position
                 gl.domElement.dispatchEvent(

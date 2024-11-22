@@ -436,12 +436,27 @@ describe('SetUp', () => {
                     bubbles: true,
                     clientX: 360,
                     clientY: 200,
-                    shiftKey: true // selects inside object
+                    shiftKey: true // selects inside object when not isPicker
                   })
                 );
                 selectedObject = useAppStore.getState().getSelectedObject()!;
                 expect(selectedObject.parent).toBe(fbx);
                 expect(selectedObject.name).toBe('Armor_2_0');
+
+                useAppStore.getState().setSelectedObject(null);
+                selectedObject.__inspectorData.isPicker = true;
+
+                gl.domElement.dispatchEvent(
+                  new MouseEvent('dblclick', {
+                    bubbles: true,
+                    clientX: 360,
+                    clientY: 200,
+                    shiftKey: true // ignored when isPicker
+                  })
+                );
+                selectedObject = useAppStore.getState().getSelectedObject()!;
+                expect(selectedObject).toBe(fbx);
+                expect(selectedObject.name).toBe('fbx');
                 res.unmount();
               }, 0);
             });

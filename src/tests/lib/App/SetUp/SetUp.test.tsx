@@ -1,3 +1,4 @@
+import * as THREE from 'three';
 import { expect, describe, it, beforeEach, afterEach } from 'vitest';
 import { render } from 'vitest-browser-react';
 import { screen, within, waitFor } from '@testing-library/dom';
@@ -19,6 +20,7 @@ describe('SetUp', () => {
   });
 
   afterEach(() => {
+    defaultScene.clear();
     clearDOM();
     useAppStore.getState().reset();
   });
@@ -563,5 +565,45 @@ describe('SetUp', () => {
         });
       }
     );
+  });
+
+  describe('scene change', () => {
+    it('transfer  helpers to new scene', { timeout: 1000 }, async () => {
+      return new Promise<void>((done) => {
+        const handleThreeChange: SetUpProps['onThreeChange'] = async (changed, three) => {
+          if (changed === 'scene') {
+            const { scene } = three;
+            expect(scene).not.toBe(defaultScene);
+            expect(scene.children.length).toBe(5);
+            expect(defaultScene.children.length).toBe(2);
+            expect(defaultScene.children.map((c) => c.constructor).includes(THREE.SpotLightHelper)).toBe(true);
+            expect(defaultScene.children.map((c) => c.constructor).includes(THREE.DirectionalLightHelper)).toBe(true);
+            await waitFor(() => expect(defaultScene.children.length).toBe(0));
+            expect(scene.children.length).toBe(8); // the 2 helpers plus TransformControls were added on top of the first 5 children
+            expect(scene.children.map((c) => c.constructor).includes(THREE.SpotLightHelper)).toBe(true);
+            expect(scene.children.map((c) => c.constructor).includes(THREE.DirectionalLightHelper)).toBe(true);
+            res.unmount();
+          }
+        };
+
+        const res = render(
+          <TestInjectedInspectorApp onThreeChange={handleThreeChange} onCPanelUnmounted={done}>
+            <spotLight
+              castShadow
+              position={[5.5, -0.7, 0.3]}
+              scale={1}
+              intensity={5.5}
+              distance={8}
+              color="deepskyblue"
+              angle={Math.PI / 8}
+              penumbra={0.5}
+            ></spotLight>
+          </TestInjectedInspectorApp>,
+          {
+            container: document.getElementById('main')!
+          }
+        );
+      });
+    });
   });
 });

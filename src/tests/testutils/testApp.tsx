@@ -123,6 +123,7 @@ export function TestInjectedInspectorApp(props: TestInjectedInspectorAppProps) {
 
   useEffect(() => {
     return () => {
+      defaultScene.clear();
       useAppStore.getState().reset();
       // should dbe covered by SetUp unmount
       // threeStateRef.current?.gl.dispose();
@@ -205,6 +206,7 @@ export function TestDefaultApp(props: TestDefaultAppProps) {
 
   useEffect(() => {
     return () => {
+      defaultScene.clear();
       useAppStore.getState().reset();
     };
   }, []);

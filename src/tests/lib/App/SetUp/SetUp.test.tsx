@@ -391,7 +391,7 @@ describe('SetUp', () => {
   });
 
   describe('onSceneDblClick', () => {
-    it('set selected object', { timeout: 1000 }, async () => {
+    it('set/unset selected object', { timeout: 1000 }, async () => {
       return new Promise<void>((done) => {
         const sceneReady = { current: false };
         const handleThreeChange: SetUpProps['onThreeChange'] = async (changed, three) => {
@@ -412,6 +412,7 @@ describe('SetUp', () => {
 
               setTimeout(async () => {
                 // it seems we need to dispatch twice to get the correct three.pointer
+                // dblclick on one of the object children position
                 gl.domElement.dispatchEvent(
                   new MouseEvent('click', {
                     bubbles: true,
@@ -437,7 +438,38 @@ describe('SetUp', () => {
                   expect(scene.__inspectorData.transformControlsRef!.current!.object).toBe(selectedObject)
                 );
 
-                useAppStore.getState().setSelectedObject(null);
+                // useAppStore.getState().setSelectedObject(null);
+                // or click outside the object
+                gl.domElement.dispatchEvent(
+                  new MouseEvent('click', {
+                    bubbles: true,
+                    clientX: 0,
+                    clientY: 0,
+                    shiftKey: false
+                  })
+                );
+                gl.domElement.dispatchEvent(
+                  new MouseEvent('dblclick', {
+                    bubbles: true,
+                    clientX: 0,
+                    clientY: 0,
+                    shiftKey: false
+                  })
+                );
+                // proving unselecting the object after clicking outside
+                await waitFor(() =>
+                  expect(scene.__inspectorData.transformControlsRef!.current!.object).toBe(undefined)
+                );
+
+                // dblclick on one of the object children position
+                gl.domElement.dispatchEvent(
+                  new MouseEvent('click', {
+                    bubbles: true,
+                    clientX: 360,
+                    clientY: 200,
+                    shiftKey: true // selects inside object when not isPicker
+                  })
+                );
                 gl.domElement.dispatchEvent(
                   new MouseEvent('dblclick', {
                     bubbles: true,
@@ -448,6 +480,7 @@ describe('SetUp', () => {
                 );
 
                 selectedObject = useAppStore.getState().getSelectedObject()!;
+                // proving that selecting inside occurred
                 expect(selectedObject.parent).toBe(fbx);
                 expect(selectedObject.name).toBe('Armor_2_0');
                 await waitFor(() =>
@@ -456,7 +489,10 @@ describe('SetUp', () => {
 
                 // make the child be a picker
                 selectedObject.__inspectorData.isPicker = true;
-                useAppStore.getState().setSelectedObject(null);
+                useAppStore.getState().setSelectedObject(null); // or dblclick outside the object (tested before)
+                await waitFor(() =>
+                  expect(scene.__inspectorData.transformControlsRef!.current!.object).toBe(undefined)
+                );
                 gl.domElement.dispatchEvent(
                   new MouseEvent('dblclick', {
                     bubbles: true,
@@ -467,6 +503,7 @@ describe('SetUp', () => {
                 );
 
                 selectedObject = useAppStore.getState().getSelectedObject()!;
+                // proving that even when trying to select inside if the child is a picker it will select the parent
                 expect(selectedObject).toBe(fbx);
                 expect(selectedObject.name).toBe('fbx');
                 await waitFor(() =>

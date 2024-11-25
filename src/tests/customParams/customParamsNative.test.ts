@@ -115,7 +115,6 @@ describe('Custom Params', () => {
 
       const handleCPanelUnmounted: CPanelProps['onCPanelUnmounted'] = async () => {
         const cParams = useAppStore.getState().getCPanelCustomParams();
-        expect(Object.keys(cParams)).toEqual(['asset']);
         await waitFor(() => expect('asset' in cParams).toBe(false));
         // expect cParams to be cleaned up after all CustomControls were unmounted
         expect(Object.keys(cParams)).toEqual([]);

@@ -177,6 +177,7 @@ export const injectInspector = (params: InjectInspectorParams) => {
       root?.unmount();
       root = null;
     },
+    // updateInspector can be called multiple times with different options except scene which can only be set once
     updateInspector(updateParams: Partial<InjectInspectorParams> = {}) {
       configureAndRender({ ...params, ...updateParams });
     }

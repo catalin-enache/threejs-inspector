@@ -2,9 +2,9 @@ import { BindingParams } from 'tweakpane';
 import { useAppStore } from 'src/store';
 import { useEffect } from 'react';
 
-interface CustomControlProps {
+export interface CustomControlProps {
   name: string;
-  object: any;
+  object: Record<string, any>;
   prop: string;
   control: BindingParams;
   path?: string;

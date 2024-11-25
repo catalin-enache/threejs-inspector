@@ -1,11 +1,11 @@
 import * as THREE from 'three';
-import { injectInspector } from 'src/lib/injectInspector';
+import { injectInspector, CustomParams } from 'src/lib/injectInspector';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import Stats from 'three/examples/jsm/libs/stats.module';
 import { SetUpProps } from 'lib/App/SetUp/SetUp';
 import { CPanelProps } from 'lib/App/CPanel/CPanel';
 
-interface InitNativeAppProps {
+export interface InitNativeAppProps {
   renderer?: THREE.WebGLRenderer;
   scene?: THREE.Scene;
   camera?: THREE.PerspectiveCamera | THREE.OrthographicCamera;
@@ -13,7 +13,7 @@ interface InitNativeAppProps {
   autoNavControls?: boolean;
   // if orbitControls are provided, they replace internal OrbitControls when autoNavControls is true
   orbitControls?: any;
-  customParams?: any;
+  customParams?: CustomParams;
   // for testing
   onSetupEffect?: SetUpProps['onSetupEffect'];
   onThreeChange?: SetUpProps['onThreeChange'];

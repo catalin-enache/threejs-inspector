@@ -3,7 +3,7 @@ import React, { ReactNode, memo, useMemo } from 'react';
 import { extend, createRoot, events, ReconcilerRoot } from '@react-three/fiber';
 import { SetUp, SetUpProps, SETUP_EFFECT } from './App/SetUp/SetUp'; // patching Object3D
 import { CPanel, CPanelProps } from './App/CPanel/CPanel';
-import { CustomControl } from 'components/CustomControl/CustomControl';
+import { CustomControl, CustomControlProps } from 'components/CustomControl/CustomControl';
 // KeyListener depends on CPanel (sideEffect) to add in DOM CPanel elements to listen to
 import { KeyListener } from './App/KeyListener';
 extend(THREE);
@@ -12,8 +12,22 @@ extend(THREE);
 let root: ReconcilerRoot<HTMLCanvasElement> | null;
 let version = 0;
 
+interface CustomParamStruct {
+  object: CustomControlProps['object'];
+  prop: CustomControlProps['prop'];
+  control: CustomControlProps['control'];
+}
+
+const isCustomParamStruct = (value: any): value is CustomParamStruct => {
+  return value && typeof value === 'object' && 'object' in value && 'prop' in value && 'control' in value;
+};
+
+interface CustomParams {
+  [key: string]: CustomParamStruct | CustomParams;
+}
+
 type buildCustomParamsElementsParams = {
-  customParams: any;
+  customParams: CustomParams;
   pathArray?: string[];
 };
 
@@ -23,16 +37,7 @@ export const buildCustomParamsElements = ({
 }: buildCustomParamsElementsParams): ReactNode => {
   return Object.keys(customParams)
     .map((controlName) => {
-      const isBinding = !!customParams[controlName].object;
-      const isFolder = !isBinding;
-
-      if (isFolder) {
-        pathArray.push(controlName);
-        return buildCustomParamsElements({
-          customParams: customParams[controlName],
-          pathArray
-        });
-      } else {
+      if (isCustomParamStruct(customParams[controlName])) {
         const { object, prop, control } = customParams[controlName];
         return (
           <CustomControl
@@ -44,6 +49,11 @@ export const buildCustomParamsElements = ({
             control={control}
           />
         );
+      } else {
+        return buildCustomParamsElements({
+          customParams: customParams[controlName],
+          pathArray: [...pathArray, controlName]
+        });
       }
     })
     .flat(Infinity)

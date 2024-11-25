@@ -118,12 +118,14 @@ describe('Custom Params', () => {
         await waitFor(() => expect('asset' in cParams).toBe(false));
         // expect cParams to be cleaned up after all CustomControls were unmounted
         expect(Object.keys(cParams)).toEqual([]);
+        // when cParams were added we had these calls
         // prettier-ignore
         expect(spyOnSetOrUpdateCPanelCustomParams.mock.calls).toEqual([
           ['asset', selectObject, customParams.asset.prop, customParams.asset.control, []],
           ['key_1', morphObject, customParamsMorph.nested.level.key_1.prop, customParamsMorph.nested.level.key_1.control, ['morph', 'nested', 'level']],
           ['key_2', morphObject, customParamsMorph.nested.level.key_2.prop, customParamsMorph.nested.level.key_2.control, ['morph', 'nested', 'level']]
         ]);
+        // when cParams were removed we had these calls
         expect(spyOnRemoveCPanelCustomParams.mock.calls).toEqual([
           ['key_1', ['morph', 'nested', 'level']],
           ['key_2', ['morph', 'nested', 'level']],

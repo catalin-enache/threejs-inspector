@@ -87,6 +87,18 @@ describe('Custom Params', () => {
         // @ts-ignore
         selectInput.parentElement!.value = 'morph_test';
         selectInput!.parentElement!.dispatchEvent(new Event('change'));
+        await waitFor(() => expect('morph' in cParams).toBe(true));
+        expect(cParams).toEqual({
+          asset: { object: selectObject, prop: 'asset', control: customParams.asset.control },
+          morph: {
+            nested: {
+              level: {
+                key_1: { object: morphObject, prop: 'val1', control: customParamsMorph.nested.level.key_1.control },
+                key_2: { object: morphObject, prop: 'val2', control: customParamsMorph.nested.level.key_2.control }
+              }
+            }
+          }
+        });
         // expand panels
         const nested = await screen.findByText('nested');
         nested.click();
@@ -107,17 +119,6 @@ describe('Custom Params', () => {
         // prettier-ignore
         expect(handleValueChange.mock.calls).toEqual([[0.5, morphObject, 'val1'], [0.6, morphObject, 'val2']]);
         expect(Object.keys(cParams)).toEqual(['asset', 'morph']);
-        expect(cParams).toEqual({
-          asset: { object: selectObject, prop: 'asset', control: customParams.asset.control },
-          morph: {
-            nested: {
-              level: {
-                key_1: { object: morphObject, prop: 'val1', control: customParamsMorph.nested.level.key_1.control },
-                key_2: { object: morphObject, prop: 'val2', control: customParamsMorph.nested.level.key_2.control }
-              }
-            }
-          }
-        });
         // switch back to 'Samba Dancing'
         // @ts-ignore
         selectInput.parentElement!.value = 'Samba Dancing';

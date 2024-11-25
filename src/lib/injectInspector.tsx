@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import React, { ReactNode, memo, useMemo } from 'react';
 import { extend, createRoot, events, ReconcilerRoot } from '@react-three/fiber';
-import { SetUp, SetUpProps } from './App/SetUp/SetUp'; // patching Object3D
+import { SetUp, SetUpProps, SETUP_EFFECT } from './App/SetUp/SetUp'; // patching Object3D
 import { CPanel, CPanelProps } from './App/CPanel/CPanel';
 import { CustomControl } from 'components/CustomControl/CustomControl';
 // KeyListener depends on CPanel (sideEffect) to add in DOM CPanel elements to listen to
@@ -76,8 +76,11 @@ export const Inspector = memo(
     version = 0
   }: InspectorProps) => {
     const customParamsElements = useMemo(() => {
+      !customParams && onSetupEffect?.(SETUP_EFFECT.VERSION_CHANGED, { version, customParamsElements: null });
       if (!customParams) return null;
-      return buildCustomParamsElements({ customParams });
+      const customParamsElements = buildCustomParamsElements({ customParams });
+      onSetupEffect?.(SETUP_EFFECT.VERSION_CHANGED, { version, customParamsElements });
+      return customParamsElements;
       // updateInspector is called with the same customParams object reference
       // eslint-disable-next-line react-hooks/exhaustive-deps -- version is needed because customParams are mutated
     }, [customParams, version]);
@@ -109,10 +112,27 @@ type InjectInspectorParams = {
   // if orbitControls are provided, they replace internal OrbitControls when autoNavControls is true
   orbitControls?: any;
   customParams?: any;
+  // for testing
+  onSetupEffect?: SetUpProps['onSetupEffect'];
+  onThreeChange?: SetUpProps['onThreeChange'];
+  onCPanelReady?: CPanelProps['onCPanelReady'];
+  onCPanelUnmounted?: CPanelProps['onCPanelUnmounted'];
 };
 
 const configureAndRender = (params: InjectInspectorParams) => {
-  const { renderer, scene, camera, frameloop, orbitControls, autoNavControls, customParams } = params;
+  const {
+    renderer,
+    scene,
+    camera,
+    frameloop,
+    orbitControls,
+    autoNavControls,
+    customParams,
+    onSetupEffect,
+    onThreeChange,
+    onCPanelReady,
+    onCPanelUnmounted
+  } = params;
   /*
   similar to:
   <canvas camera scene gl frameloop ...>
@@ -132,7 +152,12 @@ const configureAndRender = (params: InjectInspectorParams) => {
       orbitControls,
       autoNavControls,
       customParams,
-      version: ++version
+      version: ++version,
+      // for testing
+      onSetupEffect,
+      onThreeChange,
+      onCPanelReady,
+      onCPanelUnmounted
     })
   );
 };
@@ -148,6 +173,7 @@ export const injectInspector = (params: InjectInspectorParams) => {
 
   return {
     unmountInspector() {
+      version = 0;
       root?.unmount();
       root = null;
     },

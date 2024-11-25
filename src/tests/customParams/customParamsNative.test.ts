@@ -142,6 +142,7 @@ describe('Custom Params', () => {
           ['asset', []]
         ]);
         spyOnRemoveCPanelCustomParams.mockRestore();
+        spyOnSetOrUpdateCPanelCustomParams.mockRestore();
         cleanUp();
         done();
       };

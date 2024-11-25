@@ -33,7 +33,8 @@ const preventContextMenu = (evt: MouseEvent) => {
 
 export enum SETUP_EFFECT {
   ORBIT_CONTROLS = 'OrbitControlsEffect',
-  TRANSFORM_CONTROLS = 'TransformControlsEffect'
+  TRANSFORM_CONTROLS = 'TransformControlsEffect',
+  VERSION_CHANGED = 'VersionChangedEffect' // triggered by Inspector
 }
 
 const threeFields = ['camera', 'gl', 'raycaster', 'pointer', 'scene'] as (keyof RootState)[];

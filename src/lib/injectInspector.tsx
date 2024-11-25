@@ -12,7 +12,7 @@ extend(THREE);
 let root: ReconcilerRoot<HTMLCanvasElement> | null;
 let version = 0;
 
-interface CustomParamStruct {
+export interface CustomParamStruct {
   object: CustomControlProps['object'];
   prop: CustomControlProps['prop'];
   control: CustomControlProps['control'];
@@ -22,7 +22,7 @@ const isCustomParamStruct = (value: any): value is CustomParamStruct => {
   return value && typeof value === 'object' && 'object' in value && 'prop' in value && 'control' in value;
 };
 
-interface CustomParams {
+export interface CustomParams {
   [key: string]: CustomParamStruct | CustomParams;
 }
 

@@ -80,6 +80,9 @@ describe('Custom Params', () => {
         const cParams = useAppStore.getState().getCPanelCustomParams();
         await waitFor(() => expect('asset' in cParams).toBe(true));
         const selectInput = await screen.findByText('Samba Dancing');
+        expect(cParams).toEqual({
+          asset: { object: selectObject, prop: 'asset', control: customParams.asset.control }
+        });
         // change select value to 'morph_test'
         // @ts-ignore
         selectInput.parentElement!.value = 'morph_test';
@@ -104,12 +107,26 @@ describe('Custom Params', () => {
         // prettier-ignore
         expect(handleValueChange.mock.calls).toEqual([[0.5, morphObject, 'val1'], [0.6, morphObject, 'val2']]);
         expect(Object.keys(cParams)).toEqual(['asset', 'morph']);
+        expect(cParams).toEqual({
+          asset: { object: selectObject, prop: 'asset', control: customParams.asset.control },
+          morph: {
+            nested: {
+              level: {
+                key_1: { object: morphObject, prop: 'val1', control: customParamsMorph.nested.level.key_1.control },
+                key_2: { object: morphObject, prop: 'val2', control: customParamsMorph.nested.level.key_2.control }
+              }
+            }
+          }
+        });
         // switch back to 'Samba Dancing'
         // @ts-ignore
         selectInput.parentElement!.value = 'Samba Dancing';
         selectInput!.parentElement!.dispatchEvent(new Event('change'));
         // expect morph param to be removed after 'morph' related CustomControl has been unmounted
         await waitFor(() => expect('morph' in cParams).toBe(false));
+        expect(cParams).toEqual({
+          asset: { object: selectObject, prop: 'asset', control: customParams.asset.control }
+        });
         unmountInspector();
       };
 

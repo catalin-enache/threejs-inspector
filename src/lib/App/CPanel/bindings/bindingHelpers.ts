@@ -551,15 +551,24 @@ export const buildCustomParams = ({
       try {
         let binding;
         if (isButton) {
-          binding = customParamsTab.addButton(control).on('click', () => {
-            control.onClick?.(control);
-          });
+          if (control.view === 'buttongrid') {
+            // @ts-ignore
+            binding = customParamsTab.addBlade(control).on('click', (evt) => {
+              control.onClick?.({ title: evt.cell.title, index: evt.index });
+            });
+          } else {
+            binding = customParamsTab.addButton(control).on('click', () => {
+              control.onClick?.(control);
+            });
+          }
         } else {
           binding = customParamsTab.addBinding(object, prop, control).on('change', (evt) => {
             control.onChange?.(evt.value, object, prop);
           });
         }
+
         tweakBindingView(binding);
+
         if (control.format === radToDegFormatter) {
           makeRotationBinding(binding as BindingApi);
         }

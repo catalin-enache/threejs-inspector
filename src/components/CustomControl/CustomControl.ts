@@ -1,11 +1,11 @@
-import { BindingParams } from 'tweakpane';
+import type { BindingParams } from 'tweakpane';
 import { useAppStore } from 'src/store';
 import { useEffect } from 'react';
 
 export interface CustomControlProps {
   name: string;
-  object: Record<string, any>;
-  prop: string;
+  object?: Record<string, any>;
+  prop?: string;
   control: BindingParams;
   path?: string;
 }

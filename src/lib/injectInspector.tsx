@@ -13,13 +13,20 @@ let root: ReconcilerRoot<HTMLCanvasElement> | null;
 let version = 0;
 
 export interface CustomParamStruct {
-  object: CustomControlProps['object'];
-  prop: CustomControlProps['prop'];
+  object?: CustomControlProps['object'];
+  prop?: CustomControlProps['prop'];
   control: CustomControlProps['control'];
 }
 
 const isCustomParamStruct = (value: any): value is CustomParamStruct => {
-  return value && typeof value === 'object' && 'object' in value && 'prop' in value && 'control' in value;
+  return (
+    value &&
+    typeof value === 'object' &&
+    value.control &&
+    (value.control.readonly ||
+      typeof value.control.onChange === 'function' ||
+      typeof value.control.onClick === 'function')
+  );
 };
 
 export interface CustomParams {

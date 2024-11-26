@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { subscribeWithSelector } from 'zustand/middleware';
 // import { devtools } from 'zustand/middleware';
 // import type {} from '@redux-devtools/extension'; // required for devtools typing
+import type { BindingParams } from 'tweakpane';
 import * as THREE from 'three';
 import { setFullScreen } from 'lib/utils/fullScreenUtils';
 
@@ -130,7 +131,13 @@ export interface AppStore {
   cPanelStateFake: number;
   triggerCPaneStateChanged: () => void;
   getCPanelCustomParams: () => typeof cPanelCustomParamsStore;
-  setOrUpdateCPanelCustomParams: (name: string, object: any, prop: string, control: any, path: string[]) => void;
+  setOrUpdateCPanelCustomParams: (
+    name: string,
+    object: any,
+    prop: string | undefined,
+    control: BindingParams,
+    path: string[]
+  ) => void;
   removeCPanelCustomParams: (name: string, path: string[]) => void;
   cPanelCustomParamsStructureStateFake: number;
   triggerCPanelCustomParamsStructureChanged: () => void;

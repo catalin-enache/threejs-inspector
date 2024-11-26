@@ -519,8 +519,17 @@ export const buildCustomParams = ({
   nesting?: number;
 }) => {
   Object.keys(cPanelCustomParams).forEach((controlName) => {
-    const isBinding = !!cPanelCustomParams[controlName].object;
-    const isFolder = !isBinding;
+    const paramStruct = cPanelCustomParams[controlName];
+    const object = paramStruct.object;
+    const prop = paramStruct.prop;
+    const control = paramStruct.control;
+    const isBinding =
+      !!object &&
+      !!prop &&
+      object[prop] !== undefined &&
+      (control.readonly !== undefined || typeof control?.onChange === 'function');
+    const isButton = typeof control?.onClick === 'function';
+    const isFolder = !isBinding && !isButton;
 
     if (isFolder) {
       const folder = customParamsTab.addFolder({
@@ -536,18 +545,23 @@ export const buildCustomParams = ({
       tweakFolder(folder, `${controlName}-${nesting}`);
     } else {
       const { object, prop, control } = cPanelCustomParams[controlName];
-      const value = object[prop];
-      if (value === undefined || value === null) return;
       // Forcing all pickers inline to prevent layout issues.
       // Not all bindings have pickers but there's no harm in setting it inline even if there's no picker
       control.picker = 'inline';
       try {
-        const binding = customParamsTab.addBinding(object, prop, control).on('change', (evt) => {
-          control.onChange?.(evt.value, object, prop);
-        });
+        let binding;
+        if (isButton) {
+          binding = customParamsTab.addButton(control).on('click', () => {
+            control.onClick?.();
+          });
+        } else {
+          binding = customParamsTab.addBinding(object, prop, control).on('change', (evt) => {
+            control.onChange?.(evt.value, object, prop);
+          });
+        }
         tweakBindingView(binding);
         if (control.format === radToDegFormatter) {
-          makeRotationBinding(binding);
+          makeRotationBinding(binding as BindingApi);
         }
       } catch (err) {
         console.error('Error building bindings for', controlName, err);

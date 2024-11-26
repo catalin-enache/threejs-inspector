@@ -552,7 +552,7 @@ export const buildCustomParams = ({
         let binding;
         if (isButton) {
           binding = customParamsTab.addButton(control).on('click', () => {
-            control.onClick?.();
+            control.onClick?.(control);
           });
         } else {
           binding = customParamsTab.addBinding(object, prop, control).on('change', (evt) => {

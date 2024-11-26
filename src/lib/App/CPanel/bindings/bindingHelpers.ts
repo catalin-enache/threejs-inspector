@@ -559,7 +559,7 @@ export const buildCustomParams = ({
           if (control.view === 'cubicbezier') {
             // @ts-ignore
             binding = customParamsTab.addBlade(control).on('change', (evt) => {
-              control.onChange?.(evt);
+              control.onChange?.({ x1: evt.value.x1, x2: evt.value.x2, y1: evt.value.y1, y2: evt.value.y2 });
             });
           } else {
             binding = customParamsTab.addBinding(object, prop, control).on('change', (evt) => {

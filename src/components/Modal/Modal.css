@@ -12,6 +12,7 @@
   background-color: var(--tp-base-background-color-no-opacity);
   box-shadow: rgba(0, 0, 0, 0.15) 1.95px 1.95px 2.6px;
   font-family: var(--tp-base-font-family, monospace);
+  z-index: 99991;
 }
 
 .inspectorModal * {

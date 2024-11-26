@@ -23,9 +23,9 @@ const isCustomParamStruct = (value: any): value is CustomParamStruct => {
     value &&
     typeof value === 'object' &&
     value.control &&
-    (value.control.readonly ||
-      typeof value.control.onChange === 'function' ||
-      typeof value.control.onClick === 'function')
+    (value.control.readonly || // monitor
+      typeof value.control.onChange === 'function' || // binding
+      typeof value.control.onClick === 'function') // button
   );
 };
 

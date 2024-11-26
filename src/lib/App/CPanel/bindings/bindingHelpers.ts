@@ -520,14 +520,8 @@ export const buildCustomParams = ({
 }) => {
   Object.keys(cPanelCustomParams).forEach((controlName) => {
     const paramStruct = cPanelCustomParams[controlName];
-    const object = paramStruct.object;
-    const prop = paramStruct.prop;
     const control = paramStruct.control;
-    const isBinding =
-      !!object &&
-      !!prop &&
-      object[prop] !== undefined &&
-      (control.readonly !== undefined || typeof control?.onChange === 'function');
+    const isBinding = control?.readonly !== undefined || typeof control?.onChange === 'function'; // monitor or input
     const isButton = typeof control?.onClick === 'function';
     const isFolder = !isBinding && !isButton;
 
@@ -562,9 +556,16 @@ export const buildCustomParams = ({
             });
           }
         } else {
-          binding = customParamsTab.addBinding(object, prop, control).on('change', (evt) => {
-            control.onChange?.(evt.value, object, prop);
-          });
+          if (control.view === 'cubicbezier') {
+            // @ts-ignore
+            binding = customParamsTab.addBlade(control).on('change', (evt) => {
+              control.onChange?.(evt);
+            });
+          } else {
+            binding = customParamsTab.addBinding(object, prop, control).on('change', (evt) => {
+              control.onChange?.(evt.value, object, prop);
+            });
+          }
         }
 
         tweakBindingView(binding);

@@ -173,10 +173,7 @@ const configureAndRender = (params: InjectInspectorParams) => {
 };
 
 export const injectInspector = (params: InjectInspectorParams) => {
-  const canvasElement = document.querySelector('canvas');
-  if (!canvasElement) {
-    throw new Error('No canvas element found');
-  }
+  const canvasElement = params.renderer.domElement;
 
   root = root || createRoot(canvasElement);
   configureAndRender(params);

@@ -10,6 +10,7 @@ export interface CustomControlProps {
   path?: string;
 }
 
+// This component does not react on prop changes, it just sets up the custom control in the store
 export const CustomControl = (props: CustomControlProps) => {
   useEffect(() => {
     const { name, prop, control, path = '', object } = props;

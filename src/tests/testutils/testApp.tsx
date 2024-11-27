@@ -1,7 +1,7 @@
 import { ReactNode, useMemo, useState, useEffect, useCallback, useRef } from 'react';
 import * as THREE from 'three';
 import { Canvas, RootState } from '@react-three/fiber';
-import { Inspector } from 'lib/injectInspector';
+import { Inspector, InspectorProps } from 'lib/injectInspector';
 import { OrbitControls } from '@react-three/drei';
 import { defaultScene, defaultPerspectiveCamera, defaultOrthographicCamera } from 'lib/App/SetUp/patchThree';
 import { SetUpProps } from 'lib/App/SetUp/SetUp';
@@ -81,6 +81,7 @@ export interface TestInjectedInspectorAppProps {
   children?: ReactNode;
   useDreiOrbitControls?: boolean;
   autoNavControls?: boolean;
+  customParams?: InspectorProps['customParams'];
   includeDirLight?: boolean;
   includeFloorPlane?: boolean;
   useDefaultScene?: boolean;
@@ -108,6 +109,7 @@ export function TestInjectedInspectorApp(props: TestInjectedInspectorAppProps) {
     children,
     useDreiOrbitControls = false,
     autoNavControls = true,
+    customParams,
     includeDirLight = true,
     includeFloorPlane = true,
     useDefaultScene = false,
@@ -161,6 +163,7 @@ export function TestInjectedInspectorApp(props: TestInjectedInspectorAppProps) {
         onThreeChange={handleThreeChange}
         onCPanelReady={onCPanelReady}
         onCPanelUnmounted={onCPanelUnmounted}
+        customParams={customParams}
       />
       {useDreiOrbitControls ? <OrbitControls makeDefault ref={setOrbitControls} enableDamping={false} /> : null}
       {includeDirLight ? (

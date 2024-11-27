@@ -3,7 +3,8 @@ import React, { ReactNode, memo, useMemo } from 'react';
 import { extend, createRoot, events, ReconcilerRoot } from '@react-three/fiber';
 import { SetUp, SetUpProps, SETUP_EFFECT } from './App/SetUp/SetUp'; // patching Object3D
 import { CPanel, CPanelProps } from './App/CPanel/CPanel';
-import { CustomControl, CustomControlProps } from 'components/CustomControl/CustomControl';
+import { CustomControl } from 'components/CustomControl/CustomControl';
+import { CustomParams, isCustomParamStruct } from 'lib/customParam.types';
 // KeyListener depends on CPanel (sideEffect) to add in DOM CPanel elements to listen to
 import { KeyListener } from './App/KeyListener';
 extend(THREE);
@@ -11,27 +12,6 @@ extend(THREE);
 // singleton
 let root: ReconcilerRoot<HTMLCanvasElement> | null;
 let version = 0;
-
-export interface CustomParamStruct {
-  object?: CustomControlProps['object'];
-  prop?: CustomControlProps['prop'];
-  control: CustomControlProps['control'];
-}
-
-const isCustomParamStruct = (value: any): value is CustomParamStruct => {
-  return (
-    value &&
-    typeof value === 'object' &&
-    value.control &&
-    (value.control.readonly || // monitor
-      typeof value.control.onChange === 'function' || // binding
-      typeof value.control.onClick === 'function') // button
-  );
-};
-
-export interface CustomParams {
-  [key: string]: CustomParamStruct | CustomParams;
-}
 
 type buildCustomParamsElementsParams = {
   customParams: CustomParams;

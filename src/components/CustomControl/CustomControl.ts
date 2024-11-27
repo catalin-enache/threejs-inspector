@@ -6,7 +6,7 @@ export interface CustomControlProps {
   name: string;
   object?: Record<string, any>;
   prop?: string;
-  control: BindingParams & { onChange?: (value: any) => void; onClick?: (value: any) => void };
+  control: BindingParams & { onChange?: (...value: any) => void; onClick?: (...value: any) => void };
   path?: string;
 }
 

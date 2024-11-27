@@ -236,7 +236,6 @@ describe('Custom Params examples', () => {
 
   it('can be all tweakpane inputs', { timeout: 61000 }, async () => {
     return new Promise<void>((done) => {
-      // prettier-ignore
       const stringObject = { val: 'hello' };
       const selectObject = { selected: 'option 2' };
       const numericObject = { num: 0 };

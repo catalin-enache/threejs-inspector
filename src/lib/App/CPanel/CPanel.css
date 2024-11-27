@@ -112,6 +112,10 @@ html, body {
   */
   overflow-y: scroll;
 }
+/* attempt to improve aliasing */
+#controlPanelContent > div {
+  transform: translateZ(0);
+}
 
 /*
 Here, we allow draggable input control to be displayed when dragged outside the panel
@@ -204,6 +208,16 @@ by dispatching "transitionend" event which it seams that Tweakpane relies on
 
 #controlPanelContent .outlinerSearch {
   padding: 0 26px;
+}
+
+/* removing overall shadow visible on CPanel mousedown */
+#controlPanelContent .tp-rotv {
+  box-shadow: none;
+}
+
+/* fix cubicBezier gradation */
+#controlPanelContent .tp-cbzprvv {
+  padding: 0;
 }
 
 

@@ -8,6 +8,7 @@ import { CommonGetterParams } from './bindingTypes';
 import { MaterialBindings } from './MaterialBindings';
 import { animate } from 'lib/utils/animate';
 import { isValidTexture } from 'src/types';
+import { CustomParams, isCustomParamStruct } from 'lib/customParam.types';
 
 export const numberFormat = (precision: number) => (value: number) => value.toFixed(precision);
 
@@ -514,18 +515,12 @@ export const buildCustomParams = ({
   customParamsTab,
   nesting = 0
 }: {
-  cPanelCustomParams: Record<string, any>;
+  cPanelCustomParams: CustomParams;
   customParamsTab: TabPageApi;
   nesting?: number;
 }) => {
   Object.keys(cPanelCustomParams).forEach((controlName) => {
-    const paramStruct = cPanelCustomParams[controlName];
-    const control = paramStruct.control;
-    const isBinding = control?.readonly !== undefined || typeof control?.onChange === 'function'; // monitor or input
-    const isButton = typeof control?.onClick === 'function';
-    const isFolder = !isBinding && !isButton;
-
-    if (isFolder) {
+    if (!isCustomParamStruct(cPanelCustomParams[controlName])) {
       const folder = customParamsTab.addFolder({
         title: controlName,
         expanded: nesting === 0
@@ -538,7 +533,10 @@ export const buildCustomParams = ({
       });
       tweakFolder(folder, `${controlName}-${nesting}`);
     } else {
-      const { object, prop, control } = cPanelCustomParams[controlName];
+      const paramStruct = cPanelCustomParams[controlName];
+      const { object, prop, control } = paramStruct;
+      const isButton = typeof control?.onClick === 'function';
+
       // Forcing all pickers inline to prevent layout issues.
       // Not all bindings have pickers but there's no harm in setting it inline even if there's no picker
       control.picker = 'inline';
@@ -551,6 +549,7 @@ export const buildCustomParams = ({
               control.onClick?.({ title: evt.cell.title, index: evt.index });
             });
           } else {
+            // @ts-ignore
             binding = customParamsTab.addButton(control).on('click', () => {
               control.onClick?.(control);
             });
@@ -562,7 +561,7 @@ export const buildCustomParams = ({
               control.onChange?.({ x1: evt.value.x1, x2: evt.value.x2, y1: evt.value.y1, y2: evt.value.y2 });
             });
           } else {
-            binding = customParamsTab.addBinding(object, prop, control).on('change', (evt) => {
+            binding = customParamsTab.addBinding(object!, prop!, control).on('change', (evt) => {
               control.onChange?.(evt.value, object, prop);
             });
           }

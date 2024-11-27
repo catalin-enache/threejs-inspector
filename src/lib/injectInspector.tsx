@@ -38,6 +38,19 @@ type buildCustomParamsElementsParams = {
   pathArray?: string[];
 };
 
+export interface BaseInspectorProps {
+  // autoNavControls enable OrbitControls and FlyControls
+  autoNavControls?: boolean;
+  // if orbitControls are provided, they replace internal OrbitControls when autoNavControls is true
+  orbitControls?: any;
+  customParams?: CustomParams;
+  // for testing
+  onSetupEffect?: SetUpProps['onSetupEffect'];
+  onThreeChange?: SetUpProps['onThreeChange'];
+  onCPanelReady?: CPanelProps['onCPanelReady'];
+  onCPanelUnmounted?: CPanelProps['onCPanelUnmounted'];
+}
+
 export const buildCustomParamsElements = ({
   customParams,
   pathArray = []
@@ -67,18 +80,8 @@ export const buildCustomParamsElements = ({
     .filter(Boolean);
 };
 
-interface InspectorProps {
-  // autoNavControls enable OrbitControls and FlyControls
-  autoNavControls?: boolean;
-  // if orbitControls are provided, they replace internal OrbitControls when autoNavControls is true
-  orbitControls?: any;
-  customParams?: any;
+export interface InspectorProps extends BaseInspectorProps {
   version?: number;
-  // for testing
-  onSetupEffect?: SetUpProps['onSetupEffect'];
-  onThreeChange?: SetUpProps['onThreeChange'];
-  onCPanelReady?: CPanelProps['onCPanelReady'];
-  onCPanelUnmounted?: CPanelProps['onCPanelUnmounted'];
 }
 
 export const Inspector = memo(
@@ -119,22 +122,12 @@ export const Inspector = memo(
   }
 );
 
-type InjectInspectorParams = {
+interface InjectInspectorParams extends BaseInspectorProps {
   renderer: THREE.WebGLRenderer;
   scene: THREE.Scene;
   camera: THREE.PerspectiveCamera | THREE.OrthographicCamera;
   frameloop?: 'always' | 'demand' | 'never';
-  // autoNavControls enable OrbitControls and FlyControls
-  autoNavControls?: boolean;
-  // if orbitControls are provided, they replace internal OrbitControls when autoNavControls is true
-  orbitControls?: any;
-  customParams?: any;
-  // for testing
-  onSetupEffect?: SetUpProps['onSetupEffect'];
-  onThreeChange?: SetUpProps['onThreeChange'];
-  onCPanelReady?: CPanelProps['onCPanelReady'];
-  onCPanelUnmounted?: CPanelProps['onCPanelUnmounted'];
-};
+}
 
 const configureAndRender = (params: InjectInspectorParams) => {
   const {

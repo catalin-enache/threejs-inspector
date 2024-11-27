@@ -234,7 +234,6 @@ describe('Custom Params examples', () => {
     useAppStore.getState().reset();
   });
 
-  // TODO: can we update from outside cParams ?
   it('can be all tweakpane inputs', { timeout: 61000 }, async () => {
     return new Promise<void>((done) => {
       // prettier-ignore

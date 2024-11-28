@@ -15,7 +15,7 @@
     "deploy": "gh-pages -d dist"
   },
   "dependencies": {
-    "@monogrid/gainmap-js": "^3.0.5",
+    "@monogrid/gainmap-js": "^3.0.6",
     "@react-three/drei": "^9.117.3",
     "@react-three/fiber": "^8.17.10",
     "@redux-devtools/extension": "^3.3.0",
@@ -24,7 +24,7 @@
     "gsap": "^3.12.5",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "three": "^0.166.1",
+    "three": "^0.170.0",
     "tweakpane": "4.0.5",
     "zustand": "^4.5.2"
   },
@@ -38,7 +38,7 @@
     "@types/node": "^20.11.30",
     "@types/react": "^18.2.70",
     "@types/react-dom": "^18.2.22",
-    "@types/three": "^0.164.0",
+    "@types/three": "^0.170.0",
     "@typescript-eslint/eslint-plugin": "^7.3.1",
     "@typescript-eslint/parser": "^7.3.1",
     "@vitejs/plugin-react-swc": "^3.7.1",

@@ -1,14 +1,14 @@
 import * as THREE from 'three';
 // @ts-ignore
 import { outliner } from 'lib/third_party/ui.outliner';
-import { TransformControls } from 'three/examples/jsm/controls/TransformControls';
 import { useAppStore } from 'src/store';
 import { debounce } from 'lib/utils/debounce';
 
 const nodeStates = new WeakMap();
 
 const isNotUselessObject = (object: THREE.Object3D) => {
-  return !(object instanceof TransformControls || object.__inspectorData.isPicker || object.__inspectorData.isHelper);
+  // @ts-ignore
+  return !(object.isTransformControlsRoot || object.__inspectorData.isPicker || object.__inspectorData.isHelper);
 };
 
 const objectMatchesSearch = (object: THREE.Object3D): boolean => {

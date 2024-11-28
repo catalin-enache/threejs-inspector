@@ -1,14 +1,13 @@
 import * as THREE from 'three';
 import { RootState, useThree, useFrame } from '@react-three/fiber';
 import { useCallback, useEffect, useRef } from 'react';
-// import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
-import { OrbitControls } from 'lib/third_party/OrbitControls';
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import { TransformControls } from 'three/examples/jsm/controls/TransformControls';
 import { RectAreaLightUniformsLib } from 'three/examples/jsm/lights/RectAreaLightUniformsLib';
 import { FlyControls } from 'lib/App/FlyControls';
 import { useAppStore } from 'src/store';
 import patchThree from 'lib/App/SetUp/patchThree';
-
+import { getPatchedOrbitControls } from 'lib/utils/patchedOrbitControls';
 // @ts-ignore
 import { outliner } from 'lib/third_party/ui.outliner';
 
@@ -165,7 +164,7 @@ const SetUp = (props: SetUpProps) => {
   useEffect(() => {
     // prettier-ignore
     transformControlsRef.current = new TransformControls(camera, gl.domElement);
-    transformControlsRef.current.name = 'TransformControls';
+    transformControlsRef.current.getHelper().name = 'TransformControls';
     transformControlsRef.current.addEventListener('objectChange', (_event) => {
       triggerSelectedObjectChanged();
     });
@@ -181,7 +180,7 @@ const SetUp = (props: SetUpProps) => {
         orbitControlsRef.current && (orbitControlsRef.current.enabled = currentEnabled);
       }
     });
-    scene.add(transformControlsRef.current);
+    scene.add(transformControlsRef.current.getHelper());
     onSetupEffect?.(SETUP_EFFECT.TRANSFORM_CONTROLS, {
       transformControls: transformControlsRef.current
     });
@@ -307,7 +306,7 @@ const SetUp = (props: SetUpProps) => {
     orbitControlsRef.current =
       orbitControls ||
       (autoNavControls && !orbitControlsRef.current
-        ? new OrbitControls(camera, gl.domElement)
+        ? getPatchedOrbitControls(camera, gl.domElement, { usePointerLock: true })
         : orbitControlsRef.current);
 
     if (oldOrbitControls && oldOrbitControls !== orbitControlsRef.current) {

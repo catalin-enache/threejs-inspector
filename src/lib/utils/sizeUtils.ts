@@ -1,5 +1,4 @@
 import * as THREE from 'three';
-import { TransformControls } from 'three/examples/jsm/controls/TransformControls';
 import { LightProbeHelper } from 'three/examples/jsm/helpers/LightProbeHelper';
 import { OctreeHelper } from 'three/examples/jsm/helpers/OctreeHelper';
 import { RectAreaLightHelper } from 'three/examples/jsm/helpers/RectAreaLightHelper';
@@ -24,7 +23,8 @@ const isExcluded = (object: THREE.Object3D, exclude: Set<THREE.Object3D>) => {
   while (walker) {
     if (
       exclude.has(walker) ||
-      walker instanceof TransformControls ||
+      // @ts-ignore
+      walker.isTransformControlsRoot ||
       walker instanceof THREE.Camera ||
       walker instanceof THREE.Light ||
       walker instanceof THREE.CameraHelper ||

@@ -5,6 +5,7 @@ import { TGALoader } from 'three/examples/jsm/loaders/TGALoader';
 import { TIFFLoader } from 'three/examples/jsm/loaders/TIFFLoader';
 import { KTX2Loader } from 'three/examples/jsm/loaders/KTX2Loader';
 import { DDSLoader } from 'three/examples/jsm/loaders/DDSLoader';
+// TODO: replace HDRJPGLoader with UltraHDRLoader
 import { HDRJPGLoader } from '@monogrid/gainmap-js';
 import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader';
 import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module';

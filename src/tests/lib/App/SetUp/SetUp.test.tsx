@@ -4,7 +4,7 @@ import { render } from 'vitest-browser-react';
 import { screen, within, waitFor } from '@testing-library/dom';
 import { TestInjectedInspectorApp, TestDefaultApp, initDOM, clearDOM } from 'testutils/testApp';
 import { defaultScene, defaultPerspectiveCamera, defaultOrthographicCamera } from 'lib/App/SetUp/patchThree';
-import { OrbitControls as InternalOrbitControls } from 'lib/third_party/OrbitControls';
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import { OrbitControls as OrbitControlsImpl } from 'three-stdlib';
 import { SETUP_EFFECT, SetUpProps } from 'lib/App/SetUp/SetUp';
 import { useAppStore } from 'src/store';
@@ -103,7 +103,7 @@ describe('SetUp', () => {
       return new Promise<void>((done) => {
         const handleSetupEffect: SetUpProps['onSetupEffect'] = (effect, data) => {
           if (effect === SETUP_EFFECT.ORBIT_CONTROLS) {
-            expect(data.orbitControlsInUse).toBeInstanceOf(InternalOrbitControls);
+            expect(data.orbitControlsInUse).toBeInstanceOf(OrbitControls);
             res.unmount();
           }
         };
@@ -157,7 +157,7 @@ describe('SetUp', () => {
         const handleSetupEffect: SetUpProps['onSetupEffect'] = (effect, data) => {
           if (effect === SETUP_EFFECT.ORBIT_CONTROLS) {
             if (calls === 0) {
-              expect(data.orbitControlsInUse).toBeInstanceOf(InternalOrbitControls);
+              expect(data.orbitControlsInUse).toBeInstanceOf(OrbitControls);
             } else if (calls === 1) {
               expect(data.orbitControlsInUse).toBeInstanceOf(OrbitControlsImpl);
               res.unmount();
@@ -186,7 +186,7 @@ describe('SetUp', () => {
         const handleSetupEffect: SetUpProps['onSetupEffect'] = async (effect, data) => {
           if (effect === SETUP_EFFECT.ORBIT_CONTROLS) {
             if (calls === 0) {
-              expect(data.orbitControlsInUse).toBeInstanceOf(InternalOrbitControls);
+              expect(data.orbitControlsInUse).toBeInstanceOf(OrbitControls);
               expect(data.orbitControlsInUse.enabled).toBe(false);
               res.unmount();
             }
@@ -544,12 +544,12 @@ describe('SetUp', () => {
               expect(data.transformControls.camera).toBe(defaultPerspectiveCamera);
               useAppStore.getState().setCameraType('orthographic');
               await waitFor(() => expect(data.transformControls.camera).toBe(defaultOrthographicCamera));
-              expect(data.transformControls.parent.__inspectorData.orbitControlsRef.current.object).toBe(
+              expect(data.transformControls.getHelper().parent.__inspectorData.orbitControlsRef.current.object).toBe(
                 defaultOrthographicCamera
               );
               useAppStore.getState().setCameraType('perspective');
               await waitFor(() => expect(data.transformControls.camera).toBe(defaultPerspectiveCamera));
-              expect(data.transformControls.parent.__inspectorData.orbitControlsRef.current.object).toBe(
+              expect(data.transformControls.getHelper().parent.__inspectorData.orbitControlsRef.current.object).toBe(
                 defaultPerspectiveCamera
               );
               res.unmount();

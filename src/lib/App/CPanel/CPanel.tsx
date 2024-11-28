@@ -313,6 +313,7 @@ export const CPanel = (props: CPanelProps) => {
     console.log('selectedObject', selectedObject); // this console should stay around
     outliner.setValue(selectedObject?.id || null);
 
+    // TCMode, TCSpace buttons
     buildBindings(
       objectTab as unknown as FolderApi,
       useAppStore.getState(),

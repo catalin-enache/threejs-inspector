@@ -136,6 +136,10 @@ document.addEventListener('pointerup', (evt) => {
 
 // ----------------------- << Allowing input control to be visible when dragged outside cPanel  << --------------------------------
 
+export const getPaneTab = (pane: Pane, tabIndex: number) => {
+  return (pane.children[0] as TabApi).pages[tabIndex];
+};
+
 const setSelectedTab = (pane: Pane, tabIndex: number) => {
   pane.children[0].element.children[0].children[tabIndex].children[0].dispatchEvent(new Event('click'));
 };
@@ -241,8 +245,7 @@ export const CPanel = (props: CPanelProps) => {
       tab.classList.add('cPanel-tab'); // to style them hover-able
     });
 
-    const tabs = pane.children[0] as TabApi;
-    const objectTab = tabs.pages[0];
+    const objectTab = getPaneTab(pane, 0);
 
     objectTab.element.prepend(outliner.dom);
     objectTab.element.prepend(searchInput);
@@ -300,8 +303,7 @@ export const CPanel = (props: CPanelProps) => {
     if (!paneRef.current || paneRef.current.hidden) return;
     const pane = paneRef.current;
 
-    const tabs = pane.children[0] as TabApi;
-    const objectTab = tabs.pages[0];
+    const objectTab = getPaneTab(pane, 0);
 
     // Cleanup prev folders and their bindings
     cleanupContainer(objectTab);
@@ -335,8 +337,7 @@ export const CPanel = (props: CPanelProps) => {
   useEffect(() => {
     if (!paneRef.current || paneRef.current.hidden) return;
     const pane = paneRef.current;
-    const tabs = pane.children[0] as TabApi;
-    const customParamsTab = tabs.pages[1];
+    const customParamsTab = getPaneTab(pane, 1);
     // Clear bindings
     cleanupContainer(customParamsTab);
     buildCustomParams({
@@ -349,8 +350,7 @@ export const CPanel = (props: CPanelProps) => {
   useEffect(() => {
     if (!paneRef.current || paneRef.current.hidden) return;
     const pane = paneRef.current;
-    const tabs = pane.children[0] as TabApi;
-    const sceneTab = tabs.pages[2];
+    const sceneTab = getPaneTab(pane, 2);
     const store = useAppStore.getState();
 
     // Cleanup prev folders and their bindings // BladeApi is more generic we can make a recursive function to remove all children

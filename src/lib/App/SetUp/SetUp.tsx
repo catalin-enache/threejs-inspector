@@ -14,6 +14,7 @@ import { outliner } from 'lib/third_party/ui.outliner';
 const {
   getCurrentScene,
   setCurrentScene,
+  setCurrentRenderer,
   getIsPlayingCamera,
   getCameraToUseOnPlay,
   shouldContainItsHelper,
@@ -103,6 +104,7 @@ const SetUp = (props: SetUpProps) => {
   }, [isInjected, setIsInjected, autoNavControls, setAutoNavControls]);
 
   useEffect(() => {
+    setCurrentRenderer(gl);
     gl.domElement.addEventListener('contextmenu', preventContextMenu);
     return () => {
       gl.domElement.removeEventListener('contextmenu', preventContextMenu);

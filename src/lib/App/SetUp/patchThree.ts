@@ -137,8 +137,13 @@ type Module = {
   currentScene: THREE.Scene;
   getCurrentScene: () => THREE.Scene;
   setCurrentScene: (scene: THREE.Scene) => void;
+  currentRenderer: THREE.WebGLRenderer | null;
+  getCurrentRenderer: () => THREE.WebGLRenderer | null;
+  setCurrentRenderer: (renderer: THREE.WebGLRenderer) => void;
   interactableObjects: Record<string, THREE.Object3D>;
   updateCameras: () => void;
+  updateCubeCamera: (cubeCamera: THREE.CubeCamera) => void;
+  updateCubeCameras: () => void;
   defaultPerspectiveCamera: THREE.PerspectiveCamera;
   defaultOrthographicCamera: THREE.OrthographicCamera;
   cameraToUseOnPlay: THREE.PerspectiveCamera | THREE.OrthographicCamera | null;
@@ -163,9 +168,18 @@ const module: Module = {
   },
   setCurrentScene(scene: THREE.Scene) {
     this.currentScene = scene;
+    this.updateCubeCameras();
   },
   interactableObjects: {},
   subscriptions: {},
+  currentRenderer: null,
+  getCurrentRenderer() {
+    return this.currentRenderer;
+  },
+  setCurrentRenderer(renderer: THREE.WebGLRenderer) {
+    this.currentRenderer = renderer;
+    this.updateCubeCameras();
+  },
   // ----------------------------------- Cameras >> -----------------------------------
 
   defaultPerspectiveCamera,
@@ -289,6 +303,7 @@ const module: Module = {
                       ? new THREE.Mesh(
                           new THREE.BoxGeometry(helperSize, helperSize, helperSize),
                           new THREE.MeshLambertMaterial({ color: 0xffffff, envMap: object.renderTarget.texture })
+                          // new THREE.MeshBasicMaterial({ map: object.renderTarget.texture })
                         )
                       : object instanceof THREE.PositionalAudio
                         ? new PositionalAudioHelper(object as THREE.PositionalAudio, helperSize)
@@ -480,6 +495,25 @@ const module: Module = {
     });
   },
 
+  // TODO: unit test this
+  updateCubeCamera(cubeCamera: THREE.CubeCamera) {
+    if (!this.currentRenderer) {
+      return;
+    }
+    const currentVisible = cubeCamera.visible;
+    cubeCamera.visible = false;
+    cubeCamera.update(this.currentRenderer, this.currentScene);
+    cubeCamera.visible = currentVisible;
+  },
+
+  updateCubeCameras() {
+    this.currentScene.traverse((object) => {
+      if (object instanceof THREE.CubeCamera) {
+        this.updateCubeCamera(object);
+      }
+    });
+  },
+
   // called for every child of an object only when added to the scene
   handleObjectAdded(object: THREE.Object3D) {
     const __inspectorData = object.__inspectorData;
@@ -505,6 +539,9 @@ const module: Module = {
         // if multiple cameras are useOnPlay, only the last one will be considered
         this.cameraToUseOnPlay = object as THREE.PerspectiveCamera | THREE.OrthographicCamera;
         // current camera did not change just yet, only cameraToUseOnPlay is updated
+      }
+      if (object instanceof THREE.CubeCamera) {
+        this.updateCubeCamera(object);
       }
       // picker appears in __inspectorData after makeHelpers is called
       if (__inspectorData.picker) {

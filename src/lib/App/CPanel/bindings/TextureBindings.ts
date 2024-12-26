@@ -190,9 +190,7 @@ export const TextureBindings = (params: CommonGetterParams) => ({
     options: {
       NoColorSpace: THREE.NoColorSpace,
       SRGBColorSpace: THREE.SRGBColorSpace,
-      LinearSRGBColorSpace: THREE.LinearSRGBColorSpace,
-      DisplayP3ColorSpace: THREE.DisplayP3ColorSpace,
-      LinearDisplayP3ColorSpace: THREE.LinearDisplayP3ColorSpace
+      LinearSRGBColorSpace: THREE.LinearSRGBColorSpace
     }
   },
   unpackAlignment: {

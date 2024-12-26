@@ -48,6 +48,14 @@ export const RendererBindings = (_params: CommonGetterParams) => ({
       Neutral: THREE.NeutralToneMapping,
       Custom: THREE.CustomToneMapping
     }
+  },
+  coordinateSystem: {
+    label: 'Coordinate System',
+    options: {
+      WebGLCoordinateSystem: THREE.WebGLCoordinateSystem,
+      WebGPUCoordinateSystem: THREE.WebGPUCoordinateSystem
+    },
+    disabled: true
   }
 });
 

@@ -1,6 +1,7 @@
 import { numberCommon } from './bindingHelpers';
-import type { CommonGetterParams, onChange } from './bindingTypes';
+import type { CommonGetterParams, onChange, init } from './bindingTypes';
 import * as THREE from 'three';
+import { TextureBindings } from 'lib/App/CPanel/bindings/TextureBindings';
 
 export const PerspectiveCameraBindings = (_params: CommonGetterParams) => ({
   aspect: {
@@ -40,64 +41,61 @@ export const OrthographicCameraBindings = (_params: CommonGetterParams) => ({
   }
 });
 
-export const CubeCameraBindings = (_params: CommonGetterParams) => ({
+export const CubeCameraBindings = (params: CommonGetterParams) => ({
   renderTarget: {
     title: 'Render Target',
     width: {
-      label: 'Width',
-      disabled: true
+      label: 'Width'
     },
     height: {
-      label: 'Height',
-      disabled: true
+      label: 'Height'
     },
     scissor: {
-      label: 'Scissor',
-      disabled: true
+      label: 'Scissor'
     },
     scissorTest: {
-      label: 'Scissor Test',
-      disabled: true
+      label: 'Scissor Test'
     },
     viewport: {
-      label: 'Viewport',
-      disabled: true
+      label: 'Viewport'
     },
-    // TODO: improve here by enabling the inputs and showing the texture somehow
-    // texture: {
-    //   // cannot easily render the image for this CubeTexture. We need to read it from gl context.
-    //   label: 'Texture',
-    //   view: 'texture',
-    //   gl: params.sceneObjects.gl,
-    //   details: {
-    //     ...TextureBindings(params)
-    //   }
-    //   // title: 'Texture',
-    //   // ...TextureBindings(params)
-    // },
+    texture: {
+      label: 'Texture',
+      gl: params.sceneObjects.gl,
+      disabled: true, // disallow overriding - no use for it
+      cubeTextureRenderLayout: 'cross', // cross | equirectangular
+      canvasWidth: 4096, // using high resolution to facilitate download and reuse as scene bg
+      init(this: any, { object }: Parameters<init>[0]) {
+        this.renderTarget = object;
+      },
+      details: {
+        ...TextureBindings(params)
+      }
+    },
     depthBuffer: {
-      label: 'Depth Buffer',
-      disabled: true
+      label: 'Depth Buffer'
     },
     stencilBuffer: {
-      label: 'Stencil Buffer',
-      disabled: true
+      label: 'Stencil Buffer'
     },
     resolveDepthBuffer: {
-      label: 'Resolve Depth Buffer',
-      disabled: true
+      label: 'Resolve Depth Buffer'
     },
     resolveStencilBuffer: {
-      label: 'Resolve Stencil Buffer',
-      disabled: true
+      label: 'Resolve Stencil Buffer'
     },
+    // when depthTexture is added to WebGLCubeRenderTarget constructor it throws an error:
+    // target.depthTexture not supported in Cube render targets
+    // leaving here just in case the commented code
     // depthTexture: {
     //   label: 'Depth Texture',
-    //   view: 'texture'
+    //   gl: params.sceneObjects.gl,
+    //   init(this: any, { object }: Parameters<init>[0]) {
+    //     this.renderTarget = object;
+    //   }
     // },
     samples: {
-      label: 'Samples',
-      disabled: true
+      label: 'Samples'
     }
   }
 });

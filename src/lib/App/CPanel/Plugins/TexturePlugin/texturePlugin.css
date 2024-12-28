@@ -1,5 +1,9 @@
 .texturePlugin {
   position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: start;
+  gap: 6px;
 }
 
 .texturePlugin_input {
@@ -13,6 +17,9 @@
   */
   width: 60px;
   height: 60px;
+}
+
+.texturePlugin:not(.tp-v-disabled) .texturePlugin_canvas {
   cursor: pointer;
 }
 
@@ -31,6 +38,10 @@
 }
 .texturePlugin--isLoading .texturePlugin_canvas {
   opacity: 0.5;
+}
+
+.texturePlugin.tp-v-disabled {
+  pointer-events: all !important;
 }
 
 @keyframes texturePluginAnimateFlash {

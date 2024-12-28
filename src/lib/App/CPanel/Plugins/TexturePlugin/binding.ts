@@ -1,4 +1,4 @@
-import { BaseInputParams, BindingTarget, createPlugin, InputBindingPlugin, parseRecord } from '@tweakpane/core';
+import { BaseInputParams, BindingTarget, createPlugin, InputBindingPlugin } from '@tweakpane/core';
 import * as THREE from 'three';
 import { TextureController } from './controller';
 import { isValidTexture } from 'src/types';
@@ -18,9 +18,16 @@ const DEFAULT_EXTENSIONS = [
   '.dds'
 ];
 
+type TexturePluginConfigKeys = 'gl' | 'isShadowMap' | 'renderTarget' | 'extensions';
+
 export interface TexturePluginConfig extends BaseInputParams {
+  gl: THREE.WebGLRenderer;
   extensions?: string[];
-  gl?: THREE.WebGLRenderer;
+  isShadowMap?: boolean; // for lights
+  renderTarget?: THREE.WebGLRenderTarget | THREE.WebGLCubeRenderTarget; // for CubeCamera
+  extractOneTextureAtIndex?: number; // for CubeCamera, if specified just one texture from 6 will get rendered, else it will extract all 6 using cubeTextureRenderLayout
+  cubeTextureRenderLayout?: 'cross' | 'equirectangular'; // for CubeCamera
+  canvasWidth?: number;
 }
 
 let debugID = 1;
@@ -30,22 +37,16 @@ export const TextureBindingPlugin: InputBindingPlugin<THREE.Texture, THREE.Textu
     // api: {},
     id: 'TexturePlugin',
     type: 'input',
-
-    accept: (exValue: unknown, params: Record<string, unknown>) => {
-      // console.log('TextureBindingPlugin.accept ?', { params, exValue });
+    accept: (exValue: unknown, params: Record<TexturePluginConfigKeys, any>) => {
       if (!isValidTexture(exValue)) {
         return null;
       }
 
-      const result = parseRecord<TexturePluginConfig>(params, (p) => ({
-        // view: p.required.constant('texture'), // view is not needed, it is enough that isTexture(exValue)
-        extensions: p.optional.array(p.required.string)
-      }));
-      if (!result) {
+      // gl is required
+      if (!(params.gl instanceof THREE.WebGLRenderer)) {
         return null;
       }
 
-      // console.log('TextureBindingPlugin.accept !', { exValue, params });
       return {
         initialValue: exValue,
         params: params
@@ -79,8 +80,13 @@ export const TextureBindingPlugin: InputBindingPlugin<THREE.Texture, THREE.Textu
       return new TextureController(args.document, {
         value: args.value,
         extensions: args.params.extensions ?? DEFAULT_EXTENSIONS,
-        gl: args.params.gl,
-        viewProps: args.viewProps
+        gl: args.params.gl!,
+        isShadowMap: !!args.params.isShadowMap,
+        renderTarget: args.params.renderTarget,
+        viewProps: args.viewProps,
+        extractOneTextureAtIndex: args.params.extractOneTextureAtIndex,
+        cubeTextureRenderLayout: args.params.cubeTextureRenderLayout,
+        canvasWidth: args.params.canvasWidth
       });
     }
   }

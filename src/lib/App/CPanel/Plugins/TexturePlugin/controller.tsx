@@ -1,8 +1,13 @@
 import { Controller, Value, ViewProps } from '@tweakpane/core';
 import { TextureView, cacheMeshMap } from './view';
 import { createTexturesFromImages } from 'lib/utils/imageUtils';
+import { Modal } from 'components/Modal/Modal';
 import * as THREE from 'three';
 import { useAppStore } from 'src/store';
+import { createRoot } from 'react-dom/client';
+
+let reactRoot: ReturnType<typeof createRoot> | null = null;
+export const rememberCubeTextureRenderLayout = new Map<string, 'cross' | 'equirectangular'>();
 
 const cleanUp = (self: TextureController) => {
   // cleanup cacheMeshMap when no object is selected
@@ -20,12 +25,15 @@ const cleanUp = (self: TextureController) => {
       value.mapTexture.dispose();
     });
     cacheMeshMap.clear();
+    rememberCubeTextureRenderLayout.clear();
   }
 
   self.isMounted = false;
   window.removeEventListener('TweakpaneRemove', self.onRemoveHandler);
   self.view.input.removeEventListener('change', self.onFile);
   self.view.canvas.removeEventListener('click', self.openFileBrowser);
+  self.view.canvas.removeEventListener('pointerup', self.enlargeImage);
+  self.view.select.removeEventListener('change', self.handleCubeLayoutChange);
   self.objectURL && URL.revokeObjectURL(self.objectURL);
 };
 
@@ -41,7 +49,12 @@ export interface TextureControllerConfig {
   value: Value<THREE.Texture>;
   extensions: string[];
   viewProps: ViewProps;
-  gl?: THREE.WebGLRenderer;
+  gl: THREE.WebGLRenderer;
+  isShadowMap: boolean;
+  renderTarget?: THREE.WebGLRenderTarget | THREE.WebGLCubeRenderTarget;
+  extractOneTextureAtIndex?: number;
+  cubeTextureRenderLayout?: 'cross' | 'equirectangular';
+  canvasWidth?: number;
 }
 let debugID = 1;
 export class TextureController implements Controller<TextureView> {
@@ -52,40 +65,112 @@ export class TextureController implements Controller<TextureView> {
   public debugID = debugID++;
   public objectURL?: ReturnType<typeof URL.createObjectURL>;
   public onRemoveHandler: (this: TextureController, evt: any) => void;
-  public gl?: THREE.WebGLRenderer | null;
+  public gl: THREE.WebGLRenderer;
 
   constructor(doc: Document, config: TextureControllerConfig) {
     this.value = config.value;
+    if (
+      this.value.rawValue instanceof THREE.CubeTexture &&
+      !rememberCubeTextureRenderLayout.get(this.value.rawValue.uuid)
+    ) {
+      rememberCubeTextureRenderLayout.set(this.value.rawValue.uuid, config.cubeTextureRenderLayout || 'cross');
+    }
+
     this.viewProps = config.viewProps;
     this.gl = config.gl;
+
     this.view = new TextureView(doc, {
       viewProps: this.viewProps,
-      extensions: config.extensions
+      extensions: config.extensions,
+      gl: this.gl,
+      isShadowMap: config.isShadowMap,
+      renderTarget: config.renderTarget,
+      extractOneTextureAtIndex: config.extractOneTextureAtIndex,
+      cubeTextureRenderLayout: rememberCubeTextureRenderLayout.get(this.value.rawValue.uuid),
+      canvasWidth: config.canvasWidth
     });
 
     this.onRemoveHandler = onRemoveHandler.bind(this);
-
-    window.addEventListener('TweakpaneRemove', this.onRemoveHandler);
-
     this.onFile = this.onFile.bind(this);
     this.openFileBrowser = this.openFileBrowser.bind(this);
     this.handleValueChange = this.handleValueChange.bind(this);
+    this.enlargeImage = this.enlargeImage.bind(this);
+    this.updateImage = this.updateImage.bind(this);
+    this.handleCubeLayoutChange = this.handleCubeLayoutChange.bind(this);
+
+    // event emitted in bindingHelpers
+    window.addEventListener('TweakpaneRemove', this.onRemoveHandler);
     this.view.input.addEventListener('change', this.onFile);
-    this.view.canvas.addEventListener('click', this.openFileBrowser);
-    // TODO: add a way to enlarge the canvas on click (on it or on some button) to see the image at better resolution
+    !this.viewProps.get('disabled') && this.view.canvas.addEventListener('click', this.openFileBrowser);
+    this.value.emitter.on('change', this.handleValueChange);
+    // this.viewProps.emitter.on('change', (evt) => {
+    //   console.log('TexturePlugin viewProps.emitter.on change', evt);
+    // });
+    this.view.canvas.addEventListener('pointerup', this.enlargeImage);
+    // this select is only added to DOM when it's a CubeTexture
+    this.view.select.addEventListener('change', this.handleCubeLayoutChange);
 
     this.viewProps.handleDispose(() => {
       // console.log('TexturePlugin handleDispose');
       cleanUp(this);
     });
 
-    this.value.emitter.on('change', this.handleValueChange);
-    // this.viewProps.emitter.on('change', (evt) => {
-    //   console.log('TexturePlugin viewProps.emitter.on change', evt);
-    // });
-
     this.updateImage();
     // console.log('TextureController constructor done', { config, this: this });
+  }
+
+  handleCubeLayoutChange() {
+    const layout = this.view.select.value as 'cross' | 'equirectangular';
+    rememberCubeTextureRenderLayout.set(this.value.rawValue.uuid, layout);
+    this.view.cubeTextureRenderLayout = layout;
+    this.updateImage(true);
+  }
+
+  enlargeImage(evt: PointerEvent) {
+    if (evt.button !== 2 || reactRoot) return; // reactRoot means we're using the modal
+    const modalContainer = document.createElement('div');
+    document.body.appendChild(modalContainer);
+    const canvas = document.createElement('canvas');
+    canvas.width = this.view.canvas.width;
+    canvas.height = this.view.canvas.height;
+    const isEquirectangular =
+      this.value.rawValue instanceof THREE.CubeTexture && this.view.select.value === 'equirectangular';
+    if (isEquirectangular) {
+      canvas.height = this.view.canvas.height / 2;
+    }
+    canvas.style.width = '100%';
+    const ctx = canvas.getContext('2d')!;
+    isEquirectangular
+      ? // make it ready to be downloaded as equirectangular image and imported as scene bg equirectangular texture
+        ctx.drawImage(
+          this.view.canvas,
+          0, // sx
+          this.view.canvas.height / 4, // sy
+          this.view.canvas.width, // sw
+          this.view.canvas.height / 2, // sh
+          0, // dx
+          0, // dy
+          canvas.width, // dw
+          canvas.height // dh
+        )
+      : ctx.drawImage(this.view.canvas, 0, 0, canvas.width, canvas.height);
+
+    reactRoot = createRoot(modalContainer);
+    reactRoot.render(
+      <Modal
+        isOpen={true}
+        width={window.innerWidth <= window.innerHeight ? '80vw' : '80vh'}
+        onClose={() => {
+          canvas.remove();
+          reactRoot?.unmount();
+          modalContainer.remove();
+          reactRoot = null;
+        }}
+        title="Texture"
+      >
+        {canvas}
+      </Modal>
+    );
   }
 
   openFileBrowser() {
@@ -135,10 +220,12 @@ export class TextureController implements Controller<TextureView> {
     this.updateImage();
   }
 
-  private updateImage() {
-    // console.log('TexturePlugin TextureController updateImage');
+  public updateImage(invalidateCache: boolean = false) {
     const texture = this.value.rawValue;
     if (!this.isMounted || !texture) return;
+    if (invalidateCache) {
+      cacheMeshMap.delete(texture.uuid);
+    }
     this.view.changeImage(texture);
   }
 

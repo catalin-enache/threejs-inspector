@@ -1,8 +1,11 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
-import { Experience } from 'scenarios/Experience';
+import { Experience as DefaultExperience } from 'scenarios/Experience';
+// import { ProjectLongLatOnSphere } from 'scenarios/ProjectLongLatOnSphere';
 import { App } from './App';
 import './index.css';
+
+const Experience = DefaultExperience;
 
 const useStrictMode = true;
 

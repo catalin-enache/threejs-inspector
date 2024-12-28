@@ -224,6 +224,24 @@ control: {
   max?: number;
 }
 
+====================================================
+
+Texture:
+object: {
+  value: any,
+}
+prop: string;
+control: {
+  label?: string;
+  gl: WebGLRenderer; // required, needs to be the scene renderer
+  isShadowMap?: boolean; // for lights
+  disabled?: boolean; // disallow changing the texture
+  cubeTextureRenderLayout?: 'cross' | 'equirectangular'; // for cube map, defaults to cross
+  canvasWidth?: number; // power of 2 - controls the resolution, the height is auto
+  renderTarget?: WebGLRenderTarget | WebGLCubeRenderTarget; // used for reading pixels from GPU for certain textures
+  onChange?: (textureValue, object, prop) => void; // (e.g. Texture, scene, 'background')
+}
+
 **/
 
 describe('Custom Params examples', () => {
@@ -233,7 +251,7 @@ describe('Custom Params examples', () => {
     defaultScene.clear();
     useAppStore.getState().reset();
   });
-
+  // TODO: add texture plugin test
   it('can be all tweakpane inputs', { timeout: 61000 }, async () => {
     return new Promise<void>((done) => {
       const stringObject = { val: 'hello' };

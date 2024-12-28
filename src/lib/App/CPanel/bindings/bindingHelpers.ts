@@ -137,7 +137,8 @@ const _buildBindings = (folder: FolderApi, object: any, bindings: any, params: C
 
   Object.keys(bindings).forEach((bindingKey) => {
     const bindingCandidate = bindings[bindingKey];
-
+    // need to rely on init to put some dependencies on bindingCandidate (e.g. for renderTarget)
+    bindingCandidate.init?.({ object, folder, bindings, params });
     const isButton = bindingCandidate.title && bindingCandidate.label;
 
     if (isButton) {
@@ -188,7 +189,14 @@ const _buildBindings = (folder: FolderApi, object: any, bindings: any, params: C
       try {
         _buildBindings(subFolder, object[bindingKey], bindingCandidate, params);
       } catch (error) {
-        console.error('Error building bindings for', bindingKey, { error });
+        console.error('Error building bindings for', bindingKey, {
+          error,
+          subFolder,
+          object,
+          bindingKey,
+          bindingCandidate,
+          params
+        });
       }
 
       return;
@@ -224,8 +232,12 @@ const _buildBindings = (folder: FolderApi, object: any, bindings: any, params: C
       // show details folder only if there are any details to show (scene.background can be a texture or a color, details are only for texture)
       Object.keys(bindingCandidate.details).some((detailKey) => object[bindingKey]?.[detailKey] !== undefined)
     ) {
+      // falling back to texture for renderTarget which does not have uuid and id
+      const uuid = object.uuid || object.texture?.uuid || 'no_uuid-x';
+      const id = object.id || object.texture?.id || 'no_id';
       const subFolder = folder.addFolder({
-        title: `${bindingCandidate.label} Details ${object.uuid.split('-')[0]}-${object.id}`,
+        // WebGlRenderTarget does not have uuid and id // check on light.shadow.map and cubeCamera.renderTarget
+        title: `${bindingCandidate.label} Details ${uuid.split('-')[0]}-${id}`,
         expanded: false
       });
 

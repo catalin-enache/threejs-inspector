@@ -25,3 +25,18 @@ export type onChange = (
   },
   evt: { value: any }
 ) => void;
+
+export type init = (
+  {
+    object,
+    folder,
+    bindings,
+    params
+  }: {
+    object: any;
+    folder: FolderApi;
+    bindings: any;
+    params: CommonGetterParams;
+  },
+  evt: { value: any }
+) => void;

@@ -75,7 +75,18 @@ export function App(props: AppProps) {
   }, []);
 
   return (
-    <Canvas camera={camera} scene={scene} shadows={'soft'} gl={glOptions} frameloop={'always'}>
+    <Canvas
+      camera={camera}
+      scene={scene}
+      shadows={'soft'}
+      gl={(canvas) =>
+        new THREE.WebGLRenderer({
+          canvas,
+          ...glOptions
+        })
+      }
+      frameloop={'always'}
+    >
       <Inspector autoNavControls={true} orbitControls={orbitControls} customParams={customParams} />
       {/*dampingFactor={0.05} is default*/}
       <OrbitControls makeDefault ref={setOrbitControlsRef} enableDamping={true} dampingFactor={0.1} />

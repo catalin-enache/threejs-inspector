@@ -1,7 +1,8 @@
 import { numberCommon } from './bindingHelpers';
-import type { CommonGetterParams, onChange, init } from './bindingTypes';
+import type { CommonGetterParams, init, onChange } from './bindingTypes';
 import * as THREE from 'three';
-import { TextureBindings } from 'lib/App/CPanel/bindings/TextureBindings';
+import { CubeRenderTargetBindings } from './CubeRenderTargetBindings';
+import { TextureBindings } from './TextureBindings';
 
 export const PerspectiveCameraBindings = (_params: CommonGetterParams) => ({
   aspect: {
@@ -44,21 +45,6 @@ export const OrthographicCameraBindings = (_params: CommonGetterParams) => ({
 export const CubeCameraBindings = (params: CommonGetterParams) => ({
   renderTarget: {
     title: 'Render Target',
-    width: {
-      label: 'Width'
-    },
-    height: {
-      label: 'Height'
-    },
-    scissor: {
-      label: 'Scissor'
-    },
-    scissorTest: {
-      label: 'Scissor Test'
-    },
-    viewport: {
-      label: 'Viewport'
-    },
     texture: {
       label: 'Texture',
       gl: params.sceneObjects.gl,
@@ -72,31 +58,7 @@ export const CubeCameraBindings = (params: CommonGetterParams) => ({
         ...TextureBindings(params)
       }
     },
-    depthBuffer: {
-      label: 'Depth Buffer'
-    },
-    stencilBuffer: {
-      label: 'Stencil Buffer'
-    },
-    resolveDepthBuffer: {
-      label: 'Resolve Depth Buffer'
-    },
-    resolveStencilBuffer: {
-      label: 'Resolve Stencil Buffer'
-    },
-    // when depthTexture is added to WebGLCubeRenderTarget constructor it throws an error:
-    // target.depthTexture not supported in Cube render targets
-    // leaving here just in case the commented code
-    // depthTexture: {
-    //   label: 'Depth Texture',
-    //   gl: params.sceneObjects.gl,
-    //   init(this: any, { object }: Parameters<init>[0]) {
-    //     this.renderTarget = object;
-    //   }
-    // },
-    samples: {
-      label: 'Samples'
-    }
+    ...CubeRenderTargetBindings(params)
   }
 });
 

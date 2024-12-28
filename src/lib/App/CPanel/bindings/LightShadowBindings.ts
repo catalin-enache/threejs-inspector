@@ -1,6 +1,34 @@
 import type { onChange, CommonGetterParams } from './bindingTypes';
+import { TextureBindings } from './TextureBindings';
+import { RenderTargetBindings } from './RenderTargetBindings';
+import { CameraBindings } from './CameraBindings';
 
-export const LightShadowBindings = (_params: CommonGetterParams) => ({
+export const LightShadowBindings = (params: CommonGetterParams) => ({
+  map: {
+    title: 'Map',
+    texture: {
+      label: 'Texture',
+      gl: params.sceneObjects.gl,
+      isShadowMap: true,
+      details: {
+        ...TextureBindings(params)
+      }
+    },
+    ...RenderTargetBindings(params)
+  },
+  // this seems to be null
+  mapPass: {
+    title: 'Map Pass',
+    texture: {
+      label: 'Texture',
+      gl: params.sceneObjects.gl,
+      // isShadowMap: true,
+      details: {
+        ...TextureBindings(params)
+      }
+    },
+    ...RenderTargetBindings(params)
+  },
   mapSize: {
     label: 'MapSize',
     step: 1,
@@ -10,6 +38,11 @@ export const LightShadowBindings = (_params: CommonGetterParams) => ({
         bindings.__parent.shadow.map = null;
       }
     }) as onChange
+  },
+  intensity: {
+    label: 'Intensity',
+    min: 0,
+    max: 1
   },
   radius: {
     label: 'Radius',
@@ -27,5 +60,9 @@ export const LightShadowBindings = (_params: CommonGetterParams) => ({
   normalBias: {
     label: 'Normal bias',
     step: 1
+  },
+  camera: {
+    title: 'Camera',
+    ...CameraBindings(params)
   }
 });

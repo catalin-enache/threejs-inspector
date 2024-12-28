@@ -80,6 +80,8 @@ After loading from scene config the binding reader fires continuously.
 Not happening anymore since using correct internal lastValue.
 However, to test with multi texture bindings later
 
+Add experience switcher in CPanel to easy switch between available experiences
+
 Test with WebGPURenderer (for now R3F does not support it)
 
 Internal OrbitControls is not as smooth as the official one.

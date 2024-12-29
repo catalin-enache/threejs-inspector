@@ -43,48 +43,47 @@ describe('bindingHelpers', () => {
           const handleBooleanChange = vi.fn((_value: any) => {
             // console.log('handleBooleanChange', _value);
           });
-          const handleButtonClick = vi.fn(() => {
-            // console.log('handleButtonClick');
+          const handleButtonClick = vi.fn((_value: any) => {
+            console.log('handleButtonClick', _value);
           });
-          console.log({ objTab, commonGetterParams });
-          buildBindings(
-            objTab,
-            {
-              level_1: {
-                level_2: {
-                  numeric: 0,
-                  string: 'string',
-                  boolean: false
+
+          const obj = {
+            level_1: {
+              level_2: {
+                numeric: 0,
+                string: 'string',
+                boolean: false
+              }
+            }
+          };
+
+          const bindings = {
+            level_1: {
+              title: 'Level 1',
+              level_2: {
+                title: 'Level 2',
+                numeric: {
+                  label: 'Numeric Label',
+                  onChange: handleNumericChange
+                },
+                string: {
+                  label: 'String Label',
+                  onChange: handleStringChange
+                },
+                boolean: {
+                  label: 'Boolean Label',
+                  onChange: handleBooleanChange
+                },
+                button: {
+                  title: 'Button Title',
+                  label: 'Button Label',
+                  onClick: handleButtonClick
                 }
               }
-            },
-            {
-              level_1: {
-                title: 'Level 1',
-                level_2: {
-                  title: 'Level 2',
-                  numeric: {
-                    label: 'Numeric Label',
-                    onChange: handleNumericChange
-                  },
-                  string: {
-                    label: 'String Label',
-                    onChange: handleStringChange
-                  },
-                  boolean: {
-                    label: 'Boolean Label',
-                    onChange: handleBooleanChange
-                  },
-                  button: {
-                    title: 'Button Title',
-                    label: 'Button Label',
-                    onClick: handleButtonClick
-                  }
-                }
-              }
-            },
-            commonGetterParams
-          );
+            }
+          };
+
+          buildBindings(objTab, obj, bindings, commonGetterParams);
           const level1Button = await screen.findByText('Level 1');
           level1Button.click();
           const level2Button = await screen.findByText('Level 2');
@@ -113,6 +112,14 @@ describe('bindingHelpers', () => {
           const buttonInput = buttonLabel.parentElement!.querySelector('button')!;
           buttonInput.click();
           await waitFor(() => expect(handleButtonClick).toHaveBeenCalledTimes(1));
+
+          console.log('handleButtonClick.mock.calls', handleButtonClick.mock.calls[0][0]);
+          expect(handleButtonClick.mock.calls[0][0].bindings).toEqual({
+            ...bindings.level_1.level_2,
+            __parentObject: { level_2: obj.level_1.level_2 }
+          });
+          expect(handleButtonClick.mock.calls[0][0].object).toEqual(obj.level_1.level_2);
+          expect(handleButtonClick.mock.calls[0][0].folder.title).toEqual('Level 2');
 
           res.unmount();
         };

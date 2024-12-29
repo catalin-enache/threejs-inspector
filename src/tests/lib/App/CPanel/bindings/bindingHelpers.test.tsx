@@ -292,8 +292,11 @@ describe('bindingHelpers', () => {
                   label: 'Texture',
                   gl: commonGetterParams.sceneObjects.gl,
                   details: {
-                    uuid: {
-                      label: 'uuid'
+                    offset: {
+                      label: 'offset',
+                      onChange: vi.fn((..._value: any) => {
+                        // console.log('offset change', ..._value);
+                      })
                     }
                   }
                 }
@@ -304,10 +307,19 @@ describe('bindingHelpers', () => {
           buildBindings(objTab, obj, bindings, commonGetterParams);
           texture.dispose();
           const textureLabel = await screen.findByText('Texture');
-          const uuidLabel = await screen.findByText('uuid');
+          const offsetLabel = await screen.findByText('offset');
 
           expect(textureLabel).toBeInTheDocument();
-          expect(uuidLabel).toBeInTheDocument();
+          expect(offsetLabel).toBeInTheDocument();
+
+          const offsetInput = offsetLabel.parentElement!.querySelector('input')!;
+          offsetInput.value = '0.5';
+          offsetInput.dispatchEvent(new Event('change'));
+
+          await waitFor(() =>
+            expect(bindings.level_1.level_2.texture.details.offset.onChange).toHaveBeenCalledTimes(1)
+          );
+          expect(bindings.level_1.level_2.texture.details.offset.onChange.mock.calls[0][1].value.x).toEqual(0.5);
 
           res.unmount();
         };

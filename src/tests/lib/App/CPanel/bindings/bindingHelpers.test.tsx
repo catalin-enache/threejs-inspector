@@ -113,7 +113,6 @@ describe('bindingHelpers', () => {
           buttonInput.click();
           await waitFor(() => expect(handleButtonClick).toHaveBeenCalledTimes(1));
 
-          console.log('handleButtonClick.mock.calls', handleButtonClick.mock.calls[0][0]);
           expect(handleButtonClick.mock.calls[0][0].bindings).toEqual({
             ...bindings.level_1.level_2,
             __parentObject: { level_2: obj.level_1.level_2 }

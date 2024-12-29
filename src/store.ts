@@ -9,58 +9,72 @@ import { setFullScreen } from 'lib/utils/fullScreenUtils';
 const cPanelCustomParamsStore: any = {};
 let selectedObject: THREE.Object3D | null = null;
 
+const showAxisHelperDefault = true;
 const showAxisHelper = localStorage.getItem('threeInspector__showAxesHelper')
   ? localStorage.getItem('threeInspector__showAxesHelper') === 'true'
-  : true;
+  : showAxisHelperDefault;
 
+const showGridHelperDefault = true;
 const showGridHelper = localStorage.getItem('threeInspector__showGridHelper')
   ? localStorage.getItem('threeInspector__showGridHelper') === 'true'
-  : true;
+  : showGridHelperDefault;
 
+const showGizmosDefault = true;
 const showGizmos = localStorage.getItem('threeInspector__showGizmos')
   ? localStorage.getItem('threeInspector__showGizmos') === 'true'
-  : true;
+  : showGizmosDefault;
 
+const showHelpersDefault = true;
 const showHelpers =
   showGizmos && localStorage.getItem('threeInspector__showHelpers')
     ? localStorage.getItem('threeInspector__showHelpers') === 'true'
-    : true;
+    : showHelpersDefault;
 
-const gizmoSize = +(localStorage.getItem('threeInspector__gizmoSize') || 0.25);
+const gizmoSizeDefault = 0.25;
+const gizmoSize = +(localStorage.getItem('threeInspector__gizmoSize') || gizmoSizeDefault);
 
+const angleFormatDefault = 'deg';
 const angleFormat = (
-  localStorage.getItem('threeInspector__angleFormat') ? localStorage.getItem('threeInspector__angleFormat') : 'deg'
+  localStorage.getItem('threeInspector__angleFormat')
+    ? localStorage.getItem('threeInspector__angleFormat')
+    : angleFormatDefault
 ) as 'deg' | 'rad';
 
+const cameraControlDefault = 'orbit';
 const cameraControl = (
   localStorage.getItem('threeInspector__cameraControl')
     ? localStorage.getItem('threeInspector__cameraControl')
-    : 'orbit'
+    : cameraControlDefault
 ) as 'orbit' | 'fly';
 
+const cameraTypeDefault = 'perspective';
 const cameraType = (
   localStorage.getItem('threeInspector__cameraType')
     ? localStorage.getItem('threeInspector__cameraType')
-    : 'perspective'
+    : cameraTypeDefault
 ) as 'perspective' | 'orthographic';
 
+const cPanelOpacityDefault = 0;
 const cPanelOpacity = localStorage.getItem('threeInspector__cPanelOpacity')
-  ? +(localStorage.getItem('threeInspector__cPanelOpacity') || 0)
-  : 0;
+  ? +(localStorage.getItem('threeInspector__cPanelOpacity') || cPanelOpacityDefault)
+  : cPanelOpacityDefault;
 
+const cPanelSizeDefault = 0;
 const cPanelSize = localStorage.getItem('threeInspector__cPanelSize')
-  ? +(localStorage.getItem('threeInspector__cPanelSize') || 0)
-  : 0;
+  ? +(localStorage.getItem('threeInspector__cPanelSize') || cPanelSizeDefault)
+  : cPanelSizeDefault;
 
+const attachDefaultControllersToPlayingCameraDefault = true;
 const attachDefaultControllersToPlayingCamera = localStorage.getItem(
   'threeInspector__attachDefaultControllersToPlayingCamera'
 )
   ? localStorage.getItem('threeInspector__attachDefaultControllersToPlayingCamera') === 'true'
-  : true;
+  : attachDefaultControllersToPlayingCameraDefault;
 
+const destroyOnRemoveDefault = true;
 const destroyOnRemove = localStorage.getItem('threeInspector__destroyOnRemove')
   ? localStorage.getItem('threeInspector__destroyOnRemove') === 'true'
-  : true;
+  : destroyOnRemoveDefault;
 
 export const clearLocalStorage = () => {
   localStorage.removeItem('threeInspector__showAxesHelper');
@@ -178,7 +192,7 @@ export const useAppStore = create<AppStore>()(
         outlinerSearch: '',
         autoNavControls: false,
         playingState: 'stopped',
-        angleFormat: angleFormat,
+        angleFormat: angleFormatDefault,
         shiftKeyPressed: false,
         controlKeyPressed: false,
         isFullscreen:
@@ -187,27 +201,27 @@ export const useAppStore = create<AppStore>()(
         transformControlsMode: 'translate',
         transformControlsSpace: 'world',
         isDraggingTransformControls: false,
-        showGizmos: showGizmos,
-        showHelpers: showHelpers,
-        gizmoSize: gizmoSize,
-        showAxesHelper: showAxisHelper,
-        showGridHelper: showGridHelper,
+        showGizmos: showGizmosDefault,
+        showHelpers: showHelpersDefault,
+        gizmoSize: gizmoSizeDefault,
+        showAxesHelper: showAxisHelperDefault,
+        showGridHelper: showGridHelperDefault,
         cPanelShowHelp: false,
-        cPanelOpacity: cPanelOpacity,
-        cPanelSize: cPanelSize,
+        cPanelOpacity: cPanelOpacityDefault,
+        cPanelSize: cPanelSizeDefault,
         cPanelVisible: true,
         cPanelContinuousUpdate: true,
         cPanelStateFake: 0,
         cPanelCustomParamsStructureStateFake: 0,
         loadModelIsOpen: false,
-        cameraControl: cameraControl,
-        cameraType: cameraType,
+        cameraControl: cameraControlDefault,
+        cameraType: cameraTypeDefault,
         currentCameraStateFake: 0,
         currentSceneStateFake: 0,
-        attachDefaultControllersToPlayingCamera: attachDefaultControllersToPlayingCamera,
+        attachDefaultControllersToPlayingCamera: attachDefaultControllersToPlayingCameraDefault,
         selectedObjectUUID: '',
         selectedObjectStateFake: 0,
-        destroyOnRemove: destroyOnRemove
+        destroyOnRemove: destroyOnRemoveDefault
       });
     },
     isInjected: true,

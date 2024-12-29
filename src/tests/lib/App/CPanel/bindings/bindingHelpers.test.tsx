@@ -8,6 +8,7 @@ import { useAppStore } from 'src/store';
 import { CPanelProps } from 'lib/App/CPanel/CPanel';
 import { getPaneTab, setSelectedTab } from 'lib/App/CPanel/CPanel';
 import { buildBindings } from 'lib/App/CPanel/bindings/bindingHelpers';
+import * as THREE from 'three';
 
 const setObjectTab = async (pane: Pane) => {
   await waitFor(() => expect(pane.children.length).toBeGreaterThan(0));
@@ -253,6 +254,61 @@ describe('bindingHelpers', () => {
           expect(bindings.level_1.level_2.numeric.onChange).toHaveBeenCalledTimes(2);
           expect(bindings.level_1.level_2.numeric.onChange.mock.calls[0][1].value).toEqual(3);
           expect(bindings.level_1.level_2.numeric.onChange.mock.calls[1][1].value).toEqual(4);
+          res.unmount();
+        };
+
+        const res = render(
+          <TestDefaultApp onCPanelReady={handleCPanelReady} onCPanelUnmounted={done}></TestDefaultApp>,
+          {
+            container: document.getElementById('main')!
+          }
+        );
+      });
+    });
+  });
+
+  describe('when binding has details', () => {
+    it('renders the details', { timeout: 1000 }, async () => {
+      return new Promise<void>((done) => {
+        const handleCPanelReady: CPanelProps['onCPanelReady'] = async (pane, { commonGetterParamsRef }) => {
+          const objTab = await setObjectTab(pane);
+          const commonGetterParams = commonGetterParamsRef.current;
+          const texture = new THREE.Texture();
+          texture.image = new Image(256, 256);
+
+          const obj = {
+            level_1: {
+              level_2: {
+                texture: texture
+              }
+            }
+          };
+          const bindings = {
+            level_1: {
+              title: 'Level 1',
+              level_2: {
+                title: 'Level 2',
+                texture: {
+                  label: 'Texture',
+                  gl: commonGetterParams.sceneObjects.gl,
+                  details: {
+                    uuid: {
+                      label: 'uuid'
+                    }
+                  }
+                }
+              }
+            }
+          };
+
+          buildBindings(objTab, obj, bindings, commonGetterParams);
+          texture.dispose();
+          const textureLabel = await screen.findByText('Texture');
+          const uuidLabel = await screen.findByText('uuid');
+
+          expect(textureLabel).toBeInTheDocument();
+          expect(uuidLabel).toBeInTheDocument();
+
           res.unmount();
         };
 

@@ -201,4 +201,60 @@ describe('bindingHelpers', () => {
       });
     });
   });
+
+  describe('when object[bindingKey] is array', () => {
+    it('reuses the binding for all array items', { timeout: 61000 }, async () => {
+      return new Promise<void>((done) => {
+        const handleCPanelReady: CPanelProps['onCPanelReady'] = async (pane, { commonGetterParamsRef }) => {
+          const objTab = await setObjectTab(pane);
+          const commonGetterParams = commonGetterParamsRef.current;
+          const obj = {
+            level_1: {
+              level_2: [
+                {
+                  numeric: 1
+                },
+                {
+                  numeric: 2
+                }
+              ]
+            }
+          };
+          const bindings = {
+            level_1: {
+              title: 'Level 1',
+              level_2: {
+                title: 'Level 2',
+                numeric: {
+                  label: 'Numeric Label',
+                  onChange: vi.fn()
+                }
+              }
+            }
+          };
+
+          buildBindings(objTab, obj, bindings, commonGetterParams);
+          const numericLabels = await screen.findAllByText('Numeric Label');
+          expect(numericLabels).toHaveLength(2);
+          const input1 = numericLabels[0].parentElement!.querySelector('input')!;
+          const input2 = numericLabels[1].parentElement!.querySelector('input')!;
+          input1.value = '3';
+          input1.dispatchEvent(new Event('change'));
+          input2.value = '4';
+          input2.dispatchEvent(new Event('change'));
+          expect(bindings.level_1.level_2.numeric.onChange).toHaveBeenCalledTimes(2);
+          expect(bindings.level_1.level_2.numeric.onChange.mock.calls[0][1].value).toEqual(3);
+          expect(bindings.level_1.level_2.numeric.onChange.mock.calls[1][1].value).toEqual(4);
+          res.unmount();
+        };
+
+        const res = render(
+          <TestDefaultApp onCPanelReady={handleCPanelReady} onCPanelUnmounted={done}></TestDefaultApp>,
+          {
+            container: document.getElementById('main')!
+          }
+        );
+      });
+    });
+  });
 });

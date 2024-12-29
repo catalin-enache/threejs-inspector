@@ -33,9 +33,9 @@ export const LightShadowBindings = (params: CommonGetterParams) => ({
     label: 'MapSize',
     step: 1,
     onChange: (({ bindings }) => {
-      if (bindings.__parent?.shadow?.map) {
-        bindings.__parent.shadow.map.dispose();
-        bindings.__parent.shadow.map = null;
+      if (bindings.__parentObject?.shadow?.map) {
+        bindings.__parentObject.shadow.map.dispose();
+        bindings.__parentObject.shadow.map = null;
       }
     }) as onChange
   },

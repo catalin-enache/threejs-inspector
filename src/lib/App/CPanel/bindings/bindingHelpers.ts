@@ -185,7 +185,7 @@ const _buildBindings = (folder: FolderApi, object: any, bindings: any, params: C
         title: `${bindingCandidate.title}`,
         expanded: false
       });
-      bindingCandidate.__parent = object;
+      bindingCandidate.__parentObject = object;
       try {
         _buildBindings(subFolder, object[bindingKey], bindingCandidate, params);
       } catch (error) {
@@ -241,7 +241,7 @@ const _buildBindings = (folder: FolderApi, object: any, bindings: any, params: C
         expanded: false
       });
 
-      bindingCandidate.details.__parent = object;
+      bindingCandidate.details.__parentObject = object;
       if (bindingCandidate.details.onDetailsChange) {
         // console.log('candidate.details.onChange', { 'candidate.details': bindingCandidate.details, object, 'object[key]': object[key], binding });
         subFolder.on(

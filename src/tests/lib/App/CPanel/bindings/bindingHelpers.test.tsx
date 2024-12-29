@@ -134,7 +134,7 @@ describe('bindingHelpers', () => {
   });
 
   describe('when if() returns false', () => {
-    it('does not render the binding or button', { timeout: 61000 }, async () => {
+    it('does not render the binding or button', { timeout: 1000 }, async () => {
       return new Promise<void>((done) => {
         const handleCPanelReady: CPanelProps['onCPanelReady'] = async (pane, { commonGetterParamsRef }) => {
           const objTab = await setObjectTab(pane);
@@ -159,9 +159,9 @@ describe('bindingHelpers', () => {
                 numeric_2: {
                   label: 'Numeric Label 2',
                   onChange: vi.fn(),
-                  if() {
+                  if: vi.fn((_value: any) => {
                     return false;
-                  }
+                  })
                 },
                 button_1: {
                   title: 'Button Title 1',
@@ -172,9 +172,9 @@ describe('bindingHelpers', () => {
                   title: 'Button Title 2',
                   label: 'Button Label 2',
                   onClick: vi.fn(),
-                  if() {
+                  if: vi.fn((_value: any) => {
                     return false;
-                  }
+                  })
                 }
               }
             }
@@ -187,6 +187,8 @@ describe('bindingHelpers', () => {
           expect(button1Label).toBeInTheDocument();
           expect(screen.queryByText('Numeric Label 2')).toBeNull();
           expect(screen.queryByText('Button Label 2')).toBeNull();
+          expect(bindings.level_1.level_2.numeric_2.if).toHaveBeenCalledWith(obj.level_1.level_2);
+          expect(bindings.level_1.level_2.button_2.if).toHaveBeenCalledWith(obj.level_1.level_2);
           res.unmount();
         };
 

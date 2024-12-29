@@ -29,7 +29,7 @@ describe('bindingHelpers', () => {
   });
 
   describe('basic test', () => {
-    it('they can be nested and can be interacted with', { timeout: 61000 }, async () => {
+    it('they can be nested and can be interacted with', { timeout: 1000 }, async () => {
       return new Promise<void>((done) => {
         const handleCPanelReady: CPanelProps['onCPanelReady'] = async (pane, { commonGetterParamsRef }) => {
           const objTab = await setObjectTab(pane);
@@ -44,7 +44,7 @@ describe('bindingHelpers', () => {
             // console.log('handleBooleanChange', _value);
           });
           const handleButtonClick = vi.fn((_value: any) => {
-            console.log('handleButtonClick', _value);
+            // console.log('handleButtonClick', _value);
           });
 
           const obj = {
@@ -120,6 +120,73 @@ describe('bindingHelpers', () => {
           expect(handleButtonClick.mock.calls[0][0].object).toEqual(obj.level_1.level_2);
           expect(handleButtonClick.mock.calls[0][0].folder.title).toEqual('Level 2');
 
+          res.unmount();
+        };
+
+        const res = render(
+          <TestDefaultApp onCPanelReady={handleCPanelReady} onCPanelUnmounted={done}></TestDefaultApp>,
+          {
+            container: document.getElementById('main')!
+          }
+        );
+      });
+    });
+  });
+
+  describe('when if() returns false', () => {
+    it('does not render the binding or button', { timeout: 61000 }, async () => {
+      return new Promise<void>((done) => {
+        const handleCPanelReady: CPanelProps['onCPanelReady'] = async (pane, { commonGetterParamsRef }) => {
+          const objTab = await setObjectTab(pane);
+          const commonGetterParams = commonGetterParamsRef.current;
+          const obj = {
+            level_1: {
+              level_2: {
+                numeric_1: 1,
+                numeric_2: 2
+              }
+            }
+          };
+          const bindings = {
+            level_1: {
+              title: 'Level 1',
+              level_2: {
+                title: 'Level 2',
+                numeric_1: {
+                  label: 'Numeric Label 1',
+                  onChange: vi.fn()
+                },
+                numeric_2: {
+                  label: 'Numeric Label 2',
+                  onChange: vi.fn(),
+                  if() {
+                    return false;
+                  }
+                },
+                button_1: {
+                  title: 'Button Title 1',
+                  label: 'Button Label 1',
+                  onClick: vi.fn()
+                },
+                button_2: {
+                  title: 'Button Title 2',
+                  label: 'Button Label 2',
+                  onClick: vi.fn(),
+                  if() {
+                    return false;
+                  }
+                }
+              }
+            }
+          };
+
+          buildBindings(objTab, obj, bindings, commonGetterParams);
+          const numeric1Label = await screen.findByText('Numeric Label 1');
+          const button1Label = await screen.findByText('Button Label 1');
+          expect(numeric1Label).toBeInTheDocument();
+          expect(button1Label).toBeInTheDocument();
+          expect(screen.queryByText('Numeric Label 2')).toBeNull();
+          expect(screen.queryByText('Button Label 2')).toBeNull();
           res.unmount();
         };
 

@@ -113,6 +113,14 @@ describe('bindingHelpers', () => {
           buttonInput.click();
           await waitFor(() => expect(handleButtonClick).toHaveBeenCalledTimes(1));
 
+          expect(handleNumericChange.mock.calls[0][0].bindings).toEqual({
+            ...bindings.level_1.level_2,
+            __parentObject: { level_2: obj.level_1.level_2 }
+          });
+          expect(handleNumericChange.mock.calls[0][0].object).toEqual(obj.level_1.level_2);
+          // @ts-ignore
+          expect(handleNumericChange.mock.calls[0][1].value).toEqual(1);
+
           expect(handleButtonClick.mock.calls[0][0].bindings).toEqual({
             ...bindings.level_1.level_2,
             __parentObject: { level_2: obj.level_1.level_2 }
@@ -203,7 +211,7 @@ describe('bindingHelpers', () => {
   });
 
   describe('when object[bindingKey] is array', () => {
-    it('reuses the binding for all array items', { timeout: 61000 }, async () => {
+    it('reuses the binding for all array items', { timeout: 1000 }, async () => {
       return new Promise<void>((done) => {
         const handleCPanelReady: CPanelProps['onCPanelReady'] = async (pane, { commonGetterParamsRef }) => {
           const objTab = await setObjectTab(pane);

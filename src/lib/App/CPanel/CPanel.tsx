@@ -1,4 +1,4 @@
-import { useEffect, useRef, useCallback, useMemo } from 'react';
+import { useEffect, useRef, useCallback, useMemo, MutableRefObject } from 'react';
 import * as THREE from 'three';
 import { useThree } from '@react-three/fiber';
 import { Pane, FolderApi, TabApi } from 'tweakpane';
@@ -140,7 +140,7 @@ export const getPaneTab = (pane: Pane, tabIndex: number) => {
   return (pane.children[0] as TabApi).pages[tabIndex];
 };
 
-const setSelectedTab = (pane: Pane, tabIndex: number) => {
+export const setSelectedTab = (pane: Pane, tabIndex: number) => {
   pane.children[0].element.children[0].children[tabIndex].children[0].dispatchEvent(new Event('click'));
 };
 
@@ -161,7 +161,10 @@ searchInput.addEventListener('input', (evt) => {
 });
 
 export interface CPanelProps {
-  onCPanelReady?: (pane: Pane) => void;
+  onCPanelReady?: (
+    pane: Pane,
+    { commonGetterParamsRef }: { commonGetterParamsRef: MutableRefObject<CommonGetterParams> }
+  ) => void;
   onCPanelUnmounted?: () => void;
 }
 
@@ -201,6 +204,8 @@ export const CPanel = (props: CPanelProps) => {
     () => ({ angleFormat, playingState, sceneObjects: { scene, camera, gl } }),
     [angleFormat, playingState, scene, camera, gl]
   );
+  const commonGetterParamsRef = useRef(commonGetterParams);
+  commonGetterParamsRef.current = commonGetterParams;
 
   const handleSelectedObjectChanges = useCallback(
     (_event: any) => {
@@ -264,7 +269,7 @@ export const CPanel = (props: CPanelProps) => {
     const currentSize = parseInt(getComputedStyle(cPanelContainer).getPropertyValue('--cPanelWidth').trim(), 10);
     !storedCPanelSize && setCPanelSize(currentSize);
     storedCPanelSize && cPanelContainer.style.setProperty('--cPanelWidth', storedCPanelSize + 'px');
-    onCPanelReady?.(paneRef.current!);
+    onCPanelReady?.(paneRef.current!, { commonGetterParamsRef });
     return () => {
       continuousUpdateRef.current?.stop();
       paneRef.current?.dispose();
@@ -331,7 +336,7 @@ export const CPanel = (props: CPanelProps) => {
       .on('change', handleSelectedObjectChanges);
 
     buildBindings(objectFolder, selectedObject, getObject3DBindings(commonGetterParams), commonGetterParams);
-  }, [selectedObjectUUID, angleFormat, transformControlsMode, transformControlsSpace]);
+  }, [selectedObjectUUID, commonGetterParams, transformControlsMode, transformControlsSpace]);
 
   // Setup bindings for custom params
   useEffect(() => {
@@ -435,6 +440,7 @@ export const CPanel = (props: CPanelProps) => {
 
     buildBindings(raycasterParamsFolder, raycaster, getRaycasterParamsBindings(commonGetterParams), commonGetterParams);
   }, [
+    commonGetterParams,
     cPanelContinuousUpdate,
     angleFormat,
     playingState,

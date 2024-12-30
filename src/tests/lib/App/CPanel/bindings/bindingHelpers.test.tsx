@@ -333,4 +333,62 @@ describe('bindingHelpers', () => {
       });
     });
   });
+
+  describe('when folders are expanded/collapsed (inside tweakFolder => adjustCPanelWidthFromNestedExpandedFolders)', () => {
+    it('CPanel width is increased/decreased', { timeout: 1000 }, async () => {
+      return new Promise<void>((done) => {
+        const handleCPanelReady: CPanelProps['onCPanelReady'] = async (pane, { commonGetterParamsRef }) => {
+          const objTab = await setObjectTab(pane);
+          const commonGetterParams = commonGetterParamsRef.current;
+          const handleNumericChange = vi.fn((_value: any) => {
+            // console.log('handleNumericChange', _value);
+          });
+
+          const obj = {
+            level_1: {
+              level_2: {
+                level_3: {
+                  numeric: 0
+                }
+              }
+            }
+          };
+
+          const bindings = {
+            level_1: {
+              title: 'Level 1',
+              level_2: {
+                title: 'Level 2',
+                level_3: {
+                  title: 'Level 3',
+                  numeric: {
+                    label: 'Numeric Label',
+                    onChange: handleNumericChange
+                  }
+                }
+              }
+            }
+          };
+
+          buildBindings(objTab, obj, bindings, commonGetterParams);
+          const cPanel = document.querySelector('#controlPanel')!;
+          expect(getComputedStyle(cPanel).width).toBe('360px');
+          const level3Button = await screen.findByText('Level 3');
+          level3Button.click();
+          expect(getComputedStyle(cPanel).width).toBe('370px');
+          level3Button.click();
+          expect(getComputedStyle(cPanel).width).toBe('360px');
+          res.unmount();
+        };
+
+        const res = render(
+          <TestDefaultApp onCPanelReady={handleCPanelReady} onCPanelUnmounted={done}></TestDefaultApp>,
+          {
+            container: document.getElementById('main')!
+          }
+        );
+      });
+    });
+  });
+  // TODO: test makeRotationBinding when bindingCandidate.format === radToDegFormatter
 });

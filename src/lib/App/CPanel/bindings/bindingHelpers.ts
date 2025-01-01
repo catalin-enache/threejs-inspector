@@ -10,6 +10,33 @@ import { animate } from 'lib/utils/animate';
 import { isValidTexture } from 'src/types';
 import { CustomParams, isCustomParamStruct } from 'lib/customParam.types';
 
+// helper struct to check in tests if all binding listeners have been removed
+export const eventListenersMap = new Map<HTMLElement, { [key: string]: Set<(evt: any) => void> }>();
+
+const addToEventListenerMap = (element: any, event: string, listener: (evt: any) => void) => {
+  const listeners = eventListenersMap.get(element);
+  const eventListeners = listeners?.[event];
+  if (!listeners) {
+    eventListenersMap.set(element, {});
+  }
+  if (!eventListeners) {
+    eventListenersMap.get(element)![event] = new Set<(evt: any) => void>();
+  }
+  const set = eventListenersMap.get(element)?.[event];
+  set?.add(listener);
+};
+
+const removeFromEventListenerMap = (element: any, event: string, listener: (evt: any) => void) => {
+  eventListenersMap.get(element)?.[event]?.delete(listener);
+  if (!eventListenersMap.get(element)?.[event]?.size) {
+    delete (eventListenersMap.get(element) || {})[event];
+  }
+  const obj = eventListenersMap.get(element);
+  if (obj && !Object.keys(obj).length) {
+    eventListenersMap.delete(element);
+  }
+};
+
 export const numberFormat = (precision: number) => (value: number) => value.toFixed(precision);
 
 export const numberCommon = {
@@ -47,9 +74,11 @@ export function rotationHandler(this: HTMLInputElement, e: Event) {
   e.target.value = +degToRad(e.target.value);
 }
 
+// hijack change event value to convert radians to degrees
 export const makeRotationBinding = (binding: BindingApi) => {
   binding.controller.view.valueElement.querySelectorAll('input').forEach((input) => {
     input.addEventListener('change', rotationHandler, true);
+    addToEventListenerMap(input, 'change', rotationHandler);
   });
   return binding;
 };
@@ -63,6 +92,26 @@ export const tweakBindingView = (binding: BladeApi) => {
   return binding;
 };
 
+const dispatchTransitionEnd = (evt: MouseEvent) => {
+  evt.currentTarget?.dispatchEvent(
+    new TransitionEvent('transitionend', {
+      bubbles: true,
+      cancelable: true,
+      propertyName: 'height'
+    })
+  );
+  adjustCPanelWidthFromNestedExpandedFolders();
+};
+
+const memoizeExpandedState = (evt: MouseEvent) => {
+  const currentTarget = evt.currentTarget as HTMLButtonElement; // this is the folderButton
+  // and folderButton.parentNode is the same as folder.element;
+  // @ts-ignore
+  foldersExpandedMap[currentTarget.dataset.folder_id] = [...(currentTarget.parentNode as HTMLElement)!.classList].some(
+    (c) => c.endsWith('expanded')
+  );
+};
+
 const foldersExpandedMap = {} as Record<string, boolean>;
 // memoize folder expanded state
 export const tweakFolder = (folder: FolderApi | TabPageApi, id: string) => {
@@ -73,15 +122,11 @@ export const tweakFolder = (folder: FolderApi | TabPageApi, id: string) => {
     foldersExpandedMap[id] = folder.expanded;
   }
   folder.element.classList.add('folder-button');
-  const folderButton = folder.element.children[0];
-
+  const folderButton = folder.element.children[0] as HTMLButtonElement;
+  folderButton.dataset.folder_id = id;
   // Memoizing last expanded state
-  folderButton.addEventListener('click', () => {
-    // folderButton.parentNode is the same as folder.element;
-    foldersExpandedMap[id] = [...(folderButton.parentNode as HTMLElement)!.classList].some((c) =>
-      c.endsWith('expanded')
-    );
-  });
+  folderButton.addEventListener('click', memoizeExpandedState);
+  addToEventListenerMap(folderButton, 'click', memoizeExpandedState);
 
   // Tweakpane assumes that changes in sizes are transitioned,
   // and it expects transitionend event to update folder heights.
@@ -96,20 +141,15 @@ export const tweakFolder = (folder: FolderApi | TabPageApi, id: string) => {
     // the inner folders have already called it (adding their own listeners on buttons).
     // We guard with 'button' class.
     // Returning early to prevent adding duplicated listeners.
-    if (anyButton.classList.contains('button')) return;
-    anyButton.classList.add('button');
-    anyButton.addEventListener('click', (_e) => {
-      // Dispatching from deepest to top.
-      // The event will be handled by all interested ancestors.
-      anyButton.dispatchEvent(
-        new TransitionEvent('transitionend', {
-          bubbles: true,
-          cancelable: true,
-          propertyName: 'height'
-        })
-      );
-      adjustCPanelWidthFromNestedExpandedFolders();
-    });
+    if (anyButton.dataset.is_dispatching_transition_end === 'true') {
+      // console.log('already dispatching transitionend', anyButton);
+      return;
+    }
+    anyButton.dataset.is_dispatching_transition_end = 'true';
+    // Dispatching from deepest to top.
+    // The event will be handled by all interested ancestors.
+    anyButton.addEventListener('click', dispatchTransitionEnd);
+    addToEventListenerMap(anyButton, 'click', dispatchTransitionEnd);
   });
 };
 
@@ -591,23 +631,37 @@ export const buildCustomParams = ({
   });
 };
 
-export const cleanupContainer = (container: any) => {
-  if (!container.children) return;
-  container.children.forEach((child: any) => {
+export const cleanupContainer = (node: any) => {
+  if (node.element.classList.contains('folder-button')) {
+    node.element.children[0].removeEventListener('click', memoizeExpandedState);
+    removeFromEventListenerMap(node.element.children[0], 'click', memoizeExpandedState);
+  }
+
+  node.element.querySelectorAll('button').forEach((button: any) => {
+    button.removeEventListener('click', dispatchTransitionEnd);
+    removeFromEventListenerMap(button, 'click', dispatchTransitionEnd);
+  });
+  node.element.querySelectorAll('input').forEach((input: any) => {
+    input.removeEventListener('change', rotationHandler, true);
+    removeFromEventListenerMap(input, 'change', rotationHandler);
+  });
+
+  if (!node.children) {
+    return;
+  }
+
+  node.children.forEach((child: any) => {
     cleanupContainer(child);
-    // console.log(
-    //   'cleanupContainer',
-    //   child.title ? `folder ${child.title}` : `binding ${child.key}`
-    // );
+    // console.log('cleanupContainer', child.title ? `folder ${child.title}` : `binding ${child.key}`);
     window.dispatchEvent(
       new CustomEvent('TweakpaneRemove', {
         detail: {
-          container,
+          container: node,
           child
         }
       })
     );
     child.dispose(); // prevent mem leak
-    container.remove(child);
+    node.remove(child);
   });
 };

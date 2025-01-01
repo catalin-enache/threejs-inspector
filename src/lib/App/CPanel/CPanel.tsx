@@ -20,7 +20,12 @@ import {
   getSceneConfigBindings,
   getRaycasterParamsBindings
 } from './bindings';
-import { buildBindings, cleanupContainer, buildCustomParams } from './bindings/bindingHelpers';
+import {
+  buildBindings,
+  cleanupContainer,
+  buildCustomParams,
+  eventListenersMap as _eventListenersMap // log this when in doubt that all event listeners have been removed
+} from './bindings/bindingHelpers';
 // @ts-ignore
 import { outliner } from 'lib/third_party/ui.outliner';
 // @ts-ignore
@@ -272,6 +277,11 @@ export const CPanel = (props: CPanelProps) => {
     onCPanelReady?.(paneRef.current!, { commonGetterParamsRef });
     return () => {
       continuousUpdateRef.current?.stop();
+      if (paneRef.current) {
+        cleanupContainer(getPaneTab(paneRef.current, 0));
+        cleanupContainer(getPaneTab(paneRef.current, 1));
+        cleanupContainer(getPaneTab(paneRef.current, 2));
+      }
       paneRef.current?.dispose();
       onCPanelUnmounted?.();
     };
@@ -312,6 +322,7 @@ export const CPanel = (props: CPanelProps) => {
 
     // Cleanup prev folders and their bindings
     cleanupContainer(objectTab);
+    // console.log('after cleanup selectedObject tab eventListenersMap.size', _eventListenersMap.size);
     if (!selectedObjectUUID) {
       outliner.setValue(null);
       return;

@@ -269,7 +269,7 @@ describe('bindingHelpers', () => {
   });
 
   describe('when binding has details', () => {
-    it('renders the details', { timeout: 1000 }, async () => {
+    it('renders the details and calls details.onChange', { timeout: 1000 }, async () => {
       return new Promise<void>((done) => {
         const handleCPanelReady: CPanelProps['onCPanelReady'] = async (pane, { commonGetterParamsRef }) => {
           const objTab = await setObjectTab(pane);

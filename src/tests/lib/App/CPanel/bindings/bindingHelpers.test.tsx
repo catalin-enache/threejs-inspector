@@ -1,3 +1,4 @@
+import * as THREE from 'three';
 import { expect, describe, it, beforeEach, afterEach, vi } from 'vitest';
 import { render } from 'vitest-browser-react';
 import { screen, waitFor } from '@testing-library/dom';
@@ -8,7 +9,7 @@ import { useAppStore } from 'src/store';
 import { CPanelProps } from 'lib/App/CPanel/CPanel';
 import { getPaneTab, setSelectedTab } from 'lib/App/CPanel/CPanel';
 import { buildBindings } from 'lib/App/CPanel/bindings/bindingHelpers';
-import * as THREE from 'three';
+import { radToDegFormatter } from 'lib/utils';
 
 const setObjectTab = async (pane: Pane) => {
   await waitFor(() => expect(pane.children.length).toBeGreaterThan(0));
@@ -390,5 +391,56 @@ describe('bindingHelpers', () => {
       });
     });
   });
-  // TODO: test makeRotationBinding when bindingCandidate.format === radToDegFormatter
+
+  describe('when bindingCandidate.format === radToDegFormatter', () => {
+    it('converts radians to degrees', { timeout: 1000 }, async () => {
+      return new Promise<void>((done) => {
+        const handleCPanelReady: CPanelProps['onCPanelReady'] = async (pane, { commonGetterParamsRef }) => {
+          const objTab = await setObjectTab(pane);
+          const commonGetterParams = commonGetterParamsRef.current;
+          const handleNumericChange = vi.fn((_value: any, _evt: any) => {
+            // console.log('handleNumericChange', _evt);
+          });
+
+          const obj = {
+            level_1: {
+              level_2: {
+                numeric: 0
+              }
+            }
+          };
+
+          const bindings = {
+            level_1: {
+              title: 'Level 1',
+              level_2: {
+                title: 'Level 2',
+                numeric: {
+                  label: 'Numeric Label',
+                  onChange: handleNumericChange,
+                  format: radToDegFormatter
+                }
+              }
+            }
+          };
+          // useAppStore.getState().setAngleFormat('rad'); // not needed
+          buildBindings(objTab, obj, bindings, commonGetterParams);
+          const numericLabel = await screen.findByText('Numeric Label');
+          const numericInput = numericLabel.parentElement!.querySelector('input')!;
+          numericInput.value = '1';
+          numericInput.dispatchEvent(new Event('change'));
+          await waitFor(() => expect(handleNumericChange).toHaveBeenCalledTimes(1));
+          expect(handleNumericChange.mock.calls[0][1].value).toBe(0.017453292519943295);
+          res.unmount();
+        };
+
+        const res = render(
+          <TestDefaultApp onCPanelReady={handleCPanelReady} onCPanelUnmounted={done}></TestDefaultApp>,
+          {
+            container: document.getElementById('main')!
+          }
+        );
+      });
+    });
+  });
 });

@@ -564,10 +564,10 @@ describe('bindingHelpers', () => {
 
             useAppStore.getState().setSelectedObject(mesh); // not needed
 
-            const animationsFolder = await screen.findByText('Morph Targets (2)');
-            animationsFolder.click();
+            const morphTargetsFolder = await screen.findByText('Morph Targets (2)');
+            morphTargetsFolder.click();
 
-            const morphInputs = animationsFolder.parentElement!.parentElement!.querySelectorAll('input')!;
+            const morphInputs = morphTargetsFolder.parentElement!.parentElement!.querySelectorAll('input')!;
             const morphInput1 = morphInputs[0] as HTMLInputElement;
             const morphInput2 = morphInputs[1] as HTMLInputElement;
 
@@ -597,6 +597,47 @@ describe('bindingHelpers', () => {
               [0.5, 0.4]
             ]);
 
+            res.unmount();
+          });
+        };
+
+        const res = render(
+          <TestDefaultApp onCPanelReady={handleCPanelReady} onCPanelUnmounted={done}></TestDefaultApp>,
+          {
+            container: document.getElementById('main')!
+          }
+        );
+      });
+    });
+  });
+
+  describe('collecting materials inventory', () => {
+    it('collects materials from all descendants', { timeout: 1000 }, async () => {
+      return new Promise<void>((done) => {
+        const handleCPanelReady: CPanelProps['onCPanelReady'] = async (pane, { commonGetterParamsRef }) => {
+          await setObjectTab(pane);
+          const commonGetterParams = commonGetterParamsRef.current;
+
+          const scene = commonGetterParams.sceneObjects.scene;
+          const camera = commonGetterParams.sceneObjects.camera;
+
+          const ambientLight = new THREE.AmbientLight(0xffffff, 1);
+          scene.add(ambientLight);
+
+          loadModel('/models/MyTests/test_multi_features/test_multi_features.glb', {
+            scene,
+            camera
+          }).then(async (mesh) => {
+            if (!mesh) return;
+            mesh.scale.set(1, 1, 1);
+            mesh.castShadow = true;
+            scene.add(mesh);
+
+            useAppStore.getState().setSelectedObject(mesh); // not needed
+
+            const materialsFolder = await screen.findByText('Materials Inventory (5)');
+            materialsFolder.click();
+            expect(materialsFolder.parentElement!.parentElement!.childNodes[2].childNodes.length).toBe(5);
             res.unmount();
           });
         };

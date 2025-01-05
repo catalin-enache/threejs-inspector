@@ -539,4 +539,75 @@ describe('bindingHelpers', () => {
       });
     });
   });
+
+  describe('collecting morph targets', () => {
+    it('collects morph targets which can be played', { timeout: 1000 }, async () => {
+      return new Promise<void>((done) => {
+        const handleCPanelReady: CPanelProps['onCPanelReady'] = async (pane, { commonGetterParamsRef }) => {
+          await setObjectTab(pane);
+          const commonGetterParams = commonGetterParamsRef.current;
+
+          const scene = commonGetterParams.sceneObjects.scene;
+          const camera = commonGetterParams.sceneObjects.camera;
+
+          const ambientLight = new THREE.AmbientLight(0xffffff, 1);
+          scene.add(ambientLight);
+
+          loadModel('/models/MyTests/test_multi_features/test_multi_features.glb', {
+            scene,
+            camera
+          }).then(async (mesh) => {
+            if (!mesh) return;
+            mesh.scale.set(1, 1, 1);
+            mesh.castShadow = true;
+            scene.add(mesh);
+
+            useAppStore.getState().setSelectedObject(mesh); // not needed
+
+            const animationsFolder = await screen.findByText('Morph Targets (2)');
+            animationsFolder.click();
+
+            const morphInputs = animationsFolder.parentElement!.parentElement!.querySelectorAll('input')!;
+            const morphInput1 = morphInputs[0] as HTMLInputElement;
+            const morphInput2 = morphInputs[1] as HTMLInputElement;
+
+            const morphTargetInfluencesBefore = mesh.children[0].children[0].children.map(
+              (child) => (child as THREE.SkinnedMesh).morphTargetInfluences
+            );
+            expect(morphTargetInfluencesBefore).toEqual([
+              [0, 0],
+              [0, 0],
+              [0, 0],
+              [0, 0]
+            ]);
+
+            morphInput1.value = '0.5';
+            morphInput1.dispatchEvent(new Event('change'));
+            morphInput2.value = '0.4';
+            morphInput2.dispatchEvent(new Event('change'));
+
+            const morphTargetInfluencesAfter = mesh.children[0].children[0].children.map(
+              (child) => (child as THREE.SkinnedMesh).morphTargetInfluences
+            );
+
+            expect(morphTargetInfluencesAfter).toEqual([
+              [0.5, 0.4],
+              [0.5, 0.4],
+              [0.5, 0.4],
+              [0.5, 0.4]
+            ]);
+
+            res.unmount();
+          });
+        };
+
+        const res = render(
+          <TestDefaultApp onCPanelReady={handleCPanelReady} onCPanelUnmounted={done}></TestDefaultApp>,
+          {
+            container: document.getElementById('main')!
+          }
+        );
+      });
+    });
+  });
 });

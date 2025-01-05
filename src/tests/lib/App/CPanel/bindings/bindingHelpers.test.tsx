@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { LightProbeGenerator } from 'three/examples/jsm/lights/LightProbeGenerator';
 import { expect, describe, it, beforeEach, afterEach, vi } from 'vitest';
 import { render } from 'vitest-browser-react';
 import { screen, waitFor } from '@testing-library/dom';
@@ -10,6 +11,7 @@ import { CPanelProps } from 'lib/App/CPanel/CPanel';
 import { getPaneTab, setSelectedTab } from 'lib/App/CPanel/CPanel';
 import { buildBindings } from 'lib/App/CPanel/bindings/bindingHelpers';
 import { radToDegFormatter } from 'lib/utils';
+import { loadModel } from 'lib/utils/loadModel';
 
 const setObjectTab = async (pane: Pane) => {
   await waitFor(() => expect(pane.children.length).toBeGreaterThan(0));
@@ -432,6 +434,100 @@ describe('bindingHelpers', () => {
           await waitFor(() => expect(handleNumericChange).toHaveBeenCalledTimes(1));
           expect(handleNumericChange.mock.calls[0][1].value).toBe(0.017453292519943295);
           res.unmount();
+        };
+
+        const res = render(
+          <TestDefaultApp onCPanelReady={handleCPanelReady} onCPanelUnmounted={done}></TestDefaultApp>,
+          {
+            container: document.getElementById('main')!
+          }
+        );
+      });
+    });
+  });
+
+  describe('collecting animations', () => {
+    it('collects animations which can be played', { timeout: 1000 }, async () => {
+      return new Promise<void>((done) => {
+        const handleCPanelReady: CPanelProps['onCPanelReady'] = async (pane, { commonGetterParamsRef }) => {
+          await setObjectTab(pane);
+          const commonGetterParams = commonGetterParamsRef.current;
+
+          const scene = commonGetterParams.sceneObjects.scene;
+          const camera = commonGetterParams.sceneObjects.camera;
+          const renderer = commonGetterParams.sceneObjects.gl;
+
+          const directionalLight = new THREE.DirectionalLight(0xffffff, 0.5);
+          directionalLight.intensity = 6;
+          directionalLight.position.set(0, 5, 5);
+          directionalLight.castShadow = true;
+          scene.add(directionalLight);
+
+          const floor = new THREE.Mesh(
+            new THREE.PlaneGeometry(20, 20),
+            new THREE.MeshStandardMaterial({ color: 'white', roughness: 0.2, metalness: 0, side: THREE.FrontSide })
+          );
+          floor.rotation.x = -Math.PI / 2;
+          floor.receiveShadow = true;
+          floor.__inspectorData.isInspectable = true;
+          scene.add(floor);
+
+          const lightProbe = new THREE.LightProbe();
+          lightProbe.position.set(0, 1, -0.3);
+          scene.add(lightProbe);
+
+          const cubeRenderTarget = new THREE.WebGLCubeRenderTarget(128, {
+            format: THREE.RGBAFormat,
+            generateMipmaps: true
+          });
+          const cubeCamera = new THREE.CubeCamera(0.1, 1000, cubeRenderTarget);
+          cubeCamera.position.set(0, 2, -0.3);
+          scene.add(cubeCamera);
+
+          loadModel('/models/MyTests/test_multi_features/test_multi_features.glb', {
+            scene,
+            camera
+          }).then(async (mesh) => {
+            if (!mesh) return;
+            mesh.scale.set(1, 1, 1);
+            mesh.castShadow = true;
+            scene.add(mesh);
+
+            cubeCamera.__inspectorData.helper!.visible = false;
+            cubeCamera.update(renderer, scene);
+            cubeCamera.__inspectorData.helper!.visible = true;
+            const generatedLightProbe = await LightProbeGenerator.fromCubeRenderTarget(renderer, cubeRenderTarget);
+            lightProbe.copy(generatedLightProbe);
+
+            useAppStore.getState().setSelectedObject(mesh); // not needed
+            const animationsFolder = await screen.findByText('Animations (3)');
+            animationsFolder.click();
+            const animAll = await screen.findAllByText('Anim_All');
+            const animAllButton = [...animAll].find((el) => el.parentElement!.tagName === 'BUTTON')!.parentElement!;
+            const animBottom = await screen.findAllByText('Anim_Bottom');
+            const animBottomButton = [...animBottom].find(
+              (el) => el.parentElement!.tagName === 'BUTTON'
+            )!.parentElement!;
+            const animTop = await screen.findAllByText('Anim_Top');
+            const animTopButton = [...animTop].find((el) => el.parentElement!.tagName === 'BUTTON')!.parentElement!;
+            const animReset = await screen.findAllByText('Reset');
+            const animResetButton = [...animReset].find((el) => el.parentElement!.tagName === 'BUTTON')!.parentElement!;
+
+            [animTopButton, animBottomButton, animAllButton, animResetButton].forEach((button) => {
+              expect(button).toBeInTheDocument();
+            });
+            expect(Math.abs(mesh.children[0].children[1].rotation.z)).toBe(0);
+            expect(mesh.__inspectorData.__cpCurrentPlayingAction).toBeNull();
+            animBottomButton.click();
+            setTimeout(() => {
+              expect(Math.abs(mesh.children[0].children[1].rotation.z)).toBeGreaterThan(0); // animation started
+              expect(mesh.__inspectorData.__cpCurrentPlayingAction?.getClip().name).toBe('Anim_Bottom');
+              animResetButton.click();
+              expect(Math.abs(mesh.children[0].children[1].rotation.z)).toBe(0); // animation has been reset
+              expect(mesh.__inspectorData.__cpCurrentPlayingAction).toBeNull();
+              res.unmount();
+            }, 150);
+          });
         };
 
         const res = render(

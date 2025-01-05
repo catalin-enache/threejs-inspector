@@ -323,13 +323,14 @@ const _buildBindings = (folder: FolderApi, object: any, bindings: any, params: C
     inspectorData.cpMixer = inspectorData.cpMixer ?? new THREE.AnimationMixer(object);
     const mixer = inspectorData.cpMixer;
     inspectorData.cpStartStop = inspectorData.cpStartStop ?? animate((delta) => mixer.update(delta), object);
-    inspectorData.cpActions = inspectorData.cpActions ?? new Map();
+    inspectorData.cpActions = inspectorData.cpActions ?? new Map(); // AnimationClip -> AnimationAction
+    inspectorData.__cpCurrentPlayingAction = inspectorData.__cpCurrentPlayingAction ?? null; // just to not let it be undefined since in tests we're asserting null
     const { start, stop } = inspectorData.cpStartStop;
     const actions = inspectorData.cpActions;
 
     object.animations.forEach((animation: THREE.AnimationClip) => {
       const actionID = animation.name || animation.uuid;
-      let action;
+      let action: THREE.AnimationAction;
       if (actions.has(animation)) {
         action = actions.get(animation)!;
       } else {

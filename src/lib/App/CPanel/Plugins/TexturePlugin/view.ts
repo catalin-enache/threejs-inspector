@@ -101,12 +101,14 @@ export class TextureView implements View {
 
   private makeMeshFromTexture(texture: THREE.Texture) {
     if (cacheMeshMap.has(texture.uuid)) {
+      // console.log('TextureView makeMeshFromTexture cache hit', { texture });
       const { mesh, mapTexture, ratio } = cacheMeshMap.get(texture.uuid)!;
       thumbnailMaterial.uniforms.map.value = mapTexture;
       shadowMapMaterial.uniforms.tDiffuse.value = mapTexture;
       shadowMapMaterial.uniformsNeedUpdate = true;
       return { mesh, ratio };
     }
+    // console.log('TextureView makeMeshFromTexture cache miss', { texture });
     // @ts-ignore
     const hdrJpgMaterial = texture.__hdrJpgMaterial; // handling HDRJPGLoader // TODO: remove this when HDRJPGLoader is removed
     const idx = 0;

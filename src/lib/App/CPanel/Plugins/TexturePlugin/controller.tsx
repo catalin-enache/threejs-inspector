@@ -9,9 +9,10 @@ import { createRoot } from 'react-dom/client';
 let reactRoot: ReturnType<typeof createRoot> | null = null;
 export const rememberCubeTextureRenderLayout = new Map<string, 'cross' | 'equirectangular'>();
 
-const cleanUp = (self: TextureController) => {
+const cleanUp = (self: TextureController, force = false) => {
   // cleanup cacheMeshMap when no object is selected
-  if (!useAppStore.getState().getSelectedObject()) {
+  if (!useAppStore.getState().getSelectedObject() || force) {
+    // note: clearing takes time too, there is a delay when closing materials in CPanel
     cacheMeshMap.forEach((value) => {
       value.mesh.geometry.dispose();
       const materials = Array.isArray(value.mesh.material) ? value.mesh.material : [value.mesh.material];
@@ -39,9 +40,9 @@ const cleanUp = (self: TextureController) => {
 
 function onRemoveHandler(this: TextureController, evt: any) {
   if (evt.detail.child.controller.valueController === this) {
-    // prettier-ignore
-    // console.log('TweakpaneRemove', evt.detail, { this: this });
-    cleanUp(this);
+    // console.log('TexturePlugin onRemoveHandler', { container: evt.detail.container, child: evt.detail.child });
+    // clear cache when folder is closed
+    cleanUp(this, !evt.detail.container.expanded);
   }
 }
 
@@ -111,8 +112,9 @@ export class TextureController implements Controller<TextureView> {
     this.view.select.addEventListener('change', this.handleCubeLayoutChange);
 
     this.viewProps.handleDispose(() => {
-      // console.log('TexturePlugin handleDispose');
-      cleanUp(this);
+      // we don't need this since we cleanUp at TweakpaneRemove event
+      // console.log('TexturePlugin viewProps handleDispose');
+      // cleanUp(this, false);
     });
 
     this.updateImage();

@@ -13,6 +13,9 @@ import { CustomParams, isCustomParamStruct } from 'lib/customParam.types';
 // helper struct to check in tests if all binding listeners have been removed
 export const eventListenersMap = new Map<HTMLElement, { [key: string]: Set<(evt: any) => void> }>();
 
+const mainTabsNames = ['Selected', 'Custom Controls', 'Global'];
+const mainTabsNamesSet = new Set(mainTabsNames);
+
 const addToEventListenerMap = (element: any, event: string, listener: (evt: any) => void) => {
   const listeners = eventListenersMap.get(element);
   const eventListeners = listeners?.[event];
@@ -106,24 +109,35 @@ const dispatchTransitionEnd = (evt: MouseEvent) => {
 const memoizeExpandedState = (evt: MouseEvent) => {
   const currentTarget = evt.currentTarget as HTMLButtonElement; // this is the folderButton
   // and folderButton.parentNode is the same as folder.element;
+
+  const isExpanded = [...(currentTarget.parentNode as HTMLElement)!.classList].some((c) => c.endsWith('expanded'));
+  const folderTweakId = currentTarget.dataset.folder_id;
   // @ts-ignore
-  foldersExpandedMap[currentTarget.dataset.folder_id] = [...(currentTarget.parentNode as HTMLElement)!.classList].some(
-    (c) => c.endsWith('expanded')
-  );
+  foldersExpandedMap[folderTweakId] = isExpanded;
 };
 
 const foldersExpandedMap = {} as Record<string, boolean>;
 // memoize folder expanded state
 export const tweakFolder = (folder: FolderApi | TabPageApi, id: string) => {
   if (folder instanceof TabPageApi) return;
+
+  // guard against double tweakFolder call leading to overridden memoizeExpandedState folder_id (folder.title!)
+  // this happens in the last call to the tweakFolder in _buildBindings
+  // which overrides prev tweakFolder calls done recursively
+  if (getFolderTweakId(folder)) return;
+  setFolderTweakId(folder, id);
+
+  // apply expanded from previous state
+  // matching on folderTweakID which is consistent
   if (foldersExpandedMap[id] !== undefined) {
     folder.expanded = foldersExpandedMap[id];
   } else {
     foldersExpandedMap[id] = folder.expanded;
   }
+
   folder.element.classList.add('folder-button');
+
   const folderButton = folder.element.children[0] as HTMLButtonElement;
-  folderButton.dataset.folder_id = id;
   // Memoizing last expanded state
   folderButton.addEventListener('click', memoizeExpandedState);
   addToEventListenerMap(folderButton, 'click', memoizeExpandedState);
@@ -153,13 +167,28 @@ export const tweakFolder = (folder: FolderApi | TabPageApi, id: string) => {
   });
 };
 
+const setFolderTweakId = (folder: FolderApi, id: string) => {
+  const folderButton = folder.element.children[0] as HTMLButtonElement;
+  if (folderButton.dataset.folder_id) {
+    return false;
+  }
+  folderButton.dataset.folder_id = id;
+  return true;
+};
+
+const getFolderTweakId = (folder: FolderApi) => {
+  const folderButton = folder.element.children[0] as HTMLButtonElement;
+  return folderButton.dataset.folder_id;
+};
+
 const _buildParentBindings = (folder: FolderApi, object: any, params: CommonGetterParams) => {
   if (object.parent) {
     const parentFolder = folder.addFolder({
       title: 'Parent',
       expanded: false
     });
-    tweakFolder(parentFolder, `${parentFolder.title!}-${object.parent.uuid || 'no-id'}`);
+    const folderTweakId = `parent ${parentFolder.title!} | ${object.parent.uuid || 'no-id'}`;
+    tweakFolder(parentFolder, folderTweakId);
     const parentBindings = ParentBindings(params);
     Object.keys(parentBindings.parent).forEach((key) => {
       // @ts-ignore
@@ -208,6 +237,7 @@ const _buildBindings = (folder: FolderApi, object: any, bindings: any, params: C
           title: `${bindingKey} ${index}`,
           expanded: false
         });
+
         try {
           _buildBindings(subFolder, item, bindingCandidate, params);
         } catch (error) {
@@ -309,13 +339,14 @@ const _buildBindings = (folder: FolderApi, object: any, bindings: any, params: C
   });
 
   // Collecting animations
-  // TODO: Later on add more capabilities to animations (blending, editing, ...)
+  // TODO: Later on add more capabilities to animations (blending, ...)
   if (object.animations && object.animations.length) {
     const animationsFolder = folder.addFolder({
       title: `Animations (${object.animations.length})`,
       expanded: false
     });
-    tweakFolder(animationsFolder, `${animationsFolder.title!}-${object.uuid || 'no-id'}`);
+    const folderTweakId = `collected animations ${animationsFolder.title!} | ${object.uuid || 'no-id'}`;
+    tweakFolder(animationsFolder, folderTweakId);
 
     const inspectorData = object.__inspectorData as THREE.Object3D['__inspectorData'];
 
@@ -400,7 +431,8 @@ const _buildBindings = (folder: FolderApi, object: any, bindings: any, params: C
         title: `Morph Targets (${Object.keys(morphInfluences).length})`,
         expanded: false
       });
-      tweakFolder(morphFolder, `${morphFolder.title!}-${object.uuid || 'no-id'}`);
+      const folderTweakId = `collected morphs ${morphFolder.title!} | ${object.uuid || 'no-id'}`;
+      tweakFolder(morphFolder, folderTweakId);
       Object.keys(morphInfluences).forEach((key: string) => {
         const binding = morphFolder
           .addBinding(fakeParams, key, {
@@ -421,7 +453,6 @@ const _buildBindings = (folder: FolderApi, object: any, bindings: any, params: C
 
   //  Collecting materials from all children
   if (folder.title === 'Object3D' && object.traverse) {
-    // console.log('Extracting materials');
     // root object
     const materials = new Set<THREE.Material>();
     object.traverse((child: THREE.Object3D) => {
@@ -442,7 +473,7 @@ const _buildBindings = (folder: FolderApi, object: any, bindings: any, params: C
       });
       const materialsFolderTitle = `Materials Inventory (${materialsArray.length})`;
       const materialsFolderUUID = object.uuid || 'no-id';
-      const materialsFolderMapID = `${materialsFolderTitle}-${materialsFolderUUID}`;
+      const materialsFolderMapID = `collected materials ${materialsFolderTitle} | ${materialsFolderUUID}`;
       const materialsFolder = folder.addFolder({
         title: materialsFolderTitle,
         expanded: foldersExpandedMap[materialsFolderMapID] ?? false
@@ -451,30 +482,37 @@ const _buildBindings = (folder: FolderApi, object: any, bindings: any, params: C
 
       const populateMaterialsFolder = () => {
         materialsArray.forEach((material, index) => {
+          const materialSubfolderMapID = `material ${materialsFolderUUID} | ${material.uuid}`;
           const subFolder = materialsFolder.addFolder({
             title: material.name || `Material ${index}`,
-            expanded: false
+            expanded: foldersExpandedMap[materialSubfolderMapID] ?? false
           });
-          try {
-            _buildBindings(subFolder, material, MaterialBindings(params), params);
-          } catch (error) {
-            console.error('Error building bindings for', material.name || material.uuid, { material, error });
+
+          tweakFolder(subFolder, materialSubfolderMapID);
+
+          const tryBuildBindings = () => {
+            try {
+              _buildBindings(subFolder, material, MaterialBindings(params), params);
+            } catch (error) {
+              console.error('Error building bindings for', material.name || material.uuid, { material, error });
+            }
+          };
+
+          if (subFolder.expanded) {
+            tryBuildBindings();
           }
+
+          subFolder.on('fold', (evt) => {
+            if (evt.expanded) {
+              tryBuildBindings();
+            } else {
+              cleanupContainer(subFolder);
+            }
+          });
         });
       };
 
-      if (materialsFolder.expanded) {
-        populateMaterialsFolder();
-      }
-
-      materialsFolder.on('fold', (evt) => {
-        if (evt.expanded) {
-          // foldersExpandedMap[materialsFolderMapID] = true; // this is needed when populating children but not sure if it is needed here
-          populateMaterialsFolder();
-        } else {
-          cleanupContainer(materialsFolder);
-        }
-      });
+      populateMaterialsFolder();
 
       object.children.length &&
         folder.addBlade({
@@ -483,14 +521,14 @@ const _buildBindings = (folder: FolderApi, object: any, bindings: any, params: C
     }
   }
 
-  // TODO: try to put this in Object3DBindings, same for other sections in this function (we need some new logic for that)
   // morphTargetInfluences
   if (folder.title !== 'Object3D' && Object.keys(object.morphTargetDictionary || {})?.length) {
     const morphFolder = folder.addFolder({
       title: `Morph Targets (${object.morphTargetInfluences.length})`,
       expanded: false
     });
-    tweakFolder(morphFolder, `${morphFolder.title!}-${object.uuid || 'no-id'}`);
+    const folderTweakId = `morphs ${morphFolder.title!} | ${object.uuid || 'no-id'}`;
+    tweakFolder(morphFolder, folderTweakId);
     Object.keys(object.morphTargetDictionary).forEach((key: string, index: number) => {
       const binding = morphFolder.addBinding(object.morphTargetInfluences, index, {
         label: key,
@@ -514,15 +552,18 @@ const _buildBindings = (folder: FolderApi, object: any, bindings: any, params: C
       title: `Children (${objectChildren.length})`,
       expanded: false
     });
-    tweakFolder(childrenFolder, `${childrenFolder.title!}-${object.uuid || 'no-id'}`);
+    const folderTweakId = `children ${childrenFolder.title!} | ${object.uuid || 'no-id'}`;
+    tweakFolder(childrenFolder, folderTweakId);
+
     objectChildren.forEach(function (child: any) {
       const childFolderTitle = child.name || child.uuid;
       const childFolderUUID = child.uuid || 'no-id';
-      const childMapID = `${childFolderTitle}-${childFolderUUID}`;
+      const childMapID = `child ${childFolderTitle} | ${childFolderUUID}`;
       const childFolder = childrenFolder.addFolder({
         title: childFolderTitle,
         expanded: foldersExpandedMap[childMapID] ?? false
       });
+      tweakFolder(childFolder, childMapID);
 
       const populateChildFolder = () => {
         try {
@@ -539,9 +580,6 @@ const _buildBindings = (folder: FolderApi, object: any, bindings: any, params: C
 
       childFolder.on('fold', (evt) => {
         if (evt.expanded) {
-          // preventing not showing content when expanded second time
-          foldersExpandedMap[childMapID] = true;
-          // lazy populate children
           populateChildFolder();
         } else {
           cleanupContainer(childFolder);
@@ -552,7 +590,11 @@ const _buildBindings = (folder: FolderApi, object: any, bindings: any, params: C
 
   // Using it at the end so that inside tweakFolder()
   // we can access all buttons added so far by inner folders.
-  tweakFolder(folder, `${folder.title!}-${object.uuid || 'no-id'}`);
+  // Note: this folder might have already been tweaked
+  // if tweakFolder was called along with _buildBindings recursively
+  // In that case this tweakFolder is ignored.
+  const folderTweakId = `folder ${folder.title!} | ${object.uuid || 'no-id'}`;
+  tweakFolder(folder, folderTweakId);
 };
 
 export const buildBindings = (folder: FolderApi, object: any, bindings: any, params: CommonGetterParams) => {
@@ -584,7 +626,8 @@ export const buildCustomParams = ({
         customParamsTab: folder,
         nesting: nesting + 1
       });
-      tweakFolder(folder, `${controlName}-${nesting}`);
+      const folderTweakId = `folder custom control ${controlName} | (${nesting})`;
+      tweakFolder(folder, folderTweakId);
     } else {
       const paramStruct = cPanelCustomParams[controlName];
       const { object, prop, control } = paramStruct;
@@ -632,12 +675,15 @@ export const buildCustomParams = ({
   });
 };
 
-export const cleanupContainer = (node: any) => {
-  if (node.element.classList.contains('folder-button')) {
+// cleanupContainer is also called internally in bindingHelpers without the need to dispose folders
+export const cleanupContainer = (node: any, options: { disposeFolders?: boolean } = {}) => {
+  // console.log('cleanupContainer', node.title ? `folder ${node.title}` : `binding ${node.key}`);
+
+  const { disposeFolders = false } = options;
+  if (disposeFolders && node.element.classList.contains('folder-button')) {
     node.element.children[0].removeEventListener('click', memoizeExpandedState);
     removeFromEventListenerMap(node.element.children[0], 'click', memoizeExpandedState);
   }
-
   node.element.querySelectorAll('button').forEach((button: any) => {
     button.removeEventListener('click', dispatchTransitionEnd);
     removeFromEventListenerMap(button, 'click', dispatchTransitionEnd);
@@ -648,12 +694,13 @@ export const cleanupContainer = (node: any) => {
   });
 
   if (!node.children) {
+    node.dispose();
     return;
   }
 
   node.children.forEach((child: any) => {
-    cleanupContainer(child);
-    // console.log('cleanupContainer', child.title ? `folder ${child.title}` : `binding ${child.key}`);
+    cleanupContainer(child, options);
+
     window.dispatchEvent(
       new CustomEvent('TweakpaneRemove', {
         detail: {
@@ -665,4 +712,8 @@ export const cleanupContainer = (node: any) => {
     child.dispose(); // prevent mem leak
     node.remove(child);
   });
+
+  if (disposeFolders && !mainTabsNamesSet.has(node.title)) {
+    node.dispose(); // e.g. disposing of .on('fold')
+  }
 };

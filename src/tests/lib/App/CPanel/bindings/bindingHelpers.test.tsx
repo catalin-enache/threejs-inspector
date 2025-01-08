@@ -651,4 +651,58 @@ describe('bindingHelpers', () => {
       });
     });
   });
+
+  describe('rendering children', () => {
+    it('renders children', { timeout: 1000 }, async () => {
+      return new Promise<void>((done) => {
+        const handleCPanelReady: CPanelProps['onCPanelReady'] = async (pane, { commonGetterParamsRef }) => {
+          await setObjectTab(pane);
+          const commonGetterParams = commonGetterParamsRef.current;
+
+          const scene = commonGetterParams.sceneObjects.scene;
+          const camera = commonGetterParams.sceneObjects.camera;
+
+          const ambientLight = new THREE.AmbientLight(0xffffff, 1);
+          scene.add(ambientLight);
+
+          loadModel('/models/MyTests/test_multi_features/test_multi_features.glb', {
+            scene,
+            camera
+          }).then(async (mesh) => {
+            if (!mesh) return;
+            mesh.scale.set(1, 1, 1);
+            mesh.castShadow = true;
+            scene.add(mesh);
+
+            useAppStore.getState().setSelectedObject(mesh); // not needed
+
+            const childrenFolder = await screen.findByText('Children (1)');
+            childrenFolder.click();
+            const armatureChildrenFolder = await screen.findByText('Armature');
+            armatureChildrenFolder.click();
+            const armatureChildrenChildrenFolder = await screen.findByText('Children (4)');
+            armatureChildrenChildrenFolder.click();
+            const cylinderChild = await screen.findByText('Cylinder');
+            const bottomChild = await screen.findByText('Bottom');
+            const armor_1_0Child = await screen.findByText('Armor_1_0');
+            const armor_2_0Child = await screen.findByText('Armor_2_0');
+
+            expect(cylinderChild).toBeInTheDocument();
+            expect(bottomChild).toBeInTheDocument();
+            expect(armor_1_0Child).toBeInTheDocument();
+            expect(armor_2_0Child).toBeInTheDocument();
+
+            res.unmount();
+          });
+        };
+
+        const res = render(
+          <TestDefaultApp onCPanelReady={handleCPanelReady} onCPanelUnmounted={done}></TestDefaultApp>,
+          {
+            container: document.getElementById('main')!
+          }
+        );
+      });
+    });
+  });
 });

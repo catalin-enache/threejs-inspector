@@ -29,7 +29,7 @@ describe('CustomControl with injected Inspector in R3F App', () => {
         assets: ['one', 'two', 'three']
       };
 
-      // TODO: Note, these custom params are merged with custom params from App CustomParams
+      // Note, these custom params are merged with custom params from App CustomParams
       const customParams = {
         Select: {
           object: params,

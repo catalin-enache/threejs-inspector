@@ -568,7 +568,7 @@ describe('SetUp', () => {
   });
 
   describe('scene change', () => {
-    it('transfer  helpers to new scene', { timeout: 1000 }, async () => {
+    it('transfer helpers to new scene', { timeout: 1000 }, async () => {
       return new Promise<void>((done) => {
         const handleThreeChange: SetUpProps['onThreeChange'] = async (changed, three) => {
           if (changed === 'scene') {

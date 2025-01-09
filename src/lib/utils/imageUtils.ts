@@ -1,13 +1,12 @@
 import React from 'react';
 import * as THREE from 'three';
-import { HDRJPGLoader } from '@monogrid/gainmap-js'; // see ThreeJS example: webgl_loader_texture_hdrjpg.html
 import { useAppStore } from 'src/store';
 import { getNameAndType, getFileType } from '.';
 import {
   tiffLoader,
   exrLoader,
   textureLoader,
-  hdrJpgLoader,
+  ultraHdrLoader,
   rgbeLoader,
   tgaLoader,
   ktx2Loader,
@@ -92,7 +91,7 @@ const sortFiles = (files: (File | string)[]): (File | string)[] => {
   });
 };
 
-export function getImageLoader(fileType: string, fileName: string, gl?: THREE.WebGLRenderer | null) {
+export function getImageLoader(fileType: string, fileName: string) {
   switch (fileType) {
     case FILE_EXR:
       return exrLoader;
@@ -108,8 +107,7 @@ export function getImageLoader(fileType: string, fileName: string, gl?: THREE.We
       return ddsLoader;
     case FILE_JPEG:
       if (fileName.toLowerCase().endsWith('.hdr.jpg')) {
-        if (!gl) throw new Error('HDRJPGLoader requires a WebGLRenderer instance');
-        return hdrJpgLoader.setRenderer(gl);
+        return ultraHdrLoader;
       } else {
         return textureLoader;
       }
@@ -119,17 +117,14 @@ export function getImageLoader(fileType: string, fileName: string, gl?: THREE.We
 }
 
 // Assuming all textures have the same characteristics (extension, size, colorSpace, etc.)
-export const cubeTextureLoader = async (
-  files: (File | string)[],
-  gl?: THREE.WebGLRenderer | null
-): Promise<THREE.CubeTexture> => {
+export const cubeTextureLoader = async (files: (File | string)[]): Promise<THREE.CubeTexture> => {
   const texture = new THREE.CubeTexture();
   const sortedFiles = sortFiles(files);
   registerFiles(sortedFiles); // takes care of calling URL.createObjectURL(file)
   const textures = (await Promise.all(
     sortedFiles.map((file) => {
       const { fileType, name } = getNameAndType(file, fileTypeMap);
-      const loader = getImageLoader(fileType, name, gl);
+      const loader = getImageLoader(fileType, name);
       return loader.loadAsync(name);
     })
   )) as THREE.Texture[];
@@ -174,37 +169,28 @@ type createTexturesFromImagesType = (
   fileOrFiles: string | string[] | File | FileList,
   extra?: {
     material?: THREE.Material | React.MutableRefObject<THREE.Material | null> | null;
-    gl?: THREE.WebGLRenderer | null;
   }
 ) => Promise<THREE.Texture[]>;
 
 export const createTexturesFromImages: createTexturesFromImagesType = async (
   fileOrFiles,
-  { material, gl } = {}
+  { material } = {}
 ): Promise<THREE.Texture[]> => {
   const files = typeof fileOrFiles === 'string' || fileOrFiles instanceof File ? [fileOrFiles] : [...fileOrFiles];
   const needsCubeTexture = shouldMakeCubeTexture(files);
   // TODO: add cors support for images. Can this be integrated with default load manager  ?
   let textures: THREE.Texture[] = [];
   if (needsCubeTexture) {
-    textures[0] = await cubeTextureLoader(files, gl);
+    textures[0] = await cubeTextureLoader(files);
   } else {
     textures = await Promise.all(
       files.map(async (file) => {
         const isFileType = file instanceof File;
         const name = isFileType ? file.name : file;
         const fileType = getFileType(name, fileTypeMap); // assuming they all have the same extension
-        const loader = getImageLoader(fileType, name, gl);
+        const loader = getImageLoader(fileType, name);
         const url = file instanceof File ? URL.createObjectURL(file) : file;
-        const result = (await loader.loadAsync(url)) as any;
-        const texture = !(loader instanceof HDRJPGLoader) ? result : result.renderTarget.texture;
-        // result.material is undefined unless loader instanceof HDRJPGLoader.
-        // Saving this on texture instance for use in TexturePlugin view to generate thumbnail.
-
-        if (loader instanceof HDRJPGLoader) {
-          result._quad && (result._quad.name = 'QuadRendererMesh');
-          texture.__hdrJpgMaterial = result.material;
-        }
+        const texture = (await loader.loadAsync(url)) as any;
 
         texture.generateMipmaps = isPowerOf2Texture(texture);
         texture.needsUpdate = true;

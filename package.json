@@ -15,7 +15,6 @@
     "deploy": "gh-pages -d dist"
   },
   "dependencies": {
-    "@monogrid/gainmap-js": "^3.0.6",
     "@react-three/drei": "^9.117.3",
     "@react-three/fiber": "^8.17.10",
     "@redux-devtools/extension": "^3.3.0",

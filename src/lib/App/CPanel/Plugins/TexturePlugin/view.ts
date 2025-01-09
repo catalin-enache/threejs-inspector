@@ -110,7 +110,6 @@ export class TextureView implements View {
     }
     // console.log('TextureView makeMeshFromTexture cache miss', { texture });
     // @ts-ignore
-    const hdrJpgMaterial = texture.__hdrJpgMaterial; // handling HDRJPGLoader // TODO: remove this when HDRJPGLoader is removed
     const idx = 0;
     const isCubeTexture = texture instanceof THREE.CubeTexture;
     const mapTexture = !isCubeTexture
@@ -146,7 +145,7 @@ export class TextureView implements View {
 
     mapTexture.needsUpdate = true;
     // isShadowMap implies texture.isRenderTargetTexture
-    const material = this.isShadowMap ? shadowMapMaterial : hdrJpgMaterial || thumbnailMaterial;
+    const material = this.isShadowMap ? shadowMapMaterial : thumbnailMaterial;
     const newMesh = new THREE.Mesh(geometry, material);
     newMesh.name = `TexturePluginMesh for texture ${texture.uuid}`;
     // cleanupAfterRemovedObject will dispose the geometry and material, but we prevent that here

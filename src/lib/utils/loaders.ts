@@ -5,8 +5,7 @@ import { TGALoader } from 'three/examples/jsm/loaders/TGALoader';
 import { TIFFLoader } from 'three/examples/jsm/loaders/TIFFLoader';
 import { KTX2Loader } from 'three/examples/jsm/loaders/KTX2Loader';
 import { DDSLoader } from 'three/examples/jsm/loaders/DDSLoader';
-// TODO: replace HDRJPGLoader with UltraHDRLoader
-import { HDRJPGLoader } from '@monogrid/gainmap-js';
+import { UltraHDRLoader } from 'three/examples/jsm/loaders/UltraHDRLoader';
 import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader';
 import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module';
 
@@ -25,7 +24,7 @@ export {
   TGALoader,
   TIFFLoader,
   KTX2Loader,
-  HDRJPGLoader,
+  UltraHDRLoader,
   DRACOLoader,
   GLTFLoader,
   FBXLoader,
@@ -88,15 +87,14 @@ export const tgaLoader = new TGALoader(loadingManager);
 export const ddsLoader = new DDSLoader(loadingManager);
 export const tiffLoader = new TIFFLoader(loadingManager);
 export const ktx2Loader = new KTX2Loader(loadingManager).setTranscoderPath('libs/basis/').detectSupport(gl);
-// The gl renderer will be set to the actual scene renderer where the loader is used (currently imageUtils.ts).
-// An ad-hoc renderer like the gl before doesn't work as it works for ktx2Loader.
-export const hdrJpgLoader = new HDRJPGLoader(undefined, loadingManager);
+export const ultraHdrLoader = new UltraHDRLoader(loadingManager);
 export const textureLoader = new THREE.TextureLoader(loadingManager);
 
 loadingManager.addHandler(/\.tga$/i, tgaLoader);
 loadingManager.addHandler(/\.dds$/i, ddsLoader);
 loadingManager.addHandler(/\.exr$/i, exrLoader);
 loadingManager.addHandler(/\.hdr$/i, rgbeLoader);
+loadingManager.addHandler(/\.hdr\.jpg$/i, ultraHdrLoader);
 loadingManager.addHandler(/\.ktx2$/i, ktx2Loader);
 loadingManager.addHandler(/\.tif$/i, tiffLoader);
 loadingManager.addHandler(/\.tiff$/i, tiffLoader);

@@ -1,14 +1,8 @@
 /*! Tweakpane 4.0.3 (c) 2016 cocopon, licensed under the MIT license. */
-import { isArray, isObject as ___ } from 'lib/utils';
-import { isTexture, isTextureImage } from 'src/types';
+
 const isObject = (value) => {
   return (
     value !== null && typeof value === 'object' // && // compatible with Tweakpane if needed
-    // value &&
-    // value.constructor === Object &&
-    // !isArray(value) &&
-    // !isTextureImage(value) &&
-    // !isTexture(value)
   );
 };
 

@@ -9,7 +9,7 @@ import { defaultScene } from 'lib/App/SetUp/patchThree';
 import { useAppStore } from 'src/store';
 import { CPanelProps } from 'lib/App/CPanel/CPanel';
 import { getPaneTab, setSelectedTab } from 'lib/App/CPanel/CPanel';
-import { buildBindings } from 'lib/App/CPanel/bindings/bindingHelpers';
+import { buildBindings, eventListenersMap, cleanupContainer } from 'lib/App/CPanel/bindings/bindingHelpers';
 import { radToDegFormatter } from 'lib/utils';
 import { loadModel } from 'lib/utils/loadModel';
 
@@ -702,6 +702,243 @@ describe('bindingHelpers', () => {
             container: document.getElementById('main')!
           }
         );
+      });
+    });
+  });
+
+  describe('cleanupContainer (basic test)', () => {
+    describe('when disposeRootFolder is false', () => {
+      it('disposes all nodes except root folder', { timeout: 1000 }, async () => {
+        const pane = new Pane();
+        const folder1 = pane.addFolder({ title: 'folder1' });
+        folder1.title = 'folder1';
+        const binding1 = folder1.addBinding({ value: 0 }, 'value', { label: 'binding1' });
+        binding1.label = 'binding1';
+        const folder2 = folder1.addFolder({ title: 'folder2' });
+        folder2.title = 'folder2';
+        const binding2 = folder2.addBinding({ value: 0 }, 'value', { label: 'binding2' });
+        binding2.label = 'binding2';
+        const folder3 = folder2.addFolder({ title: 'folder3' });
+        folder3.title = 'folder3';
+        const binding3 = folder3.addBinding({ value: 0 }, 'value', { label: 'binding3' });
+        binding3.label = 'binding3';
+
+        const disposeSpy1 = vi.spyOn(folder1, 'dispose');
+        const disposeSpy2 = vi.spyOn(folder2, 'dispose');
+        const disposeSpy3 = vi.spyOn(folder3, 'dispose');
+
+        const disposeSpyBinding1 = vi.spyOn(binding1, 'dispose');
+        const disposeSpyBinding2 = vi.spyOn(binding2, 'dispose');
+        const disposeSpyBinding3 = vi.spyOn(binding3, 'dispose');
+
+        cleanupContainer(folder1, { disposeRootFolder: false });
+
+        expect(disposeSpy1).not.toHaveBeenCalled();
+        expect(disposeSpy2).toHaveBeenCalled();
+        expect(disposeSpy3).toHaveBeenCalled();
+        expect(disposeSpyBinding1).toHaveBeenCalled();
+        expect(disposeSpyBinding2).toHaveBeenCalled();
+        expect(disposeSpyBinding3).toHaveBeenCalled();
+      });
+    });
+
+    describe('when disposeRootFolder is true', () => {
+      it('disposes all nodes including root folder', { timeout: 1000 }, async () => {
+        const pane = new Pane();
+        const folder1 = pane.addFolder({ title: 'folder1' });
+        folder1.title = 'folder1';
+        const binding1 = folder1.addBinding({ value: 0 }, 'value', { label: 'binding1' });
+        binding1.label = 'binding1';
+        const folder2 = folder1.addFolder({ title: 'folder2' });
+        folder2.title = 'folder2';
+        const binding2 = folder2.addBinding({ value: 0 }, 'value', { label: 'binding2' });
+        binding2.label = 'binding2';
+        const folder3 = folder2.addFolder({ title: 'folder3' });
+        folder3.title = 'folder3';
+        const binding3 = folder3.addBinding({ value: 0 }, 'value', { label: 'binding3' });
+        binding3.label = 'binding3';
+
+        const disposeSpy1 = vi.spyOn(folder1, 'dispose');
+        const disposeSpy2 = vi.spyOn(folder2, 'dispose');
+        const disposeSpy3 = vi.spyOn(folder3, 'dispose');
+
+        const disposeSpyBinding1 = vi.spyOn(binding1, 'dispose');
+        const disposeSpyBinding2 = vi.spyOn(binding2, 'dispose');
+        const disposeSpyBinding3 = vi.spyOn(binding3, 'dispose');
+
+        cleanupContainer(folder1, { disposeRootFolder: true });
+
+        expect(disposeSpy1).toHaveBeenCalled();
+        expect(disposeSpy2).toHaveBeenCalled();
+        expect(disposeSpy3).toHaveBeenCalled();
+        expect(disposeSpyBinding1).toHaveBeenCalled();
+        expect(disposeSpyBinding2).toHaveBeenCalled();
+        expect(disposeSpyBinding3).toHaveBeenCalled();
+      });
+    });
+  });
+
+  describe('cleanupContainer (real test)', () => {
+    describe('when disposeRootFolder is true', () => {
+      it('cleans up event listeners', { timeout: 1000 }, async () => {
+        return new Promise<void>((done) => {
+          const handleCPanelReady: CPanelProps['onCPanelReady'] = async (pane, { commonGetterParamsRef }) => {
+            const objTab = await setObjectTab(pane);
+            const commonGetterParams = commonGetterParamsRef.current;
+            const handleNumericChange = vi.fn((_value: any) => {
+              // console.log('handleNumericChange', _value);
+            });
+
+            const obj = {
+              level_1: {
+                level_2: {
+                  numeric: 0
+                }
+              }
+            };
+
+            const bindings = {
+              level_1: {
+                title: 'Level 1',
+                level_2: {
+                  title: 'Level 2',
+                  numeric: {
+                    label: 'Numeric Label',
+                    onChange: handleNumericChange
+                  }
+                }
+              }
+            };
+
+            const objectTabFolderSpy = vi.spyOn(objTab, 'dispose');
+
+            const listenersMap1 = Array.from(eventListenersMap);
+
+            buildBindings(objTab, obj, bindings, commonGetterParams);
+
+            const listenersMap2 = Array.from(eventListenersMap);
+
+            const listenerDiff1 = listenersMap2.filter(([key]) => !listenersMap1.map(([key]) => key).includes(key));
+
+            // 2 entries for listeners added
+            expect(listenerDiff1).toHaveLength(2);
+
+            const level1Folder = objTab.children[0] as FolderApi;
+            const disposeLevel1FolderSpy = vi.spyOn(level1Folder, 'dispose');
+            expect(level1Folder.title).toBe('Level 1');
+
+            const level2Folder = level1Folder.children[0] as FolderApi;
+            expect(level2Folder.title).toBe('Level 2');
+            const disposeLevel2FolderSpy = vi.spyOn(level2Folder, 'dispose');
+
+            cleanupContainer(level1Folder, { disposeRootFolder: true });
+
+            const listenersMap3 = Array.from(eventListenersMap);
+
+            const listenerDiff2 = listenersMap3.filter(([key]) => !listenersMap1.map(([key]) => key).includes(key));
+
+            expect(listenerDiff2).toHaveLength(0);
+
+            expect(objectTabFolderSpy).not.toHaveBeenCalled();
+            expect(disposeLevel1FolderSpy).toHaveBeenCalled();
+            expect(disposeLevel2FolderSpy).toHaveBeenCalled();
+
+            res.unmount();
+          };
+
+          const res = render(
+            <TestDefaultApp onCPanelReady={handleCPanelReady} onCPanelUnmounted={done}></TestDefaultApp>,
+            {
+              container: document.getElementById('main')!
+            }
+          );
+        });
+      });
+    });
+
+    describe('when disposeRootFolder is false', () => {
+      it('cleans up event listeners', { timeout: 1000 }, async () => {
+        return new Promise<void>((done) => {
+          const handleCPanelReady: CPanelProps['onCPanelReady'] = async (pane, { commonGetterParamsRef }) => {
+            const objTab = await setObjectTab(pane);
+            const commonGetterParams = commonGetterParamsRef.current;
+            const handleNumericChange = vi.fn((_value: any) => {
+              // console.log('handleNumericChange', _value);
+            });
+
+            const obj = {
+              level_1: {
+                level_2: {
+                  numeric: 0
+                }
+              }
+            };
+
+            const bindings = {
+              level_1: {
+                title: 'Level 1',
+                level_2: {
+                  title: 'Level 2',
+                  numeric: {
+                    label: 'Numeric Label',
+                    onChange: handleNumericChange
+                  }
+                }
+              }
+            };
+
+            const objectTabFolderSpy = vi.spyOn(objTab, 'dispose');
+
+            const listenersMap1 = Array.from(eventListenersMap);
+
+            buildBindings(objTab, obj, bindings, commonGetterParams);
+
+            const listenersMap2 = Array.from(eventListenersMap);
+
+            const listenerDiff1 = listenersMap2.filter(([key]) => !listenersMap1.map(([key]) => key).includes(key));
+
+            // 2 entries for listeners added
+            expect(listenerDiff1).toHaveLength(2);
+
+            const level1Folder = objTab.children[0] as FolderApi;
+            const disposeLevel1FolderSpy = vi.spyOn(level1Folder, 'dispose');
+            expect(level1Folder.title).toBe('Level 1');
+
+            const level2Folder = level1Folder.children[0] as FolderApi;
+            expect(level2Folder.title).toBe('Level 2');
+            const disposeLevel2FolderSpy = vi.spyOn(level2Folder, 'dispose');
+
+            expect(listenerDiff1[1][0]).toBe(level1Folder.element.children[0]); // the level1Folder button
+            expect(listenerDiff1[1][1].click.size).toBe(2); // 2 click listeners
+            expect([...listenerDiff1[1][1].click][0].name).toBe('memoizeExpandedState');
+            expect([...listenerDiff1[1][1].click][1].name).toBe('dispatchTransitionEnd');
+
+            cleanupContainer(level1Folder, { disposeRootFolder: false });
+
+            const listenersMap3 = Array.from(eventListenersMap);
+
+            const listenerDiff2 = listenersMap3.filter(([key]) => !listenersMap1.map(([key]) => key).includes(key));
+
+            expect(listenerDiff2).toHaveLength(1); // one element still listening
+
+            expect(listenerDiff2[0][0]).toBe(level1Folder.element.children[0]); // the level1Folder button
+            expect(listenerDiff2[0][1].click.size).toBe(1); // one click listener remaining
+            expect([...listenerDiff2[0][1].click][0].name).toBe('memoizeExpandedState');
+
+            expect(objectTabFolderSpy).not.toHaveBeenCalled();
+            expect(disposeLevel1FolderSpy).not.toHaveBeenCalled();
+            expect(disposeLevel2FolderSpy).toHaveBeenCalled();
+
+            res.unmount();
+          };
+
+          const res = render(
+            <TestDefaultApp onCPanelReady={handleCPanelReady} onCPanelUnmounted={done}></TestDefaultApp>,
+            {
+              container: document.getElementById('main')!
+            }
+          );
+        });
       });
     });
   });

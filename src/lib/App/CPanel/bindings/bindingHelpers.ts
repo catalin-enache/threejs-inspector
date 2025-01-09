@@ -675,16 +675,17 @@ export const buildCustomParams = ({
   });
 };
 
-// cleanupContainer is also called internally in bindingHelpers without the need to dispose folders
-export const cleanupContainer = (node: any, options: { disposeFolders?: boolean } = {}) => {
+// cleanupContainer is also called internally in bindingHelpers without the need to disposeRootFolder
+export const cleanupContainer = (node: any, options: { disposeRootFolder?: boolean; _isRootFolder?: boolean } = {}) => {
   // console.log('cleanupContainer', node.title ? `folder ${node.title}` : `binding ${node.key}`);
 
-  const { disposeFolders = false } = options;
-  if (disposeFolders && node.element.classList.contains('folder-button')) {
-    node.element.children[0].removeEventListener('click', memoizeExpandedState);
+  const { disposeRootFolder = false, _isRootFolder = true } = options;
+  if ((!_isRootFolder || disposeRootFolder) && node.element.classList.contains('folder-button')) {
+    node.element.children[0].removeEventListener('click', memoizeExpandedState); // the folder button
     removeFromEventListenerMap(node.element.children[0], 'click', memoizeExpandedState);
   }
   node.element.querySelectorAll('button').forEach((button: any) => {
+    // all descendant buttons in folder
     button.removeEventListener('click', dispatchTransitionEnd);
     removeFromEventListenerMap(button, 'click', dispatchTransitionEnd);
   });
@@ -694,12 +695,16 @@ export const cleanupContainer = (node: any, options: { disposeFolders?: boolean 
   });
 
   if (!node.children) {
+    // this case is only if the root node is a binding
+    // (not a real scenario, we're passing a always a folder in practice)
     node.dispose();
     return;
   }
 
   node.children.forEach((child: any) => {
-    cleanupContainer(child, options);
+    // Note: a child can be a folder or a binding
+    // Note: bindings do not have children while folders and tabs do
+    cleanupContainer(child, { ...options, _isRootFolder: false });
 
     window.dispatchEvent(
       new CustomEvent('TweakpaneRemove', {
@@ -709,11 +714,13 @@ export const cleanupContainer = (node: any, options: { disposeFolders?: boolean 
         }
       })
     );
+
     child.dispose(); // prevent mem leak
     node.remove(child);
   });
 
-  if (disposeFolders && !mainTabsNamesSet.has(node.title)) {
+  // this is basically for the folder in the initial cleanupContainer call
+  if (disposeRootFolder && _isRootFolder && !mainTabsNamesSet.has(node.title)) {
     node.dispose(); // e.g. disposing of .on('fold')
   }
 };

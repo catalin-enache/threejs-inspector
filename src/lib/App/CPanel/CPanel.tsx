@@ -278,9 +278,9 @@ export const CPanel = (props: CPanelProps) => {
     return () => {
       continuousUpdateRef.current?.stop();
       if (paneRef.current) {
-        cleanupContainer(getPaneTab(paneRef.current, 0), { disposeFolders: true });
-        cleanupContainer(getPaneTab(paneRef.current, 1), { disposeFolders: true });
-        cleanupContainer(getPaneTab(paneRef.current, 2), { disposeFolders: true });
+        cleanupContainer(getPaneTab(paneRef.current, 0), { disposeRootFolder: true });
+        cleanupContainer(getPaneTab(paneRef.current, 1), { disposeRootFolder: true });
+        cleanupContainer(getPaneTab(paneRef.current, 2), { disposeRootFolder: true });
       }
       paneRef.current?.dispose();
       onCPanelUnmounted?.();
@@ -321,7 +321,7 @@ export const CPanel = (props: CPanelProps) => {
     const objectTab = getPaneTab(pane, 0);
 
     // Cleanup prev folders and their bindings
-    cleanupContainer(objectTab, { disposeFolders: true });
+    cleanupContainer(objectTab, { disposeRootFolder: true });
     // console.log('after cleanup selectedObject tab eventListenersMap.size', _eventListenersMap.size);
     if (!selectedObjectUUID) {
       outliner.setValue(null);
@@ -356,7 +356,7 @@ export const CPanel = (props: CPanelProps) => {
     const pane = paneRef.current;
     const customParamsTab = getPaneTab(pane, 1);
     // Clear bindings
-    cleanupContainer(customParamsTab, { disposeFolders: true });
+    cleanupContainer(customParamsTab, { disposeRootFolder: true });
     buildCustomParams({
       cPanelCustomParams,
       customParamsTab
@@ -371,7 +371,7 @@ export const CPanel = (props: CPanelProps) => {
     const store = useAppStore.getState();
 
     // Cleanup prev folders and their bindings // BladeApi is more generic we can make a recursive function to remove all children
-    cleanupContainer(sceneTab, { disposeFolders: true });
+    cleanupContainer(sceneTab, { disposeRootFolder: true });
 
     // Add Pane folder and bindings
     const paneFolder = sceneTab.addFolder({

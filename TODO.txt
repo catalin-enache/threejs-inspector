@@ -75,6 +75,8 @@ Handle multiple fbx/gltf imports (when animations or other things are separated)
 
 See why it takes that long to select a complex object in the scene. Can cPanel be optimised or is it normal? - *DONE* It was due to TexturePlugin (internal mesh creation)
 
+Why on loading Jenifer the body texture changes luminosity after expanding body texture in CPanel ?
+
 Bug: Load Image from CParam then from SceneConfig.
 After loading from scene config the binding reader fires continuously.
 Not happening anymore since using correct internal lastValue.

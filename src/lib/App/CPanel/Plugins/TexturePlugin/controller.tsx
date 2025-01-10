@@ -1,6 +1,6 @@
 import { Controller, Value, ViewProps } from '@tweakpane/core';
 import { TextureView, cacheMeshMap } from './view';
-import { createTexturesFromImages } from 'lib/utils/imageUtils';
+import { createTexturesFromImages } from 'lib/utils/loadTexture';
 import { Modal } from 'components/Modal/Modal';
 import * as THREE from 'three';
 import { useAppStore } from 'src/store';

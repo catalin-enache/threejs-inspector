@@ -1,7 +1,7 @@
 import { ViewProps, View, ClassName } from '@tweakpane/core';
 import * as THREE from 'three';
 import './texturePlugin.css';
-import { getWidthHeightFromTexture } from 'lib/utils/imageUtils';
+import { getWidthHeightFromTexture } from 'lib/utils/loadTexture';
 import { extractCubeTextureFromGPU, extractTextureFromGPU, getFallbackTexture } from 'lib/utils/textureUtils';
 import { thumbnailMaterial, shadowMapMaterial } from 'lib/utils/customShaders';
 import { offlineScene } from 'lib/App/CPanel/offlineScene';

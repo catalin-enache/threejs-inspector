@@ -83,6 +83,8 @@ After loading from scene config the binding reader fires continuously.
 Not happening anymore since using correct internal lastValue.
 However, to test with multi texture bindings later
 
+Maybe we can make the modal a non React component to use it in React rather than the other way around as we do it now.
+
 Why on loading Jenifer the body texture changes luminosity after expanding body texture in CPanel ?
 
 Add experience switcher in CPanel to easy switch between available experiences

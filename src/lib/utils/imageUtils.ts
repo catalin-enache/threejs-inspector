@@ -10,6 +10,7 @@ import {
   rgbeLoader,
   tgaLoader,
   ktx2Loader,
+  pvrLoader,
   ddsLoader,
   registerFiles
 } from './loaders';
@@ -24,6 +25,7 @@ export const FILE_TIFF = 'image/tiff';
 export const FILE_WEBP = 'image/webp';
 export const FILE_TGA = 'image/tga';
 export const FILE_KTX2 = 'image/ktx2';
+export const FILE_PVR = 'image/pvr';
 export const FILE_DDS = 'image/vnd-ms.dds';
 
 export const fileTypeMap: Record<string, string> = {
@@ -38,6 +40,7 @@ export const fileTypeMap: Record<string, string> = {
   hdr: FILE_HDR,
   tga: FILE_TGA,
   ktx2: FILE_KTX2,
+  pvr: FILE_PVR,
   dds: FILE_DDS
 };
 
@@ -103,6 +106,8 @@ export function getImageLoader(fileType: string, fileName: string) {
       return tiffLoader;
     case FILE_KTX2:
       return ktx2Loader;
+    case FILE_PVR:
+      return pvrLoader;
     case FILE_DDS:
       return ddsLoader;
     case FILE_JPEG:

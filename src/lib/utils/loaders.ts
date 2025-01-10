@@ -4,6 +4,7 @@ import { RGBELoader } from 'three/examples/jsm/loaders/RGBELoader';
 import { TGALoader } from 'three/examples/jsm/loaders/TGALoader';
 import { TIFFLoader } from 'three/examples/jsm/loaders/TIFFLoader';
 import { KTX2Loader } from 'three/examples/jsm/loaders/KTX2Loader';
+import { PVRLoader } from 'three/examples/jsm/loaders/PVRLoader';
 import { DDSLoader } from 'three/examples/jsm/loaders/DDSLoader';
 import { UltraHDRLoader } from 'three/examples/jsm/loaders/UltraHDRLoader';
 import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader';
@@ -24,6 +25,7 @@ export {
   TGALoader,
   TIFFLoader,
   KTX2Loader,
+  PVRLoader,
   UltraHDRLoader,
   DRACOLoader,
   GLTFLoader,
@@ -87,6 +89,7 @@ export const tgaLoader = new TGALoader(loadingManager);
 export const ddsLoader = new DDSLoader(loadingManager);
 export const tiffLoader = new TIFFLoader(loadingManager);
 export const ktx2Loader = new KTX2Loader(loadingManager).setTranscoderPath('libs/basis/').detectSupport(gl);
+export const pvrLoader = new PVRLoader(loadingManager);
 export const ultraHdrLoader = new UltraHDRLoader(loadingManager);
 export const textureLoader = new THREE.TextureLoader(loadingManager);
 
@@ -96,6 +99,7 @@ loadingManager.addHandler(/\.exr$/i, exrLoader);
 loadingManager.addHandler(/\.hdr$/i, rgbeLoader);
 loadingManager.addHandler(/\.hdr\.jpg$/i, ultraHdrLoader);
 loadingManager.addHandler(/\.ktx2$/i, ktx2Loader);
+loadingManager.addHandler(/\.pvr$/i, pvrLoader);
 loadingManager.addHandler(/\.tif$/i, tiffLoader);
 loadingManager.addHandler(/\.tiff$/i, tiffLoader);
 

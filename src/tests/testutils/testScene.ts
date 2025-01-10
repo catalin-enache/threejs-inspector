@@ -11,7 +11,9 @@ const canvas = document.createElement('canvas');
 document.body.appendChild(canvas);
 document.body.appendChild(stats.dom);
 
-function init() {
+type SceneInitConfig = { useFloor?: boolean; sizeUnit?: number };
+
+function init({ useFloor = true, sizeUnit = 100 }: SceneInitConfig = {}) {
   // Note: Vitest does not allow resizing the window
   const onWindowResize = () => {
     camera.aspect = window.innerWidth / window.innerHeight;
@@ -38,46 +40,48 @@ function init() {
     stats && stats.update();
   };
 
-  const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 2000);
-  camera.position.set(100, 200, 300);
+  const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, sizeUnit * 21);
+  camera.position.set(sizeUnit, sizeUnit * 2, sizeUnit * 3);
 
   // const mixer: THREE.AnimationMixer = new THREE.AnimationMixer();
   const clock = new THREE.Clock();
 
   const scene = new THREE.Scene();
   scene.background = new THREE.Color(0xa0a0a0);
-  // scene.fog = new THREE.Fog(0xa0a0a0, 200, 1000);
+  // scene.fog = new THREE.Fog(0xa0a0a0, sizeUnit * 2, sizeUnit * 10);
   scene.__inspectorData.currentCamera = camera;
   patchThree.setCurrentScene(scene);
 
   const hemiLight = new THREE.HemisphereLight(0xffffff, 0x444444, 5);
-  hemiLight.position.set(0, 200, 0);
+  hemiLight.position.set(0, sizeUnit * 2, 0);
   scene.add(hemiLight);
 
   const dirLight = new THREE.DirectionalLight(0xffffff, 5);
-  dirLight.position.set(0, 200, 100);
+  dirLight.position.set(0, sizeUnit * 2, sizeUnit);
   dirLight.castShadow = true;
-  dirLight.shadow.camera.top = 180;
-  dirLight.shadow.camera.bottom = -100;
-  dirLight.shadow.camera.left = -120;
-  dirLight.shadow.camera.right = 120;
+  dirLight.shadow.camera.top = (sizeUnit / 10) * 18;
+  dirLight.shadow.camera.bottom = -sizeUnit;
+  dirLight.shadow.camera.left = -((sizeUnit / 10) * 12);
+  dirLight.shadow.camera.right = (sizeUnit / 10) * 12;
   scene.add(dirLight);
 
-  // ground
-  const mesh = new THREE.Mesh(
-    new THREE.PlaneGeometry(2000, 2000),
-    new THREE.MeshPhongMaterial({ color: 0x999999, depthWrite: false })
-  );
-  mesh.rotation.x = -Math.PI / 2;
-  mesh.receiveShadow = true;
-  scene.add(mesh);
+  // floor
+  if (useFloor) {
+    const floor = new THREE.Mesh(
+      new THREE.PlaneGeometry(sizeUnit * 20, sizeUnit * 20),
+      new THREE.MeshPhongMaterial({ color: 0x999999, depthWrite: false })
+    );
+    floor.rotation.x = -Math.PI / 2;
+    floor.receiveShadow = true;
+    scene.add(floor);
+  }
 
-  const grid = new THREE.GridHelper(2000, 20, 0x000000, 0x000000);
+  const grid = new THREE.GridHelper(sizeUnit * 20, sizeUnit / 5, 0x000000, 0x000000);
   grid.material.opacity = 0.2;
   grid.material.transparent = true;
   scene.add(grid);
 
-  const axis = new THREE.AxesHelper(1000);
+  const axis = new THREE.AxesHelper(sizeUnit * 10);
   scene.add(axis);
 
   const renderer = new THREE.WebGLRenderer({ antialias: true, canvas });
@@ -87,7 +91,7 @@ function init() {
   renderer.shadowMap.enabled = true;
 
   const controls = new OrbitControls(camera, renderer.domElement);
-  controls.target.set(0, 100, 0);
+  controls.target.set(0, sizeUnit, 0);
   controls.update();
 
   useAppStore.getState().reset();
@@ -108,7 +112,7 @@ function init() {
 }
 
 const withScene =
-  () =>
+  (config?: SceneInitConfig) =>
   async (
     fn: (sceneObjects: {
       scene: THREE.Scene;
@@ -132,7 +136,7 @@ const withScene =
       controls,
       addResizeHandler,
       removeResizeHandler
-    } = init();
+    } = init(config);
     addResizeHandler();
     const cleanUp = await fn({ scene, dirLight, hemiLight, camera, renderer, clock, canvas, controls });
     controls.dispose();

@@ -77,7 +77,7 @@ const getCubeCoords = (name: string, size = 2): string => {
   return name.substring(lastDotIndex - size, lastDotIndex);
 };
 
-const sortFiles = (files: (File | string)[]): (File | string)[] => {
+export const sortFiles = (files: (File | string)[]): (File | string)[] => {
   // assuming we have files like: <name_>px.<ext>, <name_>nx.<ext>, <name_>py.<ext>, <name_>ny.<ext>, <name_>pz.<ext>, <name_>nz.<ext>
   // also coincidentally the sorting works with: posx, posy, posz, negx, negy, negz, (because "s" comes after "g" same as "p" comes after "n")
   return files.sort((a, b) => {

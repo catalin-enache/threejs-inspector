@@ -138,7 +138,7 @@ export const cubeTextureLoader = async (
         loader.setPath(path);
       }
       const promise = loader.loadAsync(name);
-      loader.setPath(oldPath); // reset path
+      loader.setPath(oldPath);
       return promise;
     })
   )) as THREE.Texture[];
@@ -211,7 +211,7 @@ export const createTexturesFromImages: createTexturesFromImagesType = async (
         const url = file instanceof File ? URL.createObjectURL(file) : file;
         const texture = (await loader.loadAsync(url)) as any;
         URL.revokeObjectURL(url);
-        loader.setPath(oldPath); // reset path
+        loader.setPath(oldPath);
 
         texture.generateMipmaps = isPowerOf2Texture(texture);
         texture.needsUpdate = true;

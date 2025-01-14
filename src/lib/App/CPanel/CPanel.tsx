@@ -198,8 +198,6 @@ export const CPanel = (props: CPanelProps) => {
 
   const cPanelCustomParams = useAppStore((state) => state.getCPanelCustomParams());
   const cPanelCustomParamsStructureStateFake = useAppStore((state) => state.cPanelCustomParamsStructureStateFake);
-  const cPanelCustomParamsTabWasSelected = useRef(false);
-  const globalTabWasSelected = useRef(false);
 
   const continuousUpdateRef = useRef<ReturnType<typeof makeContinuousUpdate> | null>(null);
 
@@ -220,11 +218,6 @@ export const CPanel = (props: CPanelProps) => {
     },
     [triggerSelectedObjectChanged]
   );
-
-  // Set selectedObject
-  useEffect(() => {
-    selectedObjectRef.current = useAppStore.getState().getSelectedObject();
-  }, [selectedObjectUUID]);
 
   // Instantiate Pane and create tabs
   useEffect(() => {
@@ -300,18 +293,26 @@ export const CPanel = (props: CPanelProps) => {
     const pane = paneRef.current;
     const hasCustomParams = Object.keys(cPanelCustomParams).length;
 
+    // const tab0 = getPaneTab(pane, 0);
+    // const tab1 = getPaneTab(pane, 1);
+    // const tab2 = getPaneTab(pane, 2);
+    // console.log(tab0.selected, tab1.selected, tab2.selected);
+
     // Select CustomControls or Global tab only at init time.
     // Select Selected tab everytime an object is selected.
-    if (hasCustomParams && !selectedObjectUUID && !cPanelCustomParamsTabWasSelected.current) {
-      setSelectedTab(pane, 1);
-      cPanelCustomParamsTabWasSelected.current = true;
-    } else if (selectedObjectUUID) {
+    if (selectedObjectUUID && (!selectedObjectRef.current || selectedObjectRef.current.uuid !== selectedObjectUUID)) {
       setSelectedTab(pane, 0);
-    } else if (!globalTabWasSelected.current) {
+    } else if (hasCustomParams) {
+      setSelectedTab(pane, 1);
+    } else {
       setSelectedTab(pane, 2);
-      globalTabWasSelected.current = true;
     }
-  }, [cPanelCustomParamsStructureStateFake, selectedObjectUUID]);
+  }, [cPanelCustomParams, cPanelCustomParamsStructureStateFake, selectedObjectUUID]);
+
+  // Set selectedObject
+  useEffect(() => {
+    selectedObjectRef.current = useAppStore.getState().getSelectedObject();
+  }, [selectedObjectUUID]);
 
   // Create folders and bindings for selectedObject
   useEffect(() => {

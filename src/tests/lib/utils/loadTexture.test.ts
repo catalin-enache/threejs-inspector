@@ -13,8 +13,8 @@ describe('loadTexture', () => {
         expect(material.version).toBe(0);
 
         const path1 = '/textures/background/cube/Bridge2/';
-        const paths1 = ['negx.jpg', 'negy.jpg', 'negz.jpg', 'posx.jpg', 'posy.jpg', 'posz.jpg'].map((p) => path1 + p);
-        const textures1 = await createTexturesFromImages(paths1, { material });
+        const paths1 = ['negx.jpg', 'negy.jpg', 'negz.jpg', 'posx.jpg', 'posy.jpg', 'posz.jpg'];
+        const textures1 = await createTexturesFromImages(paths1, { material, path: path1 });
         const texture1 = textures1[0];
         scene.background = texture1;
 
@@ -30,8 +30,8 @@ describe('loadTexture', () => {
           'dark-s_px.jpg',
           'dark-s_px.jpg',
           'dark-s_px.jpg'
-        ].map((p) => path2 + p);
-        const textures2 = await createTexturesFromImages(paths2, {});
+        ];
+        const textures2 = await createTexturesFromImages(paths2, { path: path2 });
         const texture2 = textures2[0];
         scene.background = texture2;
 
@@ -40,8 +40,8 @@ describe('loadTexture', () => {
         expect(texture2.mapping).toEqual(THREE.CubeReflectionMapping);
 
         const path3 = '/textures/background/cube/pisaHDR/';
-        const paths3 = ['px.hdr', 'nx.hdr', 'py.hdr', 'ny.hdr', 'pz.hdr', 'nz.hdr'].map((p) => path3 + p);
-        const textures3 = await createTexturesFromImages(paths3, {});
+        const paths3 = ['px.hdr', 'nx.hdr', 'py.hdr', 'ny.hdr', 'pz.hdr', 'nz.hdr'];
+        const textures3 = await createTexturesFromImages(paths3, { path: path3 });
         const texture3 = textures3[0];
         scene.background = texture3;
 

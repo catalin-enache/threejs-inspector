@@ -122,7 +122,10 @@ export function getImageLoader(fileType: string, fileName: string) {
 }
 
 // Assuming all textures have the same characteristics (extension, size, colorSpace, etc.)
-export const cubeTextureLoader = async (files: (File | string)[]): Promise<THREE.CubeTexture> => {
+export const cubeTextureLoader = async (
+  files: (File | string)[],
+  { path }: { path?: string } = {}
+): Promise<THREE.CubeTexture> => {
   const texture = new THREE.CubeTexture();
   const sortedFiles = sortFiles(files);
   registerFiles(sortedFiles); // takes care of calling URL.createObjectURL(file)
@@ -130,7 +133,13 @@ export const cubeTextureLoader = async (files: (File | string)[]): Promise<THREE
     sortedFiles.map((file) => {
       const { fileType, name } = getNameAndType(file, fileTypeMap);
       const loader = getImageLoader(fileType, name);
-      return loader.loadAsync(name);
+      const oldPath = loader.path ?? '';
+      if (path) {
+        loader.setPath(path);
+      }
+      const promise = loader.loadAsync(name);
+      loader.setPath(oldPath); // reset path
+      return promise;
     })
   )) as THREE.Texture[];
 
@@ -174,19 +183,20 @@ type createTexturesFromImagesType = (
   fileOrFiles: string | string[] | File | FileList,
   extra?: {
     material?: THREE.Material | React.MutableRefObject<THREE.Material | null> | null;
+    path?: string;
   }
 ) => Promise<THREE.Texture[]>;
 
 export const createTexturesFromImages: createTexturesFromImagesType = async (
   fileOrFiles,
-  { material } = {}
+  { material, path } = {}
 ): Promise<THREE.Texture[]> => {
   const files = typeof fileOrFiles === 'string' || fileOrFiles instanceof File ? [fileOrFiles] : [...fileOrFiles];
   const needsCubeTexture = shouldMakeCubeTexture(files);
   // TODO: add cors support for images. Can this be integrated with default load manager  ?
   let textures: THREE.Texture[] = [];
   if (needsCubeTexture) {
-    textures[0] = await cubeTextureLoader(files);
+    textures[0] = await cubeTextureLoader(files, { path });
   } else {
     textures = await Promise.all(
       files.map(async (file) => {
@@ -194,13 +204,18 @@ export const createTexturesFromImages: createTexturesFromImagesType = async (
         const name = isFileType ? file.name : file;
         const fileType = getFileType(name, fileTypeMap); // assuming they all have the same extension
         const loader = getImageLoader(fileType, name);
+        const oldPath = loader.path ?? '';
+        if (path) {
+          loader.setPath(path);
+        }
         const url = file instanceof File ? URL.createObjectURL(file) : file;
         const texture = (await loader.loadAsync(url)) as any;
+        URL.revokeObjectURL(url);
+        loader.setPath(oldPath); // reset path
 
         texture.generateMipmaps = isPowerOf2Texture(texture);
         texture.needsUpdate = true;
         texture.name = name;
-        URL.revokeObjectURL(url);
         return texture;
       })
     );

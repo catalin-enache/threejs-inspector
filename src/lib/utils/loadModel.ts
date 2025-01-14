@@ -17,7 +17,7 @@ import {
   PLYLoader,
   ColladaLoader
 } from './loaders';
-import { splitMeshesByMaterial, toIndexedGeometry } from './optimiseAsset';
+import { splitMeshesByMaterial, toIndexedGeometry } from './optimiseModel';
 import { getBoundingBoxSize, calculateScaleFactor, getSceneBoundingBoxSize } from './sizeUtils';
 
 export const FILE_FBX = 'FBX';

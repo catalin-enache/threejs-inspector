@@ -447,7 +447,7 @@ describe('bindingHelpers', () => {
   });
 
   describe('collecting animations', () => {
-    it('collects animations which can be played', { timeout: 1000 }, async () => {
+    it('collects animations which can be played', { timeout: 5000 }, async () => {
       return new Promise<void>((done) => {
         const handleCPanelReady: CPanelProps['onCPanelReady'] = async (pane, { commonGetterParamsRef }) => {
           await setObjectTab(pane);

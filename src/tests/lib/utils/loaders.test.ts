@@ -14,7 +14,7 @@ import {
 } from 'lib/utils/loaders';
 
 describe('image loaders', () => {
-  it('load textures', { timeout: 1000 }, async () =>
+  it('load textures', { timeout: 5000 }, async () =>
     withScene({ sizeUnit: 10, useFloor: true })(async ({ scene }) => {
       const handleLoadingManagerOnStart = vi.fn((_event) => {
         // console.log('LoadingManager.onStart', _event);

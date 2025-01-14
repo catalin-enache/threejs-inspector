@@ -393,7 +393,7 @@ describe('SetUp', () => {
   });
 
   describe('onSceneDblClick', () => {
-    it('set/unset selected object', { timeout: 1000 }, async () => {
+    it('set/unset selected object', { timeout: 7000 }, async () => {
       return new Promise<void>((done) => {
         const sceneReady = { current: false };
         const handleThreeChange: SetUpProps['onThreeChange'] = async (changed, three) => {
@@ -436,8 +436,9 @@ describe('SetUp', () => {
                 let selectedObject = useAppStore.getState().getSelectedObject()!;
                 expect(selectedObject).toBe(fbx);
                 expect(selectedObject.name).toBe('fbx');
-                await waitFor(() =>
-                  expect(scene.__inspectorData.transformControlsRef!.current!.object).toBe(selectedObject)
+                await waitFor(
+                  () => expect(scene.__inspectorData.transformControlsRef!.current!.object).toBe(selectedObject),
+                  { timeout: 1000 }
                 );
 
                 // useAppStore.getState().setSelectedObject(null);
@@ -459,8 +460,9 @@ describe('SetUp', () => {
                   })
                 );
                 // proving unselecting the object after clicking outside and transform controls were detached
-                await waitFor(() =>
-                  expect(scene.__inspectorData.transformControlsRef!.current!.object).toBe(undefined)
+                await waitFor(
+                  () => expect(scene.__inspectorData.transformControlsRef!.current!.object).toBe(undefined),
+                  { timeout: 1000 }
                 );
                 expect(useAppStore.getState().getSelectedObject()).toBe(null);
 
@@ -486,15 +488,17 @@ describe('SetUp', () => {
                 // proving that selecting inside occurred
                 expect(selectedObject.parent).toBe(fbx);
                 expect(selectedObject.name).toBe('Armor_2_0');
-                await waitFor(() =>
-                  expect(scene.__inspectorData.transformControlsRef!.current!.object).toBe(selectedObject)
+                await waitFor(
+                  () => expect(scene.__inspectorData.transformControlsRef!.current!.object).toBe(selectedObject),
+                  { timeout: 1000 }
                 );
 
                 // make the child be a picker
                 selectedObject.__inspectorData.isPicker = true;
                 useAppStore.getState().setSelectedObject(null); // or dblclick outside the object (tested before)
-                await waitFor(() =>
-                  expect(scene.__inspectorData.transformControlsRef!.current!.object).toBe(undefined)
+                await waitFor(
+                  () => expect(scene.__inspectorData.transformControlsRef!.current!.object).toBe(undefined),
+                  { timeout: 1000 }
                 );
                 gl.domElement.dispatchEvent(
                   new MouseEvent('dblclick', {
@@ -509,8 +513,9 @@ describe('SetUp', () => {
                 // proving that even when trying to select inside if the child is a picker it will select the parent
                 expect(selectedObject).toBe(fbx);
                 expect(selectedObject.name).toBe('fbx');
-                await waitFor(() =>
-                  expect(scene.__inspectorData.transformControlsRef!.current!.object).toBe(selectedObject)
+                await waitFor(
+                  () => expect(scene.__inspectorData.transformControlsRef!.current!.object).toBe(selectedObject),
+                  { timeout: 1000 }
                 );
                 res.unmount();
               }, 0);

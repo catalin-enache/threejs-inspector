@@ -4,7 +4,7 @@ import { withScene } from 'testutils/testScene';
 import { createTexturesFromImages } from 'lib/utils/loadTexture';
 
 describe('createTexturesFromImages', () => {
-  it('load cube textures from 6 images', { timeout: 61000 }, async () =>
+  it('load cube textures from 6 images', { timeout: 5000 }, async () =>
     withScene({ sizeUnit: 10, useFloor: false })(async ({ scene }) => {
       const material = new THREE.MeshBasicMaterial();
       material.needsUpdate = false;

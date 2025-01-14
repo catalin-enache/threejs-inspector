@@ -52,7 +52,7 @@ describe('createTexturesFromImages', () => {
       // in createTexturesFromImages
       expect(material.version).toBe(1);
 
-      await new Promise((resolve) => setTimeout(resolve, 60000));
+      // await new Promise((resolve) => setTimeout(resolve, 60000));
     })
   );
 });

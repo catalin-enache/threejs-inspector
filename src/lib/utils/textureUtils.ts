@@ -1,4 +1,32 @@
 import * as THREE from 'three';
+import { TextureImage } from 'src/types';
+
+export const isTextureImage = (obj: any): obj is TextureImage => {
+  if (!obj) return false;
+  return (
+    (obj instanceof HTMLImageElement || obj.data instanceof Uint8Array || obj.data instanceof Uint16Array) &&
+    typeof obj.width === 'number' &&
+    typeof obj.height === 'number'
+  );
+};
+
+export const isPVRCubeTexture = (obj: any) => {
+  return obj instanceof THREE.CompressedTexture && Array.isArray(obj.image) && obj.image.length === 6;
+};
+
+// TODO: move this and the prev one to texture utils
+export const isValidTexture = (obj: any): obj is THREE.Texture => {
+  // ImageTexture or DataTexture or CubeTexture
+
+  return (
+    obj instanceof THREE.Texture &&
+    (obj.image?.width ||
+      (obj as THREE.CubeTexture).images?.[0]?.image?.width ||
+      (obj as THREE.CubeTexture).images?.[0]?.width ||
+      // .pvr is a container with image being a 6x1 cube texture
+      isPVRCubeTexture(obj))
+  );
+};
 
 function directionToCubeFaceUV(direction: [number, number, number]) {
   const abs = direction.map(Math.abs);

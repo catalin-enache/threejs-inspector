@@ -14,7 +14,7 @@ import {
   ddsLoader,
   registerFiles
 } from './loaders';
-import { isValidTexture } from 'src/types';
+import { isValidTexture } from 'lib/utils/textureUtils';
 
 export const FILE_EXR = 'image/x-exr';
 export const FILE_HDR = 'image/hdr';

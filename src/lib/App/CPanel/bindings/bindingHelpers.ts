@@ -7,7 +7,7 @@ import { ParentBindings } from './ParentBindings';
 import { CommonGetterParams } from './bindingTypes';
 import { MaterialBindings } from './MaterialBindings';
 import { animate } from 'lib/utils/animate';
-import { isValidTexture } from 'src/types';
+import { isValidTexture } from 'lib/utils/textureUtils';
 import { CustomParams, isCustomParamStruct } from 'lib/customParam.types';
 
 // helper struct to check in tests if all binding listeners have been removed

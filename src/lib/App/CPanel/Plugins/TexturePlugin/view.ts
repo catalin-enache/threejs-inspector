@@ -2,7 +2,12 @@ import { ViewProps, View, ClassName } from '@tweakpane/core';
 import * as THREE from 'three';
 import './texturePlugin.css';
 import { getWidthHeightFromTexture } from 'lib/utils/loadTexture';
-import { extractCubeTextureFromGPU, extractTextureFromGPU, getFallbackTexture } from 'lib/utils/textureUtils';
+import {
+  extractCubeTextureFromGPU,
+  extractTextureFromGPU,
+  getFallbackTexture,
+  isPVRCubeTexture
+} from 'lib/utils/textureUtils';
 import { thumbnailMaterial, shadowMapMaterial } from 'lib/utils/customShaders';
 import { offlineScene } from 'lib/App/CPanel/offlineScene';
 
@@ -111,28 +116,39 @@ export class TextureView implements View {
     // console.log('TextureView makeMeshFromTexture cache miss', { texture });
     // @ts-ignore
     const idx = 0;
+    const _isPVRCubeTexture = isPVRCubeTexture(texture);
     const isCubeTexture = texture instanceof THREE.CubeTexture;
-    const mapTexture = !isCubeTexture
-      ? texture
-      : texture.images[idx] instanceof THREE.DataTexture
-        ? texture.images[idx] // if CubeTexture already contains Textures get the idx one
-        : texture.images[idx].src
-          ? new THREE.Texture(texture.images[idx]) // else make a new Texture from the first image if it has src
-          : this.renderTarget && this.extractOneTextureAtIndex !== undefined
-            ? extractTextureFromGPU({
-                renderTarget: this.renderTarget,
-                renderer: this.gl,
-                imgObj: texture.images[this.extractOneTextureAtIndex], // could be 0, 1, 2, 3, 4, 5
-                i: this.extractOneTextureAtIndex
-              }).texture
-            : this.renderTarget
-              ? extractCubeTextureFromGPU({
+
+    const mapTexture = _isPVRCubeTexture
+      ? new THREE.CompressedTexture(
+          texture.image[idx].mipmaps,
+          texture.image[idx].mipmaps[0].width,
+          texture.image[idx].mipmaps[0].height,
+          // @ts-ignore
+          texture.format,
+          texture.type
+        )
+      : !isCubeTexture
+        ? texture
+        : texture.images[idx] instanceof THREE.DataTexture
+          ? texture.images[idx] // if CubeTexture already contains Textures get the idx one
+          : texture.images[idx].src
+            ? new THREE.Texture(texture.images[idx]) // else make a new Texture from the first image if it has src
+            : this.renderTarget && this.extractOneTextureAtIndex !== undefined
+              ? extractTextureFromGPU({
                   renderTarget: this.renderTarget,
                   renderer: this.gl,
-                  images: texture.images,
-                  layout: this.select.value as 'cross' | 'equirectangular'
-                })
-              : getFallbackTexture().texture; // ratio: 4:3 (cross) or 2:1 (equirectangular)
+                  imgObj: texture.images[this.extractOneTextureAtIndex], // could be 0, 1, 2, 3, 4, 5
+                  i: this.extractOneTextureAtIndex
+                }).texture
+              : this.renderTarget
+                ? extractCubeTextureFromGPU({
+                    renderTarget: this.renderTarget,
+                    renderer: this.gl,
+                    images: texture.images,
+                    layout: this.select.value as 'cross' | 'equirectangular'
+                  })
+                : getFallbackTexture().texture; // ratio: 4:3 (cross) or 2:1 (equirectangular)
 
     mapTexture.needsUpdate = true;
     thumbnailMaterial.uniforms.map.value = mapTexture;

@@ -1,7 +1,7 @@
 import { BaseInputParams, BindingTarget, createPlugin, InputBindingPlugin } from '@tweakpane/core';
 import * as THREE from 'three';
 import { TextureController } from './controller';
-import { isValidTexture } from 'src/types';
+import { isValidTexture } from 'lib/utils/textureUtils';
 
 const DEFAULT_EXTENSIONS = [
   '.jpg',

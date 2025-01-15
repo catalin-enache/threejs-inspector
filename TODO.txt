@@ -75,7 +75,8 @@ Handle multiple fbx/gltf imports (when animations or other things are separated)
 
 See why it takes that long to select a complex object in the scene. Can cPanel be optimised or is it normal? - *DONE* It was due to TexturePlugin (internal mesh creation)
 
-
+See why after uploading a texture its name is not changed in texture details in inspector.
+Also note that texture controls do not work anymore after uploading a new texture. *DONE* (listening now to cPanelStateFake in selected object tab)
 
 
 Bug: Load Image from CParam then from SceneConfig.
@@ -83,8 +84,7 @@ After loading from scene config the binding reader fires continuously.
 Not happening anymore since using correct internal lastValue.
 However, to test with multi texture bindings later
 
-See why after uploading a texture its name is not changed in texture details in inspector.
-Also note that texture controls do not work anymore after uploading a new texture.
+
 
 Maybe we can make the modal a non React component to use it in React rather than the other way around as we do it now.
 

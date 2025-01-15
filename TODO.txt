@@ -83,7 +83,8 @@ After loading from scene config the binding reader fires continuously.
 Not happening anymore since using correct internal lastValue.
 However, to test with multi texture bindings later
 
-See why after uploading a texture its name is not changed in texture details in inspector
+See why after uploading a texture its name is not changed in texture details in inspector.
+Also note that texture controls do not work anymore after uploading a new texture.
 
 Maybe we can make the modal a non React component to use it in React rather than the other way around as we do it now.
 

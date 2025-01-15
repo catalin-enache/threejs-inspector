@@ -3,7 +3,7 @@ import * as THREE from 'three';
 import { Modal } from 'components/Modal/Modal';
 import { useAppStore } from 'src/store';
 import { loadModel } from 'lib/utils/loadModel';
-import './LoadModel.css';
+import './LoadModelForm.css';
 
 const rootExtensions = ['.glb', '.gltf', '.obj', '.fbx', '.dae', '.3ds', '.stl', '.ply', '.vtk'];
 const allowedExtensions = [
@@ -24,13 +24,13 @@ const allowedExtensions = [
   '.dds'
 ];
 
-interface LoadModelProps {
+interface LoadModelFormProps {
   scene: THREE.Scene;
   camera: THREE.PerspectiveCamera | THREE.OrthographicCamera;
 }
 
 // Using imperative DOM since we cannot use React predefined elements inside R3F canvas.
-export const LoadModel = (props: LoadModelProps) => {
+export const LoadModelForm = (props: LoadModelFormProps) => {
   const { scene, camera } = props;
   const loadAssetIsOpen = useAppStore((state) => state.loadModelIsOpen);
   const setLoadAssetIsOpen = useAppStore((state) => state.setLoadModelIsOpen);

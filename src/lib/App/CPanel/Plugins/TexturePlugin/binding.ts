@@ -16,6 +16,8 @@ const DEFAULT_EXTENSIONS = [
   '.tga',
   '.ktx2',
   '.dds',
+  // .pvr can be single image or 6x1 cube texture.
+  // If 6x1 cube texture, it is only valid as envMap or bumpMap as observed so far
   '.pvr'
 ];
 

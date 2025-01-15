@@ -15,7 +15,8 @@ const DEFAULT_EXTENSIONS = [
   '.hdr',
   '.tga',
   '.ktx2',
-  '.dds'
+  '.dds',
+  '.pvr'
 ];
 
 type TexturePluginConfigKeys = 'gl' | 'isShadowMap' | 'renderTarget' | 'extensions';

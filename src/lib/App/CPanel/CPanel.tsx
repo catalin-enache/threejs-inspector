@@ -349,7 +349,14 @@ export const CPanel = (props: CPanelProps) => {
       .on('change', handleSelectedObjectChanges);
 
     buildBindings(objectFolder, selectedObject, getObject3DBindings(commonGetterParams), commonGetterParams);
-  }, [selectedObjectUUID, commonGetterParams, transformControlsMode, transformControlsSpace]);
+  }, [
+    selectedObjectUUID,
+    commonGetterParams,
+    transformControlsMode,
+    transformControlsSpace,
+    handleSelectedObjectChanges,
+    cPanelStateFake
+  ]);
 
   // Setup bindings for custom params
   useEffect(() => {
@@ -362,7 +369,7 @@ export const CPanel = (props: CPanelProps) => {
       cPanelCustomParams,
       customParamsTab
     });
-  }, [cPanelCustomParams, cPanelCustomParamsStructureStateFake]);
+  }, [cPanelCustomParams, cPanelCustomParamsStructureStateFake, cPanelStateFake]);
 
   // Setup bindings for Scene/Pane
   useEffect(() => {

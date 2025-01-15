@@ -353,6 +353,10 @@ export const useAppStore = create<AppStore>()(
       }));
     },
     cPanelStateFake: 0,
+    // called when CPanel needs to get rebuilt (e.g. when a texture has been changed)
+    // should not be called to often because all CPanel tabs get rebuilt
+    // currently called
+    // - from loadTexture#createTexturesFromImages
     triggerCPaneStateChanged: () => {
       set((state) => ({
         cPanelStateFake: state.cPanelStateFake < 100 ? state.cPanelStateFake + 1 : 0
@@ -392,6 +396,8 @@ export const useAppStore = create<AppStore>()(
       }
     },
     cPanelCustomParamsStructureStateFake: 0,
+    // called
+    //  - from CustomControl when a custom param is added or deleted
     triggerCPanelCustomParamsStructureChanged: () => {
       set((state) => ({
         cPanelCustomParamsStructureStateFake:
@@ -427,12 +433,16 @@ export const useAppStore = create<AppStore>()(
       localStorage.setItem('threeInspector__cameraType', get().cameraType);
     },
     currentCameraStateFake: 0,
+    // called
+    //  - from SetUp when camera changed
     triggerCurrentCameraChanged: () => {
       set((state) => ({
         currentCameraStateFake: state.currentCameraStateFake < 100 ? state.currentCameraStateFake + 1 : 0
       }));
     },
     currentSceneStateFake: 0,
+    // called
+    //  - from SetUp when scene changed
     triggerCurrentSceneChanged: () => {
       set((state) => ({
         currentSceneStateFake: state.currentSceneStateFake < 100 ? state.currentSceneStateFake + 1 : 0
@@ -464,6 +474,9 @@ export const useAppStore = create<AppStore>()(
       });
     },
     selectedObjectStateFake: 0,
+    // called
+    //  - from CPanel when any prop of selected object changed
+    //  - from SetUp when TransformControls changed
     triggerSelectedObjectChanged: () =>
       set((state) => ({
         selectedObjectStateFake: state.selectedObjectStateFake < 100 ? state.selectedObjectStateFake + 1 : 0

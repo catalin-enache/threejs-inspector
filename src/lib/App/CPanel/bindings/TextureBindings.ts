@@ -121,7 +121,8 @@ export const TextureBindings = (params: CommonGetterParams) => ({
     ...numberCommon,
     step: 1,
     min: 0,
-    max: 3
+    max: 3,
+    format: (value: number) => value.toFixed(0)
   },
   wrapS: {
     label: 'Wrap S',

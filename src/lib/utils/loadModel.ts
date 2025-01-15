@@ -146,6 +146,7 @@ export const loadModel = async (
     recombineByMaterial = true,
     autoScaleRatio = 0.4,
     isInspectable = true,
+    path,
     resourcePath,
     debug
   }: {
@@ -156,6 +157,7 @@ export const loadModel = async (
     recombineByMaterial?: boolean;
     autoScaleRatio?: number;
     isInspectable?: boolean;
+    path?: string;
     resourcePath?: string;
     debug?: 'ALL' | string;
   } = {}
@@ -182,6 +184,11 @@ export const loadModel = async (
   const loader = getLoader(fileType);
   if (!loader) return null;
 
+  const oldPath = loader.path ?? '';
+  if (path) {
+    loader.setPath(path);
+  }
+  const oldResourcePath = loader.resourcePath ?? '';
   if (resourcePath) {
     loader.setResourcePath(resourcePath);
   }
@@ -239,6 +246,9 @@ export const loadModel = async (
     // the rest non fbx, glb, gltf files
     result = await loader.loadAsync(rootSource);
   }
+
+  loader.setPath(oldPath);
+  loader.setResourcePath(oldResourcePath);
 
   let root: THREE.Mesh | THREE.Group | null = null;
 

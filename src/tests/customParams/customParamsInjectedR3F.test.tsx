@@ -2,9 +2,9 @@ import { expect, describe, it, beforeEach, afterEach, vi } from 'vitest';
 import { render } from 'vitest-browser-react';
 import { screen, waitFor } from '@testing-library/dom';
 import { TestInjectedInspectorApp, initDOM, clearDOM } from 'testutils/testApp';
-import { defaultScene } from 'lib/App/SetUp/patchThree';
+import { defaultScene } from 'components/SetUp/patchThree';
 import { useAppStore } from 'src/store';
-import { CPanelProps } from 'lib/App/CPanel/CPanel';
+import { CPanelProps } from 'components/CPanel/CPanel';
 import { CustomControl } from 'components/CustomControl/CustomControl';
 
 describe('CustomControl with injected Inspector in R3F App', () => {

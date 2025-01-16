@@ -1,12 +1,12 @@
 import * as THREE from 'three';
 import React, { ReactNode, memo, useMemo } from 'react';
 import { extend, createRoot, events, ReconcilerRoot } from '@react-three/fiber';
-import { SetUp, SetUpProps, SETUP_EFFECT } from './App/SetUp/SetUp'; // patching Object3D
-import { CPanel, CPanelProps } from './App/CPanel/CPanel';
+import { SetUp, SetUpProps, SETUP_EFFECT } from 'components/SetUp/SetUp'; // patching Object3D
+import { CPanel, CPanelProps } from 'components/CPanel/CPanel';
 import { CustomControl } from 'components/CustomControl/CustomControl';
 import { CustomParams, isCustomParamStruct } from 'lib/customParam.types';
 // KeyListener depends on CPanel (sideEffect) to add in DOM CPanel elements to listen to
-import { KeyListener } from './App/KeyListener';
+import { KeyListener } from 'components/KeyListener';
 extend(THREE);
 
 // singleton

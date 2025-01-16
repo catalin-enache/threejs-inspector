@@ -1,9 +1,9 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { BindingParams } from 'tweakpane';
 import { screen, waitFor } from '@testing-library/dom';
-import { defaultScene } from 'lib/App/SetUp/patchThree';
+import { defaultScene } from 'components/SetUp/patchThree';
 import { useAppStore } from 'src/store';
-import { CPanelProps } from 'lib/App/CPanel/CPanel';
+import { CPanelProps } from 'components/CPanel/CPanel';
 import { initNativeApp, InitNativeAppProps } from 'testutils/testNativeApp';
 
 describe('Custom Params', () => {

@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import Stats from 'three/examples/jsm/libs/stats.module.js';
-import patchThree from 'lib/App/SetUp/patchThree';
+import patchThree from 'components/SetUp/patchThree';
 import { useAppStore } from 'src/store';
 import './testScene.css';
 

@@ -5,7 +5,7 @@ import { PositionalAudioHelper } from 'three/examples/jsm/helpers/PositionalAudi
 import { refreshOutliner } from 'lib/third_party/outlinerHelpers';
 import { destroyObject } from 'lib/utils/cleanUp';
 import { useAppStore } from 'src/store';
-import { offlineScene } from 'lib/App/CPanel/offlineScene';
+import { offlineScene } from 'components/CPanel/offlineScene';
 import type { __inspectorData } from 'tsExtensions';
 
 if (!Object.getPrototypeOf(THREE.Object3D.prototype).__inspectorData) {

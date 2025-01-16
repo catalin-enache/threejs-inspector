@@ -3,10 +3,10 @@ import * as THREE from 'three';
 import { Canvas, RootState } from '@react-three/fiber';
 import { Inspector, InspectorProps } from 'lib/injectInspector';
 import { OrbitControls } from '@react-three/drei';
-import { defaultScene, defaultPerspectiveCamera, defaultOrthographicCamera } from 'lib/App/SetUp/patchThree';
-import { SetUpProps } from 'lib/App/SetUp/SetUp';
+import { defaultScene, defaultPerspectiveCamera, defaultOrthographicCamera } from 'components/SetUp/patchThree';
+import { SetUpProps } from 'components/SetUp/SetUp';
 import { useAppStore } from 'src/store';
-import { CPanelProps } from 'lib/App/CPanel/CPanel';
+import { CPanelProps } from 'components/CPanel/CPanel';
 import { useDefaultSetup } from 'lib/hooks';
 
 const styleContent = `

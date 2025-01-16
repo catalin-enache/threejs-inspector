@@ -29,9 +29,9 @@ import {
 // @ts-ignore
 import { outliner } from 'lib/third_party/ui.outliner';
 // @ts-ignore
-import { html } from '../../../../README.md';
-import { CommonGetterParams } from 'lib/App/CPanel/bindings/bindingTypes';
-import { LoadModelForm } from 'components/LoadModelForm/LoadModelForm';
+import { html } from '../../../README.md';
+import { CommonGetterParams } from './bindings/bindingTypes';
+import { LoadModelForm } from '../LoadModelForm/LoadModelForm';
 import './CPanel.css';
 
 const cPanel = document.createElement('div');

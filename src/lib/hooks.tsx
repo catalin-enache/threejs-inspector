@@ -3,9 +3,9 @@ import { useMemo, useEffect, useState } from 'react';
 import { RootState, useFrame } from '@react-three/fiber';
 import { _XRFrame } from '@react-three/fiber/dist/declarations/src/core/utils';
 import { AppStore, useAppStore } from 'src/store';
-import { getCurrentScene, SetUp, SetUpProps } from 'lib/App/SetUp/SetUp';
-import { CPanel, CPanelProps } from 'lib/App/CPanel/CPanel';
-import { KeyListener } from 'lib/App/KeyListener';
+import { getCurrentScene, SetUp, SetUpProps } from 'components/SetUp/SetUp';
+import { CPanel, CPanelProps } from 'components/CPanel/CPanel';
+import { KeyListener } from 'components/KeyListener';
 
 let lastState: RootState;
 let lastXFrame: _XRFrame;

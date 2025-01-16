@@ -9,7 +9,7 @@ import {
   isPVRCubeTexture
 } from 'lib/utils/textureUtils';
 import { thumbnailMaterial, shadowMapMaterial } from 'lib/utils/customShaders';
-import { offlineScene } from 'lib/App/CPanel/offlineScene';
+import { offlineScene } from 'components/CPanel/offlineScene';
 
 const offlineOrthographicCamera = new THREE.OrthographicCamera();
 

@@ -1,7 +1,7 @@
 import { useAppStore } from 'src/store';
 import { focusCamera } from 'lib/utils/cameraUtils';
 import type { CommonGetterParams, onChange } from './bindingTypes';
-import { numberCommon } from 'lib/App/CPanel/bindings/bindingHelpers';
+import { numberCommon } from './bindingHelpers';
 
 // keys are not relevant for buttons
 export const SceneButtons = ({ playingState, sceneObjects: { camera, scene } }: CommonGetterParams) => ({

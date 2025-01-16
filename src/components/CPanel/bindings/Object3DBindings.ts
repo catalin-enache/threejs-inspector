@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import type { CommonGetterParams, onChange } from './bindingTypes';
 import { numberCommon } from './bindingHelpers';
 import { radToDegFormatter } from 'lib/utils';
-import { MaterialBindings } from 'lib/App/CPanel/bindings/MaterialBindings';
+import { MaterialBindings } from './MaterialBindings';
 import { useAppStore } from 'src/store';
 
 // const isSkinnedMesh = (object: THREE.Object3D) => object instanceof THREE.SkinnedMesh;

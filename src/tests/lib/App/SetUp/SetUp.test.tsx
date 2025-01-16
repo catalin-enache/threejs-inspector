@@ -3,14 +3,14 @@ import { expect, describe, it, beforeEach, afterEach } from 'vitest';
 import { render } from 'vitest-browser-react';
 import { screen, within, waitFor } from '@testing-library/dom';
 import { TestInjectedInspectorApp, TestDefaultApp, initDOM, clearDOM } from 'testutils/testApp';
-import { defaultScene, defaultPerspectiveCamera, defaultOrthographicCamera } from 'lib/App/SetUp/patchThree';
+import { defaultScene, defaultPerspectiveCamera, defaultOrthographicCamera } from 'components/SetUp/patchThree';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import { OrbitControls as OrbitControlsImpl } from 'three-stdlib';
-import { SETUP_EFFECT, SetUpProps } from 'lib/App/SetUp/SetUp';
+import { SETUP_EFFECT, SetUpProps } from 'components/SetUp/SetUp';
 import { useAppStore } from 'src/store';
-import patchThree from 'lib/App/SetUp/patchThree';
+import patchThree from 'components/SetUp/patchThree';
 
-import { CPanelProps } from 'lib/App/CPanel/CPanel';
+import { CPanelProps } from 'components/CPanel/CPanel';
 import { degToRad } from 'lib/utils';
 import { loadModel } from 'lib/utils/loadModel';
 

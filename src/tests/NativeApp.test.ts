@@ -1,10 +1,10 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { waitFor } from '@testing-library/dom';
-import { defaultOrthographicCamera, defaultPerspectiveCamera, defaultScene } from 'lib/App/SetUp/patchThree';
+import { defaultOrthographicCamera, defaultPerspectiveCamera, defaultScene } from 'components/SetUp/patchThree';
 import { useAppStore } from 'src/store';
-import { CPanelProps } from 'lib/App/CPanel/CPanel';
+import { CPanelProps } from 'components/CPanel/CPanel';
 import { initNativeApp } from 'testutils/testNativeApp';
-import { SETUP_EFFECT, SetUpProps } from 'lib/App/SetUp/SetUp';
+import { SETUP_EFFECT, SetUpProps } from 'components/SetUp/SetUp';
 
 describe('injectInspector', () => {
   beforeEach(() => {});

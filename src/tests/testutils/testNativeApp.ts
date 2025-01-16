@@ -3,8 +3,8 @@ import { injectInspector } from 'src/lib/injectInspector';
 import { CustomParams } from 'lib/customParam.types';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import Stats from 'three/examples/jsm/libs/stats.module';
-import { SetUpProps } from 'lib/App/SetUp/SetUp';
-import { CPanelProps } from 'lib/App/CPanel/CPanel';
+import { SetUpProps } from 'components/SetUp/SetUp';
+import { CPanelProps } from 'components/CPanel/CPanel';
 
 export interface InitNativeAppProps {
   renderer?: THREE.WebGLRenderer;

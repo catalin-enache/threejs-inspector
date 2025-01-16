@@ -14,10 +14,8 @@ export const isPVRCubeTexture = (obj: any) => {
   return obj instanceof THREE.CompressedTexture && Array.isArray(obj.image) && obj.image.length === 6;
 };
 
-// TODO: move this and the prev one to texture utils
 export const isValidTexture = (obj: any): obj is THREE.Texture => {
   // ImageTexture or DataTexture or CubeTexture
-
   return (
     obj instanceof THREE.Texture &&
     (obj.image?.width ||

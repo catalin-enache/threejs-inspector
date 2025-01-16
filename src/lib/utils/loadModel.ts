@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { getNameAndType } from '.';
+import { getFileNameAndType } from './fileUtils';
 import type { GLTF, Collada } from './loaders';
 import {
   registerFiles,
@@ -163,7 +163,7 @@ export const loadModel = async (
   } = {}
 ) => {
   const rootSource = rootFile instanceof File ? rootFile.name : rootFile;
-  const nameAndFileType = getNameAndType(rootSource, fileTypeMap);
+  const nameAndFileType = getFileNameAndType(rootSource, fileTypeMap);
   let { name } = nameAndFileType;
   const { fileType } = nameAndFileType;
 

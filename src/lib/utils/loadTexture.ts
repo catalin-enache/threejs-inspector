@@ -1,7 +1,7 @@
 import React from 'react';
 import * as THREE from 'three';
 import { useAppStore } from 'src/store';
-import { getNameAndType, getFileType } from '.';
+import { getFileNameAndType, getFileType } from './fileUtils';
 import {
   tiffLoader,
   exrLoader,
@@ -131,7 +131,7 @@ export const cubeTextureLoader = async (
   registerFiles(sortedFiles); // takes care of calling URL.createObjectURL(file)
   const textures = (await Promise.all(
     sortedFiles.map((file) => {
-      const { fileType, name } = getNameAndType(file, fileTypeMap);
+      const { fileType, name } = getFileNameAndType(file, fileTypeMap);
       const loader = getImageLoader(fileType, name);
       const oldPath = loader.path ?? '';
       if (path) {
@@ -147,7 +147,7 @@ export const cubeTextureLoader = async (
     texture.images[index] = tempTexture instanceof THREE.DataTexture ? tempTexture : tempTexture.image;
   });
 
-  const { fileType } = getNameAndType(sortedFiles[0], fileTypeMap);
+  const { fileType } = getFileNameAndType(sortedFiles[0], fileTypeMap);
   const isLinear = fileType === FILE_EXR || fileType === FILE_HDR;
 
   texture.name = sortedFiles[0] instanceof File ? (sortedFiles[0] as File).name : (sortedFiles[0] as string);
@@ -167,12 +167,12 @@ const posNegXYXSet = new Set(['posx', 'posy', 'posz', 'negx', 'negy', 'negz']);
 
 const shouldMakeCubeTexture = (files: (File | string)[]): boolean => {
   const allPX = files.every((file) => {
-    const { name } = getNameAndType(file, fileTypeMap);
+    const { name } = getFileNameAndType(file, fileTypeMap);
     const coords = getCubeCoords(name);
     return pnXYZSet.has(coords);
   });
   const allSX = files.every((file) => {
-    const { name } = getNameAndType(file, fileTypeMap);
+    const { name } = getFileNameAndType(file, fileTypeMap);
     const coords = getCubeCoords(name, 4);
     return posNegXYXSet.has(coords);
   });

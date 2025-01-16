@@ -2,7 +2,7 @@ import { expect, describe, it, beforeEach, afterEach, vi } from 'vitest';
 import { render } from 'vitest-browser-react';
 import { screen, waitFor } from '@testing-library/dom';
 import { TestInjectedInspectorApp, initDOM, clearDOM } from 'testutils/testApp';
-import { defaultScene } from 'components/SetUp/patchThree';
+import { defaultScene } from 'lib/patchThree';
 import { useAppStore } from 'src/store';
 import { CPanelProps } from 'components/CPanel/CPanel';
 import { CustomControl } from 'components/CustomControl/CustomControl';

@@ -6,12 +6,16 @@ import Stats from 'three/addons/libs/stats.module.js';
 import { CustomControl } from 'components/CustomControl/CustomControl';
 import { usePlay } from 'lib/hooks';
 import { degToRad } from 'lib/utils';
-import { createTexturesFromImages } from 'lib/utils/imageUtils';
+import { createTexturesFromImages } from 'lib/utils/loadTexture';
 import { TestIndexedCube3Materials } from './TestIndexedCube3Materials';
 // import { TestMorphTargets } from './TestMorphTargets';
-import { splitMeshesByMaterial } from 'lib/utils/optimiseAsset';
+import { splitMeshesByMaterial } from 'lib/utils/optimiseModel';
 // @ts-ignore
 import { loadModel } from 'lib/utils/loadModel';
+import { LightProbeGenerator } from 'three/examples/jsm/lights/LightProbeGenerator';
+import { shadowMapMaterial } from 'lib/utils/customShaders';
+import patchThree from 'lib/patchThree';
+import { useAppStore } from 'src/store';
 
 const stats = new Stats();
 document.body.appendChild(stats.dom);
@@ -88,13 +92,22 @@ function Box(
 
 export function Experience() {
   // @ts-ignore
-  const { scene, gl, clock } = useThree();
-
+  const { scene, gl, clock, camera } = useThree();
   const refDirectionalLight = useRef<THREE.DirectionalLight>(null!);
   const refPointLight = useRef<THREE.PointLight>(null!);
+  const refSpotLight = useRef<THREE.SpotLight>(null!);
+  const refLightProbe = useRef<THREE.LightProbe>(null!);
   const doorMaterialRef = useRef<THREE.MeshStandardMaterial>(null!);
   const cubeCameraRef = useRef<THREE.CubeCamera>(null!);
-  const webGLCubeRenderTargetRef = useRef(new THREE.WebGLCubeRenderTarget(128));
+  const webGLCubeRenderTargetRef = useRef(
+    new THREE.WebGLCubeRenderTarget(1024, {
+      // these are not required
+      // type: THREE.HalfFloatType // does not work well when reading back the texture in inspector/TexturePlugin
+      // format: THREE.RGBAFormat
+      // generateMipmaps: true
+      // depthTexture: new THREE.DepthTexture(512, 512)
+    })
+  );
   useFrame((_state, _delta) => {
     stats.update();
     if (refPointLight.current) {
@@ -161,21 +174,25 @@ export function Experience() {
     // ['px', 'nx', 'py', 'ny', 'pz', 'nz'].map((t) => `textures/background/cube/MilkyWay/dark-s_${t}.jpg`)
     // ['px', 'nx', 'py', 'ny', 'pz', 'nz'].map((t) => `textures/background/cube/Park3Med/${t}.jpg`)
     // ['px', 'nx', 'py', 'ny', 'pz', 'nz'].map((t) => `textures/background/cube/skyboxsun25deg/${t}.jpg`)
-    createTexturesFromImages(
-      ['px', 'nx', 'py', 'ny', 'pz', 'nz'].map((t) => `textures/background/cube/Park3Med/${t}.jpg`),
-      { gl }
-    ).then((textures) => {
+    // ['px', 'nx', 'py', 'ny', 'pz', 'nz'].map((t) => `textures/background/cube/pisa/${t}.png`)
+    createTexturesFromImages('textures/background/equirectangular/spruit_sunrise_4k.hdr.jpg', {}).then((textures) => {
       // console.log('createTextureFromImages', textures);
       const texture = textures[0];
       texture.mapping =
         texture instanceof THREE.CubeTexture
-          ? THREE.CubeRefractionMapping
+          ? THREE.CubeRefractionMapping // THREE.CubeReflectionMapping, THREE.CubeRefractionMapping
           : texture.image.width / texture.image.height === 2
             ? THREE.EquirectangularRefractionMapping
             : THREE.UVMapping;
       // texture.mapping = THREE.EquirectangularReflectionMapping;
       texture.needsUpdate = true;
       // texture.colorSpace = THREE.SRGBColorSpace;
+      if (refLightProbe.current && texture instanceof THREE.CubeTexture) {
+        refLightProbe.current.copy(LightProbeGenerator.fromCubeTexture(texture));
+        refLightProbe.current.name = 'myLightProbe';
+        refLightProbe.current.position.set(0, 0, 3);
+        refLightProbe.current.intensity = 1;
+      }
 
       // const pmremGenerator = new THREE.PMREMGenerator(gl);
 
@@ -203,7 +220,12 @@ export function Experience() {
       // texture.needsPMREMUpdate = true;
       // texture.needsUpdate = true;
 
-      // loadModel('models/FromThreeRepo/ply/binary/Lucy100k.ply', scene, {}).then((mesh) => {
+      doorMaterialRef.current.envMap = scene.environment;
+      useAppStore.getState().triggerCPaneStateChanged();
+
+      patchThree.updateCubeCameras();
+
+      // loadModel('models/FromThreeRepo/ply/binary/Lucy100k.ply', {}).then((mesh) => {
       //   if (!mesh) return;
       //   mesh.name = 'LoadedMesh';
       //
@@ -227,11 +249,13 @@ export function Experience() {
       // models/MyTests/with_non_default_textures/with_non_native_textures.fbx
       // models/NonFree/Dark Elf Blader - Game Ready/Assets/Textures/DarkElfBlader_FBX_From3DsMax.fbx
       // models/Free/gltf/Mixamo/Jennifer/Jennifer.glb
-      loadModel('models/Free/gltf/Mixamo/Jennifer/Jennifer.glb', scene, {
+      loadModel('models/Free/gltf/Mixamo/Jennifer/Jennifer.glb', {
         filesArray: [
           'models/Free/gltf/Mixamo/Jennifer/Animations_gltf/Idle.glb',
           'models/Free/gltf/Mixamo/Jennifer/Animations_gltf/Catwalk_Walk_Forward.glb'
-        ]
+        ],
+        scene,
+        camera
         // resourcePath: 'models/MyTests/with_non_native_textures/textures/'
       }).then((mesh) => {
         if (!mesh) return;
@@ -241,7 +265,8 @@ export function Experience() {
       const testIndexedCube3Materials = TestIndexedCube3Materials();
       // const testMorphTargets = TestMorphTargets();
       const recombinedCube = splitMeshesByMaterial(testIndexedCube3Materials, {});
-
+      recombinedCube.castShadow = true;
+      recombinedCube.receiveShadow = true;
       // testIndexedCube3Materials.position.set(0, 0, 0);
       // recombinedCube.position.set(0, 3, 0);
       // recombinedCube.name = 'recombinedCube';
@@ -255,6 +280,10 @@ export function Experience() {
       // scene.add(testIndexedCube3Materials);
       scene.add(recombinedCube);
       // scene.add(testMorphTargets);
+      // shadowMapMaterial.uniforms.tDiffuse.value = refDirectionalLight.current.shadow.map?.texture;
+      // gl.setSize(400, 200);
+      // camera.aspect = 400 / 200;
+      // camera.updateProjectionMatrix();
     });
   }, []);
 
@@ -265,6 +294,10 @@ export function Experience() {
           shadow-mapSize-width={2048}
           shadow-mapSize-height={2048}
           shadow-radius={4}
+          shadow-camera-right={15}
+          shadow-camera-left={-15}
+          shadow-camera-top={15}
+          shadow-camera-bottom={-15}
           // shadow-bias={-0.001}
           shadow-blurSamples={8}
           castShadow
@@ -281,8 +314,15 @@ export function Experience() {
         {/*  color={new THREE.Color().setHSL(0.6, 1, 0.6)}*/}
         {/*  groundColor={new THREE.Color().setHSL(0.095, 1, 0.75)}*/}
         {/*/>*/}
-        <ambientLight color={'#ffffff'} intensity={3.5} position={[0, 1, 0]} />
-        <rectAreaLight color={'deepskyblue'} position={[-3, 0, -8]} rotation={[-2.51, 0, 0]} intensity={6} />
+        {/*<ambientLight color={'#ffffff'} intensity={3.5} position={[0, 1, 0]} />*/}
+        <rectAreaLight
+          color={'deepskyblue'}
+          position={[-3, 0, -8]}
+          rotation={[-2.51, 0, 0]}
+          intensity={6}
+          width={10}
+          height={10}
+        />
         <pointLight
           castShadow
           // shadow-mapSize={[2048, 2048]}
@@ -299,14 +339,16 @@ export function Experience() {
           castShadow
           position={[5.5, -0.7, 0.3]}
           scale={1}
-          intensity={5.5}
-          distance={8}
+          intensity={66}
+          distance={30}
           color="deepskyblue"
           angle={Math.PI / 8}
           penumbra={0.5}
+          decay={0.1}
+          ref={refSpotLight}
         ></spotLight>
 
-        <lightProbe color={'blue'} position={[0, 0, 3]} name={'myLightProbe'} />
+        <lightProbe ref={refLightProbe} color={'blue'} position={[0, 0, 3]} name={'myLightProbe'} />
       </group>
 
       <Box
@@ -355,6 +397,26 @@ export function Experience() {
       </mesh>
 
       <mesh
+        name="shMapPlane"
+        rotation={[-1.5, 0, 0]}
+        position={[-15, -17.23, -3]}
+        receiveShadow={false}
+        castShadow={false}
+        __inspectorData={{ isInspectable: true }}
+        material={shadowMapMaterial}
+      >
+        <planeGeometry args={[32, 32]} />
+        {/*<meshStandardMaterial side={THREE.DoubleSide} map={refDirectionalLight.current?.shadow?.map?.texture} />*/}
+        {/*<meshStandardMaterial*/}
+        {/*  roughness={0}*/}
+        {/*  metalness={1}*/}
+        {/*  envMap={webGLCubeRenderTargetRef.current.texture}*/}
+        {/*  color="white"*/}
+        {/*  side={THREE.DoubleSide}*/}
+        {/*/>*/}
+      </mesh>
+
+      <mesh
         name="door"
         rotation={[0, 0, 0]}
         position={[0, 0, -2]}
@@ -377,11 +439,20 @@ export function Experience() {
         __inspectorData={{ useOnPlay: true }}
       />
 
+      {/*<orthographicCamera*/}
+      {/*  args={[0, -0, 0, -0, 0.1, 10000]} // window.innerWidth / window.innerHeight*/}
+      {/*  zoom={45}*/}
+      {/*  position={[-12.98, 3.963, 4.346]}*/}
+      {/*  name="myOrthographicCamera"*/}
+      {/*  rotation={[degToRad(-42.342), degToRad(-65.604), degToRad(-39.706)]} // 25.86 , -46.13, 19.26*/}
+      {/*  __inspectorData={{ useOnPlay: true }}*/}
+      {/*/>*/}
+
       <cubeCamera
         ref={cubeCameraRef}
         name="myCubeCamera"
-        args={[0, 1000, webGLCubeRenderTargetRef.current]}
-        position={[-3, 0, 0]}
+        args={[0.1, 1000, webGLCubeRenderTargetRef.current]}
+        position={[0, 0, 8]}
       />
 
       <CustomControl
@@ -392,7 +463,6 @@ export function Experience() {
           label: 'My Bool',
           onChange: (value: boolean) => {
             setShowOthers(value);
-            console.log('Experience reacting to myBool value change', value);
           }
         }}
       />
@@ -404,7 +474,6 @@ export function Experience() {
           label: 'My Bool',
           onChange: (value: boolean) => {
             setShowOthers(value);
-            console.log('Experience reacting to myBool_2 value change', value);
           }
         }}
       />
@@ -416,7 +485,7 @@ export function Experience() {
             prop={'background'}
             control={{
               label: 'Texture',
-              view: 'texture',
+              gl,
               color: { type: 'float' },
               onChange: (...args: any[]) => {
                 console.log('Experience reacting to SceneBG value change', args);
@@ -447,6 +516,7 @@ export function Experience() {
               keyScale: 0.1,
               pointerScale: 0.01,
               onChange: (value: any) => {
+                setCustomControlXY({ ...value });
                 customPropsRef.current.myNumber = value.x;
               }
             }}

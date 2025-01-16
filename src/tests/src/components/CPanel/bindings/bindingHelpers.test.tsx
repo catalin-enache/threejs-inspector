@@ -5,7 +5,7 @@ import { render } from 'vitest-browser-react';
 import { screen, waitFor } from '@testing-library/dom';
 import { FolderApi, Pane } from 'tweakpane';
 import { TestDefaultApp, initDOM, clearDOM } from 'testutils/testApp';
-import { defaultScene } from 'components/SetUp/patchThree';
+import { defaultScene } from 'lib/patchThree';
 import { useAppStore } from 'src/store';
 import { CPanelProps } from 'components/CPanel/CPanel';
 import { getPaneTab, setSelectedTab } from 'components/CPanel/CPanel';

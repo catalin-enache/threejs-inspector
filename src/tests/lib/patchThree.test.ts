@@ -3,7 +3,7 @@ import { expect, describe, it, vi } from 'vitest';
 import { withScene } from 'testutils/testScene';
 import { roundArray } from 'testutils/roundArray';
 import { offlineScene } from 'components/CPanel/offlineScene';
-import patchThree from 'components/SetUp/patchThree';
+import patchThree from 'lib/patchThree';
 import { useAppStore } from 'src/store';
 import { TransformControls } from 'three/examples/jsm/controls/TransformControls';
 import { LightProbeGenerator } from 'three/examples/jsm/lights/LightProbeGenerator';

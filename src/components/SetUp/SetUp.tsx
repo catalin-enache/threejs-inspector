@@ -6,7 +6,7 @@ import { TransformControls } from 'three/examples/jsm/controls/TransformControls
 import { RectAreaLightUniformsLib } from 'three/examples/jsm/lights/RectAreaLightUniformsLib';
 import { FlyControls } from 'components/FlyControls';
 import { useAppStore } from 'src/store';
-import patchThree from 'components/SetUp/patchThree';
+import patchThree from 'lib/patchThree';
 import { getPatchedOrbitControls } from 'lib/utils/patchedOrbitControls';
 // @ts-ignore
 import { outliner } from 'lib/third_party/ui.outliner';

@@ -6,7 +6,7 @@ import { CustomControl } from 'components/CustomControl/CustomControl';
 import { usePlay } from 'lib/hooks';
 import { projectLongLatOnSphere } from 'lib/utils/projectLongLatOnSphere';
 import { useAppStore } from 'src/store';
-import patchThree from 'components/SetUp/patchThree';
+import patchThree from 'lib/patchThree';
 
 const stats = new Stats();
 document.body.appendChild(stats.dom);

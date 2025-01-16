@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { waitFor } from '@testing-library/dom';
-import { defaultOrthographicCamera, defaultPerspectiveCamera, defaultScene } from 'components/SetUp/patchThree';
+import { defaultOrthographicCamera, defaultPerspectiveCamera, defaultScene } from 'lib/patchThree';
 import { useAppStore } from 'src/store';
 import { CPanelProps } from 'components/CPanel/CPanel';
 import { initNativeApp } from 'testutils/testNativeApp';

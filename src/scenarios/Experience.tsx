@@ -310,7 +310,7 @@ export function Experience() {
         {/*  color={new THREE.Color().setHSL(0.6, 1, 0.6)}*/}
         {/*  groundColor={new THREE.Color().setHSL(0.095, 1, 0.75)}*/}
         {/*/>*/}
-        <ambientLight color={'#ffffff'} intensity={3.5} position={[0, 1, 0]} />
+        {/*<ambientLight color={'#ffffff'} intensity={3.5} position={[0, 1, 0]} />*/}
         <rectAreaLight
           color={'deepskyblue'}
           position={[-3, 0, -8]}

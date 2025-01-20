@@ -274,4 +274,63 @@ describe('loadModel', () => {
       })
     );
   });
+
+  describe('recombineByMaterial', () => {
+    describe('when recombineByMaterial is false', () => {
+      it('allows one mesh with more materials', { timeout: 5000 }, async () =>
+        withScene()(async ({ scene, camera }) => {
+          const fbx = await loadModel('test_multi_features.fbx', {
+            autoScaleRatio: 0.1,
+            scene,
+            camera,
+            path: '/models/MyTests/test_multi_features/',
+            recombineByMaterial: false
+          });
+
+          if (!fbx) {
+            throw new Error('Failed to load fbx test_multi_features.fbx');
+          }
+
+          scene.add(fbx);
+          expect(fbx.name).toBe('test_multi_features.fbx');
+
+          expect(fbx.children.length).toBe(4);
+          expect(fbx.children[2].name).toBe('Cylinder');
+          // @ts-ignore
+          expect(fbx.children[2].material.length).toBe(4);
+
+          // await new Promise((resolve) => setTimeout(resolve, 60000));
+        })
+      );
+    });
+
+    describe('when recombineByMaterial is true', () => {
+      it('splits a mesh in how many materials it has', { timeout: 5000 }, async () =>
+        withScene()(async ({ scene, camera }) => {
+          const fbx = await loadModel('test_multi_features.fbx', {
+            autoScaleRatio: 0.1,
+            scene,
+            camera,
+            path: '/models/MyTests/test_multi_features/',
+            recombineByMaterial: true // the only diff compared to the previous test
+          });
+
+          if (!fbx) {
+            throw new Error('Failed to load fbx test_multi_features.fbx');
+          }
+
+          scene.add(fbx);
+          expect(fbx.name).toBe('test_multi_features.fbx');
+
+          expect(fbx.children.length).toBe(7);
+          expect(fbx.children[2].name).toBe('Cylinder_0');
+          expect(fbx.children[3].name).toBe('Cylinder_1');
+          expect(fbx.children[4].name).toBe('Cylinder_2');
+          expect(fbx.children[5].name).toBe('Cylinder_3');
+
+          // await new Promise((resolve) => setTimeout(resolve, 60000));
+        })
+      );
+    });
+  });
 });

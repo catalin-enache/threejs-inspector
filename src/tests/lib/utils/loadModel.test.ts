@@ -175,5 +175,31 @@ describe('loadModel', () => {
     );
   });
 
+  // .collada
+  describe('when animations are external', () => {
+    it('they are loaded correctly', { timeout: 5000 }, async () =>
+      withScene()(async ({ scene, camera }) => {
+        const collada = await loadModel(['elf.dae'], {
+          autoScaleRatio: 0.1,
+          scene,
+          camera,
+          path: '/models/FromThreeRepo/collada/elf/'
+        });
+
+        if (!collada) {
+          throw new Error('Failed to load model');
+        }
+
+        scene.add(collada);
+        expect(collada.name).toBe('elf.dae');
+        expect(collada.children.length).toBe(4);
+        // @ts-ignore
+        await waitFor(() => expect(collada.children[0].material.map.image.src.endsWith('ce.jpg')).toBe(true));
+
+        // await new Promise((resolve) => setTimeout(resolve, 60000));
+      })
+    );
+  });
+
   // TODO: test each type of asset
 });

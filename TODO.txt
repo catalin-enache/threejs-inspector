@@ -89,7 +89,6 @@ Why on loading Jenifer the body texture changes luminosity after expanding body 
 
 Maybe we can make the modal a non React component to use it in React rather than the other way around as we do it now.
 
-
 Add experience switcher in CPanel to easy switch between available experiences
 
 Test with WebGPURenderer (for now R3F does not support it)

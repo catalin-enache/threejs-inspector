@@ -2,10 +2,11 @@ import * as THREE from 'three';
 import { expect, describe, it } from 'vitest';
 import { withScene } from 'testutils/testScene';
 import { loadModel } from 'lib/utils/loadModel';
+import { waitFor } from '@testing-library/dom';
 
 describe('loadModel', () => {
-  describe('FBXLoader', () => {
-    it('loads non native textures', { timeout: 5000 }, async () =>
+  describe('when fbx file', () => {
+    it('loads non native textures - considers resourcePath if provided', { timeout: 5000 }, async () =>
       withScene()(async ({ scene, camera }) => {
         const fbx = await loadModel('with_non_native_textures.fbx', {
           autoScaleRatio: 0.01,
@@ -21,16 +22,48 @@ describe('loadModel', () => {
 
         scene.add(fbx);
 
-        // using LoadingManager.onLoad to wait after all textures have been loaded
-        const onLoad = () => {
-          const isOK = fbx.children.every((child) => {
-            return ((child as THREE.Mesh).material as THREE.MeshPhongMaterial).map?.source.data.width === 512;
-          });
-          expect(isOK).toBeTruthy();
-          window.removeEventListener('LoadingManager.onLoad', onLoad);
-        };
+        await waitFor(() => expect(fbx.children.length).toBe(5), { timeout: 5000 });
+        await waitFor(
+          () =>
+            expect(
+              fbx.children.every(
+                (child) => ((child as THREE.Mesh).material as THREE.MeshPhongMaterial).map?.source.data.width === 512
+              )
+            ),
+          { timeout: 5000 }
+        );
 
-        window.addEventListener('LoadingManager.onLoad', onLoad);
+        // await new Promise((resolve) => setTimeout(resolve, 60000));
+      })
+    );
+  });
+
+  describe('when obj file', () => {
+    it('loads obj file including mtl file if provided', { timeout: 5000 }, async () =>
+      withScene()(async ({ scene, camera }) => {
+        const obj = await loadModel(['female02.obj', 'female02.mtl'], {
+          autoScaleRatio: 0.1,
+          scene,
+          camera,
+          path: '/models/FromThreeRepo/obj/female02/'
+        });
+
+        if (!obj) {
+          throw new Error('Failed to load model');
+        }
+
+        scene.add(obj);
+
+        await waitFor(() => expect(obj.children.length).toBe(15), { timeout: 5000 });
+        await waitFor(
+          () =>
+            expect(
+              ((obj.children[0] as THREE.Mesh).material as THREE.MeshBasicMaterial).map!.image.src.endsWith(
+                'obj/female02/03_-_Default1noCulling.JPG'
+              )
+            ).toBe(true),
+          { timeout: 5000 }
+        );
         // await new Promise((resolve) => setTimeout(resolve, 60000));
       })
     );
@@ -45,7 +78,6 @@ describe('loadModel', () => {
           camera,
           path: '/models/MyTests/having space in path/'
         });
-        console.log(fbx);
 
         if (!fbx) {
           throw new Error('Failed to load model');
@@ -53,18 +85,55 @@ describe('loadModel', () => {
 
         scene.add(fbx);
 
-        // using LoadingManager.onLoad to wait after all textures have been loaded
-        const onLoad = () => {
-          const isOK = fbx.children.every((child) => {
-            return ((child as THREE.Mesh).material as THREE.MeshPhongMaterial).map?.source.data.width === 512;
-          });
-          expect(isOK).toBeTruthy();
-          window.removeEventListener('LoadingManager.onLoad', onLoad);
-        };
+        await waitFor(() => expect(fbx.children.length).toBe(1), { timeout: 5000 });
+        await waitFor(
+          () =>
+            expect(
+              fbx.children.every(
+                (child) => ((child as THREE.Mesh).material as THREE.MeshPhongMaterial).map?.source.data.width === 512
+              )
+            ),
+          { timeout: 5000 }
+        );
 
-        window.addEventListener('LoadingManager.onLoad', onLoad);
         // await new Promise((resolve) => setTimeout(resolve, 60000));
       })
     );
   });
+
+  describe('when animations are external', () => {
+    it('they are loaded correctly', { timeout: 5000 }, async () =>
+      withScene()(async ({ scene, camera }) => {
+        const asset = await loadModel(
+          [
+            'Jennifer.glb',
+            'Animations_gltf/Idle.glb',
+            'Animations_gltf/Catwalk_Walk_Forward.glb',
+            'Animations_gltf/Running.glb'
+          ],
+          {
+            autoScaleRatio: 0.01,
+            scene,
+            camera,
+            path: '/models/Free/gltf/Mixamo/Jennifer/'
+          }
+        );
+
+        if (!asset) {
+          throw new Error('Failed to load model');
+        }
+
+        scene.add(asset);
+
+        await waitFor(() => expect(asset.animations.length).toEqual(3));
+        expect(asset.animations[0].name.endsWith('Idle.glb'));
+        expect(asset.animations[1].name.endsWith('Catwalk_Walk_Forward.glb'));
+        expect(asset.animations[2].name.endsWith('Running.glb'));
+
+        // await new Promise((resolve) => setTimeout(resolve, 60000));
+      })
+    );
+  });
+
+  // TODO: test each type of asset
 });

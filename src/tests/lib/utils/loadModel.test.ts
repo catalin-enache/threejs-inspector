@@ -105,6 +105,50 @@ describe('loadModel', () => {
     );
   });
 
+  // .collada
+  describe('when collada file', () => {
+    it('loads model correctly including animations', { timeout: 5000 }, async () =>
+      withScene()(async ({ scene, camera }) => {
+        const collada = await loadModel('elf.dae', {
+          autoScaleRatio: 0.1,
+          scene,
+          camera,
+          path: '/models/FromThreeRepo/collada/elf/'
+        });
+
+        if (!collada) {
+          throw new Error('Failed to load model elf.dae');
+        }
+
+        scene.add(collada);
+        expect(collada.name).toBe('elf.dae');
+        expect(collada.children.length).toBe(4);
+        // @ts-ignore
+        await waitFor(() => expect(collada.children[0].material.map.image.src.endsWith('ce.jpg')).toBe(true));
+
+        const collada2 = await loadModel('stormtrooper.dae', {
+          autoScaleRatio: 0.1,
+          scene,
+          camera,
+          path: '/models/FromThreeRepo/collada/stormtrooper/'
+        });
+
+        if (!collada2) {
+          throw new Error('Failed to load model stormtrooper.dae');
+        }
+
+        scene.add(collada2);
+        collada2.position.set(100, 0, 0);
+
+        expect(collada2.name).toBe('stormtrooper.dae');
+        expect(collada2.children.length).toBe(2);
+        expect(collada2.animations.length).toBe(1);
+
+        // await new Promise((resolve) => setTimeout(resolve, 60000));
+      })
+    );
+  });
+
   // .fbx
   describe('when path has spaces', () => {
     it('loads model correctly', { timeout: 5000 }, async () =>
@@ -169,32 +213,6 @@ describe('loadModel', () => {
         expect(glb.animations[0].name.endsWith('Idle.glb'));
         expect(glb.animations[1].name.endsWith('Catwalk_Walk_Forward.glb'));
         expect(glb.animations[2].name.endsWith('Running.glb'));
-
-        // await new Promise((resolve) => setTimeout(resolve, 60000));
-      })
-    );
-  });
-
-  // .collada
-  describe('when animations are external', () => {
-    it('they are loaded correctly', { timeout: 5000 }, async () =>
-      withScene()(async ({ scene, camera }) => {
-        const collada = await loadModel(['elf.dae'], {
-          autoScaleRatio: 0.1,
-          scene,
-          camera,
-          path: '/models/FromThreeRepo/collada/elf/'
-        });
-
-        if (!collada) {
-          throw new Error('Failed to load model');
-        }
-
-        scene.add(collada);
-        expect(collada.name).toBe('elf.dae');
-        expect(collada.children.length).toBe(4);
-        // @ts-ignore
-        await waitFor(() => expect(collada.children[0].material.map.image.src.endsWith('ce.jpg')).toBe(true));
 
         // await new Promise((resolve) => setTimeout(resolve, 60000));
       })

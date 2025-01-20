@@ -495,7 +495,6 @@ const module: Module = {
     });
   },
 
-  // TODO: unit test this
   updateCubeCamera(cubeCamera: THREE.CubeCamera) {
     if (!this.currentRenderer) {
       return;

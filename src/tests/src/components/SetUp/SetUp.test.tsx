@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { expect, describe, it, beforeEach, afterEach } from 'vitest';
+import { expect, describe, it, vi, beforeEach, afterEach, MockInstance } from 'vitest';
 import { render } from 'vitest-browser-react';
 import { screen, within, waitFor } from '@testing-library/dom';
 import { TestInjectedInspectorApp, TestDefaultApp, initDOM, clearDOM } from 'testutils/testApp';
@@ -603,6 +603,47 @@ describe('SetUp', () => {
               angle={Math.PI / 8}
               penumbra={0.5}
             ></spotLight>
+          </TestInjectedInspectorApp>,
+          {
+            container: document.getElementById('main')!
+          }
+        );
+      });
+    });
+
+    it('update cubeCameras if they exist in scene', { timeout: 1000 }, async () => {
+      return new Promise<void>((done) => {
+        const webGLCubeRenderTarget = new THREE.WebGLCubeRenderTarget(512);
+        let cubeCameraRef: THREE.CubeCamera | null = null;
+        let spyOnCubeCameraUpdate: MockInstance<() => void> | null = null;
+
+        const onCubeCameraMounted = (cubeCamera: THREE.CubeCamera | null) => {
+          if (cubeCamera) {
+            cubeCameraRef = cubeCamera;
+            spyOnCubeCameraUpdate = vi.spyOn(cubeCamera, 'update');
+          }
+        };
+
+        const handleThreeChange: SetUpProps['onThreeChange'] = async (changed, three) => {
+          if (changed === 'scene') {
+            const { scene, gl } = three;
+            expect(scene).not.toBe(defaultScene);
+            expect(cubeCameraRef).toBeInstanceOf(THREE.CubeCamera);
+            await waitFor(() => expect(spyOnCubeCameraUpdate?.mock.calls.length).toBe(1));
+            expect(spyOnCubeCameraUpdate?.mock.calls[0]).toEqual([gl, scene]); // update(renderer, scene) has been called
+            res.unmount();
+          }
+        };
+
+        const res = render(
+          <TestInjectedInspectorApp onThreeChange={handleThreeChange} onCPanelUnmounted={done}>
+            <cubeCamera
+              name="cubeCamera"
+              args={[0.1, 100, webGLCubeRenderTarget]}
+              position={[0, 0, 0]}
+              rotation={[0, 0, 0]}
+              ref={onCubeCameraMounted}
+            ></cubeCamera>
           </TestInjectedInspectorApp>,
           {
             container: document.getElementById('main')!

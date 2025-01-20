@@ -95,15 +95,7 @@ Test with WebGPURenderer (for now R3F does not support it)
 
 Internal OrbitControls is not as smooth as the official one.
 
-Need to add some cleanups when scene is changed.
-
 Make sure we can use Experience and lib helpers without patchingThree or without using Setup and Inspector
-
-Ensure CustomParams do not leak
-
-Helper and picker for camera are invisible when playing even if camera is not useOnPlay.
-
-Investigate why cameraToUseOnPlay is not used when playing.
 
 Write doc about loading models.
 
@@ -119,16 +111,8 @@ Could we add a use_pmremGenerator bool to inspector ?
 Show loaders when loading stuff as well as when building bindings
 Add loaders so that we can start the scene after everything was loaded.
 
-Commit the assets that need to be available around.
-
-Unit tests !!!!!!
-
-
-
 Add optimization such that when importing a new object
 if textures are already loaded (lookup by name) they are not loaded again (use already loaded ones).
-
-Investigate how well are things cleaned up when removing an object with destroyOnRemove option set in CPanel.
 
 Allow seeing bounding boxes and spheres for objects.
 Use other helpers provided by ThreeJs (for seeing normals, tangents, see the helpers in the library)

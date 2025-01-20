@@ -275,6 +275,7 @@ describe('loadModel', () => {
     );
   });
 
+  // .fbx
   describe('recombineByMaterial', () => {
     describe('when recombineByMaterial is false', () => {
       it('allows one mesh with more materials', { timeout: 5000 }, async () =>

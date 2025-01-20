@@ -274,6 +274,4 @@ describe('loadModel', () => {
       })
     );
   });
-
-  // TODO: test each type of asset
 });

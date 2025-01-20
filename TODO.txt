@@ -84,19 +84,17 @@ After loading from scene config the binding reader fires continuously.
 Not happening anymore since using correct internal lastValue.
 However, to test with multi texture bindings later
 
+Why on loading Jenifer the body texture changes luminosity after expanding body texture in CPanel ? *DONE* (because binding ranges did override initial values for IOR )
+
+
 Maybe we can make the modal a non React component to use it in React rather than the other way around as we do it now.
 
-Why on loading Jenifer the body texture changes luminosity after expanding body texture in CPanel ?
 
 Add experience switcher in CPanel to easy switch between available experiences
 
 Test with WebGPURenderer (for now R3F does not support it)
 
 Internal OrbitControls is not as smooth as the official one.
-
-Investigate when Loading and deleting Jeniffer the textures are increasing by 1.
-
-Investigate memory leak that happens even is not doing anything.
 
 Need to add some cleanups when scene is changed.
 

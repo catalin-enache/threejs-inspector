@@ -441,10 +441,17 @@ export const MaterialBindings = (params: CommonGetterParams) => {
         ...TextureBindings(params)
       }
     },
-    ior: {
-      label: 'IOR',
+    dispersion: {
+      label: 'Dispersion',
       min: 0,
       max: 1,
+      ...numberCommon
+    },
+    // https://threejs.org/docs/#api/en/materials/MeshPhysicalMaterial.ior
+    ior: {
+      label: 'IOR',
+      min: 1,
+      max: 2.333,
       ...numberCommon
     },
     iridescence: {
@@ -460,6 +467,7 @@ export const MaterialBindings = (params: CommonGetterParams) => {
         ...TextureBindings(params)
       }
     },
+    // https://threejs.org/docs/#api/en/materials/MeshPhysicalMaterial.ior
     iridescenceIOR: {
       label: 'Iridescence IOR',
       min: 1,
@@ -756,6 +764,8 @@ export const MaterialBindings = (params: CommonGetterParams) => {
     const binding = materialBindings[key];
     const existingOnChange = binding.onChange;
     binding.onChange = (({ object, bindings, folder }) => {
+      // this console.log is good for debug for unintentional changes from enforced binding ranges
+      // console.log('MaterialBindings.onChange', { key, object, bindings, folder });
       existingOnChange?.({ object, bindings, folder });
       (object as THREE.Material).needsUpdate = true;
     }) as onChange;

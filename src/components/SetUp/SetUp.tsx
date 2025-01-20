@@ -118,6 +118,8 @@ const SetUp = (props: SetUpProps) => {
     scene.__inspectorData.currentCamera = camera; // used in App when !isInjected
     scene.__inspectorData.orbitControlsRef = orbitControlsRef;
     scene.__inspectorData.transformControlsRef = transformControlsRef;
+    const oldScene = getCurrentScene();
+
     outliner.scene = scene;
 
     if (scene === getCurrentScene()) {
@@ -135,6 +137,9 @@ const SetUp = (props: SetUpProps) => {
       }
     });
     setCurrentScene(scene);
+    if (oldScene.children.length) {
+      console.warn('oldScene still has children', oldScene.children);
+    }
     // For now no one is interested in this event.
     useAppStore.getState().triggerCurrentSceneChanged();
   }, [scene, camera]);

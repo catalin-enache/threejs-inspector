@@ -5,9 +5,14 @@ import { useAppStore } from 'src/store';
 import { loadModel } from 'lib/utils/loadModel';
 import './LoadModelForm.css';
 
+// model extensions
 const rootExtensions = ['.glb', '.gltf', '.obj', '.fbx', '.dae', '.3ds', '.stl', '.ply', '.vtk'];
 const allowedExtensions = [
   ...rootExtensions,
+  // image extensions and other related deps
+  // when uploading a model, we also need to upload its textures that the model will look after when initialised
+  // our configured loadingManager takes care to register the files and create objectURLs for them
+  // so that when the model asks for the texture, it gets the objectURL which serves the purpose.
   '.bin',
   '.mtl',
   '.jpg',
@@ -21,6 +26,7 @@ const allowedExtensions = [
   '.hdr',
   '.tga',
   '.ktx2',
+  '.pvr',
   '.dds'
 ];
 
@@ -118,17 +124,15 @@ export const LoadModelForm = (props: LoadModelFormProps) => {
     uploadInput.type = 'file';
     uploadInput.accept = allowedExtensions.join(',');
     uploadInput.multiple = true;
+
     uploadInput.onchange = (e) => {
       setLoadAssetIsOpen(false);
       const files = (e.target as HTMLInputElement).files;
       if (!files || !files.length) return;
       const filesArray = Array.from(files);
-      const rootFile = filesArray.find((file) => rootExtensions.some((ext) => file.name.toLowerCase().endsWith(ext)));
       // reset input so we can upload the same file again
       uploadInput.value = '';
-      if (!rootFile) return;
-      loadModel(rootFile, {
-        filesArray,
+      loadModel(filesArray, {
         scene,
         camera,
         changeGeometry: changeGeometry.current, // 'indexed' | 'non-indexed'

@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { getFileNameAndType } from './fileUtils';
+import { getFileNameAndType, getFileType } from './fileUtils';
 import type { GLTF, Collada } from './loaders';
 import {
   registerFiles,
@@ -11,6 +11,7 @@ import {
   stlLoader,
   colladaLoader,
   GLTFLoader,
+  MTLLoader,
   FBXLoader,
   STLLoader,
   OBJLoader,
@@ -27,6 +28,9 @@ export const FILE_GLTF_BINARY = 'GLTF_BINARY';
 export const FILE_OBJ = 'OBJ';
 export const FILE_STL = 'STL';
 export const FILE_COLLADA = 'COLLADA';
+
+// models extensions
+const RootTypesSet = new Set([FILE_FBX, FILE_PLY, FILE_GLTF, FILE_GLTF_BINARY, FILE_OBJ, FILE_STL, FILE_COLLADA]);
 
 export const fileTypeMap: Record<string, string> = {
   fbx: FILE_FBX,
@@ -58,7 +62,7 @@ export const getLoader = (fileType: string) => {
   }
 };
 
-const registerMesh = (mesh: THREE.Object3D, isInspectable: boolean) => {
+const configMesh = (mesh: THREE.Object3D, isInspectable: boolean) => {
   if (isInspectable) {
     mesh.__inspectorData.isInspectable = isInspectable;
   }
@@ -92,6 +96,9 @@ const findRootAsset = (roots: THREE.Group<THREE.Object3DEventMap>[]) => {
       }
     });
   });
+
+  if (!map.size) return null;
+
   const max = Math.max(...Array.from(map.values()));
   const root = Array.from(map.entries()).find(([_, value]) => value === max)!;
   return root[0];
@@ -131,15 +138,67 @@ const mergeAnimationsFromRestAssets = (
   });
 };
 
+const configLoader = ({
+                        loader,
+                        path,
+                        resourcePath
+                      }: {
+  loader: GLTFLoader | FBXLoader | PLYLoader | OBJLoader | STLLoader | ColladaLoader | MTLLoader;
+  path?: string;
+  resourcePath?: string;
+}): {
+  existingLoaderPath: string;
+  existingLoaderResourcePath: string;
+} => {
+  const existingLoaderPath = loader.path ?? '';
+  if (path) {
+    loader.setPath(path);
+  }
+  const existingLoaderResourcePath = loader.resourcePath ?? '';
+  if (resourcePath) {
+    loader.setResourcePath(resourcePath);
+  }
+
+  return { existingLoaderPath, existingLoaderResourcePath };
+};
+const resetLoader = configLoader;
+
+const enhanceLoader = async ({
+                               loader,
+                               path,
+                               resourcePath,
+                               sources
+                             }: {
+  loader: GLTFLoader | FBXLoader | PLYLoader | OBJLoader | STLLoader | ColladaLoader;
+  path?: string;
+  resourcePath?: string;
+  sources?: string[];
+}) => {
+  const mtlSource = (sources || []).find((resource) => resource.toLowerCase().endsWith('.mtl'));
+  if (mtlSource) {
+    const { existingLoaderPath, existingLoaderResourcePath } = configLoader({
+      loader: mtlLoader,
+      path,
+      resourcePath
+    });
+    // no need for createObjectURL. DefaultManager takes care of it. just extract the resource
+    const objMaterials = await mtlLoader.loadAsync(mtlSource);
+    objMaterials.preload();
+    if (loader instanceof OBJLoader) {
+      loader.setMaterials(objMaterials); // the enhancement for obj loader
+    }
+    resetLoader({ loader: mtlLoader, path: existingLoaderPath, resourcePath: existingLoaderResourcePath });
+  }
+};
+
 // TODO: Check the hair between Mixamo Jennifer fbx and gltf. See why hair material is better handled by gltf.
 
 // to copy a model locally and ensure it is well constructed example:
 // gltf-transform cp https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/main/Models/AnisotropyBarnLamp/glTF-KTX-BasisU/AnisotropyBarnLamp.gltf out/lamp.gltf --allow-http
 // https://github.com/mrdoob/three.js/issues/28258
 export const loadModel = async (
-  rootFile: File | string,
+  fileOrFiles: (File | string) | (File | string)[],
   {
-    filesArray = [],
     scene,
     camera,
     changeGeometry,
@@ -148,9 +207,9 @@ export const loadModel = async (
     isInspectable = true,
     path,
     resourcePath,
+    getMaterial, // to be used for ply/stl loaders
     debug
   }: {
-    filesArray?: (File | string)[];
     scene?: THREE.Scene;
     camera?: THREE.Camera;
     changeGeometry?: 'indexed' | 'non-indexed';
@@ -159,20 +218,17 @@ export const loadModel = async (
     isInspectable?: boolean;
     path?: string;
     resourcePath?: string;
+    getMaterial?: (geometry: THREE.BufferGeometry) => THREE.Material;
     debug?: 'ALL' | string;
   } = {}
 ) => {
-  const rootSource = rootFile instanceof File ? rootFile.name : rootFile;
-  const nameAndFileType = getFileNameAndType(rootSource, fileTypeMap);
-  let { name } = nameAndFileType;
-  const { fileType } = nameAndFileType;
+  // Files can contain models and textures as well.
+  const files = Array.isArray(fileOrFiles) ? fileOrFiles : [fileOrFiles];
+  registerFiles(files);
+  const sources = [...new Set(files.map((f) => (f instanceof File ? f.name : f)))];
 
   debug &&
     console.log('loadModel start', {
-      name,
-      fileType,
-      rootSource,
-      filesArray,
       changeGeometry,
       autoScaleRatio,
       recombineByMaterial,
@@ -181,32 +237,11 @@ export const loadModel = async (
       debug
     });
 
-  const loader = getLoader(fileType);
-  if (!loader) return null;
-
-  const oldPath = loader.path ?? '';
-  if (path) {
-    loader.setPath(path);
-  }
-  const oldResourcePath = loader.resourcePath ?? '';
-  if (resourcePath) {
-    loader.setResourcePath(resourcePath);
-  }
-
-  registerFiles(filesArray); // if filesArray has items it also contains the rootFile
-  const sources = [...new Set(filesArray.concat(rootSource).map((f) => (f instanceof File ? f.name : f)))];
-
-  const mtlSource = sources.find((resource) => resource.toLowerCase().endsWith('.mtl'));
-  if (mtlSource) {
-    // no need for createObjectURL. DefaultManager takes care of it. just extract the resource
-    const objMaterials = await mtlLoader.loadAsync(mtlSource);
-    objMaterials.preload();
-    if (loader instanceof OBJLoader) {
-      loader.setMaterials(objMaterials);
-    }
-  }
-
+  let loader: ReturnType<typeof getLoader>;
   let result: THREE.Group<THREE.Object3DEventMap> | THREE.BufferGeometry<THREE.NormalBufferAttributes> | GLTF | Collada;
+  let fileName: string;
+  let fileType: string;
+
   const multiAssetSources = sources.filter((source) =>
     ['.fbx', '.gltf', '.glb'].some((ext) => source.toLowerCase().endsWith(ext))
   );
@@ -215,8 +250,16 @@ export const loadModel = async (
     // dealing with fbx/gltf one or more files
     const loadedAssets = await Promise.all(
       multiAssetSources.map(async (source) => {
-        let loaded = await loader.loadAsync(source);
-        if (loader instanceof GLTFLoader) {
+        const _fileType = getFileType(source, fileTypeMap);
+        const _loader = getLoader(_fileType)!;
+        const { existingLoaderPath, existingLoaderResourcePath } = configLoader({
+          loader: _loader,
+          path,
+          resourcePath
+        });
+        let loaded = await _loader.loadAsync(source);
+        resetLoader({ loader: _loader, path: existingLoaderPath, resourcePath: existingLoaderResourcePath });
+        if (_loader instanceof GLTFLoader) {
           const { animations } = loaded as GLTF;
           loaded = (loaded as GLTF).scene;
           loaded.animations = animations;
@@ -227,14 +270,18 @@ export const loadModel = async (
     );
 
     // @ts-ignore
-    const rootAsset = findRootAsset(loadedAssets);
+    const rootAsset = findRootAsset(loadedAssets)!; // the asset holding meshes
+    // for multi root files override the fileName, fileType, loader with the ones for the actual rootAsset
+    // the fileName is assigned to the root object returned in the end.
+    fileType = getFileType((rootAsset as THREE.Object3D).__inspectorData.resourceName!, fileTypeMap);
+    fileName = rootAsset.__inspectorData.resourceName!;
+    loader = getLoader(fileType);
+    result = rootAsset;
+
     // restAssets most of the time contain just animations
     const restAssets = loadedAssets.filter((a) => a !== rootAsset);
     debug &&
       console.log('loadModel multiAssetSources loadedAssets', { multiAssetSources, sources, loadedAssets, rootAsset });
-
-    result = rootAsset;
-    name = rootAsset.__inspectorData.resourceName!;
 
     restAssets.forEach((externalAnimationAsset) => {
       // @ts-ignore
@@ -243,12 +290,32 @@ export const loadModel = async (
 
     debug && console.log('loadModel multiAssetSources merged animations', { rootAsset, restAssets });
   } else {
-    // the rest non fbx, glb, gltf files
+    // dealing with NON fbx/gltf one file
+    const types = sources.map((source) => getFileType(source, fileTypeMap));
+    // @ts-ignore
+    const rootType = types.find((type) => RootTypesSet.has(type)); // a model asset
+    if (!rootType) {
+      console.error('Unknown file type found in sources', sources);
+      return null;
+    }
+    const rootFile = files.find((file) => getFileNameAndType(file, fileTypeMap).fileType === rootType)!;
+    const rootSource = rootFile instanceof File ? rootFile.name : rootFile;
+
+    const nameAndFileType = getFileNameAndType(rootFile, fileTypeMap);
+    fileName = nameAndFileType.name;
+    fileType = nameAndFileType.fileType;
+    loader = getLoader(fileType);
+    if (!loader) return null;
+
+    await enhanceLoader({ loader, path, resourcePath, sources }); // currently enhancing obj loader with mtl textures
+
+    const { existingLoaderPath, existingLoaderResourcePath } = configLoader({ loader, path, resourcePath });
+    // the rest of asset types which are not fbx, glb, gltf files
     result = await loader.loadAsync(rootSource);
+    resetLoader({ loader, path: existingLoaderPath, resourcePath: existingLoaderResourcePath });
   }
 
-  loader.setPath(oldPath);
-  loader.setResourcePath(oldResourcePath);
+  if (!loader) return;
 
   let root: THREE.Mesh | THREE.Group | null = null;
 
@@ -264,9 +331,8 @@ export const loadModel = async (
   } else if (loader instanceof OBJLoader) {
     root = result as THREE.Group;
   } else if (loader instanceof PLYLoader || loader instanceof STLLoader) {
-    // TODO: add default textures and make it a PhysicalMaterial
-    const material = new THREE.MeshStandardMaterial();
     const geometry = result as THREE.BufferGeometry;
+    const material = getMaterial?.(geometry) || new THREE.MeshStandardMaterial();
     geometry.computeVertexNormals();
     geometry.computeBoundingBox();
     geometry.computeBoundingSphere();
@@ -338,13 +404,15 @@ export const loadModel = async (
 
   // =========== test injecting children end ===========
 
-  root.name = name;
+  root.name = fileName;
 
+  // it seems gltf/glb already does this optimisation at import
+  // and this flag only makes a difference for non glb/gltf files (like fbx)
   if (recombineByMaterial) {
     root = splitMeshesByMaterial(root, { debug });
   }
 
-  debug && console.log('loadModel done', { name, fileType, result, root });
+  debug && console.log('loadModel done', { fileName, fileType, result, root });
 
   if (autoScaleRatio && scene && camera) {
     const meshSize = getBoundingBoxSize(root);
@@ -353,7 +421,7 @@ export const loadModel = async (
     root.scale.set(scaleFactor, scaleFactor, scaleFactor);
   }
 
-  registerMesh(root, isInspectable);
+  configMesh(root, isInspectable);
 
   return root;
 };

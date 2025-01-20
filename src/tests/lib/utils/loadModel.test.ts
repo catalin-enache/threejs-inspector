@@ -5,6 +5,7 @@ import { loadModel } from 'lib/utils/loadModel';
 import { waitFor } from '@testing-library/dom';
 
 describe('loadModel', () => {
+  // .fbx
   describe('when fbx file', () => {
     it('loads non native textures - considers resourcePath if provided', { timeout: 5000 }, async () =>
       withScene()(async ({ scene, camera }) => {
@@ -38,6 +39,7 @@ describe('loadModel', () => {
     );
   });
 
+  // .obj + .mtl
   describe('when obj file', () => {
     it('loads obj file including mtl file if provided', { timeout: 5000 }, async () =>
       withScene()(async ({ scene, camera }) => {
@@ -69,6 +71,36 @@ describe('loadModel', () => {
     );
   });
 
+  describe('when gltf file', () => {
+    it('loads model correctly', { timeout: 5000 }, async () =>
+      withScene()(async ({ scene, camera }) => {
+        const gltf = await loadModel(['with_non_native_textures.gltf'], {
+          autoScaleRatio: 0.1,
+          scene,
+          camera,
+          path: '/models/MyTests/with_non_native_textures/'
+        });
+
+        if (!gltf) {
+          throw new Error('Failed to load model');
+        }
+
+        scene.add(gltf);
+
+        await waitFor(() => expect(gltf.children.length).toBe(1), { timeout: 5000 });
+        // @ts-ignore
+        await waitFor(() => expect(gltf.children[0].children[0].material.map.image.width).toBe(512), { timeout: 5000 });
+        // @ts-ignore
+        await waitFor(() => expect(gltf.children[0].children[0].geometry.attributes.position.count).toBe(4), {
+          timeout: 5000
+        });
+
+        // await new Promise((resolve) => setTimeout(resolve, 60000));
+      })
+    );
+  });
+
+  // .fbx
   describe('when path has spaces', () => {
     it('loads model correctly', { timeout: 5000 }, async () =>
       withScene()(async ({ scene, camera }) => {
@@ -101,6 +133,7 @@ describe('loadModel', () => {
     );
   });
 
+  // .glb
   describe('when animations are external', () => {
     it('they are loaded correctly', { timeout: 5000 }, async () =>
       withScene()(async ({ scene, camera }) => {

@@ -179,6 +179,7 @@ const createAndAddNewMesh = (
 
 // TODO: add support for THREE.InterleavedBufferAttribute
 // https://blog.tojicode.com/2011/05/interleaved-array-basics.html
+// it seems coffeemat.glb FromThreeRepo folder uses interleavedBufferAttributes which fails here
 
 // With this function, multiple meshes will not be reduced to fewer meshes.
 // It only splits the meshes by material.
@@ -202,7 +203,7 @@ export function splitMeshesByMaterial(root: THREE.Mesh | THREE.Group, { debug }:
   const rootContainer = new THREE.Group();
   rootContainer.name = newRoot.name + '_container';
 
-  let totalMeshesAdded = 0;
+  const totalMeshesAdded = 0; // TODO: why not changed? It was defined with let
   let totalMeshesRemoved = 0;
   const parents = new Set();
   const animations: THREE.AnimationClip[] = newRoot.animations;
@@ -236,7 +237,7 @@ export function splitMeshesByMaterial(root: THREE.Mesh | THREE.Group, { debug }:
       ? [...oldMeshClone.material] // cloning in order to not modify the original material array
       : [oldMeshClone.material];
 
-    let geometryClone: THREE.BufferGeometry = oldMeshClone.geometry.clone();
+    const geometryClone: THREE.BufferGeometry = oldMeshClone.geometry.clone(); // TODO: it was defined with let, supposed to be changed
 
     DEBUG && console.log('oldMeshClone', { oldMeshClone, animationsMap, geometryClone });
 

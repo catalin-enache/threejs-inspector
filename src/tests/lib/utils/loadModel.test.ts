@@ -23,6 +23,7 @@ describe('loadModel', () => {
 
         scene.add(fbx);
 
+        expect(fbx.name).toBe('with_non_native_textures.fbx');
         await waitFor(() => expect(fbx.children.length).toBe(5), { timeout: 5000 });
         await waitFor(
           () =>
@@ -55,6 +56,8 @@ describe('loadModel', () => {
 
         scene.add(gltf);
 
+        expect(gltf.name).toBe('with_non_native_textures.gltf');
+
         await waitFor(() => expect(gltf.children.length).toBe(1), { timeout: 5000 });
         // @ts-ignore
         await waitFor(() => expect(gltf.children[0].children[0].material.map.image.width).toBe(512), { timeout: 5000 });
@@ -84,6 +87,8 @@ describe('loadModel', () => {
         }
 
         scene.add(obj);
+
+        expect(obj.name).toBe('female02.obj');
 
         await waitFor(() => expect(obj.children.length).toBe(15), { timeout: 5000 });
         await waitFor(
@@ -116,6 +121,7 @@ describe('loadModel', () => {
         }
 
         scene.add(fbx);
+        expect(fbx.name).toBe('asset with space in path.FBX');
 
         await waitFor(() => expect(fbx.children.length).toBe(1), { timeout: 5000 });
         await waitFor(
@@ -137,7 +143,7 @@ describe('loadModel', () => {
   describe('when animations are external', () => {
     it('they are loaded correctly', { timeout: 5000 }, async () =>
       withScene()(async ({ scene, camera }) => {
-        const asset = await loadModel(
+        const glb = await loadModel(
           [
             'Jennifer.glb',
             'Animations_gltf/Idle.glb',
@@ -152,16 +158,17 @@ describe('loadModel', () => {
           }
         );
 
-        if (!asset) {
+        if (!glb) {
           throw new Error('Failed to load model');
         }
 
-        scene.add(asset);
+        scene.add(glb);
+        expect(glb.name).toBe('Jennifer.glb');
 
-        await waitFor(() => expect(asset.animations.length).toEqual(3));
-        expect(asset.animations[0].name.endsWith('Idle.glb'));
-        expect(asset.animations[1].name.endsWith('Catwalk_Walk_Forward.glb'));
-        expect(asset.animations[2].name.endsWith('Running.glb'));
+        await waitFor(() => expect(glb.animations.length).toEqual(3));
+        expect(glb.animations[0].name.endsWith('Idle.glb'));
+        expect(glb.animations[1].name.endsWith('Catwalk_Walk_Forward.glb'));
+        expect(glb.animations[2].name.endsWith('Running.glb'));
 
         // await new Promise((resolve) => setTimeout(resolve, 60000));
       })

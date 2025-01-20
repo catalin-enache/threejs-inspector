@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { radToDegFormatter } from 'lib/utils';
+import { radToDegFormatter } from 'lib/utils/mathUtils';
 import { numberCommon } from './bindingHelpers';
 import { TextureBindings } from './TextureBindings';
 import type { CommonGetterParams, onChange } from './bindingTypes';

@@ -5,7 +5,7 @@ import { useFrame, ThreeElements, useThree } from '@react-three/fiber';
 import Stats from 'three/addons/libs/stats.module.js';
 import { CustomControl } from 'components/CustomControl/CustomControl';
 import { usePlay } from 'lib/hooks';
-import { degToRad } from 'lib/utils';
+import { degToRad } from 'lib/utils/mathUtils';
 import { createTexturesFromImages } from 'lib/utils/loadTexture';
 import { TestIndexedCube3Materials } from './TestIndexedCube3Materials';
 // import { TestMorphTargets } from './TestMorphTargets';

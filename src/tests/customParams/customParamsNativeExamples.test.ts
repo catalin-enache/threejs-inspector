@@ -5,7 +5,7 @@ import { defaultScene } from 'lib/patchThree';
 import { useAppStore } from 'src/store';
 import { CPanelProps } from 'components/CPanel/CPanel';
 import { initNativeApp, InitNativeAppProps } from 'testutils/testNativeApp';
-import { radToDegFormatter } from 'lib/utils';
+import { radToDegFormatter } from 'lib/utils/mathUtils';
 
 /*
 CParam options reused among different types:

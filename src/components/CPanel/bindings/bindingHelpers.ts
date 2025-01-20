@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { BindingApi } from '@tweakpane/core';
 import { FolderApi, TabPageApi, BladeApi } from 'tweakpane';
-import { degToRad, radToDegFormatter } from 'lib/utils';
+import { degToRad, radToDegFormatter } from 'lib/utils/mathUtils';
 import { getObject3DBindings } from './getBindings';
 import { ParentBindings } from './ParentBindings';
 import { CommonGetterParams } from './bindingTypes';

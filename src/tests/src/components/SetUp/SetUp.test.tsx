@@ -11,7 +11,7 @@ import { useAppStore } from 'src/store';
 import patchThree from 'lib/patchThree';
 
 import { CPanelProps } from 'components/CPanel/CPanel';
-import { degToRad } from 'lib/utils';
+import { degToRad } from 'lib/utils/mathUtils';
 import { loadModel } from 'lib/utils/loadModel';
 
 describe('SetUp', () => {

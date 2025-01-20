@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import type { CommonGetterParams, onChange } from './bindingTypes';
 import { numberCommon } from './bindingHelpers';
-import { radToDegFormatter } from 'lib/utils';
+import { radToDegFormatter } from 'lib/utils/mathUtils';
 import { MaterialBindings } from './MaterialBindings';
 import { useAppStore } from 'src/store';
 

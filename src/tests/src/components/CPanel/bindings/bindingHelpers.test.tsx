@@ -10,7 +10,7 @@ import { useAppStore } from 'src/store';
 import { CPanelProps } from 'components/CPanel/CPanel';
 import { getPaneTab, setSelectedTab } from 'components/CPanel/CPanel';
 import { buildBindings, eventListenersMap, cleanupContainer } from 'components/CPanel/bindings/bindingHelpers';
-import { radToDegFormatter } from 'lib/utils';
+import { radToDegFormatter } from 'lib/utils/mathUtils';
 import { loadModel } from 'lib/utils/loadModel';
 
 const setObjectTab = async (pane: Pane) => {

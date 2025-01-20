@@ -139,10 +139,10 @@ const mergeAnimationsFromRestAssets = (
 };
 
 const configLoader = ({
-                        loader,
-                        path,
-                        resourcePath
-                      }: {
+  loader,
+  path,
+  resourcePath
+}: {
   loader: GLTFLoader | FBXLoader | PLYLoader | OBJLoader | STLLoader | ColladaLoader | MTLLoader;
   path?: string;
   resourcePath?: string;
@@ -164,11 +164,11 @@ const configLoader = ({
 const resetLoader = configLoader;
 
 const enhanceLoader = async ({
-                               loader,
-                               path,
-                               resourcePath,
-                               sources
-                             }: {
+  loader,
+  path,
+  resourcePath,
+  sources
+}: {
   loader: GLTFLoader | FBXLoader | PLYLoader | OBJLoader | STLLoader | ColladaLoader;
   path?: string;
   resourcePath?: string;

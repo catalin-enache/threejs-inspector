@@ -40,6 +40,7 @@ describe('loadModel', () => {
     );
   });
 
+  // .gltf
   describe('when gltf file', () => {
     it('loads model correctly', { timeout: 5000 }, async () =>
       withScene()(async ({ scene, camera }) => {
@@ -149,6 +150,7 @@ describe('loadModel', () => {
     );
   });
 
+  // .ply
   describe('when ply file', () => {
     it('loads geometry correctly', { timeout: 5000 }, async () =>
       withScene()(async ({ scene, camera }) => {
@@ -168,6 +170,35 @@ describe('loadModel', () => {
         expect(ply.name).toBe('Lucy100k.ply');
         // @ts-ignore
         expect(ply.geometry.attributes.position.count).toBe(50002);
+
+        // await new Promise((resolve) => setTimeout(resolve, 60000));
+      })
+    );
+  });
+
+  // .stl
+  describe('when stl file', () => {
+    it('loads geometry correctly', { timeout: 5000 }, async () =>
+      withScene()(async ({ scene, camera }) => {
+        const stl = await loadModel('colored.stl', {
+          autoScaleRatio: 0.1,
+          scene,
+          camera,
+          path: '/models/FromThreeRepo/stl/colored/',
+          recombineByMaterial: false,
+          // @ts-ignore
+          getMaterial: (geometry) => new THREE.MeshPhongMaterial({ opacity: geometry.alpha, vertexColors: true })
+        });
+
+        if (!stl) {
+          throw new Error('Failed to load model colored.stl');
+        }
+
+        scene.add(stl);
+
+        expect(stl.name).toBe('colored.stl');
+        // @ts-ignore
+        expect(stl.geometry.attributes.position.count).toBe(6468);
 
         // await new Promise((resolve) => setTimeout(resolve, 60000));
       })

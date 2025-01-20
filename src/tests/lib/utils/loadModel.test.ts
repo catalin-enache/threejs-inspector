@@ -149,6 +149,31 @@ describe('loadModel', () => {
     );
   });
 
+  describe('when ply file', () => {
+    it('loads geometry correctly', { timeout: 5000 }, async () =>
+      withScene()(async ({ scene, camera }) => {
+        const ply = await loadModel('Lucy100k.ply', {
+          autoScaleRatio: 0.1,
+          scene,
+          camera,
+          path: '/models/FromThreeRepo/ply/lucy/',
+          recombineByMaterial: false
+        });
+
+        if (!ply) {
+          throw new Error('Failed to load model Lucy100k.ply');
+        }
+
+        scene.add(ply);
+        expect(ply.name).toBe('Lucy100k.ply');
+        // @ts-ignore
+        expect(ply.geometry.attributes.position.count).toBe(50002);
+
+        // await new Promise((resolve) => setTimeout(resolve, 60000));
+      })
+    );
+  });
+
   // .fbx
   describe('when path has spaces', () => {
     it('loads model correctly', { timeout: 5000 }, async () =>

@@ -87,6 +87,8 @@ However, to test with multi texture bindings later
 Why on loading Jenifer the body texture changes luminosity after expanding body texture in CPanel ? *DONE* (because binding ranges did override initial values for IOR )
 
 
+Add scene navigator (top/bottom/left/right) from threejs editor
+
 Maybe we can make the modal a non React component to use it in React rather than the other way around as we do it now.
 
 Add experience switcher in CPanel to easy switch between available experiences

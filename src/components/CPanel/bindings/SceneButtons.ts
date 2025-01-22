@@ -18,12 +18,11 @@ export const SceneButtons = ({ playingState, sceneObjects: { camera, scene } }: 
     onClick: (() => {
       focusCamera({
         camera,
-        // @ts-ignore
-        orbitControls: scene.__inspectorData.orbitControlsRef.current,
-        // @ts-ignore
-        transformControls: scene.__inspectorData.transformControlsRef.current
+        orbitControls: scene.__inspectorData.orbitControlsRef!.current,
+        transformControls: scene.__inspectorData.transformControlsRef!.current
       });
-    }) as onChange
+    }) as onChange,
+    if: () => scene.__inspectorData.orbitControlsRef!.current
   },
   2: {
     label: 'Show Helpers ( H|CAS+H )',

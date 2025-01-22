@@ -1,9 +1,8 @@
 import * as THREE from 'three';
-import { ReactNode, StrictMode, useState, useCallback, useEffect } from 'react';
+import { ReactNode, StrictMode, useState, useEffect } from 'react';
 import { createRoot } from 'react-dom/client';
 import { Canvas } from '@react-three/fiber';
-import { OrbitControls } from '@react-three/drei';
-import { OrbitControls as OrbitControlsImpl } from 'three/examples/jsm/controls/OrbitControls';
+import { CameraControls } from '@react-three/drei';
 import { Experience } from 'scenarios/Experience';
 import { Inspector } from 'lib/injectInspector';
 import './index.css';
@@ -58,12 +57,8 @@ interface AppProps {
 
 export function App(props: AppProps) {
   const { children } = props;
-  const [orbitControls, setOrbitControls] = useState<OrbitControlsImpl | null | undefined>(null);
   // @ts-ignore
   const [camera, setCamera] = useState<THREE.PerspectiveCamera | THREE.OrthographicCamera>(camera1);
-  const setOrbitControlsRef = useCallback((ctrl: any) => {
-    setOrbitControls(ctrl);
-  }, []);
 
   useEffect(() => {
     const intervalId = setInterval(() => {
@@ -87,9 +82,10 @@ export function App(props: AppProps) {
       }
       frameloop={'always'}
     >
-      <Inspector autoNavControls={true} orbitControls={orbitControls} customParams={customParams} />
+      <Inspector autoNavControls={false} customParams={customParams} />
       {/*dampingFactor={0.05} is default*/}
-      <OrbitControls makeDefault ref={setOrbitControlsRef} enableDamping={true} dampingFactor={0.1} />
+      {/*<OrbitControls makeDefault={false} enableDamping={true} dampingFactor={0.1} />*/}
+      <CameraControls makeDefault={true} />
       {children}
     </Canvas>
   );

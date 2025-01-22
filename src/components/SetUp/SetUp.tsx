@@ -51,6 +51,10 @@ export interface SetUpProps {
 const SetUp = (props: SetUpProps) => {
   const {
     orbitControls: inspectorOrbitControls = null,
+    // if using drei camera controls (especially with makeDefault false),
+    // set autoNavControls to false, else will conflict
+    // when drei camera controls has makeDefault true, orbitControls will be retrieved from the controls from useThree()
+    // and autoNavControls will be ignored
     autoNavControls = false,
     isInjected = true,
     onSetupEffect,

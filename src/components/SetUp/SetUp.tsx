@@ -49,10 +49,18 @@ export interface SetUpProps {
 }
 
 const SetUp = (props: SetUpProps) => {
-  const { orbitControls = null, autoNavControls = false, isInjected = true, onSetupEffect, onThreeChange } = props;
+  const {
+    orbitControls: inspectorOrbitControls = null,
+    autoNavControls = false,
+    isInjected = true,
+    onSetupEffect,
+    onThreeChange
+  } = props;
   const three = useThree();
   // The scene received here is settled and will not change. It is either the defaultScene or the scene from the App where Inspector is injected
-  const { camera, gl, raycaster, pointer, scene } = three;
+  const { camera, gl, raycaster, pointer, scene, controls } = three;
+
+  const orbitControls = inspectorOrbitControls ?? controls;
 
   const setIsInjected = useAppStore((state) => state.setIsInjected);
   const setAutoNavControls = useAppStore((state) => state.setAutoNavControls);
@@ -325,11 +333,6 @@ const SetUp = (props: SetUpProps) => {
     if (orbitControlsRef.current) {
       orbitControlsRef.current.enabled =
         cameraControl === 'orbit' && (!getIsPlayingCamera(camera) || attachDefaultControllersToPlayingCamera);
-      orbitControlsRef.current.enableDamping =
-        orbitControlsRef.current === orbitControls ? orbitControls.enableDamping : true;
-      orbitControlsRef.current.dampingFactor =
-        orbitControlsRef.current === orbitControls ? orbitControls.dampingFactor : 0.2;
-      // orbitControlsRef.current.autoRotate = true;
     }
 
     onSetupEffect?.(SETUP_EFFECT.ORBIT_CONTROLS, {

@@ -165,7 +165,7 @@ export function TestInjectedInspectorApp(props: TestInjectedInspectorAppProps) {
         onCPanelUnmounted={onCPanelUnmounted}
         customParams={customParams}
       />
-      {useDreiOrbitControls ? <OrbitControls makeDefault ref={setOrbitControls} enableDamping={false} /> : null}
+      {useDreiOrbitControls ? <OrbitControls ref={setOrbitControls} enableDamping={false} /> : null}
       {includeDirLight ? (
         <directionalLight name="dirLight" position={[1, 5, 1]} intensity={4.5} castShadow color={'white'} />
       ) : null}

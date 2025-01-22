@@ -87,69 +87,58 @@ However, to test with multi texture bindings later
 Why on loading Jenifer the body texture changes luminosity after expanding body texture in CPanel ? *DONE* (because binding ranges did override initial values for IOR )
 
 
-Add scene navigator (top/bottom/left/right) from threejs editor
 
-Maybe we can make the modal a non React component to use it in React rather than the other way around as we do it now.
 
-Add experience switcher in CPanel to easy switch between available experiences
 
-Test with WebGPURenderer (for now R3F does not support it)
 
 Make sure we can use Experience and lib helpers without patchingThree or without using Setup and Inspector
-
-Write doc about loading models.
 
 Get all calculations from old scene
 See how we can use labels/projections in the scene leveraging Drei (we have some old helpers for that)
 
-Implement typing multiple letters as key listeners?
-
-Can we make an approach to share textures and materials between objects? (this is good for sharing envMap)
+Add scene navigator (top/bottom/left/right) from threejs editor
+Show scene performance and statistics
+Add top/left/bottom/right panel options (note: existing implementations are buggy) - we already have 1,7,3,9 on numeric pad for this.
 
 Could we add a use_pmremGenerator bool to inspector ?
 
 Show loaders when loading stuff as well as when building bindings
 Add loaders so that we can start the scene after everything was loaded.
 
+Maybe we can make the modal a non React component to use it in React rather than the other way around as we do it now.
+
+Add experience switcher in CPanel to easy switch between available experiences
+
+Implement typing multiple letters as key listeners?
+
+Can we make an approach to share textures and materials between objects? (this is good for sharing envMap)
+
 Add optimization such that when importing a new object
 if textures are already loaded (lookup by name) they are not loaded again (use already loaded ones).
+
+Test with WebGPURenderer (for now R3F does not support it)
+
+Write doc about loading models.
+
 
 Allow seeing bounding boxes and spheres for objects.
 Use other helpers provided by ThreeJs (for seeing normals, tangents, see the helpers in the library)
 Note: normals helper, BoxHelper are not behaving as expected (not following animations, need custom implementation)
 
-Add controls for scene
-Show scene performance and statistics
-Add top/left/bottom/right panel options (note: existing implementations are buggy) - we already have 1,7,3,9 on numeric pad for this.
 
 Implement snapping
 
-
-
-
-
-When importing the same model multiple times allow to reselect the same materials and textures ore use prev mesh but make them instance meshes.
-
-See the hair for some characters, why not showing well ?
+See the hair for some characters, why not rendering nice ?
 
 The colors are different between gltf and fbx (see test_multi_features)
 
 Bug: FBXLoader: DDS loader not found for Modular Military Character fbx. (maybe a dds re-export would fix it)
 
-Add default textures for non mesh imports (PLY/STL) and make it a PhysicalMaterial
-
 Handle the case where gltf comes with lights (LightsPunctualLamp.glb)
 
 Test matcap
 
-Be able to load complete materials from folder based on name
-
-Check Threejs repo for code formatting.
-https://www.npmjs.com/package/eslint-config-mdcs
-"extends": [
-    "mdcs",
-    "plugin:compat/recommended"
-  ],
+Be able to load complete materials from folder based on textures name and add a material load button
 
 See where kandao3_depthmap.jpg is used in threejs examples
 

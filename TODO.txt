@@ -95,8 +95,6 @@ Add experience switcher in CPanel to easy switch between available experiences
 
 Test with WebGPURenderer (for now R3F does not support it)
 
-Internal OrbitControls is not as smooth as the official one.
-
 Make sure we can use Experience and lib helpers without patchingThree or without using Setup and Inspector
 
 Write doc about loading models.

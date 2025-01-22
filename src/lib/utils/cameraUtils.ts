@@ -16,7 +16,14 @@ export const focusCamera = ({
   const focusOn = new THREE.Vector3(); // center of the stage by default
   transformControls?.['object']?.getWorldPosition(focusOn);
   if (orbitControls) {
-    orbitControls.target.copy(focusOn);
+    if (orbitControls.target) {
+      orbitControls.target.copy(focusOn);
+      // @ts-ignore
+    } else if (orbitControls.setTarget) {
+      // compatible with https://github.com/yomotsu/camera-controls
+      // @ts-ignore
+      orbitControls.setTarget(focusOn.x, focusOn.y, focusOn.z);
+    }
     orbitControls.update();
   } else {
     camera.lookAt(focusOn);

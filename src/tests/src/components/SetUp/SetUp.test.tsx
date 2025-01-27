@@ -487,7 +487,7 @@ describe('SetUp', () => {
                 selectedObject = useAppStore.getState().getSelectedObject()!;
                 // proving that selecting inside occurred
                 expect(selectedObject.parent).toBe(fbx);
-                expect(selectedObject.name).toBe('Armor_2_0');
+                expect(selectedObject.name).toBe('Armor_2');
                 await waitFor(
                   () => expect(scene.__inspectorData.transformControlsRef!.current!.object).toBe(selectedObject),
                   { timeout: 1000 }

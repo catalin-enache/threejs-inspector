@@ -202,7 +202,7 @@ export const loadModel = async (
     scene,
     camera,
     changeGeometry,
-    recombineByMaterial = true,
+    recombineByMaterial = false,
     autoScaleRatio = 0.4,
     isInspectable = true,
     path,

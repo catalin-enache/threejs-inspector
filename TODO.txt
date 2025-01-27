@@ -88,10 +88,11 @@ Why on loading Jenifer the body texture changes luminosity after expanding body 
 
 
 
+Add a object/scene save and load button using three serialization.
+
+Remove everything from the scene and check geometries in scene renderer info, They should be 0.
 
 Make sure we can use Experience and lib helpers without patchingThree or without using Setup and Inspector
-
-Add a scene save and load button using three serialization.
 
 Get all calculations from old scene
 See how we can use labels/projections in the scene leveraging Drei (we have some old helpers for that)

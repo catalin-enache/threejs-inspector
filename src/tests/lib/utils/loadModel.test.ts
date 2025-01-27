@@ -13,6 +13,7 @@ describe('loadModel', () => {
           autoScaleRatio: 0.01,
           scene,
           camera,
+          recombineByMaterial: true,
           path: '/models/MyTests/with_non_native_textures/',
           resourcePath: '/models/MyTests/with_non_native_textures/textures/'
         });
@@ -48,6 +49,7 @@ describe('loadModel', () => {
           autoScaleRatio: 0.1,
           scene,
           camera,
+          recombineByMaterial: true,
           path: '/models/MyTests/with_non_native_textures/'
         });
 
@@ -80,6 +82,7 @@ describe('loadModel', () => {
           autoScaleRatio: 0.1,
           scene,
           camera,
+          recombineByMaterial: true,
           path: '/models/FromThreeRepo/obj/female02/'
         });
 
@@ -114,6 +117,7 @@ describe('loadModel', () => {
           autoScaleRatio: 0.1,
           scene,
           camera,
+          recombineByMaterial: true,
           path: '/models/FromThreeRepo/collada/elf/'
         });
 
@@ -131,6 +135,7 @@ describe('loadModel', () => {
           autoScaleRatio: 0.1,
           scene,
           camera,
+          recombineByMaterial: true,
           path: '/models/FromThreeRepo/collada/stormtrooper/'
         });
 
@@ -158,8 +163,8 @@ describe('loadModel', () => {
           autoScaleRatio: 0.1,
           scene,
           camera,
-          path: '/models/FromThreeRepo/ply/lucy/',
-          recombineByMaterial: false
+          recombineByMaterial: false,
+          path: '/models/FromThreeRepo/ply/lucy/'
         });
 
         if (!ply) {
@@ -184,8 +189,8 @@ describe('loadModel', () => {
           autoScaleRatio: 0.1,
           scene,
           camera,
-          path: '/models/FromThreeRepo/stl/colored/',
           recombineByMaterial: false,
+          path: '/models/FromThreeRepo/stl/colored/',
           // @ts-ignore
           getMaterial: (geometry) => new THREE.MeshPhongMaterial({ opacity: geometry.alpha, vertexColors: true })
         });
@@ -213,6 +218,7 @@ describe('loadModel', () => {
           autoScaleRatio: 0.01,
           scene,
           camera,
+          recombineByMaterial: true,
           path: '/models/MyTests/having space in path/'
         });
 
@@ -254,6 +260,7 @@ describe('loadModel', () => {
             autoScaleRatio: 0.01,
             scene,
             camera,
+            recombineByMaterial: true,
             path: '/models/Free/gltf/Mixamo/Jennifer/'
           }
         );
@@ -284,8 +291,8 @@ describe('loadModel', () => {
             autoScaleRatio: 0.1,
             scene,
             camera,
-            path: '/models/MyTests/test_multi_features/',
-            recombineByMaterial: false
+            recombineByMaterial: false,
+            path: '/models/MyTests/test_multi_features/'
           });
 
           if (!fbx) {
@@ -312,8 +319,8 @@ describe('loadModel', () => {
             autoScaleRatio: 0.1,
             scene,
             camera,
-            path: '/models/MyTests/test_multi_features/',
-            recombineByMaterial: true // the only diff compared to the previous test
+            recombineByMaterial: true, // the only diff compared to the previous test
+            path: '/models/MyTests/test_multi_features/'
           });
 
           if (!fbx) {

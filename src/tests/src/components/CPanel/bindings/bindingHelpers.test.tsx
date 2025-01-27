@@ -486,7 +486,8 @@ describe('bindingHelpers', () => {
 
           loadModel('/models/MyTests/test_multi_features/test_multi_features.glb', {
             scene,
-            camera
+            camera,
+            recombineByMaterial: true
           }).then(async (mesh) => {
             if (!mesh) return;
             mesh.scale.set(1, 1, 1);
@@ -555,7 +556,8 @@ describe('bindingHelpers', () => {
 
           loadModel('/models/MyTests/test_multi_features/test_multi_features.glb', {
             scene,
-            camera
+            camera,
+            recombineByMaterial: true
           }).then(async (mesh) => {
             if (!mesh) return;
             mesh.scale.set(1, 1, 1);
@@ -626,7 +628,8 @@ describe('bindingHelpers', () => {
 
           loadModel('/models/MyTests/test_multi_features/test_multi_features.glb', {
             scene,
-            camera
+            camera,
+            recombineByMaterial: true
           }).then(async (mesh) => {
             if (!mesh) return;
             mesh.scale.set(1, 1, 1);
@@ -667,7 +670,8 @@ describe('bindingHelpers', () => {
 
           loadModel('/models/MyTests/test_multi_features/test_multi_features.glb', {
             scene,
-            camera
+            camera,
+            recombineByMaterial: true
           }).then(async (mesh) => {
             if (!mesh) return;
             mesh.scale.set(1, 1, 1);

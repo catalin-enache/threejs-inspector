@@ -40,6 +40,14 @@ export const RenderTargetBindings = (_params: CommonGetterParams) => ({
   //   }
   // },
   samples: {
-    label: 'Samples'
+    label: 'Samples (MSAA samples)',
+    options: {
+      0: 0,
+      1: 1,
+      2: 2,
+      4: 4,
+      8: 8,
+      16: 16
+    }
   }
 });

@@ -49,6 +49,28 @@ export const RendererBindings = (_params: CommonGetterParams) => ({
       Custom: THREE.CustomToneMapping
     }
   },
+  toneMappingExposure: {
+    label: 'Tone Mapping Exposure',
+    step: 0.01
+  },
+  outputColorSpace: {
+    label: 'Output Color Space',
+    options: {
+      // NoColorSpace: THREE.NoColorSpace,
+      SRGBColorSpace: THREE.SRGBColorSpace,
+      LinearSRGBColorSpace: THREE.LinearSRGBColorSpace
+    }
+  },
+  transmissionResolutionScale: {
+    label: 'Transmission Resolution Scale',
+    step: 0.01
+  },
+  localClippingEnabled: {
+    label: 'Local Clipping Enabled'
+  },
+  sortObjects: {
+    label: 'Sort Objects'
+  },
   coordinateSystem: {
     label: 'Coordinate System',
     options: {

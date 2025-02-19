@@ -69,8 +69,8 @@ export const deepClean = (
     ({ value }) => {
       return (
         ([THREE.BufferGeometry, THREE.Material, THREE.Texture, THREE.Skeleton, THREE.WebGLRenderTarget].some(
-            (klass) => value instanceof klass
-          ) ||
+          (klass) => value instanceof klass
+        ) ||
           (!!value?.dispose && value.dispose === 'function')) &&
         (includeDefaultTransformControls || value?.name !== 'DefaultTransformControls') &&
         !value?.constructor?.name?.toLowerCase().includes('control') // OrbitControls

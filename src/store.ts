@@ -145,6 +145,7 @@ export interface AppStore {
   cPanelStateFake: number;
   triggerCPaneStateChanged: () => void;
   getCPanelCustomParams: () => typeof cPanelCustomParamsStore;
+  clearCPanelCustomParams: () => void;
   setOrUpdateCPanelCustomParams: (
     name: string,
     object: any,
@@ -363,6 +364,11 @@ export const useAppStore = create<AppStore>()(
       }));
     },
     getCPanelCustomParams: () => cPanelCustomParamsStore,
+    clearCPanelCustomParams: () => {
+      Object.keys(cPanelCustomParamsStore).forEach((key) => {
+        delete cPanelCustomParamsStore[key];
+      });
+    },
     setOrUpdateCPanelCustomParams: (name, object, prop, control, path) => {
       const _path = [...path];
       let store = cPanelCustomParamsStore;
@@ -473,6 +479,8 @@ export const useAppStore = create<AppStore>()(
         selectedObjectUUID: _selectedObject?.uuid ?? ''
       });
     },
+    // TODO: seems it is not used anymore, thus triggerSelectedObjectChanged can be removed.
+    // It was used in patchThree to update helpers when selected object changed.
     selectedObjectStateFake: 0,
     // called
     //  - from CPanel when any prop of selected object changed
@@ -483,6 +491,7 @@ export const useAppStore = create<AppStore>()(
       })),
     deleteSelectedObject: () => {
       const object = get().getSelectedObject();
+      const destroyOnRemove = get().destroyOnRemove;
 
       if (!object) return;
 
@@ -499,8 +508,10 @@ export const useAppStore = create<AppStore>()(
 
       if (!scene) return;
 
-      scene.__inspectorData.transformControlsRef?.current?.detach();
       object.removeFromParent();
+      if (destroyOnRemove) {
+        object.destroy();
+      }
     },
     destroyOnRemove: destroyOnRemove,
     setDestroyOnRemove: (destroyOnRemove) => {

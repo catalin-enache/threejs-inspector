@@ -99,7 +99,7 @@ export const extractTextureFromGPU = ({
     texture.name = `ExtractedTexture_${i}`;
     return { texture, pixelBuffer };
   } catch (error) {
-    console.error('Error extracting texture from GPU', error);
+    console.error('Error extracting texture from GPU', error, { renderTarget, i });
     return { texture: fallbackTexture, pixelBuffer: fallbackBuffer };
   }
 };
@@ -203,9 +203,13 @@ export const extractCubeTextureFromGPU = ({
       }
     }
 
+    faces.forEach((face) => {
+      face.texture.dispose();
+    });
     // Draw the equirectangular image to the canvas
     ctx.putImageData(imageData, 0, 0);
   }
+
   // Use the canvas as a background texture
   return new THREE.CanvasTexture(canvas);
 };

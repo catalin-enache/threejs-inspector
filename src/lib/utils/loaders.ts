@@ -122,5 +122,5 @@ export const mtlLoader = new MTLLoader(loadingManager).setCrossOrigin('anonymous
 export const stlLoader = new STLLoader(loadingManager).setCrossOrigin('anonymous');
 export const colladaLoader = new ColladaLoader(loadingManager).setCrossOrigin('anonymous');
 export const objectLoader = new ObjectLoader(loadingManager).setCrossOrigin('anonymous');
-export const bsonObjectLoader = new TIFMKObjectLoader(loadingManager).setCrossOrigin('anonymous');
+export const tifmkObjectLoader = new TIFMKObjectLoader(loadingManager).setCrossOrigin('anonymous');
 export const fileLoader = new FileLoader(loadingManager).setCrossOrigin('anonymous');

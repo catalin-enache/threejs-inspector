@@ -8,8 +8,13 @@ import { TestDefaultApp, initDOM, clearDOM } from 'testutils/testApp';
 import { defaultScene } from 'lib/patchThree';
 import { useAppStore } from 'src/store';
 import { CPanelProps } from 'components/CPanel/CPanel';
-import { getPaneTab, setSelectedTab } from 'components/CPanel/CPanel';
-import { buildBindings, eventListenersMap, cleanupContainer } from 'components/CPanel/bindings/bindingHelpers';
+import {
+  buildBindings,
+  eventListenersMap,
+  cleanupContainer,
+  getPaneTab,
+  setSelectedTab
+} from 'components/CPanel/bindings/bindingHelpers';
 import { radToDegFormatter } from 'lib/utils/mathUtils';
 import { loadModel } from 'lib/utils/loadModel';
 

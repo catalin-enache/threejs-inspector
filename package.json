@@ -15,15 +15,16 @@
     "deploy": "gh-pages -d dist"
   },
   "dependencies": {
-    "@react-three/drei": "^9.117.3",
-    "@react-three/fiber": "^8.17.10",
+    "@react-three/drei": "^9.121.5",
+    "@react-three/fiber": "^8.17.14",
     "@redux-devtools/extension": "^3.3.0",
     "@tweakpane/core": "2.0.3",
     "@tweakpane/plugin-essentials": "^0.2.1",
+    "bson": "^6.10.2",
     "gsap": "^3.12.5",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "three": "^0.172.0",
+    "three": "^0.173.0",
     "tweakpane": "4.0.5",
     "zustand": "^4.5.2"
   },

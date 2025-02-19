@@ -1,7 +1,12 @@
 export const FILE_UNKNOWN = 'unknown';
 
+export const getExtension = (filename: string): string => {
+  return filename.split('.').pop()?.toLowerCase() || '';
+};
+
 export const getFileType = (filename: string, fileTypeMap: Record<string, any>): string => {
-  return fileTypeMap[filename.split('.').pop()?.toLowerCase() || ''] || FILE_UNKNOWN;
+  const extension = getExtension(filename);
+  return fileTypeMap[extension] || FILE_UNKNOWN;
 };
 
 export const getFileNameAndType = (

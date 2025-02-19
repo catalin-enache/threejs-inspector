@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { ObjectLoader, FileLoader } from 'three';
 import { EXRLoader } from 'three/examples/jsm/loaders/EXRLoader';
 import { RGBELoader } from 'three/examples/jsm/loaders/RGBELoader';
 import { TGALoader } from 'three/examples/jsm/loaders/TGALoader';
@@ -17,6 +18,7 @@ import { OBJLoader } from 'three/examples/jsm/loaders/OBJLoader';
 import { MTLLoader } from 'three/examples/jsm/loaders/MTLLoader';
 import { STLLoader } from 'three/examples/jsm/loaders/STLLoader';
 import { ColladaLoader, Collada } from 'three/examples/jsm/loaders/ColladaLoader';
+import { TIFMKObjectLoader } from './TIFMKObjectLoader';
 
 export {
   MeshoptDecoder,
@@ -34,7 +36,10 @@ export {
   OBJLoader,
   MTLLoader,
   STLLoader,
-  ColladaLoader
+  ColladaLoader,
+  ObjectLoader,
+  TIFMKObjectLoader,
+  FileLoader
 };
 
 export type { GLTF, Collada };
@@ -67,7 +72,7 @@ loadingManager.setURLModifier((resource) => {
 });
 
 loadingManager.onStart = (url, itemsLoaded, itemsTotal) => {
-  window.dispatchEvent(new CustomEvent('LoadingManager.onStart', { detail: { url, itemsLoaded, itemsTotal } }));
+  window.dispatchEvent(new CustomEvent('TIFMK.LoadingManager.onStart', { detail: { url, itemsLoaded, itemsTotal } }));
 };
 
 loadingManager.onLoad = () => {
@@ -76,7 +81,7 @@ loadingManager.onLoad = () => {
   Object.keys(blobs).forEach((key) => {
     delete blobs[key];
   });
-  window.dispatchEvent(new CustomEvent('LoadingManager.onLoad', { detail: {} }));
+  window.dispatchEvent(new CustomEvent('TIFMK.LoadingManager.onLoad', { detail: {} }));
 };
 
 const gl = new THREE.WebGLRenderer({ antialias: true });
@@ -116,3 +121,6 @@ export const objLoader = new OBJLoader(loadingManager).setCrossOrigin('anonymous
 export const mtlLoader = new MTLLoader(loadingManager).setCrossOrigin('anonymous');
 export const stlLoader = new STLLoader(loadingManager).setCrossOrigin('anonymous');
 export const colladaLoader = new ColladaLoader(loadingManager).setCrossOrigin('anonymous');
+export const objectLoader = new ObjectLoader(loadingManager).setCrossOrigin('anonymous');
+export const bsonObjectLoader = new TIFMKObjectLoader(loadingManager).setCrossOrigin('anonymous');
+export const fileLoader = new FileLoader(loadingManager).setCrossOrigin('anonymous');

@@ -14,6 +14,10 @@ export function getBoundingBoxSize(object: THREE.Object3D) {
 
 export function calculateScaleFactor(assetSize: THREE.Vector3, sceneSize: THREE.Vector3, targetRatio = 0.1) {
   const assetMaxDimension = Math.max(assetSize.x, assetSize.y, assetSize.z);
+  if (assetMaxDimension === 0) {
+    // some assets like lights, camera have no size
+    return 1;
+  }
   const sceneMaxDimension = Math.max(sceneSize.x, sceneSize.y, sceneSize.z);
   return (sceneMaxDimension * targetRatio) / assetMaxDimension;
 }

@@ -4,8 +4,7 @@ import { numberCommon } from './bindingHelpers';
 import { radToDegFormatter } from 'lib/utils/mathUtils';
 import { MaterialBindings } from './MaterialBindings';
 import { useAppStore } from 'src/store';
-
-// const isSkinnedMesh = (object: THREE.Object3D) => object instanceof THREE.SkinnedMesh;
+import { exportObject, ExportableTypes } from 'lib/utils/downloadUtils';
 
 export const Object3DBindings = (params: CommonGetterParams) => ({
   id: {
@@ -36,6 +35,14 @@ export const Object3DBindings = (params: CommonGetterParams) => ({
       // interactable objects should be cleaned up already
     }) as onChange,
     if: (object: THREE.Object3D) => !!object.parent
+  },
+  download: {
+    label: 'Download',
+    title: 'Download',
+    onClick: (async ({ object }) => {
+      await exportObject(object, { type: 'json' });
+    }) as onChange,
+    if: (object: THREE.Object3D) => !!object.parent && ExportableTypes.has(object.type)
   },
   position: {
     label: 'Position(L)',

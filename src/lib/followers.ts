@@ -101,6 +101,11 @@ export class EmptyFollower extends Follower {
   }
 }
 
+// NOTE: CubeCamera when selected, triggers TexturePlugin which makes a CanvasTexture for it.
+// That CanvasTexture remains behind when CubeCamera is deleted and uploaded back.
+// When CanvasTexture is removed it is added back right away when some other object in the scene
+// uses one of the custom shaders used by TexturePlugin.
+// If those custom shaders need to be used in some scene texture they should be cloned and not used directly.
 export class CubeCameraHelper extends Follower {
   constructor(target: THREE.Object3D, { size }: { size?: number } = {}) {
     super(target, { size });

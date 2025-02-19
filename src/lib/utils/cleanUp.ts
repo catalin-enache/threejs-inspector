@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { deepTraverse } from './objectUtils';
 
 export function disposeMediaElement(
   media: HTMLCanvasElement | HTMLImageElement | HTMLVideoElement | HTMLAudioElement | ImageBitmap,
@@ -48,105 +49,45 @@ export const deepClean = (
   const disposableSet = new Set<THREE.Object3D>();
   const renderTargetsSet = new Set<THREE.WebGLRenderTarget>();
 
-  object.traverse((descendant) => {
-    if (descendant.name === 'DefaultTransformControls' && !includeDefaultTransformControls) {
-      return;
-    }
-
-    if (descendant instanceof THREE.Scene) {
-      if (descendant.background instanceof THREE.Texture) {
-        descendant.background.dispose();
-        descendant.background = null;
+  deepTraverse(
+    object,
+    ({ value }) => {
+      if (value instanceof THREE.Texture) {
+        texturesSet.add(value);
+      } else if (value instanceof THREE.Material) {
+        materialsSet.add(value);
+      } else if (value instanceof THREE.BufferGeometry) {
+        geometriesSet.add(value);
+      } else if (value instanceof THREE.Skeleton) {
+        skeletonsSet.add(value);
+      } else if (value instanceof THREE.WebGLRenderTarget) {
+        renderTargetsSet.add(value);
+      } else if ('dispose' in value) {
+        disposableSet.add(value);
       }
-      if (descendant.environment instanceof THREE.Texture) {
-        descendant.environment.dispose();
-        descendant.environment = null;
-      }
-    }
-
-    if ('dispose' in descendant) {
-      disposableSet.add(descendant);
-    }
-
-    const descendantAsLight = descendant as THREE.Light;
-    const descendantAsMesh = descendant as THREE.Mesh;
-    const descendantAsSkinnedMesh = descendant as THREE.SkinnedMesh;
-
-    if (descendantAsLight.isLight && descendantAsLight.shadow && descendantAsLight.shadow.map) {
-      renderTargetsSet.add(descendantAsLight.shadow.map);
-    }
-
-    if ((descendant as THREE.CubeCamera).renderTarget) {
-      renderTargetsSet.add((descendant as THREE.CubeCamera).renderTarget);
-      (descendant as THREE.CubeCamera).renderTarget.textures.forEach((texture) => {
-        texturesSet.add(texture);
-      });
-    }
-
-    if (descendantAsMesh.material) {
-      const materials = Array.isArray(descendantAsMesh.material)
-        ? descendantAsMesh.material
-        : [descendantAsMesh.material];
-      materials.forEach((mat: THREE.Material) => {
-        materialsSet.add(mat);
-
-        Object.keys(mat).forEach((key) => {
-          if ((mat as any)[key] instanceof THREE.Texture) {
-            texturesSet.add((mat as any)[key]);
-            (mat as any)[key] = null;
-          }
-        });
-
-        const _mat = mat as THREE.ShaderMaterial;
-
-        if (_mat.uniforms) {
-          console.log('Cleaning up material found uniforms', { uniforms: _mat.uniforms, obj: descendantAsMesh });
-          for (const value of Object.values(_mat.uniforms)) {
-            if (value) {
-              const uniformValues = Array.isArray(value.value) ? value.value : [value.value];
-              uniformValues.forEach((uniformValue) => {
-                if (uniformValue instanceof THREE.Texture) {
-                  console.log('Cleaning up material disposing uniformValue as Texture', {
-                    obj: descendantAsMesh,
-                    uniformValue
-                  });
-                  texturesSet.add(uniformValue);
-                }
-              });
-            }
-          }
-        }
-      });
-    }
-
-    if (descendantAsMesh.geometry) {
-      geometriesSet.add(descendantAsMesh.geometry);
-    }
-
-    if (descendantAsSkinnedMesh.skeleton) {
-      skeletonsSet.add(descendantAsSkinnedMesh.skeleton);
-    }
-
-    if (descendantAsSkinnedMesh.skeleton && descendantAsSkinnedMesh.skeleton.boneTexture) {
-      texturesSet.add(descendantAsSkinnedMesh.skeleton.boneTexture);
-    }
-  });
-
-  console.log(
-    'Disposing of',
-    {
-      geometries: geometriesSet.size,
-      materials: materialsSet.size,
-      textures: texturesSet.size,
-      skeletons: skeletonsSet.size,
-      disposables: disposableSet.size,
-      renderTargets: renderTargetsSet.size
     },
-    'for object',
-    object
+    ({ value }) => {
+      return (
+        ([THREE.BufferGeometry, THREE.Material, THREE.Texture, THREE.Skeleton, THREE.WebGLRenderTarget].some(
+            (klass) => value instanceof klass
+          ) ||
+          (!!value?.dispose && value.dispose === 'function')) &&
+        (includeDefaultTransformControls || value?.name !== 'DefaultTransformControls') &&
+        !value?.constructor?.name?.toLowerCase().includes('control') // OrbitControls
+      );
+    }
   );
 
   if (object instanceof THREE.Scene) {
+    if (object.background instanceof THREE.Texture) {
+      object.background.dispose();
+      object.background = null;
+    }
+    if (object.environment instanceof THREE.Texture) {
+      object.environment.dispose();
+      object.environment = null;
+    }
+
     const childrenToRemove = [...object.children].filter((child) => {
       return includeDefaultTransformControls || child.name !== 'DefaultTransformControls'; // exists only in scene
     });
@@ -155,6 +96,20 @@ export const deepClean = (
       child.removeFromParent();
     });
   }
+
+  console.log(
+    'Disposing of',
+    {
+      geometries: geometriesSet.size,
+      materials: materialsSet.size,
+      textures: texturesSet.size,
+      skeletons: skeletonsSet.size,
+      otherDisposables: disposableSet.size,
+      renderTargets: renderTargetsSet.size
+    },
+    'for object',
+    object
+  );
 
   renderTargetsSet.forEach((renderTarget) => {
     renderTarget.dispose();

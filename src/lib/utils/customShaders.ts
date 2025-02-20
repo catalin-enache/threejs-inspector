@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { UnpackDepthRGBAShader } from 'three/examples/jsm/shaders/UnpackDepthRGBAShader';
 
+// use : thumbnailMaterial.uniforms.map.value = texture; then render the mesh
 export const getThumbnailMaterial = () => {
   return new THREE.ShaderMaterial({
     uniforms: {
@@ -25,10 +26,7 @@ export const getThumbnailMaterial = () => {
   });
 };
 
-// use : thumbnailMaterial.uniforms.map.value = texture; then render the mesh
-export const thumbnailMaterial = getThumbnailMaterial();
-thumbnailMaterial.name = 'ThumbnailMaterial';
-
+// use : shadowMapMaterial.uniforms.tDiffuse.value = texture; then render the mesh
 // From Three ShadowMapViewer example
 export const getShadowMapMaterial = () => {
   const shader = UnpackDepthRGBAShader;
@@ -38,6 +36,3 @@ export const getShadowMapMaterial = () => {
     fragmentShader: shader.fragmentShader
   });
 };
-
-export const shadowMapMaterial = getShadowMapMaterial();
-shadowMapMaterial.name = 'ThumbnailShadowMapMaterial';

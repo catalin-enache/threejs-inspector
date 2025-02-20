@@ -226,7 +226,7 @@ export const createTexturesFromImages: createTexturesFromImagesType = async (
     setTimeout(() => {
       material.needsUpdate = true;
       setTimeout(() => {
-        patchThree.refreshCPane();
+        patchThree.refreshCPanel();
       });
     });
   } else if (material?.current) {
@@ -235,14 +235,14 @@ export const createTexturesFromImages: createTexturesFromImagesType = async (
       if (material.current) {
         material.current.needsUpdate = true;
         setTimeout(() => {
-          patchThree.refreshCPane();
+          patchThree.refreshCPanel();
         });
       }
     });
   } else {
     // the scene case for background/environment
     setTimeout(() => {
-      patchThree.refreshCPane();
+      patchThree.refreshCPanel();
     });
   }
 

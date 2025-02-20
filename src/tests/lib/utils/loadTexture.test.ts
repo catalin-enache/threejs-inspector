@@ -11,11 +11,11 @@ describe('loadTexture', () => {
           console.log('LoadingManager.onStart', _event);
         });
         const handleLoadingManagerOnLoad = vi.fn((_event) => {
-          console.log('LoadingManager.onLoad', _event);
+          console.log('TIFMK.LoadingManager.onLoad', _event);
         });
 
-        window.addEventListener('LoadingManager.onStart', handleLoadingManagerOnStart);
-        window.addEventListener('LoadingManager.onLoad', handleLoadingManagerOnLoad);
+        window.addEventListener('TIFMK.LoadingManager.onStart', handleLoadingManagerOnStart);
+        window.addEventListener('TIFMK.LoadingManager.onLoad', handleLoadingManagerOnLoad);
 
         const material = new THREE.MeshBasicMaterial();
         material.needsUpdate = false;

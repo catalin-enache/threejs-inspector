@@ -3,6 +3,7 @@ import * as THREE from 'three';
 import { Modal } from 'components/Modal/Modal';
 import { useAppStore } from 'src/store';
 import { loadModel } from 'lib/utils/loadModel';
+import patchThree from 'lib/patchThree';
 import './LoadModelForm.css';
 
 // model extensions
@@ -27,7 +28,10 @@ const allowedExtensions = [
   '.tga',
   '.ktx2',
   '.pvr',
-  '.dds'
+  '.dds',
+  '.json',
+  '.bson',
+  '.ejson'
 ];
 
 interface LoadModelFormProps {
@@ -132,6 +136,8 @@ export const LoadModelForm = (props: LoadModelFormProps) => {
       const filesArray = Array.from(files);
       // reset input so we can upload the same file again
       uploadInput.value = '';
+      // this is for importing JSON scenario.
+      patchThree.isSafeToMakeHelpers = false;
       loadModel(filesArray, {
         scene,
         camera,
@@ -139,9 +145,34 @@ export const LoadModelForm = (props: LoadModelFormProps) => {
         recombineByMaterial: recombineByMaterial.current,
         autoScaleRatio: autoScaleRatio.current, // 0..1 percentage
         debug: debug.current // <meshName> || 'ALL'
-      }).then((mesh) => {
-        mesh && scene.add(mesh);
-      });
+      })
+        .then((object) => {
+          patchThree.isSafeToMakeHelpers = true;
+          if (object) {
+            // @ts-ignore
+            if (!object.isScene) {
+              scene.add(object);
+            } else {
+              patchThree.clearScene();
+              const importedScene = object as unknown as THREE.Scene;
+              const importedSceneChildren = [...importedScene.children];
+
+              scene.background = importedScene.background;
+              scene.environment = importedScene.environment;
+
+              importedSceneChildren.forEach((child) => {
+                scene.add(child);
+              });
+
+              patchThree.refreshCPanel();
+              patchThree.updateCubeCameras();
+            }
+          }
+        })
+        .catch((error) => {
+          console.error('Could not load object', error, filesArray);
+          patchThree.isSafeToMakeHelpers = true;
+        });
     };
 
     contentRef.current = content;

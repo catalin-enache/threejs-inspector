@@ -1,4 +1,4 @@
-import { radToDegFormatter } from 'lib/utils/mathUtils';
+import { radToDegFormatter } from 'lib/utils/formatters';
 import type { CommonGetterParams } from './bindingTypes';
 import { TextureBindings } from './TextureBindings';
 import { numberCommon } from './bindingHelpers';

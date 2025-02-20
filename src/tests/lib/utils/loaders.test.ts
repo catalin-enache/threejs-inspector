@@ -20,11 +20,11 @@ describe('image loaders', () => {
         // console.log('LoadingManager.onStart', _event);
       });
       const handleLoadingManagerOnLoad = vi.fn((_event) => {
-        // console.log('LoadingManager.onLoad', _event);
+        // console.log('TIFMK.LoadingManager.onLoad', _event);
       });
 
-      window.addEventListener('LoadingManager.onStart', handleLoadingManagerOnStart);
-      window.addEventListener('LoadingManager.onLoad', handleLoadingManagerOnLoad);
+      window.addEventListener('TIFMK.LoadingManager.onStart', handleLoadingManagerOnStart);
+      window.addEventListener('TIFMK.LoadingManager.onLoad', handleLoadingManagerOnLoad);
 
       const textures = await Promise.all([
         ultraHdrLoader.loadAsync('/textures/background/equirectangular/spruit_sunrise_4k.hdr.jpg'),

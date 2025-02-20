@@ -5,12 +5,13 @@ import type { LightProbeHelper } from 'three/examples/jsm/helpers/LightProbeHelp
 import type { TransformControls } from 'three/examples/jsm/controls/TransformControls';
 import type { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import type { PositionalAudioHelper } from 'three/examples/jsm/helpers/PositionalAudioHelper';
+import type { Follower } from 'lib/followers';
 
 export type __inspectorData = {
   fullData: any;
   animations: THREE.AnimationClip[];
   hitRedirect: THREE.Object3D;
-  picker: THREE.Mesh;
+  picker: Follower;
   helper:
     | THREE.SkeletonHelper
     | THREE.SpotLightHelper
@@ -21,13 +22,15 @@ export type __inspectorData = {
     | THREE.HemisphereLightHelper
     | LightProbeHelper
     | PositionalAudioHelper
+    | Follower
     | THREE.Mesh; // fallback meaningless helper
-  preventDestroy: boolean;
   isInspectable: boolean;
   useOnPlay: boolean;
   isPicker: boolean;
   isHelper: boolean;
-  isMarkedForDestroy: boolean;
+  isBeingAdded?: boolean;
+  updatingMatrixWorld?: boolean;
+  updatingWorldMatrix?: boolean;
   currentCamera: THREE.PerspectiveCamera | THREE.OrthographicCamera;
   isRecombined: boolean;
   transformControlsRef: { current?: TransformControls | null };
@@ -46,8 +49,49 @@ export type __inspectorData = {
   __cpCurrentPlayingAction: THREE.AnimationAction | null;
 };
 
+export interface RenderTargetAsJson {
+  width: number;
+  height: number;
+  options: Omit<THREE.RenderTargetOptions, 'depthTexture'> & {
+    depthTexture?:
+      | (THREE.TextureJSON & {
+          imageWidth: number;
+          imageHeight: number;
+        })
+      | null;
+  };
+}
+
+export interface CubeCameraAsJson extends THREE.Object3DJSON {
+  object: THREE.Object3DJSON['object'] & {
+    near: number;
+    far: number;
+    renderTarget: RenderTargetAsJson;
+  };
+}
+
 declare module 'three' {
-  export interface Object3D {
+  interface Object3D {
     __inspectorData: Partial<__inspectorData>;
+    destroy: () => void;
+  }
+
+  interface RenderTarget {
+    toJSON(meta?: THREE.JSONMeta): RenderTargetAsJson;
+  }
+
+  interface CubeCamera {
+    toJSON(meta?: THREE.JSONMeta): CubeCameraAsJson;
+  }
+
+  interface ObjectLoader {
+    // this is the correct signature according to Three.js source code
+    parseObject(
+      data: unknown,
+      geometries: { [key: string]: THREE.InstancedBufferGeometry | THREE.BufferGeometry },
+      materials: { [key: string]: THREE.Material },
+      textures: { [key: string]: THREE.Texture },
+      animations: { [key: string]: THREE.AnimationClip }
+    ): THREE.Object3D;
   }
 }

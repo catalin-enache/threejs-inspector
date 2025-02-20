@@ -46,7 +46,7 @@ html, body {
 /* << overriding host end */
 
 #controlPanel {
-  --cPanelNestingOffset: 10px; /* account for cPane Global tab initial nesting */
+  --cPanelNestingOffset: 10px; /* account for cPanel Global tab initial nesting */
   --cPanelWidth: 340px;
   --cPanelRightMargin: 10px;
   --leftRightMargin: calc(var(--cPanelRightMargin) * 2);

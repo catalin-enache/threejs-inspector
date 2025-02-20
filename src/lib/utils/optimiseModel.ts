@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { cloneObject3D } from './cloneObject3D';
+import { cloneObject3D } from './objectUtils';
 import { BufferAttributeConstructor, TypedArrayConstructor } from 'src/types';
 import * as BufferGeometryUtils from 'three/examples/jsm/utils/BufferGeometryUtils';
 

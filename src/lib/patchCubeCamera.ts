@@ -2,8 +2,8 @@ import * as THREE from 'three';
 import 'src/lib/patchRenderTarget';
 import type { CubeCameraAsJson } from 'tsExtensions';
 
-THREE.CubeCamera.prototype.toJSON = (function() {
-  return function(this: THREE.CubeCamera, meta?: THREE.JSONMeta): CubeCameraAsJson {
+THREE.CubeCamera.prototype.toJSON = (function () {
+  return function (this: THREE.CubeCamera, meta?: THREE.JSONMeta): CubeCameraAsJson {
     const children = [...this.children];
     // removing internal cameras
     while (this.children.length) {

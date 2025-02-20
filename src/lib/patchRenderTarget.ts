@@ -1,8 +1,8 @@
 import * as THREE from 'three';
 import type { RenderTargetAsJson } from 'tsExtensions';
 
-THREE.RenderTarget.prototype.toJSON = (function() {
-  return function(this: THREE.RenderTarget, meta?: THREE.JSONMeta): RenderTargetAsJson {
+THREE.RenderTarget.prototype.toJSON = (function () {
+  return function (this: THREE.RenderTarget, meta?: THREE.JSONMeta): RenderTargetAsJson {
     const data: RenderTargetAsJson = {
       width: this.width,
       height: this.height,

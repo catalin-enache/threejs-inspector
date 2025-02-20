@@ -10,16 +10,19 @@ import {
   mtlLoader,
   stlLoader,
   colladaLoader,
+  tifmkObjectLoader,
   GLTFLoader,
   MTLLoader,
   FBXLoader,
   STLLoader,
   OBJLoader,
   PLYLoader,
-  ColladaLoader
+  ColladaLoader,
+  TIFMKObjectLoader
 } from './loaders';
 import { splitMeshesByMaterial, toIndexedGeometry } from './optimiseModel';
 import { getBoundingBoxSize, calculateScaleFactor, getSceneBoundingBoxSize } from './sizeUtils';
+import { deepTraverse } from 'lib/utils/objectUtils';
 
 export const FILE_FBX = 'FBX';
 export const FILE_PLY = 'PLY';
@@ -28,9 +31,23 @@ export const FILE_GLTF_BINARY = 'GLTF_BINARY';
 export const FILE_OBJ = 'OBJ';
 export const FILE_STL = 'STL';
 export const FILE_COLLADA = 'COLLADA';
+export const FILE_JSON = 'JSON';
+export const FILE_BSON = 'BSON';
+export const FILE_EJSON = 'EJSON';
 
 // models extensions
-const RootTypesSet = new Set([FILE_FBX, FILE_PLY, FILE_GLTF, FILE_GLTF_BINARY, FILE_OBJ, FILE_STL, FILE_COLLADA]);
+const RootTypesSet = new Set([
+  FILE_FBX,
+  FILE_PLY,
+  FILE_GLTF,
+  FILE_GLTF_BINARY,
+  FILE_OBJ,
+  FILE_STL,
+  FILE_COLLADA,
+  FILE_JSON,
+  FILE_BSON,
+  FILE_EJSON
+]);
 
 export const fileTypeMap: Record<string, string> = {
   fbx: FILE_FBX,
@@ -39,7 +56,10 @@ export const fileTypeMap: Record<string, string> = {
   gltf: FILE_GLTF,
   obj: FILE_OBJ,
   stl: FILE_STL,
-  dae: FILE_COLLADA
+  dae: FILE_COLLADA,
+  json: FILE_JSON,
+  bson: FILE_BSON,
+  ejson: FILE_EJSON
 };
 
 export const getLoader = (fileType: string) => {
@@ -57,22 +77,40 @@ export const getLoader = (fileType: string) => {
       return stlLoader;
     case FILE_COLLADA:
       return colladaLoader;
+    case FILE_JSON:
+      return tifmkObjectLoader;
+    case FILE_BSON:
+      return tifmkObjectLoader;
+    case FILE_EJSON:
+      return tifmkObjectLoader;
     default:
       return null;
   }
 };
 
-const configMesh = (mesh: THREE.Object3D, isInspectable: boolean) => {
-  if (isInspectable) {
-    mesh.__inspectorData.isInspectable = isInspectable;
-  }
+const configMesh = (mesh: THREE.Object3D) => {
+  const isJSONLoaded = (mesh.name || '').toLowerCase().endsWith('.json');
+  const isBSONLoaded = (mesh.name || '').toLowerCase().endsWith('.bson');
+  const isEJSONLoaded = (mesh.name || '').toLowerCase().endsWith('.ejson');
 
-  mesh.traverse(function (child) {
-    if (child instanceof THREE.Mesh) {
-      child.castShadow = true;
-      child.receiveShadow = true;
-    }
-  });
+  if (isJSONLoaded || isBSONLoaded || isEJSONLoaded) {
+    deepTraverse(
+      mesh,
+      ({ value }) => {
+        // mesh can be a scene when importing a scene saved as json
+        // before exporting to json we copy the isInspectable flag from __inspectorData to userData
+        // here we get it back
+        if (value?.userData?.isInspectable) {
+          value.__inspectorData.isInspectable = true;
+        }
+        delete value?.userData?.isInspectable;
+        value.uuid = THREE.MathUtils.generateUUID();
+      },
+      ({ value }) => {
+        return value?.uuid;
+      }
+    );
+  }
 };
 
 const collectDescendantAnimationsIfAny = (mesh: THREE.Group | THREE.Mesh) => {
@@ -143,7 +181,7 @@ const configLoader = ({
   path,
   resourcePath
 }: {
-  loader: GLTFLoader | FBXLoader | PLYLoader | OBJLoader | STLLoader | ColladaLoader | MTLLoader;
+  loader: GLTFLoader | FBXLoader | PLYLoader | OBJLoader | STLLoader | ColladaLoader | MTLLoader | TIFMKObjectLoader;
   path?: string;
   resourcePath?: string;
 }): {
@@ -169,7 +207,7 @@ const enhanceLoader = async ({
   resourcePath,
   sources
 }: {
-  loader: GLTFLoader | FBXLoader | PLYLoader | OBJLoader | STLLoader | ColladaLoader;
+  loader: GLTFLoader | FBXLoader | PLYLoader | OBJLoader | STLLoader | ColladaLoader | TIFMKObjectLoader;
   path?: string;
   resourcePath?: string;
   sources?: string[];
@@ -192,7 +230,7 @@ const enhanceLoader = async ({
 };
 
 // TODO: Check the hair between Mixamo Jennifer fbx and gltf. See why hair material is better handled by gltf.
-
+// TODO: rename this function to loadObject and the file to loadObject.ts
 // to copy a model locally and ensure it is well constructed example:
 // gltf-transform cp https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/main/Models/AnisotropyBarnLamp/glTF-KTX-BasisU/AnisotropyBarnLamp.gltf out/lamp.gltf --allow-http
 // https://github.com/mrdoob/three.js/issues/28258
@@ -202,9 +240,8 @@ export const loadModel = async (
     scene,
     camera,
     changeGeometry,
-    recombineByMaterial = false,
-    autoScaleRatio = 0.4,
-    isInspectable = true,
+    recombineByMaterial,
+    autoScaleRatio,
     path,
     resourcePath,
     getMaterial, // to be used for ply/stl loaders
@@ -215,7 +252,6 @@ export const loadModel = async (
     changeGeometry?: 'indexed' | 'non-indexed';
     recombineByMaterial?: boolean;
     autoScaleRatio?: number;
-    isInspectable?: boolean;
     path?: string;
     resourcePath?: string;
     getMaterial?: (geometry: THREE.BufferGeometry) => THREE.Material;
@@ -233,12 +269,16 @@ export const loadModel = async (
       autoScaleRatio,
       recombineByMaterial,
       resourcePath,
-      isInspectable,
       debug
     });
 
   let loader: ReturnType<typeof getLoader>;
-  let result: THREE.Group<THREE.Object3DEventMap> | THREE.BufferGeometry<THREE.NormalBufferAttributes> | GLTF | Collada;
+  let result:
+    | THREE.Group<THREE.Object3DEventMap>
+    | THREE.Object3D<THREE.Object3DEventMap>
+    | THREE.BufferGeometry<THREE.NormalBufferAttributes>
+    | GLTF
+    | Collada;
   let fileName: string;
   let fileType: string;
 
@@ -340,6 +380,8 @@ export const loadModel = async (
     newMesh.updateMatrix();
     newMesh.updateMatrixWorld(true);
     root = newMesh;
+  } else if (loader instanceof TIFMKObjectLoader) {
+    root = result as THREE.Group;
   }
 
   if (!root) return null;
@@ -421,7 +463,7 @@ export const loadModel = async (
     root.scale.set(scaleFactor, scaleFactor, scaleFactor);
   }
 
-  configMesh(root, isInspectable);
+  configMesh(root);
 
   return root;
 };

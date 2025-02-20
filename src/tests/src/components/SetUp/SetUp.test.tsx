@@ -13,6 +13,7 @@ import patchThree from 'lib/patchThree';
 import { CPanelProps } from 'components/CPanel/CPanel';
 import { degToRad } from 'lib/utils/mathUtils';
 import { loadModel } from 'lib/utils/loadModel';
+import { DirectionalLightPicker, SpotLightPicker } from 'lib/followers';
 
 describe('SetUp', () => {
   beforeEach(() => {
@@ -579,12 +580,14 @@ describe('SetUp', () => {
           if (changed === 'scene') {
             const { scene } = three;
             expect(scene).not.toBe(defaultScene);
-            expect(scene.children.length).toBe(5);
-            expect(defaultScene.children.length).toBe(2);
+            expect(scene.children.length).toBe(5); // AxesHelper, GridHelper, DirectionalLight, Mesh(floor), SpotLight
+            expect(defaultScene.children.length).toBe(4); // DirectionalLightPicker, DirectionalLightHelper, SpotLightHelper, SpotLightPicker (dependentObjects for pre DirectionalLight, SpotLight)
             expect(defaultScene.children.map((c) => c.constructor).includes(THREE.SpotLightHelper)).toBe(true);
             expect(defaultScene.children.map((c) => c.constructor).includes(THREE.DirectionalLightHelper)).toBe(true);
+            expect(defaultScene.children.map((c) => c.constructor).includes(SpotLightPicker)).toBe(true);
+            expect(defaultScene.children.map((c) => c.constructor).includes(DirectionalLightPicker)).toBe(true);
             await waitFor(() => expect(defaultScene.children.length).toBe(0));
-            expect(scene.children.length).toBe(8); // the 2 helpers plus TransformControls were added on top of the first 5 children
+            expect(scene.children.length).toBe(10); // the 2 helpers, 2 pickers plus TransformControls were added on top of the first 5 children
             expect(scene.children.map((c) => c.constructor).includes(THREE.SpotLightHelper)).toBe(true);
             expect(scene.children.map((c) => c.constructor).includes(THREE.DirectionalLightHelper)).toBe(true);
             res.unmount();

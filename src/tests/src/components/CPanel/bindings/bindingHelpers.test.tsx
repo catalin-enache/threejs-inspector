@@ -15,7 +15,7 @@ import {
   getPaneTab,
   setSelectedTab
 } from 'components/CPanel/bindings/bindingHelpers';
-import { radToDegFormatter } from 'lib/utils/mathUtils';
+import { radToDegFormatter } from 'lib/utils/formatters';
 import { loadModel } from 'lib/utils/loadModel';
 
 const setObjectTab = async (pane: Pane) => {

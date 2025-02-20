@@ -1,7 +1,7 @@
 import { useEffect, useRef, useCallback, useMemo, MutableRefObject } from 'react';
 import * as THREE from 'three';
 import { useThree } from '@react-three/fiber';
-import { Pane, FolderApi, TabApi } from 'tweakpane';
+import { Pane, FolderApi } from 'tweakpane';
 import * as EssentialsPlugin from '@tweakpane/plugin-essentials';
 import { gsap } from 'gsap';
 import { Draggable } from 'gsap/Draggable';
@@ -24,6 +24,8 @@ import {
   buildBindings,
   cleanupContainer,
   buildCustomParams,
+  getPaneTab,
+  setSelectedTab,
   eventListenersMap as _eventListenersMap // log this when in doubt that all event listeners have been removed
 } from './bindings/bindingHelpers';
 // @ts-ignore
@@ -141,14 +143,6 @@ document.addEventListener('pointerup', (evt) => {
 
 // ----------------------- << Allowing input control to be visible when dragged outside cPanel  << --------------------------------
 
-export const getPaneTab = (pane: Pane, tabIndex: number) => {
-  return (pane.children[0] as TabApi).pages[tabIndex];
-};
-
-export const setSelectedTab = (pane: Pane, tabIndex: number) => {
-  pane.children[0].element.children[0].children[tabIndex].children[0].dispatchEvent(new Event('click'));
-};
-
 const preventContextMenu = (evt: globalThis.MouseEvent) => {
   evt.preventDefault();
 };
@@ -190,8 +184,6 @@ export const CPanel = (props: CPanelProps) => {
   const showGridHelper = useAppStore((state) => state.showGridHelper);
 
   const cPanelVisible = useAppStore((state) => state.cPanelVisible);
-  const setCPanelOpacity = useAppStore((state) => state.setCPanelOpacity);
-  const setCPanelSize = useAppStore((state) => state.setCPanelSize);
   const selectedObjectUUID = useAppStore((state) => state.selectedObjectUUID);
   const selectedObjectRef = useRef<THREE.Object3D | null>(null);
   const triggerSelectedObjectChanged = useAppStore((state) => state.triggerSelectedObjectChanged);
@@ -204,7 +196,7 @@ export const CPanel = (props: CPanelProps) => {
   // In later useEffects the dependencies are already the ones used here.
   // No need to add commonGetterParams as a dependency.
   const commonGetterParams: CommonGetterParams = useMemo(
-    () => ({ angleFormat, playingState, sceneObjects: { scene, camera, gl } }),
+    () => ({ angleFormat, playingState, pane: paneRef, sceneObjects: { scene, camera, gl } }),
     [angleFormat, playingState, scene, camera, gl]
   );
   const commonGetterParamsRef = useRef(commonGetterParams);
@@ -218,6 +210,22 @@ export const CPanel = (props: CPanelProps) => {
     },
     [triggerSelectedObjectChanged]
   );
+
+  const handleClearScene = useCallback(() => {
+    [0, 1, 2].forEach((index) => {
+      if (!paneRef.current) return;
+      cleanupContainer(getPaneTab(paneRef.current, index), { disposeRootFolder: true });
+    });
+    useAppStore.getState().clearCPanelCustomParams();
+    useAppStore.getState().triggerCPanelStateChanged(); // to repopulate scene tab by rebuilding the scene bindings
+  }, []);
+
+  useEffect(() => {
+    window.addEventListener('TIFMK.ClearScene', handleClearScene);
+    return () => {
+      window.removeEventListener('TIFMK.ClearScene', handleClearScene);
+    };
+  }, [handleClearScene]);
 
   // Instantiate Pane and create tabs
   useEffect(() => {
@@ -261,19 +269,20 @@ export const CPanel = (props: CPanelProps) => {
     const currentOpacity = +getComputedStyle(document.documentElement)
       .getPropertyValue('--tp-base-background-opacity')
       .trim();
-    !storedCPanelOpacity && setCPanelOpacity(currentOpacity);
+    !storedCPanelOpacity && useAppStore.getState().setCPanelOpacity(currentOpacity);
     storedCPanelOpacity && docStyle.setProperty('--tp-base-background-opacity', storedCPanelOpacity);
     const storedCPanelSize = localStorage.getItem('threeInspector__cPanelSize');
     const currentSize = parseInt(getComputedStyle(cPanelContainer).getPropertyValue('--cPanelWidth').trim(), 10);
-    !storedCPanelSize && setCPanelSize(currentSize);
+    !storedCPanelSize && useAppStore.getState().setCPanelSize(currentSize);
     storedCPanelSize && cPanelContainer.style.setProperty('--cPanelWidth', storedCPanelSize + 'px');
     onCPanelReady?.(paneRef.current!, { commonGetterParamsRef });
     return () => {
       continuousUpdateRef.current?.stop();
       if (paneRef.current) {
-        cleanupContainer(getPaneTab(paneRef.current, 0), { disposeRootFolder: true });
-        cleanupContainer(getPaneTab(paneRef.current, 1), { disposeRootFolder: true });
-        cleanupContainer(getPaneTab(paneRef.current, 2), { disposeRootFolder: true });
+        [0, 1, 2].forEach((index) => {
+          if (!paneRef.current) return;
+          cleanupContainer(getPaneTab(paneRef.current, index), { disposeRootFolder: true });
+        });
       }
       paneRef.current?.dispose();
       onCPanelUnmounted?.();

@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { FolderApi } from 'tweakpane';
+import { FolderApi, Pane } from 'tweakpane';
 
 export type SceneObjects = {
   scene: THREE.Scene;
@@ -10,6 +10,7 @@ export type SceneObjects = {
 export type CommonGetterParams = {
   angleFormat: 'deg' | 'rad';
   playingState: 'playing' | 'paused' | 'stopped';
+  pane: { current: Pane | null };
   sceneObjects: SceneObjects;
 };
 

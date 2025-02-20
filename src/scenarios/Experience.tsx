@@ -5,21 +5,18 @@ import { useFrame, ThreeElements, useThree } from '@react-three/fiber';
 import Stats from 'three/addons/libs/stats.module.js';
 import { CustomControl } from 'components/CustomControl/CustomControl';
 import { usePlay } from 'lib/hooks';
-import { degToRad } from 'lib/utils/mathUtils';
-import { createTexturesFromImages } from 'lib/utils/loadTexture';
 import { TestIndexedCube3Materials } from './TestIndexedCube3Materials';
 // import { TestMorphTargets } from './TestMorphTargets';
-import { splitMeshesByMaterial } from 'lib/utils/optimiseModel';
 // @ts-ignore
-import { loadModel } from 'lib/utils/loadModel';
 import { LightProbeGenerator } from 'three/examples/jsm/lights/LightProbeGenerator';
-import { shadowMapMaterial } from 'lib/utils/customShaders';
-import patchThree from 'lib/patchThree';
-import { useAppStore } from 'src/store';
+import { getShadowMapMaterial } from 'lib/utils/customShaders';
+import api from 'lib/api';
+
+const degToRad = THREE.MathUtils.degToRad;
 
 const stats = new Stats();
 document.body.appendChild(stats.dom);
-
+const shadowMapMaterial = getShadowMapMaterial();
 // @ts-ignore
 function Box(
   props: ThreeElements['mesh'] & {
@@ -52,13 +49,13 @@ function Box(
     // 'textures/checkerboard-8x8.png',
     // 'textures/castle_brick_02_red_nor_gl_4k.exr',
     // 'textures/sikqyan_2K_Displacement.exr',
-    createTexturesFromImages(mapURL, { material: meshMaterialRef }).then((textures) => {
+    api.createTexturesFromImages(mapURL, { material: meshMaterialRef }).then((textures) => {
       const map = textures[0];
       // console.log('setting map');
       setMap(map);
     });
     alphaMapURL &&
-      createTexturesFromImages(alphaMapURL, { material: meshMaterialRef }).then((textures) => {
+      api.createTexturesFromImages(alphaMapURL, { material: meshMaterialRef }).then((textures) => {
         const map = textures[0];
         // console.log('setting alphaMap');
         setAlphaMap(map);
@@ -110,8 +107,25 @@ export function Experience() {
   );
   useFrame((_state, _delta) => {
     stats.update();
+  });
+  usePlay((_state, _delta) => {
+    stats.update();
     if (refPointLight.current) {
       // refPointLight.current.intensity = Math.sin(Date.now() / 100) + 1;
+    }
+    if (cubeCameraRef.current) {
+      cubeCameraRef.current.rotateX(0.01);
+      // cubeCameraRef.current.__inspectorData.helper.update();
+      // cubeCameraRef.current.__inspectorData.picker.update();
+    }
+    if (refDirectionalLight.current) {
+      refDirectionalLight.current.translateX(0.01);
+    }
+    if (refPointLight.current) {
+      refPointLight.current.translateZ(0.01);
+    }
+    if (refSpotLight.current) {
+      refSpotLight.current.translateZ(0.01);
     }
   });
   // const [myImage, setMyImage] = useState<any>(null);
@@ -140,26 +154,28 @@ export function Experience() {
   });
 
   useEffect(() => {
-    createTexturesFromImages(
-      ['alpha.jpg', 'ao.jpg', 'color.jpg', 'height.jpg', 'metalness.jpg', 'normal.jpg', 'roughness.jpg'].map(
-        (img) => `textures/pbr/door/${img}`
+    api
+      .createTexturesFromImages(
+        ['alpha.jpg', 'ao.jpg', 'color.jpg', 'height.jpg', 'metalness.jpg', 'normal.jpg', 'roughness.jpg'].map(
+          (img) => `textures/pbr/door/${img}`
+        )
       )
-    ).then((textures) => {
-      if (!doorMaterialRef.current) return;
-      // console.log(doorMaterialRef.current, textures);
-      doorMaterialRef.current.alphaMap = textures[0];
-      doorMaterialRef.current.aoMap = textures[1];
-      textures[2].colorSpace = THREE.SRGBColorSpace;
-      doorMaterialRef.current.map = textures[2];
-      doorMaterialRef.current.bumpMap = textures[3];
-      doorMaterialRef.current.metalnessMap = textures[4];
-      doorMaterialRef.current.normalMap = textures[5];
-      doorMaterialRef.current.roughnessMap = textures[6];
-      doorMaterialRef.current.metalness = 1;
-      doorMaterialRef.current.roughness = 0.7;
-      doorMaterialRef.current.transparent = true;
-      doorMaterialRef.current.needsUpdate = true;
-    });
+      .then((textures) => {
+        if (!doorMaterialRef.current) return;
+        // console.log(doorMaterialRef.current, textures);
+        doorMaterialRef.current.alphaMap = textures[0];
+        doorMaterialRef.current.aoMap = textures[1];
+        textures[2].colorSpace = THREE.SRGBColorSpace;
+        doorMaterialRef.current.map = textures[2];
+        doorMaterialRef.current.bumpMap = textures[3];
+        doorMaterialRef.current.metalnessMap = textures[4];
+        doorMaterialRef.current.normalMap = textures[5];
+        doorMaterialRef.current.roughnessMap = textures[6];
+        doorMaterialRef.current.metalness = 1;
+        doorMaterialRef.current.roughness = 0.7;
+        doorMaterialRef.current.transparent = true;
+        doorMaterialRef.current.needsUpdate = true;
+      });
   }, []);
 
   useEffect(() => {
@@ -175,112 +191,136 @@ export function Experience() {
     // ['px', 'nx', 'py', 'ny', 'pz', 'nz'].map((t) => `textures/background/cube/Park3Med/${t}.jpg`)
     // ['px', 'nx', 'py', 'ny', 'pz', 'nz'].map((t) => `textures/background/cube/skyboxsun25deg/${t}.jpg`)
     // ['px', 'nx', 'py', 'ny', 'pz', 'nz'].map((t) => `textures/background/cube/pisa/${t}.png`)
-    createTexturesFromImages('textures/background/equirectangular/spruit_sunrise_4k.hdr.jpg', {}).then((textures) => {
-      // console.log('createTextureFromImages', textures);
-      const texture = textures[0];
-      texture.mapping =
-        texture instanceof THREE.CubeTexture
-          ? THREE.CubeRefractionMapping // THREE.CubeReflectionMapping, THREE.CubeRefractionMapping
-          : texture.image.width / texture.image.height === 2
-            ? THREE.EquirectangularRefractionMapping
-            : THREE.UVMapping;
-      // texture.mapping = THREE.EquirectangularReflectionMapping;
-      texture.needsUpdate = true;
-      // texture.colorSpace = THREE.SRGBColorSpace;
-      if (refLightProbe.current && texture instanceof THREE.CubeTexture) {
-        refLightProbe.current.copy(LightProbeGenerator.fromCubeTexture(texture));
-        refLightProbe.current.name = 'myLightProbe';
-        refLightProbe.current.position.set(0, 0, 3);
-        refLightProbe.current.intensity = 1;
-      }
+    api
+      .createTexturesFromImages('textures/background/equirectangular/spruit_sunrise_4k.hdr.jpg', {})
+      .then((textures) => {
+        // console.log('createTextureFromImages', textures);
+        const texture = textures[0];
+        texture.mapping =
+          texture instanceof THREE.CubeTexture
+            ? THREE.CubeRefractionMapping // THREE.CubeReflectionMapping, THREE.CubeRefractionMapping
+            : texture.image.width / texture.image.height === 2
+              ? THREE.EquirectangularRefractionMapping
+              : THREE.UVMapping;
+        // texture.mapping = THREE.EquirectangularReflectionMapping;
+        texture.needsUpdate = true;
+        // texture.colorSpace = THREE.SRGBColorSpace;
+        if (refLightProbe.current && texture instanceof THREE.CubeTexture) {
+          refLightProbe.current.copy(LightProbeGenerator.fromCubeTexture(texture));
+          refLightProbe.current.name = 'myLightProbe';
+          // refLightProbe.current.position.set(0, 0, 3);
+          refLightProbe.current.intensity = 1;
+        }
 
-      // const pmremGenerator = new THREE.PMREMGenerator(gl);
+        // const pmremGenerator = new THREE.PMREMGenerator(gl);
 
-      // pmremGenerator.compileEquirectangularShader();
-      // pmremGenerator.compileCubemapShader();
+        // pmremGenerator.compileEquirectangularShader();
+        // pmremGenerator.compileCubemapShader();
 
-      // const PMREMRenderTarget = pmremGenerator.fromCubemap(texture as THREE.CubeTexture);
-      // const PMREMRenderTarget = pmremGenerator.fromEquirectangular(texture);
-      // const PMREMRenderTarget = pmremGenerator.fromScene(scene);
-      // PMREMRenderTarget.texture.mapping = THREE.CubeUVReflectionMapping;
-      // texture.colorSpace = THREE.SRGBColorSpace;
-      // texture.copy(PMREMRenderTarget.texture);
-      // texture.source = PMREMRenderTarget.texture.source;
-      // texture.image = PMREMRenderTarget.texture.image;
-      // console.log('createTextureFromImages', {
-      //   texture,
-      //   PMREMRenderTarget,
-      //   'PMREMRenderTarget.texture': PMREMRenderTarget.texture
-      // });
-      // scene.background = PMREMRenderTarget.texture;
-      // scene.environment = PMREMRenderTarget.texture;
-      // texture.mapping = THREE.EquirectangularReflectionMapping;
-      scene.background = texture;
-      scene.environment = texture;
-      // texture.needsPMREMUpdate = true;
-      // texture.needsUpdate = true;
+        // const PMREMRenderTarget = pmremGenerator.fromCubemap(texture as THREE.CubeTexture);
+        // const PMREMRenderTarget = pmremGenerator.fromEquirectangular(texture);
+        // const PMREMRenderTarget = pmremGenerator.fromScene(scene);
+        // PMREMRenderTarget.texture.mapping = THREE.CubeUVReflectionMapping;
+        // texture.colorSpace = THREE.SRGBColorSpace;
+        // texture.copy(PMREMRenderTarget.texture);
+        // texture.source = PMREMRenderTarget.texture.source;
+        // texture.image = PMREMRenderTarget.texture.image;
+        // console.log('createTextureFromImages', {
+        //   texture,
+        //   PMREMRenderTarget,
+        //   'PMREMRenderTarget.texture': PMREMRenderTarget.texture
+        // });
+        // scene.background = PMREMRenderTarget.texture;
+        // scene.environment = PMREMRenderTarget.texture;
+        // texture.mapping = THREE.EquirectangularReflectionMapping;
+        scene.background = texture; // leaves behind 1 geometry
+        scene.environment = texture; // leaves behind 1 texture and 13 geometries
+        // texture.needsPMREMUpdate = true;
+        // texture.needsUpdate = true;
+        if (doorMaterialRef.current) {
+          // doorMaterialRef.current.envMap = texture; // leaves behind 1 texture and 13 geometries
+        }
 
-      doorMaterialRef.current.envMap = scene.environment;
-      useAppStore.getState().triggerCPaneStateChanged();
+        api.refreshCPanel();
+        api.updateCubeCameras();
 
-      patchThree.updateCubeCameras();
+        // api.loadModel('models/FromThreeRepo/ply/binary/Lucy100k.ply', {}).then((mesh) => {
+        //   if (!mesh) return;
+        //   mesh.name = 'LoadedMesh';
+        //
+        //   const phongMaterial = new THREE.MeshPhongMaterial({
+        //     color: 0xffffff,
+        //     envMap: scene.background as THREE.Texture,
+        //     refractionRatio: 0.98
+        //   });
+        //
+        //   const s = 0.001;
+        //   (mesh as THREE.Mesh).material = phongMaterial;
+        //   mesh.position.set(1, 0, 2);
+        //   mesh.__inspectorData.isInspectable = true;
+        //   mesh.scale.x = mesh.scale.y = mesh.scale.z = s;
+        //
+        //   scene.add(mesh);
+        // });
 
-      // loadModel('models/FromThreeRepo/ply/binary/Lucy100k.ply', {}).then((mesh) => {
-      //   if (!mesh) return;
-      //   mesh.name = 'LoadedMesh';
-      //
-      //   const phongMaterial = new THREE.MeshPhongMaterial({
-      //     color: 0xffffff,
-      //     envMap: scene.background as THREE.Texture,
-      //     refractionRatio: 0.98
-      //   });
-      //
-      //   const s = 0.001;
-      //   (mesh as THREE.Mesh).material = phongMaterial;
-      //   mesh.position.set(1, 0, 2);
-      //   mesh.__inspectorData.isInspectable = true;
-      //   mesh.scale.x = mesh.scale.y = mesh.scale.z = s;
-      //
-      //   scene.add(mesh);
-      // });
+        // models/Free/fbx/Asuna/2/FreeTestAnimations_reexport.fbx
+        // models/MyTests/having space in path/asset with space in path.fbx
+        // models/MyTests/with_non_default_textures/with_non_native_textures.fbx
+        // models/NonFree/Dark Elf Blader - Game Ready/Assets/Textures/DarkElfBlader_FBX_From3DsMax.fbx
+        // models/Free/gltf/Mixamo/Jennifer/Jennifer.glb
+        api
+          .loadModel(['Jennifer.glb', 'Animations_gltf/Idle.glb', 'Animations_gltf/Catwalk_Walk_Forward.glb'], {
+            // api.loadModel(['Samba Dancing.fbx'], {
+            // api.loadModel(['coffeemat.glb'], {
+            scene,
+            camera,
+            autoScaleRatio: 0.4,
+            path: 'models/Free/gltf/Mixamo/Jennifer/'
+            // path: 'models/FromThreeRepo/fbx/'
+            // path: 'models/FromThreeRepo/gltf_glb/'
+          })
+          .then((mesh) => {
+            if (!mesh) return;
+            mesh.__inspectorData.isInspectable = true;
+            scene.add(mesh);
+            // api.deepTraverse(
+            //   mesh,
+            //   ({ value, path, ancestors }) => {
+            //     console.log('deepTraverseUUID', { value, path, ancestors });
+            //   },
+            //   ({ value, key, parent }) => {
+            //     // return key === 'children' && value.length;
+            //     return value instanceof THREE.Group;
+            //   }
+            // );
+            setTimeout(() => {
+              // mesh.removeFromParent();
+            }, 8000);
+          });
 
-      // models/Free/fbx/Asuna/2/FreeTestAnimations_reexport.fbx
-      // models/MyTests/having space in path/asset with space in path.fbx
-      // models/MyTests/with_non_default_textures/with_non_native_textures.fbx
-      // models/NonFree/Dark Elf Blader - Game Ready/Assets/Textures/DarkElfBlader_FBX_From3DsMax.fbx
-      // models/Free/gltf/Mixamo/Jennifer/Jennifer.glb
-      loadModel(['Jennifer.glb', 'Animations_gltf/Idle.glb', 'Animations_gltf/Catwalk_Walk_Forward.glb'], {
-        scene,
-        camera,
-        path: 'models/Free/gltf/Mixamo/Jennifer/'
-      }).then((mesh) => {
-        if (!mesh) return;
-        scene.add(mesh);
+        const testIndexedCube3Materials = TestIndexedCube3Materials();
+        // const testMorphTargets = TestMorphTargets();
+        const recombinedCube = api.splitMeshesByMaterial(testIndexedCube3Materials, {});
+        recombinedCube.castShadow = true;
+        recombinedCube.receiveShadow = true;
+        // testIndexedCube3Materials.position.set(0, 0, 0);
+        // recombinedCube.position.set(0, 3, 0);
+        // recombinedCube.name = 'recombinedCube';
+
+        // these are not needed
+        // testIndexedCube3Materials.__inspectorData.isInspectable = true;
+        recombinedCube.__inspectorData.isInspectable = true;
+
+        // console.log('recombinedCube', { testIndexedCube3Materials, recombinedCube });
+
+        // scene.add(testIndexedCube3Materials);
+        scene.add(recombinedCube);
+        // scene.add(testMorphTargets);
+        shadowMapMaterial.uniforms.tDiffuse.value = refDirectionalLight.current.shadow.map?.texture;
+        // gl.setSize(400, 200);
+        // camera.aspect = 400 / 200;
+        // camera.updateProjectionMatrix();
       });
-
-      const testIndexedCube3Materials = TestIndexedCube3Materials();
-      // const testMorphTargets = TestMorphTargets();
-      const recombinedCube = splitMeshesByMaterial(testIndexedCube3Materials, {});
-      recombinedCube.castShadow = true;
-      recombinedCube.receiveShadow = true;
-      // testIndexedCube3Materials.position.set(0, 0, 0);
-      // recombinedCube.position.set(0, 3, 0);
-      // recombinedCube.name = 'recombinedCube';
-
-      // these are not needed
-      // testIndexedCube3Materials.__inspectorData.isInspectable = true;
-      recombinedCube.__inspectorData.isInspectable = true;
-
-      // console.log('recombinedCube', { testIndexedCube3Materials, recombinedCube });
-
-      // scene.add(testIndexedCube3Materials);
-      scene.add(recombinedCube);
-      // scene.add(testMorphTargets);
-      // shadowMapMaterial.uniforms.tDiffuse.value = refDirectionalLight.current.shadow.map?.texture;
-      // gl.setSize(400, 200);
-      // camera.aspect = 400 / 200;
-      // camera.updateProjectionMatrix();
-    });
   }, []);
 
   return (
@@ -304,13 +344,14 @@ export function Experience() {
           color={'white'}
           __inspectorData={{ isInspectable: false }}
         ></directionalLight>
-        {/*<hemisphereLight*/}
-        {/*  // args={[0xffffff, 0xffffff, 2]}*/}
-        {/*  intensity={2}*/}
-        {/*  color={new THREE.Color().setHSL(0.6, 1, 0.6)}*/}
-        {/*  groundColor={new THREE.Color().setHSL(0.095, 1, 0.75)}*/}
-        {/*/>*/}
-        {/*<ambientLight color={'#ffffff'} intensity={3.5} position={[0, 1, 0]} />*/}
+        <hemisphereLight
+          // args={[0xffffff, 0xffffff, 2]}
+          intensity={2}
+          color={new THREE.Color().setHSL(0.6, 1, 0.6)}
+          groundColor={new THREE.Color().setHSL(0.095, 1, 0.75)}
+        />
+        <ambientLight color={'#ffffff'} intensity={3.5} position={[0, 1, 0]} />
+        {/* rectAreaLight (RectAreaLightUniformsLib) gives 2 textures that cannot be disposed */}
         <rectAreaLight
           color={'deepskyblue'}
           position={[-3, 0, -8]}
@@ -333,7 +374,8 @@ export function Experience() {
 
         <spotLight
           castShadow
-          position={[5.5, -0.7, 0.3]}
+          position={[5.5, -0.7, 0.3]} // position={[5.5, -0.7, 0.3]} | position={[-12.98, 3.963, 4.346]}
+          // | rotation={[degToRad(-42.342), degToRad(-65.604), degToRad(-39.706)]}
           scale={1}
           intensity={66}
           distance={30}
@@ -378,7 +420,7 @@ export function Experience() {
         name="plane"
         rotation={[-1.5, 0, 0]}
         position={[-5, -7.23, -3]}
-        receiveShadow
+        receiveShadow={true}
         __inspectorData={{ isInspectable: true }}
       >
         <planeGeometry args={[32, 32]} />
@@ -429,20 +471,20 @@ export function Experience() {
 
       <perspectiveCamera
         args={[75, 1, 0.1, 100]} // window.innerWidth / window.innerHeight
-        position={[-12.98, 3.963, 4.346]}
+        position={[-12.98, 3.963, 4.346]} // position={[-12.98, 3.963, 4.346]} | position={[5.5, -0.7, 0.3]}
         name="myPerspectiveCamera"
-        rotation={[degToRad(-42.342), degToRad(-65.604), degToRad(-39.706)]} // 25.86 , -46.13, 19.26
+        rotation={[degToRad(-42.342), degToRad(-65.604), degToRad(-39.706)]} // rotation={[degToRad(-42.342), degToRad(-65.604), degToRad(-39.706)]} | rotation={[degToRad(0), degToRad(67), degToRad(0)]}
         __inspectorData={{ useOnPlay: true }}
       />
 
-      {/*<orthographicCamera*/}
-      {/*  args={[0, -0, 0, -0, 0.1, 10000]} // window.innerWidth / window.innerHeight*/}
-      {/*  zoom={45}*/}
-      {/*  position={[-12.98, 3.963, 4.346]}*/}
-      {/*  name="myOrthographicCamera"*/}
-      {/*  rotation={[degToRad(-42.342), degToRad(-65.604), degToRad(-39.706)]} // 25.86 , -46.13, 19.26*/}
-      {/*  __inspectorData={{ useOnPlay: true }}*/}
-      {/*/>*/}
+      <orthographicCamera
+        args={[1, -1, 1, -1, 0.1, 10000]} // window.innerWidth / window.innerHeight
+        zoom={45}
+        position={[-10.98, 1.963, 1.346]}
+        name="myOrthographicCamera"
+        rotation={[degToRad(-42.342), degToRad(-65.604), degToRad(-39.706)]} // 25.86 , -46.13, 19.26
+        __inspectorData={{ useOnPlay: false }}
+      />
 
       <cubeCamera
         ref={cubeCameraRef}

@@ -1,6 +1,5 @@
 import React from 'react';
 import * as THREE from 'three';
-import { useAppStore } from 'src/store';
 import { getFileNameAndType, getFileType } from './fileUtils';
 import {
   tiffLoader,
@@ -14,7 +13,8 @@ import {
   ddsLoader,
   registerFiles
 } from './loaders';
-import { isValidTexture } from 'lib/utils/textureUtils';
+import { isValidTexture } from './textureUtils';
+import patchThree from 'lib/patchThree';
 
 export const FILE_EXR = 'image/x-exr';
 export const FILE_HDR = 'image/hdr';
@@ -226,7 +226,7 @@ export const createTexturesFromImages: createTexturesFromImagesType = async (
     setTimeout(() => {
       material.needsUpdate = true;
       setTimeout(() => {
-        useAppStore.getState().triggerCPaneStateChanged();
+        patchThree.refreshCPane();
       });
     });
   } else if (material?.current) {
@@ -235,14 +235,14 @@ export const createTexturesFromImages: createTexturesFromImagesType = async (
       if (material.current) {
         material.current.needsUpdate = true;
         setTimeout(() => {
-          useAppStore.getState().triggerCPaneStateChanged();
+          patchThree.refreshCPane();
         });
       }
     });
   } else {
     // the scene case for background/environment
     setTimeout(() => {
-      useAppStore.getState().triggerCPaneStateChanged();
+      patchThree.refreshCPane();
     });
   }
 

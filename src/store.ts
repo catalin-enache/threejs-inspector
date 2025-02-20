@@ -155,7 +155,6 @@ export interface AppStore {
   ) => void;
   removeCPanelCustomParams: (name: string, path: string[]) => void;
   cPanelCustomParamsStructureStateFake: number;
-  triggerCPanelCustomParamsStructureChanged: () => void;
   loadModelIsOpen: boolean;
   setLoadModelIsOpen: (isOpen: boolean) => void;
   cameraControl: 'orbit' | 'fly';
@@ -380,6 +379,10 @@ export const useAppStore = create<AppStore>()(
         }
       }
       store[name] = { object, prop, control };
+      set((state) => ({
+        cPanelCustomParamsStructureStateFake:
+          state.cPanelCustomParamsStructureStateFake < 100 ? state.cPanelCustomParamsStructureStateFake + 1 : 0
+      }));
     },
     removeCPanelCustomParams: (name, path) => {
       const _path = [...path];
@@ -400,16 +403,12 @@ export const useAppStore = create<AppStore>()(
           delete parent[section];
         }
       }
-    },
-    cPanelCustomParamsStructureStateFake: 0,
-    // called
-    //  - from CustomControl when a custom param is added or deleted
-    triggerCPanelCustomParamsStructureChanged: () => {
       set((state) => ({
         cPanelCustomParamsStructureStateFake:
           state.cPanelCustomParamsStructureStateFake < 100 ? state.cPanelCustomParamsStructureStateFake + 1 : 0
       }));
     },
+    cPanelCustomParamsStructureStateFake: 0,
     loadModelIsOpen: false,
     setLoadModelIsOpen: (loadModelIsOpen) => set({ loadModelIsOpen }),
     cameraControl: cameraControl,

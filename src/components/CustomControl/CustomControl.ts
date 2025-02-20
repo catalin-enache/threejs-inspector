@@ -20,14 +20,11 @@ export const CustomControl = (props: CustomControlProps) => {
       .filter((p) => p.length > 0);
     const setOrUpdateCPanelCustomParams = useAppStore.getState().setOrUpdateCPanelCustomParams;
     const removeCPanelCustomParams = useAppStore.getState().removeCPanelCustomParams;
-    const triggerCPanelCustomParamsStructureChanged = useAppStore.getState().triggerCPanelCustomParamsStructureChanged;
 
     setOrUpdateCPanelCustomParams(name, object, prop, control, pathArray);
-    triggerCPanelCustomParamsStructureChanged();
 
     return () => {
       removeCPanelCustomParams(name, pathArray);
-      triggerCPanelCustomParamsStructureChanged();
     };
   }, []);
 

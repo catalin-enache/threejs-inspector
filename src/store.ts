@@ -143,7 +143,7 @@ export interface AppStore {
   setCPanelContinuousUpdate: (cPanelContinuousUpdate: boolean) => void;
   toggleCPanelContinuousUpdate: () => void;
   cPanelStateFake: number;
-  triggerCPaneStateChanged: () => void;
+  triggerCPanelStateChanged: () => void;
   getCPanelCustomParams: () => typeof cPanelCustomParamsStore;
   clearCPanelCustomParams: () => void;
   setOrUpdateCPanelCustomParams: (
@@ -358,7 +358,7 @@ export const useAppStore = create<AppStore>()(
     // should not be called to often because all CPanel tabs get rebuilt
     // currently called
     // - from loadTexture#createTexturesFromImages
-    triggerCPaneStateChanged: () => {
+    triggerCPanelStateChanged: () => {
       set((state) => ({
         cPanelStateFake: state.cPanelStateFake < 100 ? state.cPanelStateFake + 1 : 0
       }));

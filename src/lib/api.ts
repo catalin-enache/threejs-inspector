@@ -6,14 +6,15 @@ import { loadModel } from './utils/loadModel';
 import { splitMeshesByMaterial } from './utils/optimiseModel';
 
 export default {
-  refreshCPanel: patchThree.refreshCPanel,
-  updateCubeCameras: patchThree.updateCubeCameras,
+  getThreeRootState: patchThree.getThreeRootState,
   getCurrentScene: patchThree.getCurrentScene,
   setCurrentScene: patchThree.setCurrentScene,
   clearScene: patchThree.clearScene,
   getCurrentRenderer: patchThree.getCurrentRenderer,
   setCurrentRenderer: patchThree.setCurrentRenderer,
   detachTransformControls: patchThree.detachTransformControls,
+  refreshCPanel: patchThree.refreshCPanel,
+  updateCubeCameras: patchThree.updateCubeCameras,
 
   cloneObject3D,
   deepTraverse,

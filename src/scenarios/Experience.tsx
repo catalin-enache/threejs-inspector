@@ -105,36 +105,6 @@ export function Experience() {
       // depthTexture: new THREE.DepthTexture(512, 512)
     })
   );
-  useFrame((_state, _delta) => {
-    stats.update();
-  });
-  usePlay((_state, _delta) => {
-    stats.update();
-    if (refPointLight.current) {
-      // refPointLight.current.intensity = Math.sin(Date.now() / 100) + 1;
-    }
-    if (cubeCameraRef.current) {
-      cubeCameraRef.current.rotateX(0.01);
-      // cubeCameraRef.current.__inspectorData.helper.update();
-      // cubeCameraRef.current.__inspectorData.picker.update();
-    }
-    if (refDirectionalLight.current) {
-      refDirectionalLight.current.translateX(0.01);
-    }
-    if (refPointLight.current) {
-      refPointLight.current.translateZ(0.01);
-    }
-    if (refSpotLight.current) {
-      refSpotLight.current.translateZ(0.01);
-    }
-  });
-  // const [myImage, setMyImage] = useState<any>(null);
-  const [showOthers, setShowOthers] = useState(false);
-  // @ts-ignore
-  const [customControlXY, setCustomControlXY] = useState({ x: 0.5, y: 0.5 });
-  // @ts-ignore
-  const [number, setNumber] = useState(1.23);
-  const audioListenerRef = useRef<THREE.AudioListener>(new THREE.AudioListener());
 
   const customPropsRef = useRef({
     myImage: null,
@@ -143,7 +113,45 @@ export function Experience() {
     myPoint: { x: 0.5, y: 0.5 }
   });
 
-  usePlay((_state, _delta) => {
+  // const [myImage, setMyImage] = useState<any>(null);
+  const [showOthers, setShowOthers] = useState(false);
+  // @ts-ignore
+  const [customControlXY, setCustomControlXY] = useState({ x: 0.5, y: 0.5 });
+  // @ts-ignore
+  const [number, setNumber] = useState(1.23);
+  const audioListenerRef = useRef<THREE.AudioListener>(new THREE.AudioListener());
+
+  useFrame((_state, _delta) => {
+    stats.update();
+  });
+  usePlay(
+    (_playState, _rootState, _delta) => {
+      if (refPointLight.current) {
+        // refPointLight.current.intensity = Math.sin(Date.now() / 100) + 1;
+      }
+      if (cubeCameraRef.current) {
+        cubeCameraRef.current.rotateX(0.01);
+        // cubeCameraRef.current.__inspectorData.helper.update();
+        // cubeCameraRef.current.__inspectorData.picker.update();
+      }
+      if (refDirectionalLight.current) {
+        refDirectionalLight.current.translateX(0.01);
+      }
+      if (refPointLight.current) {
+        refPointLight.current.translateZ(0.01);
+      }
+      if (refSpotLight.current) {
+        refSpotLight.current.translateZ(0.01);
+      }
+      if (customPropsRef.current) {
+        customPropsRef.current.myNumber += 0.01;
+      }
+    },
+    0,
+    [showOthers]
+  );
+
+  usePlay((_state, _rootState, _delta) => {
     // setNumber((prev) => {
     //   // console.log('Experience setting new value on play', prev + 0.01);
     //   return prev + 0.01;

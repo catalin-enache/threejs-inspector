@@ -50,5 +50,6 @@ export const getPatchedOrbitControls = (
   instance.connect();
   instance.enableDamping = true;
   instance.dampingFactor = 0.2;
+  instance.isPatched = true;
   return instance as OrbitControls;
 };

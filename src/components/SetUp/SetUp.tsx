@@ -17,7 +17,6 @@ const {
   setCurrentRenderer,
   getIsPlayingCamera,
   getCameraToUseOnPlay,
-  shouldContainItsHelper,
   updateCameras,
   shouldUseFlyControls,
   interactableObjects,
@@ -62,7 +61,9 @@ const SetUp = (props: SetUpProps) => {
   } = props;
   const three = useThree();
   // The scene received here is settled and will not change. It is either the defaultScene or the scene from the App where Inspector is injected
-  const { camera, gl, raycaster, pointer, scene, controls } = three;
+  const { camera, gl, raycaster, pointer, scene, controls, frameloop } = three;
+
+  patchThree.setThreeRootState(three);
 
   const orbitControls = inspectorOrbitControls ?? controls;
 
@@ -139,14 +140,14 @@ const SetUp = (props: SetUpProps) => {
       return;
     }
 
-    // Transferring existing helpers.
-    // Helpers for objects in the scene were added to the threeScene (defaultScene)
+    // Transferring existing pickers/helpers (dependantObjects).
+    // Pickers/Helpers for objects in the scene were added to the threeScene (defaultScene)
     // - due to patching Object3D - before receiving here the actual scene used by the app
     // into which the Inspector was injected.
     scene.traverse((child) => {
-      if (child.__inspectorData.helper && !shouldContainItsHelper(child)) {
-        scene.add(child.__inspectorData.helper);
-      }
+      child.__inspectorData.dependantObjects!.forEach((dep) => {
+        scene.add(dep);
+      });
     });
     setCurrentScene(scene);
     if (oldScene.children.length) {
@@ -179,11 +180,11 @@ const SetUp = (props: SetUpProps) => {
     useAppStore.getState().triggerCurrentCameraChanged();
   }, [playingState, cameraType, scene, isInjected]);
 
-  // Create orbit and transform controls (singletons) and attach transform controls to scene
+  // Create transform controls (singleton) and attach it to the scene
   useEffect(() => {
     // prettier-ignore
     transformControlsRef.current = new TransformControls(camera, gl.domElement);
-    transformControlsRef.current.getHelper().name = 'TransformControls';
+    transformControlsRef.current.getHelper().name = 'DefaultTransformControls';
     transformControlsRef.current.addEventListener('objectChange', (_event) => {
       triggerSelectedObjectChanged();
     });
@@ -206,12 +207,6 @@ const SetUp = (props: SetUpProps) => {
     // eslint-disable-next-line
   }, []);
 
-  useEffect(() => {
-    if (!orbitControlsRef.current) return () => {};
-    orbitControlsRef.current?.addEventListener('change', render);
-    return () => orbitControlsRef.current?.removeEventListener('change', render);
-  }, [render]);
-
   // Update transform controls behavior
   useEffect(() => {
     if (!transformControlsRef.current) return;
@@ -219,10 +214,12 @@ const SetUp = (props: SetUpProps) => {
     if (selectedObjectUUID && showGizmos) {
       const selectedObject = useAppStore.getState().getSelectedObject()!;
       transformControls.attach(selectedObject);
+      // patchThree.getCurrentScene().add(transformControlsRef.current.getHelper());
       transformControls.setMode(transformControlsMode); // translate | rotate | scale
       transformControls.setSpace(transformControlsSpace); // local | world
     } else {
       transformControls.detach();
+      // patchThree.getCurrentScene().remove(transformControlsRef.current.getHelper());
     }
   }, [selectedObjectUUID, showGizmos, transformControlsMode, transformControlsSpace]);
 
@@ -312,7 +309,7 @@ const SetUp = (props: SetUpProps) => {
   }, []);
 
   useEffect(() => {
-    // Enable/Disable orbit controls
+    // Create/Enable/Disable orbit controls
     // The playing camera is set by the App in the scene and received here after that
 
     if (orbitControlsRef.current) {
@@ -352,6 +349,19 @@ const SetUp = (props: SetUpProps) => {
     attachDefaultControllersToPlayingCamera,
     onSetupEffect
   ]);
+
+  // allow rerender when frameloop is 'demand'
+  useEffect(() => {
+    if (!orbitControlsRef.current) return;
+
+    // @ts-ignore
+    if (/*orbitControlsRef.current.isPatched &&*/ frameloop === 'demand') {
+      // TODO: this render on demand is losing dumping effect
+      orbitControlsRef.current.addEventListener('change', render);
+    }
+
+    return () => orbitControlsRef.current?.removeEventListener('change', render);
+  }, [render, frameloop]);
 
   return <>{shouldUseFlyControls(camera) && <FlyControls />}</>;
 };

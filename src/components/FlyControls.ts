@@ -163,6 +163,8 @@ const setupFlyControls = (camera: THREE.Camera, scene: THREE.Scene) => {
   };
 };
 
+// TODO: improve this to fly when frameloop is 'demand'
+
 export const FlyControls = () => {
   const { camera, scene } = useThree();
   const flyCameraRef = useRef<(() => void) | null>(null);

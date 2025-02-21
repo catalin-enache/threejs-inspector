@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { useMemo, useEffect, useState } from 'react';
+import { useMemo, useEffect, useState, useRef } from 'react';
 import { RootState, useFrame } from '@react-three/fiber';
 import { _XRFrame } from '@react-three/fiber/dist/declarations/src/core/utils';
 import { AppStore, useAppStore } from 'src/store';
@@ -19,14 +19,38 @@ const noop = (_playingState: AppStore['playingState'], _state: RootState, _delta
 
 export const usePlay = (
   callback: (playingState: AppStore['playingState'], state: RootState, delta: number, xrFrame?: _XRFrame) => void,
-  renderPriority = 0
+  renderPriority = 0,
+  deps: any[] = []
 ) => {
   const playingState = useAppStore((state) => state.playingState);
-  const boundCallback = useMemo(() => callback.bind(null, playingState), [callback, playingState]);
+
+  const depsRef = useRef(deps);
+  const callbackRef = useRef(callback);
+  const playingStateRef = useRef(playingState);
+
+  // if deps changed update callback
+  for (let i = 0; i < deps.length; i++) {
+    if (deps[i] !== depsRef.current[i]) {
+      callbackRef.current = callback;
+      break;
+    }
+  }
+
+  const playingStateChanged = playingState !== playingStateRef.current;
+
+  depsRef.current = deps;
+  playingStateRef.current = playingState;
+
+  const boundCallback = useMemo(
+    () => callbackRef.current.bind(null, playingState),
+    [callbackRef.current, playingState]
+  );
   const boundNoop = useMemo(() => noop.bind(null, playingState), [playingState]);
-  if (['paused', 'stopped'].includes(playingState) && lastState) {
+
+  if (playingStateChanged && ['paused', 'stopped'].includes(playingState) && lastState) {
     boundCallback(lastState, 0, lastXFrame);
   }
+
   useFrame(playingState === 'playing' ? boundCallback : boundNoop, renderPriority);
 };
 

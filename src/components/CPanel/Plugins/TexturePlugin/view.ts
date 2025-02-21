@@ -8,8 +8,13 @@ import {
   getFallbackTexture,
   isPVRCubeTexture
 } from 'lib/utils/textureUtils';
-import { thumbnailMaterial, shadowMapMaterial } from 'lib/utils/customShaders';
+import { getShadowMapMaterial, getThumbnailMaterial } from 'lib/utils/customShaders';
 import { offlineScene } from 'components/CPanel/offlineScene';
+
+const shadowMapMaterial = getShadowMapMaterial();
+const thumbnailMaterial = getThumbnailMaterial();
+thumbnailMaterial.name = 'ThumbnailMaterial';
+shadowMapMaterial.name = 'ThumbnailShadowMapMaterial';
 
 const offlineOrthographicCamera = new THREE.OrthographicCamera();
 
@@ -55,6 +60,7 @@ export class TextureView implements View {
     this.element.classList.add(className());
     this.element.classList.add('texturePlugin');
     config.viewProps.bindClassModifiers(this.element);
+    // TODO: we should get the current renderer from patchThree
     this.gl = config.gl;
     this.isShadowMap = config.isShadowMap;
     this.renderTarget = config.renderTarget;
@@ -150,6 +156,11 @@ export class TextureView implements View {
                   })
                 : getFallbackTexture().texture; // ratio: 4:3 (cross) or 2:1 (equirectangular)
 
+    if (mapTexture !== texture) {
+      mapTexture.userData.shouldBeDestroyed = true;
+      mapTexture.name = `TexturePluginMapTexture for texture ${texture.uuid}`;
+    }
+
     mapTexture.needsUpdate = true;
     thumbnailMaterial.uniforms.map.value = mapTexture;
     shadowMapMaterial.uniforms.tDiffuse.value = mapTexture;
@@ -164,8 +175,6 @@ export class TextureView implements View {
     const material = this.isShadowMap ? shadowMapMaterial : thumbnailMaterial;
     const newMesh = new THREE.Mesh(geometry, material);
     newMesh.name = `TexturePluginMesh for texture ${texture.uuid}`;
-    // cleanupAfterRemovedObject will dispose the geometry and material, but we prevent that here
-    newMesh.__inspectorData.preventDestroy = true;
     // caching the mesh since it seems it takes long to create it and influences CPanel re-rendering
     // when certain things change (things that trigger CPanel re-construction like rad/deg rotation, TMode, TSpace, ...)
     cacheMeshMap.set(texture.uuid, { mesh: newMesh, mapTexture, ratio });
@@ -190,7 +199,7 @@ export class TextureView implements View {
     renderer.clearDepth();
     renderer.render(offlineScene, offlineOrthographicCamera);
     this.ctx.clearRect(0, 0, this.ctx.canvas.width, this.ctx.canvas.height);
-    this.ctx.drawImage(this.gl.domElement, 0, 0);
+    this.ctx.drawImage(renderer.domElement, 0, 0);
     // revert to original renderer configuration
     renderer.autoClear = rendererAutoClear; // Restore user's setting
     renderer.setSize(rendererSize.width, rendererSize.height);

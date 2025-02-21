@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { BindingApi } from '@tweakpane/core';
-import { FolderApi, TabPageApi, BladeApi } from 'tweakpane';
-import { degToRad, radToDegFormatter } from 'lib/utils/mathUtils';
+import { FolderApi, TabPageApi, BladeApi, Pane, TabApi } from 'tweakpane';
+import { radToDegFormatter } from 'lib/utils/formatters';
 import { getObject3DBindings } from './getBindings';
 import { ParentBindings } from './ParentBindings';
 import { CommonGetterParams } from './bindingTypes';
@@ -9,6 +9,8 @@ import { MaterialBindings } from './MaterialBindings';
 import { animate } from 'lib/utils/animate';
 import { isValidTexture } from 'lib/utils/textureUtils';
 import { CustomParams, isCustomParamStruct } from 'lib/customParam.types';
+
+const degToRad = THREE.MathUtils.degToRad;
 
 // helper struct to check in tests if all binding listeners have been removed
 export const eventListenersMap = new Map<HTMLElement, { [key: string]: Set<(evt: any) => void> }>();
@@ -42,6 +44,7 @@ const removeFromEventListenerMap = (element: any, event: string, listener: (evt:
 
 export const numberFormat = (precision: number) => (value: number) => value.toFixed(precision);
 
+// TODO: scale these according with scene size. A scene of hundreds of units will need a different scale.
 export const numberCommon = {
   keyScale: 0.1,
   pointerScale: 0.001,
@@ -251,6 +254,7 @@ const _buildBindings = (folder: FolderApi, object: any, bindings: any, params: C
     const isBinding = bindingCandidate.label;
 
     if (isFolder) {
+      if (bindingCandidate.if && !bindingCandidate.if(object)) return;
       const subFolder = folder.addFolder({
         title: `${bindingCandidate.title}`,
         expanded: false
@@ -302,9 +306,8 @@ const _buildBindings = (folder: FolderApi, object: any, bindings: any, params: C
       // show details folder only if there are any details to show (scene.background can be a texture or a color, details are only for texture)
       Object.keys(bindingCandidate.details).some((detailKey) => object[bindingKey]?.[detailKey] !== undefined)
     ) {
-      // falling back to texture for renderTarget which does not have uuid and id
-      const uuid = object.uuid || object.texture?.uuid || 'no_uuid-x';
-      const id = object.id || object.texture?.id || 'no_id';
+      const uuid = object[bindingKey].uuid || 'no_uuid-x';
+      const id = object[bindingKey].id || 'no_id';
       const subFolder = folder.addFolder({
         // WebGlRenderTarget does not have uuid and id // check on light.shadow.map and cubeCamera.renderTarget
         title: `${bindingCandidate.label} Details ${uuid.split('-')[0]}-${id}`,
@@ -696,7 +699,7 @@ export const cleanupContainer = (node: any, options: { disposeRootFolder?: boole
 
   if (!node.children) {
     // this case is only if the root node is a binding
-    // (not a real scenario, we're passing a always a folder in practice)
+    // (not a real scenario, we're passing always a folder in practice)
     node.dispose();
     return;
   }
@@ -705,16 +708,6 @@ export const cleanupContainer = (node: any, options: { disposeRootFolder?: boole
     // Note: a child can be a folder or a binding
     // Note: bindings do not have children while folders and tabs do
     cleanupContainer(child, { ...options, _isRootFolder: false });
-
-    window.dispatchEvent(
-      new CustomEvent('TweakpaneRemove', {
-        detail: {
-          container: node,
-          child
-        }
-      })
-    );
-
     child.dispose(); // prevent mem leak
     node.remove(child);
   });
@@ -723,4 +716,12 @@ export const cleanupContainer = (node: any, options: { disposeRootFolder?: boole
   if (disposeRootFolder && _isRootFolder && !mainTabsNamesSet.has(node.title)) {
     node.dispose(); // e.g. disposing of .on('fold')
   }
+};
+
+export const getPaneTab = (pane: Pane, tabIndex: number) => {
+  return (pane.children[0] as TabApi).pages[tabIndex];
+};
+
+export const setSelectedTab = (pane: Pane, tabIndex: number) => {
+  pane.children[0].element.children[0].children[tabIndex].children[0].dispatchEvent(new Event('click'));
 };

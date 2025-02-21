@@ -9,28 +9,37 @@ import { createRoot } from 'react-dom/client';
 let reactRoot: ReturnType<typeof createRoot> | null = null;
 export const rememberCubeTextureRenderLayout = new Map<string, 'cross' | 'equirectangular'>();
 
-const cleanUp = (self: TextureController, force = false) => {
-  // cleanup cacheMeshMap when no object is selected
-  if (!useAppStore.getState().getSelectedObject() || force) {
-    // note: clearing takes time too, there is a delay when closing materials in CPanel
-    cacheMeshMap.forEach((value) => {
-      value.mesh.geometry.dispose();
-      const materials = Array.isArray(value.mesh.material) ? value.mesh.material : [value.mesh.material];
-      materials.forEach((material) => {
-        const textures = Object.values(material).filter((value) => value instanceof THREE.Texture);
-        textures.forEach((texture) => {
-          (texture as THREE.Texture).dispose();
-        });
-        (material as THREE.Material).dispose();
-      });
-      value.mapTexture.dispose();
-    });
-    cacheMeshMap.clear();
-    rememberCubeTextureRenderLayout.clear();
-  }
+// what we need to dispose here are the mesh geometries and textures that are different from the original textures
+export const dispose = () => {
+  cacheMeshMap.forEach((value) => {
+    value.mesh.geometry.dispose();
 
+    // we're using 2 singleton materials, so we don't need to dispose them
+    // const materials = (
+    //   Array.isArray(value.mesh.material) ? value.mesh.material : [value.mesh.material]
+    // ) as THREE.ShaderMaterial[];
+    // materials.forEach((material: THREE.ShaderMaterial) => {
+    //   // Object.keys(material.uniforms).forEach((key) => {
+    //   //   const uniformValue = material.uniforms[key].value;
+    //   //   if (uniformValue instanceof THREE.Texture && uniformValue.userData?.shouldBeDestroyed) {
+    //   //     uniformValue.dispose();
+    //   //   }
+    //   // });
+    //   material.dispose();
+    // });
+
+    // shouldBeDestroyed is set to in the view true when it's not the same as the original one
+    // because, the view can create a new texture or use the original one in its ShaderMaterials
+    if (value.mapTexture.userData?.shouldBeDestroyed) {
+      value.mapTexture.dispose();
+    }
+  });
+  cacheMeshMap.clear();
+  rememberCubeTextureRenderLayout.clear();
+};
+
+const cleanUp = (self: TextureController) => {
   self.isMounted = false;
-  window.removeEventListener('TweakpaneRemove', self.onRemoveHandler);
   self.view.input.removeEventListener('change', self.onFile);
   self.view.canvas.removeEventListener('click', self.openFileBrowser);
   self.view.canvas.removeEventListener('pointerup', self.enlargeImage);
@@ -38,12 +47,12 @@ const cleanUp = (self: TextureController, force = false) => {
   self.objectURL && URL.revokeObjectURL(self.objectURL);
 };
 
-function onRemoveHandler(this: TextureController, evt: any) {
-  if (evt.detail.child.controller.valueController === this) {
-    // console.log('TexturePlugin onRemoveHandler', { container: evt.detail.container, child: evt.detail.child });
-    // clear cache when folder is closed
-    cleanUp(this, !evt.detail.container.expanded);
-  }
+window.addEventListener('TIFMK.ClearScene', dispose);
+window.addEventListener('TIFMK.ClearInspectorCache', dispose);
+
+function onRelatedObjectRemovedHandler(this: TextureController) {
+  this.relatedObject?.removeEventListener('removed', this.onRelatedObjectRemovedHandler);
+  dispose();
 }
 
 export interface TextureControllerConfig {
@@ -63,9 +72,10 @@ export class TextureController implements Controller<TextureView> {
   public readonly view: TextureView;
   public readonly viewProps: ViewProps;
   public isMounted: boolean = true;
+  public relatedObject: THREE.Object3D | null = null;
   public debugID = debugID++;
   public objectURL?: ReturnType<typeof URL.createObjectURL>;
-  public onRemoveHandler: (this: TextureController, evt: any) => void;
+  public onRelatedObjectRemovedHandler: (this: TextureController) => void;
   public gl: THREE.WebGLRenderer;
 
   constructor(doc: Document, config: TextureControllerConfig) {
@@ -80,6 +90,10 @@ export class TextureController implements Controller<TextureView> {
     this.viewProps = config.viewProps;
     this.gl = config.gl;
 
+    // if (this.value.rawValue instanceof THREE.CubeTexture) {
+    //   // console.log('TexturePlugin TextureController constructor', { config });
+    // }
+
     this.view = new TextureView(doc, {
       viewProps: this.viewProps,
       extensions: config.extensions,
@@ -91,7 +105,7 @@ export class TextureController implements Controller<TextureView> {
       canvasWidth: config.canvasWidth
     });
 
-    this.onRemoveHandler = onRemoveHandler.bind(this);
+    this.onRelatedObjectRemovedHandler = onRelatedObjectRemovedHandler.bind(this);
     this.onFile = this.onFile.bind(this);
     this.openFileBrowser = this.openFileBrowser.bind(this);
     this.handleValueChange = this.handleValueChange.bind(this);
@@ -99,8 +113,8 @@ export class TextureController implements Controller<TextureView> {
     this.updateImage = this.updateImage.bind(this);
     this.handleCubeLayoutChange = this.handleCubeLayoutChange.bind(this);
 
-    // event emitted in bindingHelpers
-    window.addEventListener('TweakpaneRemove', this.onRemoveHandler);
+    this.relatedObject = useAppStore.getState().getSelectedObject();
+    this.relatedObject?.addEventListener('removed', this.onRelatedObjectRemovedHandler);
     this.view.input.addEventListener('change', this.onFile);
     !this.viewProps.get('disabled') && this.view.canvas.addEventListener('click', this.openFileBrowser);
     this.value.emitter.on('change', this.handleValueChange);
@@ -112,9 +126,7 @@ export class TextureController implements Controller<TextureView> {
     this.view.select.addEventListener('change', this.handleCubeLayoutChange);
 
     this.viewProps.handleDispose(() => {
-      // we don't need this since we cleanUp at TweakpaneRemove event
-      // console.log('TexturePlugin viewProps handleDispose');
-      // cleanUp(this, false);
+      cleanUp(this);
     });
 
     this.updateImage();

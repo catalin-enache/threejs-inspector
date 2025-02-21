@@ -1,7 +1,9 @@
 import { useAppStore } from 'src/store';
 import { focusCamera } from 'lib/utils/cameraUtils';
+import { exportObject } from 'lib/utils/downloadUtils';
 import type { CommonGetterParams, onChange } from './bindingTypes';
 import { numberCommon } from './bindingHelpers';
+import patchThree from 'lib/patchThree';
 
 // keys are not relevant for buttons
 export const SceneButtons = ({ playingState, sceneObjects: { camera, scene } }: CommonGetterParams) => ({
@@ -70,10 +72,33 @@ export const SceneButtons = ({ playingState, sceneObjects: { camera, scene } }: 
     if: () => !useAppStore.getState().isInjected
   },
   8: {
-    label: 'Load Model',
-    title: 'Load Model',
+    label: 'Load Object',
+    title: 'Load Object',
     onClick: (() => {
       useAppStore.getState().setLoadModelIsOpen(true);
+    }) as onChange
+  },
+  9: {
+    label: 'Clear Scene',
+    title: 'Clear Scene',
+    onClick: (() => {
+      patchThree.clearScene();
+    }) as onChange
+  },
+  10: {
+    label: 'Download Scene',
+    title: 'Download Scene',
+    onClick: (async () => {
+      // TODO: allow choosing json type
+      await exportObject(scene, { type: 'json' });
+    }) as onChange,
+    if: () => scene.children.length > 0 && scene.children[0].name !== 'DefaultTransformControls'
+  },
+  11: {
+    title: 'Update Cube Cameras',
+    label: 'Update Cube Cameras',
+    onClick: (async () => {
+      patchThree.updateCubeCameras();
     }) as onChange
   },
   destroyOnRemove: {
@@ -90,6 +115,23 @@ export const SceneButtons = ({ playingState, sceneObjects: { camera, scene } }: 
     ...numberCommon,
     onChange: ((_, evt) => {
       useAppStore.getState().setGizmoSize(evt.value);
+    }) as onChange
+  },
+  frameLoop: {
+    label: 'Frame Loop',
+    view: 'radiogrid',
+    groupName: 'frameLoop',
+    size: [3, 1],
+    cells: (x: number, _y: number) => ({
+      title: x === 0 ? 'Always' : x === 1 ? 'Demand' : 'Never',
+      value: x === 0 ? 'always' : x === 1 ? 'demand' : 'never'
+    }),
+    onChange: ((_, evt: any) => {
+      const rootState = patchThree.getThreeRootState();
+      rootState.setFrameloop(evt.value);
+      setTimeout(() => {
+        rootState.gl.render(rootState.scene, rootState.camera);
+      });
     }) as onChange
   }
 });

@@ -169,7 +169,7 @@ export interface CPanelProps {
 
 export const CPanel = (props: CPanelProps) => {
   const { onCPanelReady, onCPanelUnmounted } = props;
-  const { camera, scene, gl, raycaster } = useThree();
+  const { camera, scene, gl, raycaster, frameloop } = useThree();
   const playingState = useAppStore((state) => state.playingState);
   const paneRef = useRef<Pane | null>(null);
   const cameraControl = useAppStore((state) => state.cameraControl);
@@ -227,27 +227,20 @@ export const CPanel = (props: CPanelProps) => {
     };
   }, [handleClearScene]);
 
-  // Instantiate Pane and create tabs
+  // Instantiate Pane, create tabs and Dismiss Pane on unmount
   useEffect(() => {
-    if (paneRef.current) {
-      paneRef.current.hidden = !cPanelVisible; // switch at Tweakpane level
-      cPanelContainer.style.display = cPanelVisible ? 'block' : 'none'; // switch at higher node in the DOM
-      if (!cPanelVisible) {
-        continuousUpdateRef.current?.stop();
-      } else if (cPanelContinuousUpdate) {
-        continuousUpdateRef.current?.start();
-      }
-      return;
-    }
-
+    const cPanelVisible = useAppStore.getState().cPanelVisible;
     // The followings in current useEffect are for the first time setup
     paneRef.current = new Pane({
       container: panelContainer
     });
-    cPanelContainer.style.display = cPanelVisible ? 'block' : 'none';
 
     paneRef.current.registerPlugin(TexturePlugin);
     paneRef.current.registerPlugin(EssentialsPlugin);
+
+    paneRef.current.hidden = !cPanelVisible; // switch at Tweakpane level
+    cPanelContainer.style.display = cPanelVisible ? 'block' : 'none';
+
     continuousUpdateRef.current = makeContinuousUpdate(paneRef.current);
     const pane = paneRef.current;
 
@@ -260,24 +253,26 @@ export const CPanel = (props: CPanelProps) => {
 
     objectTab.element.prepend(outliner.dom);
     objectTab.element.prepend(searchInput);
-  }, [cPanelVisible, cPanelContinuousUpdate]);
 
-  // Dismiss Pane on unmount
-  useEffect(() => {
     const docStyle = document.documentElement.style;
+
     const storedCPanelOpacity = localStorage.getItem('threeInspector__cPanelOpacity');
     const currentOpacity = +getComputedStyle(document.documentElement)
       .getPropertyValue('--tp-base-background-opacity')
       .trim();
     !storedCPanelOpacity && useAppStore.getState().setCPanelOpacity(currentOpacity);
     storedCPanelOpacity && docStyle.setProperty('--tp-base-background-opacity', storedCPanelOpacity);
+
     const storedCPanelSize = localStorage.getItem('threeInspector__cPanelSize');
     const currentSize = parseInt(getComputedStyle(cPanelContainer).getPropertyValue('--cPanelWidth').trim(), 10);
     !storedCPanelSize && useAppStore.getState().setCPanelSize(currentSize);
     storedCPanelSize && cPanelContainer.style.setProperty('--cPanelWidth', storedCPanelSize + 'px');
+
     onCPanelReady?.(paneRef.current!, { commonGetterParamsRef });
+
     return () => {
       continuousUpdateRef.current?.stop();
+      continuousUpdateRef.current = null;
       if (paneRef.current) {
         [0, 1, 2].forEach((index) => {
           if (!paneRef.current) return;
@@ -289,23 +284,23 @@ export const CPanel = (props: CPanelProps) => {
     };
   }, []);
 
-  // Start/Stop continuous update
+  // Start/Stop continuous update and show/hide cPanel
   useEffect(() => {
+    if (!paneRef.current) return;
+
+    paneRef.current.hidden = !cPanelVisible; // switch at Tweakpane level
+    cPanelContainer.style.display = cPanelVisible ? 'block' : 'none'; // switch at higher node in the DOM
+
     cPanelContinuousUpdate && cPanelVisible
       ? continuousUpdateRef.current?.start()
       : continuousUpdateRef.current?.stop();
-  }, [cPanelContinuousUpdate, cPanelVisible]);
+  }, [cPanelVisible, cPanelContinuousUpdate]);
 
   // select most relevant tab
   useEffect(() => {
     if (!paneRef.current || paneRef.current.hidden) return;
     const pane = paneRef.current;
     const hasCustomParams = Object.keys(cPanelCustomParams).length;
-
-    // const tab0 = getPaneTab(pane, 0);
-    // const tab1 = getPaneTab(pane, 1);
-    // const tab2 = getPaneTab(pane, 2);
-    // console.log(tab0.selected, tab1.selected, tab2.selected);
 
     // Select CustomControls or Global tab only at init time.
     // Select Selected tab everytime an object is selected.
@@ -408,7 +403,9 @@ export const CPanel = (props: CPanelProps) => {
       sceneFolder,
       {
         gizmoSize: useAppStore.getState().gizmoSize,
-        destroyOnRemove: useAppStore.getState().destroyOnRemove
+        // TODO: allow this option on delete modal
+        destroyOnRemove: useAppStore.getState().destroyOnRemove,
+        frameLoop: frameloop
       },
       getSceneButtons(commonGetterParams),
       commonGetterParams
@@ -479,6 +476,7 @@ export const CPanel = (props: CPanelProps) => {
     camera,
     scene,
     gl,
+    frameloop,
     raycaster,
     cPanelStateFake
   ]);

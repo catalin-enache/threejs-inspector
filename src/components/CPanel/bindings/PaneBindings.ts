@@ -59,6 +59,13 @@ export const PaneBindings = (_params: CommonGetterParams) => {
       onChange: ((_, evt: any) => {
         useAppStore.getState().setAngleFormat(evt.value);
       }) as onChange
+    },
+    cleanupInspectorCache: {
+      title: 'Cleanup Inspector Cache',
+      label: 'Cleanup Inspector Cache',
+      onClick: (() => {
+        window.dispatchEvent(new CustomEvent('TIFMK.ClearInspectorCache'));
+      }) as onChange
     }
   };
 };

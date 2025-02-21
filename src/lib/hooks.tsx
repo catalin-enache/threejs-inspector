@@ -52,6 +52,16 @@ export const usePlay = (
   }
 
   useFrame(playingState === 'playing' ? boundCallback : boundNoop, renderPriority);
+
+  // const boundCallbackRef = useRef(boundCallback);
+  // const boundNoopRef = useRef(boundNoop);
+  // const _cbRef = useRef((_state: RootState, _delta: number, _xrFrame?: _XRFrame) => {
+  //   playingStateRef.current === 'playing'
+  //     ? boundCallbackRef.current(_state, _delta, _xrFrame)
+  //     : boundNoopRef.current(_state, _delta, _xrFrame);
+  // });
+
+  // useFrame(_cbRef.current, renderPriority);
 };
 
 type UseInspector = ({

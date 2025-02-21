@@ -40,6 +40,7 @@ export const Object3DBindings = (params: CommonGetterParams) => ({
     label: 'Download',
     title: 'Download',
     onClick: (async ({ object }) => {
+      // TODO: allow choosing json type
       await exportObject(object, { type: 'json' });
     }) as onChange,
     if: (object: THREE.Object3D) => !!object.parent && ExportableTypes.has(object.type)

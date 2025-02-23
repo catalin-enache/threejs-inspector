@@ -12,6 +12,7 @@ export default {
   clearScene: patchThree.clearScene,
   getCurrentRenderer: patchThree.getCurrentRenderer,
   setCurrentRenderer: patchThree.setCurrentRenderer,
+  attachTransformControls: patchThree.attachTransformControls,
   detachTransformControls: patchThree.detachTransformControls,
   refreshCPanel: patchThree.refreshCPanel,
   updateCubeCameras: patchThree.updateCubeCameras,

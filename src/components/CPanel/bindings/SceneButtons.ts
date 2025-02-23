@@ -92,7 +92,7 @@ export const SceneButtons = ({ playingState, sceneObjects: { camera, scene } }: 
       // TODO: allow choosing json type
       await exportObject(scene, { type: 'json' });
     }) as onChange,
-    if: () => scene.children.length > 0 && scene.children[0].name !== 'DefaultTransformControls'
+    if: () => scene.children.length > 0
   },
   11: {
     title: 'Update Cube Cameras',

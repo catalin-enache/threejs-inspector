@@ -296,20 +296,17 @@ export const CPanel = (props: CPanelProps) => {
       : continuousUpdateRef.current?.stop();
   }, [cPanelVisible, cPanelContinuousUpdate]);
 
-  // select most relevant tab
+  // select CustomParams initially
   useEffect(() => {
     if (!paneRef.current || paneRef.current.hidden) return;
-    const pane = paneRef.current;
-    const hasCustomParams = Object.keys(cPanelCustomParams).length;
+    setSelectedTab(paneRef.current, 1);
+  }, []);
 
-    // Select CustomControls or Global tab only at init time.
-    // Select Selected tab everytime an object is selected.
-    if (selectedObjectUUID && (!selectedObjectRef.current || selectedObjectRef.current.uuid !== selectedObjectUUID)) {
-      setSelectedTab(pane, 0);
-    } else if (hasCustomParams) {
-      setSelectedTab(pane, 1);
-    } else {
-      setSelectedTab(pane, 2);
+  // select object tab when an object is selected
+  useEffect(() => {
+    if (!paneRef.current || paneRef.current.hidden) return;
+    if (selectedObjectUUID && selectedObjectRef.current?.uuid !== selectedObjectUUID) {
+      setSelectedTab(paneRef.current, 0);
     }
   }, [cPanelCustomParams, cPanelCustomParamsStructureStateFake, selectedObjectUUID]);
 

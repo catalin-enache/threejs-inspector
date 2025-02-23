@@ -31,17 +31,9 @@ export function disposeMediaElement(
   media.remove?.();
 }
 
-type DestroyOptions = {
-  includeDefaultTransformControls?: boolean;
-};
-
 // https://threejs.org/manual/#en/cleanup
 // https://discourse.threejs.org/t/three-js-dispose-things-so-hard/46664/7
-export const deepClean = (
-  object: THREE.Object3D,
-  renderer: THREE.WebGLRenderer,
-  { includeDefaultTransformControls = false }: DestroyOptions = {}
-) => {
+export const deepClean = (object: THREE.Object3D) => {
   const geometriesSet = new Set<THREE.BufferGeometry>();
   const materialsSet = new Set<THREE.Material>();
   const texturesSet = new Set<THREE.Texture>();
@@ -68,12 +60,10 @@ export const deepClean = (
     },
     ({ value }) => {
       return (
-        ([THREE.BufferGeometry, THREE.Material, THREE.Texture, THREE.Skeleton, THREE.WebGLRenderTarget].some(
+        [THREE.BufferGeometry, THREE.Material, THREE.Texture, THREE.Skeleton, THREE.WebGLRenderTarget].some(
           (klass) => value instanceof klass
         ) ||
-          (!!value?.dispose && value.dispose === 'function')) &&
-        (includeDefaultTransformControls || value?.name !== 'DefaultTransformControls') &&
-        !value?.constructor?.name?.toLowerCase().includes('control') // OrbitControls
+        (!!value?.dispose && value.dispose === 'function')
       );
     }
   );
@@ -88,9 +78,7 @@ export const deepClean = (
       object.environment = null;
     }
 
-    const childrenToRemove = [...object.children].filter((child) => {
-      return includeDefaultTransformControls || child.name !== 'DefaultTransformControls'; // exists only in scene
-    });
+    const childrenToRemove = [...object.children];
 
     childrenToRemove.forEach((child) => {
       child.removeFromParent();
@@ -152,12 +140,4 @@ export const deepClean = (
     disposable.dispose();
   });
   disposableSet.clear();
-
-  setTimeout(() => {
-    console.log('Renderer stats', {
-      remainingGeometries: renderer.info.memory.geometries,
-      remainingTextures: renderer.info.memory.textures,
-      scene: object
-    });
-  });
 };

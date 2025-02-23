@@ -125,7 +125,11 @@ export const deepTraverse = (
   } else {
     getAllPropertyNames(value, { excludeFunctions: true }).forEach((key: any) => {
       const field = value[key];
-      if (['_innerInspectorData', 'parent', 'hitRedirect'].includes(key)) return;
+      if (field?.constructor?.name?.toLowerCase().includes('control')) {
+        return;
+      }
+      if (['_innerInspectorData', 'parent', 'hitRedirect', 'transformControlsRef', 'orbitControlsRef'].includes(key))
+        return;
       deepTraverse(field, callback, filter, [..._path, key], [..._ancestors, value], _encountered);
     });
   }

@@ -200,7 +200,6 @@ const SetUp = (props: SetUpProps) => {
         orbitControlsRef.current && (orbitControlsRef.current.enabled = currentEnabled);
       }
     });
-    scene.add(transformControlsRef.current.getHelper());
     onSetupEffect?.(SETUP_EFFECT.TRANSFORM_CONTROLS, {
       transformControls: transformControlsRef.current
     });
@@ -212,21 +211,18 @@ const SetUp = (props: SetUpProps) => {
     if (!transformControlsRef.current) return;
     const transformControls = transformControlsRef.current;
     if (selectedObjectUUID && showGizmos) {
-      const selectedObject = useAppStore.getState().getSelectedObject()!;
-      transformControls.attach(selectedObject);
-      // patchThree.getCurrentScene().add(transformControlsRef.current.getHelper());
+      patchThree.attachTransformControls({ showHelper: showGizmos });
       transformControls.setMode(transformControlsMode); // translate | rotate | scale
       transformControls.setSpace(transformControlsSpace); // local | world
     } else {
-      transformControls.detach();
-      // patchThree.getCurrentScene().remove(transformControlsRef.current.getHelper());
+      patchThree.detachTransformControls({ resetSelectedObject: !selectedObjectUUID });
     }
   }, [selectedObjectUUID, showGizmos, transformControlsMode, transformControlsSpace]);
 
   // Update ObitControls (target, camera, enabled) and TransformControls camera
   useEffect(() => {
     updateCameras();
-    if (transformControlsRef.current) transformControlsRef.current['camera'] = camera;
+    if (transformControlsRef.current) transformControlsRef.current.camera = camera;
     if (!orbitControlsRef.current) return;
 
     // We react to cameraControl too so that we can preserve the camera position

@@ -2,7 +2,7 @@
 import { useEffect, useMemo } from 'react';
 import { useAppStore } from 'src/store';
 import { focusCamera, resetCamera } from 'lib/utils/cameraUtils';
-import { useThree } from '@react-three/fiber';
+// import { useThree } from '@react-three/fiber';
 
 // TODO: implement typing multiple letters ? add minimal custom controls to use in Experience for play/pause
 
@@ -26,7 +26,7 @@ export function KeyListener() {
   const isEditorMode = useAppStore((state) => state.showGizmos || state.cPanelVisible);
   const isInjected = useAppStore((state) => state.isInjected);
   const autoNavControls = useAppStore((state) => state.autoNavControls);
-  const { scene, camera } = useThree();
+  // const { scene, camera } = useThree();
   const keysPressed: any = useMemo(() => ({}), []);
 
   useEffect(() => {
@@ -121,18 +121,11 @@ export function KeyListener() {
         case 'Numpad9':
           isEditorMode &&
             resetCamera({
-              code: e.code,
-              camera,
-              orbitControls: scene.__inspectorData.orbitControlsRef?.current
+              code: e.code
             });
           break;
         case 'KeyF':
-          isEditorMode &&
-            focusCamera({
-              transformControls: scene.__inspectorData.transformControlsRef?.current,
-              orbitControls: scene.__inspectorData.orbitControlsRef?.current,
-              camera
-            });
+          isEditorMode && focusCamera();
           break;
         case 'Delete':
           isEditorMode && useAppStore.getState().deleteSelectedObject();
@@ -155,6 +148,6 @@ export function KeyListener() {
       window.removeEventListener('keydown', handleKeyDown);
       window.removeEventListener('keyup', handleKeyUp);
     };
-  }, [isEditorMode, cPanelVisible, scene, camera, autoNavControls, isInjected, keysPressed]);
+  }, [isEditorMode, cPanelVisible, autoNavControls, isInjected, keysPressed]);
   return null;
 }

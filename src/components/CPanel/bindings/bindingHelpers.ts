@@ -9,6 +9,7 @@ import { MaterialBindings } from './MaterialBindings';
 import { animate } from 'lib/utils/animate';
 import { isValidTexture } from 'lib/utils/textureUtils';
 import { CustomParams, isCustomParamStruct } from 'lib/customParam.types';
+import patchThree from 'lib/patchThree';
 
 const degToRad = THREE.MathUtils.degToRad;
 
@@ -405,6 +406,14 @@ const _buildBindings = (folder: FolderApi, object: any, bindings: any, params: C
     tweakBindingView(button);
   }
 
+  if (['Object3D', 'Camera Current', 'Scene'].includes(folder.title ?? '')) {
+    folder.on('change', () => {
+      if (patchThree.getThreeRootState().frameloop !== 'demand') return;
+      console.log('change', folder.title);
+      patchThree.render();
+    });
+  }
+
   // Collecting all morph targets from all meshes grouped by name.
   // As an edge case if 2 original meshes (before optimization done by loadModel) had the same morph target name
   // they will be grouped together
@@ -701,6 +710,7 @@ export const cleanupContainer = (node: any, options: { disposeRootFolder?: boole
     // this case is only if the root node is a binding
     // (not a real scenario, we're passing always a folder in practice)
     node.dispose();
+    node.parent?.remove(node);
     return;
   }
 

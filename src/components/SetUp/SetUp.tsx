@@ -349,6 +349,10 @@ const SetUp = (props: SetUpProps) => {
     if (!orbitControlsRef.current) return;
 
     let animFrameId: number;
+    const _render = () => {
+      window.cancelAnimationFrame(animFrameId);
+      render();
+    };
     const renderWithDumping = () => {
       if (!orbitControlsRef.current?.enableDamping) return;
       let dumpingFactor = ((orbitControlsRef.current?.dampingFactor || 0) + 0.3) * 1000;
@@ -369,12 +373,12 @@ const SetUp = (props: SetUpProps) => {
 
     // @ts-ignore
     if (/*orbitControlsRef.current.isPatched &&*/ frameloop === 'demand') {
-      orbitControlsRef.current.addEventListener('change', render);
+      orbitControlsRef.current.addEventListener('change', _render);
       orbitControlsRef.current.addEventListener('end', renderWithDumping);
     }
 
     return () => {
-      orbitControlsRef.current?.removeEventListener('change', render);
+      orbitControlsRef.current?.removeEventListener('change', _render);
       orbitControlsRef.current?.removeEventListener('end', renderWithDumping);
       window.cancelAnimationFrame(animFrameId);
     };

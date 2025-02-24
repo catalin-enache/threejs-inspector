@@ -20,8 +20,8 @@ export const SceneButtons = ({ playingState, sceneObjects: { camera, scene } }: 
     onClick: (() => {
       focusCamera({
         camera,
-        orbitControls: scene.__inspectorData.orbitControlsRef!.current,
-        transformControls: scene.__inspectorData.transformControlsRef!.current
+        orbitControls: scene.__inspectorData.orbitControlsRef?.current,
+        transformControls: scene.__inspectorData.transformControlsRef?.current
       });
     }) as onChange,
     if: () => scene.__inspectorData.orbitControlsRef!.current

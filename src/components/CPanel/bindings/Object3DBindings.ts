@@ -45,6 +45,8 @@ export const Object3DBindings = (params: CommonGetterParams) => ({
     }) as onChange,
     if: (object: THREE.Object3D) => !!object.parent && ExportableTypes.has(object.type)
   },
+  // TODO: position, rotation should be disabled for cameras controlled by CameraControls,
+  // or if enabled it should target the CameraControls
   position: {
     label: 'Position(L)',
     ...numberCommon

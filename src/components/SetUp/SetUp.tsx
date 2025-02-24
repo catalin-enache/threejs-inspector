@@ -158,8 +158,6 @@ const SetUp = (props: SetUpProps) => {
   }, [scene, camera]);
 
   const render = useCallback(() => {
-    // The render is not necessarily needed because gl.render is called anyway.
-    // However, we want instant re-render so that it feels more responsive (eventually).
     gl.render(scene, camera);
   }, [scene, camera, gl]);
 
@@ -350,13 +348,36 @@ const SetUp = (props: SetUpProps) => {
   useEffect(() => {
     if (!orbitControlsRef.current) return;
 
+    let animFrameId: number;
+    const renderWithDumping = () => {
+      if (!orbitControlsRef.current?.enableDamping) return;
+      let dumpingFactor = ((orbitControlsRef.current?.dampingFactor || 0) + 0.3) * 1000;
+      let prevTime = new Date();
+      const reRender = () => {
+        const now = new Date();
+        const delta = now.getTime() - prevTime.getTime();
+        prevTime = new Date();
+        dumpingFactor -= delta;
+        if (dumpingFactor > 0) {
+          orbitControlsRef.current?.update();
+          render();
+          animFrameId = window.requestAnimationFrame(reRender);
+        }
+      };
+      animFrameId = window.requestAnimationFrame(reRender);
+    };
+
     // @ts-ignore
     if (/*orbitControlsRef.current.isPatched &&*/ frameloop === 'demand') {
-      // TODO: this render on demand is losing dumping effect
       orbitControlsRef.current.addEventListener('change', render);
+      orbitControlsRef.current.addEventListener('end', renderWithDumping);
     }
 
-    return () => orbitControlsRef.current?.removeEventListener('change', render);
+    return () => {
+      orbitControlsRef.current?.removeEventListener('change', render);
+      orbitControlsRef.current?.removeEventListener('end', renderWithDumping);
+      window.cancelAnimationFrame(animFrameId);
+    };
   }, [render, frameloop]);
 
   return <>{shouldUseFlyControls(camera) && <FlyControls />}</>;

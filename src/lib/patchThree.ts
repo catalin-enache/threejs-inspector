@@ -104,9 +104,9 @@ const addOrAttach = (
 };
 
 // Be aware: the patch applies to the internal scene of TexturePlugin too.
-THREE.Object3D.prototype.add = (function() {
+THREE.Object3D.prototype.add = (function () {
   const original = THREE.Object3D.prototype.add;
-  return function(this: THREE.Object3D, ...objects: THREE.Object3D[]) {
+  return function (this: THREE.Object3D, ...objects: THREE.Object3D[]) {
     objects.forEach((object) => {
       addOrAttach(this, object, original);
     });
@@ -115,9 +115,9 @@ THREE.Object3D.prototype.add = (function() {
   };
 })();
 
-THREE.Object3D.prototype.attach = (function() {
+THREE.Object3D.prototype.attach = (function () {
   const original = THREE.Object3D.prototype.attach;
-  return function(this: THREE.Object3D, ...objects: THREE.Object3D[]) {
+  return function (this: THREE.Object3D, ...objects: THREE.Object3D[]) {
     objects.forEach((object) => {
       addOrAttach(this, object, original);
     });
@@ -144,15 +144,15 @@ THREE.Object3D.prototype.remove = (function () {
   };
 })();
 
-THREE.Object3D.prototype.destroy = (function() {
-  return function(this: THREE.Object3D) {
+THREE.Object3D.prototype.destroy = (function () {
+  return function (this: THREE.Object3D) {
     deepClean(this);
   };
 })();
 
-THREE.Object3D.prototype.updateMatrixWorld = (function() {
+THREE.Object3D.prototype.updateMatrixWorld = (function () {
   const originalUpdateMatrixWorld = THREE.Object3D.prototype.updateMatrixWorld;
-  return function(this: THREE.Object3D, force: boolean) {
+  return function (this: THREE.Object3D, force: boolean) {
     originalUpdateMatrixWorld.call(this, force);
     if (this.__inspectorData.updatingMatrixWorld) return;
     this.__inspectorData.updatingMatrixWorld = true;
@@ -161,9 +161,9 @@ THREE.Object3D.prototype.updateMatrixWorld = (function() {
   };
 })();
 
-THREE.Object3D.prototype.updateWorldMatrix = (function() {
+THREE.Object3D.prototype.updateWorldMatrix = (function () {
   const originalUpdateWorldMatrix = THREE.Object3D.prototype.updateWorldMatrix;
-  return function(this: THREE.Object3D, updateParents: boolean, updateChildren: boolean) {
+  return function (this: THREE.Object3D, updateParents: boolean, updateChildren: boolean) {
     originalUpdateWorldMatrix.call(this, updateParents, updateChildren);
     if (this.__inspectorData.updatingWorldMatrix) return;
     this.__inspectorData.updatingWorldMatrix = true;
@@ -201,9 +201,9 @@ type Module = {
   clearScene: () => void;
   detachTransformControls: ({ resetSelectedObject }?: { resetSelectedObject?: boolean }) => void;
   attachTransformControls: ({
-                              selectedObject,
-                              showHelper
-                            }?: {
+    selectedObject,
+    showHelper
+  }?: {
     selectedObject?: THREE.Object3D | null;
     showHelper?: boolean;
   }) => void;
@@ -258,8 +258,8 @@ const module: Module = {
     deepClean(this.currentScene);
   },
   detachTransformControls({
-                            resetSelectedObject = false
-                          }: {
+    resetSelectedObject = false
+  }: {
     resetSelectedObject?: boolean;
   } = {}) {
     const transformControls = this.currentScene.__inspectorData.transformControlsRef?.current;
@@ -269,9 +269,9 @@ const module: Module = {
     resetSelectedObject && useAppStore.getState().setSelectedObject(null);
   },
   attachTransformControls({
-                            selectedObject = useAppStore.getState().getSelectedObject(),
-                            showHelper = useAppStore.getState().showGizmos
-                          }: { selectedObject?: THREE.Object3D | null; showHelper?: boolean } = {}) {
+    selectedObject = useAppStore.getState().getSelectedObject(),
+    showHelper = useAppStore.getState().showGizmos
+  }: { selectedObject?: THREE.Object3D | null; showHelper?: boolean } = {}) {
     const transformControls = this.currentScene.__inspectorData.transformControlsRef?.current;
     if (!transformControls || !selectedObject) return;
     transformControls.attach(selectedObject);
@@ -395,8 +395,7 @@ const module: Module = {
             ? helper.onBeforeRender
             : 'update' in helper
               ? helper.update
-              : () => {
-              };
+              : () => {};
       // @ts-ignore
       update.call(helper);
     }
@@ -447,8 +446,8 @@ const module: Module = {
                       ? new CubeCameraHelper(object as THREE.CubeCamera, { size: helperSize })
                       : object instanceof THREE.PositionalAudio
                         ? new EmptyFollower(object).add(
-                          new PositionalAudioHelper(object as THREE.PositionalAudio, helperSize)
-                        )
+                            new PositionalAudioHelper(object as THREE.PositionalAudio, helperSize)
+                          )
                         : new Follower(object, { size: helperSize }); // meaningless helper
 
     helper.name = `helper for ${object.name || object.type || ''} ${object.uuid}`;

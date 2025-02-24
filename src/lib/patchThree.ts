@@ -209,6 +209,7 @@ type Module = {
   }) => void;
   showTransformControls: () => void;
   hideTransformControls: () => void;
+  render: () => void;
   currentRenderer: THREE.WebGLRenderer | null;
   getCurrentRenderer: () => THREE.WebGLRenderer | null;
   setCurrentRenderer: (renderer: THREE.WebGLRenderer) => void;
@@ -289,6 +290,10 @@ const module: Module = {
     const transformControls = this.currentScene.__inspectorData.transformControlsRef?.current;
     if (!transformControls) return;
     transformControls.getHelper().removeFromParent();
+  },
+  render() {
+    if (!this.currentRenderer || !this.currentScene || !this.currentScene.__inspectorData.currentCamera) return;
+    this.currentRenderer?.render(this.currentScene, this.currentScene.__inspectorData.currentCamera);
   },
   interactableObjects: {},
   subscriptions: {},

@@ -3,30 +3,47 @@ import { RectAreaLightHelper } from 'three/examples/jsm/helpers/RectAreaLightHel
 import { LightProbeHelper } from 'three/examples/jsm/helpers/LightProbeHelper';
 import { PositionalAudioHelper } from 'three/examples/jsm/helpers/PositionalAudioHelper';
 import { refreshOutliner } from 'lib/third_party/outlinerHelpers';
-import { destroyObject } from 'lib/utils/cleanUp';
+import { objectHasSkeleton, isAutoInspectableObject } from 'lib/utils/objectUtils';
 import { useAppStore } from 'src/store';
 import { offlineScene } from 'components/CPanel/offlineScene';
+import {
+  Follower,
+  EmptyFollower,
+  CubeCameraHelper,
+  CubeCameraPicker,
+  SpotLightPicker,
+  CameraPicker,
+  DirectionalLightPicker,
+  RectAreaLightPicker,
+  PointLightPicker,
+  LightProbePicker
+} from 'lib/followers';
+import './patchCubeCamera';
 import type { __inspectorData } from 'tsExtensions';
+import { deepClean } from 'lib/utils/cleanUp';
+import type { RootState } from '@react-three/fiber';
 
 if (!Object.getPrototypeOf(THREE.Object3D.prototype).__inspectorData) {
   Object.defineProperty(THREE.Object3D.prototype, '__inspectorData', {
     get: function () {
       if (!this._innerInspectorData) {
         const __inspectorData: Partial<__inspectorData> = {};
+        const data: any = {};
         // eslint-disable-next-line @typescript-eslint/no-this-alias
         const scope = this;
         Object.defineProperty(__inspectorData, 'isInspectable', {
           get: () => {
             // console.log('isInspectable getter called', scope.name || scope.type || scope.uuid);
-            return this._isInspectable;
+            return data._isInspectable;
           },
           set: (value) => {
-            this._isInspectable = value;
+            data._isInspectable = value;
             scope.children.forEach((child: THREE.Object3D) => {
+              if (child instanceof THREE.Bone) return; // no need to set isInspectable on bones
               child.__inspectorData.isInspectable = value;
               // only need hitRedirect on descendants if it's not set, not on root
               if (!child.__inspectorData.hitRedirect) {
-                child.__inspectorData.hitRedirect = this;
+                child.__inspectorData.hitRedirect = scope;
               }
             });
           },
@@ -35,10 +52,10 @@ if (!Object.getPrototypeOf(THREE.Object3D.prototype).__inspectorData) {
         Object.defineProperty(__inspectorData, 'hitRedirect', {
           get: () => {
             // console.log('hitRedirect getter called', scope.name || scope.type || scope.uuid);
-            return this._hitRedirect;
+            return data._hitRedirect;
           },
           set: (value) => {
-            this._hitRedirect = value;
+            data._hitRedirect = value;
             scope.children.forEach((child: THREE.Object3D) => {
               child.__inspectorData.hitRedirect = value;
             });
@@ -47,8 +64,8 @@ if (!Object.getPrototypeOf(THREE.Object3D.prototype).__inspectorData) {
         });
         Object.defineProperty(__inspectorData, 'dependantObjects', {
           get: () => {
-            if (!this._dependantObjects) this._dependantObjects = [];
-            return this._dependantObjects;
+            if (!data._dependantObjects) data._dependantObjects = [];
+            return data._dependantObjects;
           },
           configurable: true
         });
@@ -63,27 +80,46 @@ if (!Object.getPrototypeOf(THREE.Object3D.prototype).__inspectorData) {
   });
 }
 
+const addOrAttach = (
+  scope: THREE.Object3D,
+  object: THREE.Object3D,
+  original: (typeof THREE.Object3D.prototype)['add'] | (typeof THREE.Object3D.prototype)['attach']
+) => {
+  object.__inspectorData.isBeingAdded = true;
+  // Note:
+  //  - the method calls removeFromParent
+  original.call(scope, object);
+  object.__inspectorData.isBeingAdded = false;
+
+  if (module.isSceneObject(scope)) {
+    module.handleObjectAdded(object);
+    refreshOutliner({ scene: module.currentScene });
+  } else if (module.isMainScene(scope)) {
+    module.handleObjectAdded(object);
+    refreshOutliner({ scene: module.currentScene });
+  }
+  // The last branch here would be if we add to a non-scene object.
+  // In that case, we don't need to do anything.
+  // It will be handled when it gets added to the scene in the second branch.
+};
+
 // Be aware: the patch applies to the internal scene of TexturePlugin too.
-THREE.Object3D.prototype.add = (function () {
-  const originalAdd = THREE.Object3D.prototype.add;
-  return function (this: THREE.Object3D, ...objects: THREE.Object3D[]) {
-    originalAdd.call(this, ...objects);
+THREE.Object3D.prototype.add = (function() {
+  const original = THREE.Object3D.prototype.add;
+  return function(this: THREE.Object3D, ...objects: THREE.Object3D[]) {
     objects.forEach((object) => {
-      if (module.isSceneObject(this)) {
-        // console.log('Is scene object already', this.name || this.type || this.uuid, this);
-        object.traverse((descendant) => {
-          module.handleObjectAdded(descendant);
-        });
-        refreshOutliner({ scene: module.currentScene });
-      } else if (module.isMainScene(this)) {
-        object.traverse((descendant) => {
-          module.handleObjectAdded(descendant);
-        });
-        refreshOutliner({ scene: module.currentScene });
-      }
-      // The last branch here would be if we add to a non-scene object.
-      // In that case, we don't need to do anything.
-      // It will be handled when it gets added to the scene in the second branch.
+      addOrAttach(this, object, original);
+    });
+
+    return this;
+  };
+})();
+
+THREE.Object3D.prototype.attach = (function() {
+  const original = THREE.Object3D.prototype.attach;
+  return function(this: THREE.Object3D, ...objects: THREE.Object3D[]) {
+    objects.forEach((object) => {
+      addOrAttach(this, object, original);
     });
 
     return this;
@@ -93,24 +129,46 @@ THREE.Object3D.prototype.add = (function () {
 THREE.Object3D.prototype.remove = (function () {
   const originalRemove = THREE.Object3D.prototype.remove;
   return function (this: THREE.Object3D, ...objects: THREE.Object3D[]) {
-    const _isSceneObject = objects.some(module.isSceneObject);
-    // things to skip
-    if (this instanceof THREE.CubeCamera) {
-      // skip children cameras of a cubeCamera
-      return originalRemove.call(this, ...objects);
-    }
     objects.forEach((object) => {
-      module.cleanupAfterRemovedObject(object);
-      if (object === useAppStore.getState().getSelectedObject()) {
-        useAppStore.getState().setSelectedObject(null);
+      if (object.__inspectorData.isBeingAdded) {
+        // e.g. transferring helpers to injected scene
+        return originalRemove.call(this, object);
       }
+      module.cleanupBeforeRemovingObject(object);
+      const isSceneObject = module.isSceneObject(object);
+      originalRemove.call(this, object);
+      isSceneObject && refreshOutliner({ scene: module.currentScene });
+      module.cleanupAfterRemovedObject(object);
     });
-    originalRemove.call(this, ...objects);
-
-    if (_isSceneObject) {
-      refreshOutliner({ scene: module.currentScene });
-    }
     return this;
+  };
+})();
+
+THREE.Object3D.prototype.destroy = (function() {
+  return function(this: THREE.Object3D) {
+    deepClean(this);
+  };
+})();
+
+THREE.Object3D.prototype.updateMatrixWorld = (function() {
+  const originalUpdateMatrixWorld = THREE.Object3D.prototype.updateMatrixWorld;
+  return function(this: THREE.Object3D, force: boolean) {
+    originalUpdateMatrixWorld.call(this, force);
+    if (this.__inspectorData.updatingMatrixWorld) return;
+    this.__inspectorData.updatingMatrixWorld = true;
+    module.updateDependants(this);
+    delete this.__inspectorData.updatingMatrixWorld;
+  };
+})();
+
+THREE.Object3D.prototype.updateWorldMatrix = (function() {
+  const originalUpdateWorldMatrix = THREE.Object3D.prototype.updateWorldMatrix;
+  return function(this: THREE.Object3D, updateParents: boolean, updateChildren: boolean) {
+    originalUpdateWorldMatrix.call(this, updateParents, updateChildren);
+    if (this.__inspectorData.updatingWorldMatrix) return;
+    this.__inspectorData.updatingWorldMatrix = true;
+    module.updateDependants(this);
+    delete this.__inspectorData.updatingWorldMatrix;
   };
 })();
 
@@ -134,9 +192,23 @@ defaultOrthographicCamera.zoom = 45;
 defaultOrthographicCamera.name = 'DefaultOrthographicCamera';
 
 type Module = {
+  threeRootState: RootState;
+  setThreeRootState: (three: RootState) => void;
+  getThreeRootState: () => RootState;
   currentScene: THREE.Scene;
   getCurrentScene: () => THREE.Scene;
   setCurrentScene: (scene: THREE.Scene) => void;
+  clearScene: () => void;
+  detachTransformControls: ({ resetSelectedObject }?: { resetSelectedObject?: boolean }) => void;
+  attachTransformControls: ({
+                              selectedObject,
+                              showHelper
+                            }?: {
+    selectedObject?: THREE.Object3D | null;
+    showHelper?: boolean;
+  }) => void;
+  showTransformControls: () => void;
+  hideTransformControls: () => void;
   currentRenderer: THREE.WebGLRenderer | null;
   getCurrentRenderer: () => THREE.WebGLRenderer | null;
   setCurrentRenderer: (renderer: THREE.WebGLRenderer) => void;
@@ -144,24 +216,34 @@ type Module = {
   updateCameras: () => void;
   updateCubeCamera: (cubeCamera: THREE.CubeCamera) => void;
   updateCubeCameras: () => void;
+  refreshCPanel: () => void;
   defaultPerspectiveCamera: THREE.PerspectiveCamera;
   defaultOrthographicCamera: THREE.OrthographicCamera;
   cameraToUseOnPlay: THREE.PerspectiveCamera | THREE.OrthographicCamera | null;
   getCameraToUseOnPlay: () => THREE.PerspectiveCamera | THREE.OrthographicCamera | null;
   shouldUseFlyControls: (camera: THREE.Camera) => boolean;
   getIsPlayingCamera: (camera: THREE.Camera) => boolean;
-  objectHasSkeleton: (object: THREE.Object3D) => boolean;
-  shouldContainItsHelper: (object: THREE.Object3D) => boolean;
+  isSafeToMakeHelpers: boolean;
+  updateHelper: (helper: __inspectorData['helper']) => void;
+  updateDependants: (object: THREE.Object3D) => void;
   makeHelpers: (object: THREE.Object3D) => void;
+  doesNotNeedHelper: (object: THREE.Object3D) => boolean;
   isSceneObject: (object: THREE.Object3D) => boolean;
   isMainScene: (scene: any) => boolean;
   handleObjectAdded: (object: THREE.Object3D) => void;
-  destroy: (object: any) => void;
+  cleanupBeforeRemovingObject: (object: THREE.Object3D) => void;
   cleanupAfterRemovedObject: (object: THREE.Object3D) => void;
   subscriptions: Record<string, (() => void)[]>;
 };
 
 const module: Module = {
+  threeRootState: {} as RootState,
+  setThreeRootState(three: RootState) {
+    this.threeRootState = three;
+  },
+  getThreeRootState() {
+    return this.threeRootState;
+  },
   currentScene: defaultScene,
   getCurrentScene() {
     return this.currentScene;
@@ -169,6 +251,44 @@ const module: Module = {
   setCurrentScene(scene: THREE.Scene) {
     this.currentScene = scene;
     this.updateCubeCameras();
+  },
+  clearScene() {
+    window.dispatchEvent(new CustomEvent('TIFMK.ClearScene'));
+    this.detachTransformControls({ resetSelectedObject: true });
+    deepClean(this.currentScene);
+  },
+  detachTransformControls({
+                            resetSelectedObject = false
+                          }: {
+    resetSelectedObject?: boolean;
+  } = {}) {
+    const transformControls = this.currentScene.__inspectorData.transformControlsRef?.current;
+    if (!transformControls) return;
+    transformControls.detach();
+    this.hideTransformControls();
+    resetSelectedObject && useAppStore.getState().setSelectedObject(null);
+  },
+  attachTransformControls({
+                            selectedObject = useAppStore.getState().getSelectedObject(),
+                            showHelper = useAppStore.getState().showGizmos
+                          }: { selectedObject?: THREE.Object3D | null; showHelper?: boolean } = {}) {
+    const transformControls = this.currentScene.__inspectorData.transformControlsRef?.current;
+    if (!transformControls || !selectedObject) return;
+    transformControls.attach(selectedObject);
+    if (showHelper) {
+      this.showTransformControls();
+    }
+  },
+  showTransformControls() {
+    const transformControls = this.currentScene.__inspectorData.transformControlsRef?.current;
+    if (!transformControls) return;
+    // it will  not be added multiple times cos when adding something, three first removes it from parent
+    this.currentScene.add(transformControls.getHelper());
+  },
+  hideTransformControls() {
+    const transformControls = this.currentScene.__inspectorData.transformControlsRef?.current;
+    if (!transformControls) return;
+    transformControls.getHelper().removeFromParent();
   },
   interactableObjects: {},
   subscriptions: {},
@@ -232,6 +352,8 @@ const module: Module = {
 
   // ----------------------------------- << Cameras -----------------------------------
 
+  isSafeToMakeHelpers: true,
+
   isSceneObject(object: THREE.Object3D) {
     // traverse up to the scene
     let parent = object.parent;
@@ -246,39 +368,61 @@ const module: Module = {
     return scene instanceof THREE.Scene && scene !== offlineScene;
   },
 
-  objectHasSkeleton(object: THREE.Object3D) {
-    let hasSkeleton = false;
-    object.traverse((descendant) => {
-      if (descendant instanceof THREE.SkinnedMesh) {
-        hasSkeleton = true;
-      }
-    });
-    return hasSkeleton;
+  doesNotNeedHelper(object: THREE.Object3D) {
+    // R3F does not add cameras to scene, so this check is not needed, but checking just in case
+    return (
+      object === defaultPerspectiveCamera ||
+      object === defaultOrthographicCamera ||
+      object.parent instanceof THREE.CubeCamera
+    );
   },
 
-  shouldContainItsHelper(object: THREE.Object3D) {
-    return [THREE.PositionalAudio, THREE.CubeCamera].some((Type) => object instanceof Type);
+  updateDependants(object: THREE.Object3D) {
+    if (object.__inspectorData?.helper && object.__inspectorData?.helper.visible) {
+      module.updateHelper(object.__inspectorData.helper);
+    }
+    if (object.__inspectorData?.picker && object.__inspectorData?.picker.visible) {
+      object.__inspectorData.picker.update();
+    }
+  },
+
+  updateHelper(helper: __inspectorData['helper']) {
+    if (helper) {
+      const update =
+        helper instanceof RectAreaLightHelper
+          ? helper.updateMatrixWorld
+          : helper instanceof LightProbeHelper
+            ? helper.onBeforeRender
+            : 'update' in helper
+              ? helper.update
+              : () => {
+              };
+      // @ts-ignore
+      update.call(helper);
+    }
   },
 
   makeHelpers(object: THREE.Object3D) {
-    const hasSkeleton = this.objectHasSkeleton(object);
+    // when importing a json scene, some references are not yet set but are pointing to UUIds
+    // due to this, for example DirectionalLightHelper does not reference a light.target,
+    // and it fails when calling update() in its constructor
+    // this would be set to false temporarily when importing a json scene
+    if (!this.isSafeToMakeHelpers) return;
+    // already having helper/picker
+    if (object.__inspectorData.dependantObjects?.length) return;
 
-    if (
-      !(
-        object instanceof THREE.Light ||
-        object instanceof THREE.Camera ||
-        object instanceof THREE.CubeCamera ||
-        object instanceof THREE.PositionalAudio ||
-        hasSkeleton
-      )
-    )
-      return;
+    if (module.doesNotNeedHelper(object)) return;
+
+    const hasSkeleton = objectHasSkeleton(object);
+    // only making helpers/pickers for autoInspectableObjects or helpers for SkinnedMeshes
+    if (!isAutoInspectableObject(object) && !hasSkeleton) return;
+
     // console.log('Making helpers for', object.name || object.type || object.uuid, object);
     if (hasSkeleton) {
       // console.log('has skeleton', object.name || object.type || object.uuid, object);
     }
 
-    // we don't need pickers for meshes
+    // we don't need pickers for SkinnedMeshes, just helpers
     const pickerIsNeeded = !hasSkeleton;
 
     const helperSize = useAppStore.getState().gizmoSize;
@@ -300,100 +444,51 @@ const module: Module = {
                   : object instanceof THREE.PointLight
                     ? new THREE.PointLightHelper(object as THREE.PointLight, helperSize)
                     : object instanceof THREE.CubeCamera
-                      ? new THREE.Mesh(
-                          new THREE.BoxGeometry(helperSize, helperSize, helperSize),
-                          new THREE.MeshLambertMaterial({ color: 0xffffff, envMap: object.renderTarget.texture })
-                          // new THREE.MeshBasicMaterial({ map: object.renderTarget.texture })
-                        )
+                      ? new CubeCameraHelper(object as THREE.CubeCamera, { size: helperSize })
                       : object instanceof THREE.PositionalAudio
-                        ? new PositionalAudioHelper(object as THREE.PositionalAudio, helperSize)
-                        : new THREE.Mesh(); // meaningless helper
+                        ? new EmptyFollower(object).add(
+                          new PositionalAudioHelper(object as THREE.PositionalAudio, helperSize)
+                        )
+                        : new Follower(object, { size: helperSize }); // meaningless helper
 
     helper.name = `helper for ${object.name || object.type || ''} ${object.uuid}`;
-    helper.__inspectorData.isHelper = true;
 
-    const pickerGeometry =
-      object instanceof THREE.DirectionalLight
-        ? new THREE.PlaneGeometry(helperSize * 4, helperSize * 4)
-        : object instanceof THREE.RectAreaLight
-          ? new THREE.PlaneGeometry(object.width, object.height)
-          : object instanceof THREE.SpotLight
-            ? new THREE.ConeGeometry(helperSize * 2, helperSize * 2, 4)
-            : object instanceof THREE.Camera
-              ? new THREE.ConeGeometry(helperSize * 2, helperSize * 2, 8)
-              : object instanceof THREE.PointLight
-                ? new THREE.SphereGeometry(helperSize, 4, 1)
-                : object instanceof THREE.LightProbe
-                  ? new THREE.SphereGeometry(helperSize, 6, 6)
-                  : object instanceof THREE.CubeCamera
-                    ? new THREE.BoxGeometry(helperSize, helperSize, helperSize)
-                    : new THREE.BoxGeometry(helperSize, helperSize, helperSize); // generic mesh geometry
+    const pickerGeometry = new THREE.BoxGeometry(helperSize, helperSize, helperSize); // generic mesh geometry
 
-    const picker: THREE.Mesh = new THREE.Mesh(
-      pickerGeometry,
-      new THREE.MeshBasicMaterial({
-        color:
-          (object as THREE.Light).color || // camera doesn't have color
-          (object instanceof THREE.Camera ? new THREE.Color(0xff0000) : new THREE.Color(0xcccccc)),
-        visible: true,
-        side: THREE.DoubleSide,
-        transparent: true,
-        opacity: 1,
-        fog: false,
-        toneMapped: false,
-        wireframe: true
-      })
-    );
+    const picker: Follower =
+      object instanceof THREE.LightProbe
+        ? new LightProbePicker(object, { size: helperSize })
+        : object instanceof THREE.PointLight
+          ? new PointLightPicker(object, { size: helperSize })
+          : object instanceof THREE.RectAreaLight
+            ? new RectAreaLightPicker(object)
+            : object instanceof THREE.DirectionalLight
+              ? new DirectionalLightPicker(object, { size: helperSize })
+              : object instanceof THREE.CubeCamera
+                ? new CubeCameraPicker(object, { size: helperSize })
+                : object instanceof THREE.SpotLight
+                  ? new SpotLightPicker(object, { size: helperSize })
+                  : object instanceof THREE.Camera
+                    ? new CameraPicker(object, { size: helperSize })
+                    : new Follower(object, { size: helperSize, geometry: pickerGeometry });
 
     picker.name = `picker for ${object.name || object.type || ''} ${object.uuid}`;
 
-    if (object instanceof THREE.SpotLight) {
-      // Temporarily adjust picker transform and bake that in geometry since original cone geometry is not aligned as needed
-      picker.rotateX(-Math.PI / 2);
-      picker.updateMatrix();
-      picker.translateY(-0.5);
-      picker.updateMatrix();
-      picker.geometry.applyMatrix4(picker.matrix);
-      picker.rotation.set(0, 0, 0);
-      picker.position.set(0, 0, 0);
-      picker.scale.set(1, 1, 1);
-    } else if (object instanceof THREE.Camera) {
-      // Temporarily adjust picker transform and bake that in geometry since original cone geometry is not aligned as needed
-      picker.rotateX(Math.PI / 2);
-      picker.updateMatrix();
-      picker.translateY(-0.5);
-      picker.updateMatrix();
-      picker.geometry.applyMatrix4(picker.matrix);
-      picker.rotation.set(0, 0, 0);
-      picker.position.set(0, 0, 0);
-      picker.scale.set(1, 1, 1);
-    } else if (object instanceof THREE.DirectionalLight) {
-      picker.matrix = (helper as THREE.DirectionalLightHelper).lightPlane.matrix; // helper.matrix is a reference to helper.light.matrixWorld
-      picker.matrixAutoUpdate = false;
-    }
     const objectInspectorData = object.__inspectorData;
     const pickerInspectorData = picker.__inspectorData;
-    pickerIsNeeded && (objectInspectorData.picker = picker);
+    const helperInspectorData = helper.__inspectorData;
+
+    if (pickerIsNeeded) {
+      objectInspectorData.picker = picker;
+      pickerInspectorData.isPicker = true;
+      pickerInspectorData.hitRedirect = object;
+    }
+
     objectInspectorData.helper = helper;
-    pickerInspectorData.hitRedirect = object;
-    pickerInspectorData.isPicker = true;
+    helperInspectorData.isHelper = true;
 
-    pickerIsNeeded && object.add(picker);
-    pickerIsNeeded && object.__inspectorData.dependantObjects!.push(picker);
-    object.__inspectorData.dependantObjects!.push(helper);
-
-    if (object instanceof THREE.SpotLight) {
-      picker.lookAt(object.target.position);
-    }
-
-    // helper is added to the scene in handleObjectAdded function except helpers for these object types
-    if (this.shouldContainItsHelper(object)) {
-      object.add(helper);
-    }
-
-    if (!pickerIsNeeded) {
-      this.destroy(picker);
-    }
+    pickerIsNeeded ? objectInspectorData.dependantObjects!.push(picker) : picker.dispose();
+    objectInspectorData.dependantObjects!.push(helper);
 
     const showHelpers = useAppStore.getState().showHelpers;
     const showGizmos = useAppStore.getState().showGizmos;
@@ -428,71 +523,17 @@ const module: Module = {
           // we don't need to remove helpers for default cameras since R3F does not add cameras to scene
           if (objectInspectorData.useOnPlay) {
             if (['playing', 'paused'].includes(playingState)) {
-              pickerIsNeeded && object.remove(picker);
               this.currentScene.remove(helper);
+              pickerIsNeeded && this.currentScene.remove(picker);
             } else {
-              pickerIsNeeded && object.add(picker);
-              pickerIsNeeded && (this.interactableObjects[picker.uuid] = picker);
               this.currentScene.add(helper);
+              pickerIsNeeded && this.currentScene.add(picker);
+              // pickerIsNeeded && (this.interactableObjects[picker.uuid] = picker); // not needed, already handled in handleObjectAdded
             }
           }
         }
       )
     );
-  },
-
-  destroy(object: THREE.Object3D) {
-    destroyObject(object);
-  },
-
-  // Note: this is also called from offlineScene
-  cleanupAfterRemovedObject(object: THREE.Object3D) {
-    object.traverse((child) => {
-      if (this.currentScene.__inspectorData.transformControlsRef?.current?.object === child) {
-        this.currentScene.__inspectorData.transformControlsRef.current.detach();
-      }
-
-      // unsubscribing
-      while (this.subscriptions[child.uuid]?.length) {
-        this.subscriptions[child.uuid].pop()!();
-      }
-
-      while (child.__inspectorData.dependantObjects!.length) {
-        const dependantObject = child.__inspectorData.dependantObjects!.pop()!;
-        // normally dependantObject should have a parent
-        // however what if dependantObject does not have a parent?
-        if (!dependantObject.parent) {
-          // ensuring here that removeFromParent will trigger destroy
-          child.add(dependantObject);
-          dependantObject.__inspectorData.isMarkedForDestroy = true;
-        }
-        // this will re-trigger cleanupAfterRemovedObject for dependantObject which will go through destroy
-        dependantObject.removeFromParent();
-      }
-
-      // No need to destroy everything, geometries and materials might be reused
-      // Set destroyOnRemove false to destroy manually and be able to chose what to destroy (materials, textures, geometries, skeletons)
-      const destroyOnRemove = useAppStore.getState().destroyOnRemove;
-      if (
-        (destroyOnRemove ||
-          child.__inspectorData.isMarkedForDestroy ||
-          child.__inspectorData.isPicker ||
-          child.__inspectorData.isHelper) &&
-        child.__inspectorData.hitRedirect !== this.cameraToUseOnPlay &&
-        // @ts-ignore CameraHelper as a field camera pointing to the related camera
-        child.camera !== this.cameraToUseOnPlay
-      ) {
-        // helpers and pickers for cameraToUseOnPlay needs to stay around
-        // (when switching between play stop they are removed only temporarily)
-        this.destroy(child);
-      }
-
-      delete this.interactableObjects[child.uuid];
-
-      if (this.cameraToUseOnPlay === child) {
-        this.cameraToUseOnPlay = null;
-      }
-    });
   },
 
   updateCubeCamera(cubeCamera: THREE.CubeCamera) {
@@ -501,8 +542,14 @@ const module: Module = {
     }
     const currentVisible = cubeCamera.visible;
     cubeCamera.visible = false;
+    if (cubeCamera.__inspectorData?.helper) {
+      ((cubeCamera.__inspectorData.helper as Follower).material as THREE.MeshPhongMaterial).visible = false;
+    }
     cubeCamera.update(this.currentRenderer, this.currentScene);
     cubeCamera.visible = currentVisible;
+    if (cubeCamera.__inspectorData?.helper) {
+      ((cubeCamera.__inspectorData.helper as Follower).material as THREE.MeshPhongMaterial).visible = true;
+    }
   },
 
   updateCubeCameras() {
@@ -513,48 +560,87 @@ const module: Module = {
     });
   },
 
-  // called for every child of an object only when added to the scene
+  refreshCPanel() {
+    useAppStore.getState().triggerCPanelStateChanged();
+  },
+
+  // Note:
+  // - called for any object only if already in the scene or just added to scene (not called on detached objects)
+  // - is also called for helpers/pickers themselves // from this.currentScene.add(dep);
   handleObjectAdded(object: THREE.Object3D) {
-    const __inspectorData = object.__inspectorData;
-    if (
-      __inspectorData.isInspectable ||
-      (object as THREE.Light).isLight ||
-      (object as THREE.Camera).isCamera ||
-      object instanceof THREE.CubeCamera ||
-      object instanceof THREE.PositionalAudio
-    ) {
-      // R3F does not add cameras to scene, so this check is not needed, but checking just in case
-      if (
-        object !== defaultPerspectiveCamera &&
-        object !== defaultOrthographicCamera &&
-        !(object.parent instanceof THREE.CubeCamera)
-      ) {
-        this.makeHelpers(object); // will enrich certain objects with helper and picker
+    // console.log('handleObjectAdded', object.name || object.type || object.uuid, object);
+    object.traverse((obj) => {
+      const __inspectorData = obj.__inspectorData;
+
+      if (__inspectorData.isPicker || __inspectorData.isInspectable) {
+        this.interactableObjects[obj.uuid] = obj;
       }
+
       if (
-        (object instanceof THREE.PerspectiveCamera || object instanceof THREE.OrthographicCamera) &&
+        (obj instanceof THREE.PerspectiveCamera || obj instanceof THREE.OrthographicCamera) &&
         __inspectorData.useOnPlay
       ) {
         // if multiple cameras are useOnPlay, only the last one will be considered
-        this.cameraToUseOnPlay = object as THREE.PerspectiveCamera | THREE.OrthographicCamera;
+        this.cameraToUseOnPlay = obj as THREE.PerspectiveCamera | THREE.OrthographicCamera;
         // current camera did not change just yet, only cameraToUseOnPlay is updated
+        // current camera is updated in Setup which sets it to cameraToUseOnPlay if it's not null
       }
-      if (object instanceof THREE.CubeCamera) {
-        this.updateCubeCamera(object);
-      }
-      // picker appears in __inspectorData after makeHelpers is called
-      if (__inspectorData.picker) {
-        this.interactableObjects[__inspectorData.picker.uuid] = __inspectorData.picker;
-      } else {
-        this.interactableObjects[object.uuid] = object;
-      }
-      // most helpers are added to the scene but some are added to the object itself (e.g. PositionalAudioHelper)
+
+      this.makeHelpers(obj); // will enrich certain objects with helper and picker
+
       // patchThree acts early and adds helpers to defaultScene before instantiating the scene to inject the Inspector into,
-      // when injected, helpers that were added to defaultScene are transferred to currentScene
-      if (__inspectorData.helper && !this.shouldContainItsHelper(object)) {
-        this.currentScene.add(__inspectorData.helper);
+      // when injected, helpers that were added to defaultScene will be transferred to the new scene
+      (__inspectorData.dependantObjects || []).forEach((dep) => {
+        this.currentScene.add(dep);
+      });
+
+      if (obj instanceof THREE.CubeCamera) {
+        this.updateCubeCamera(obj); // assumes CubeCamera helper has been created
       }
-    }
+    });
+  },
+
+  // NOTE:
+  // - an object can be removed from its parent as a result of being added to another parent
+  // - the object can be a picker/helper
+  // - this is also called from offlineScene
+  cleanupBeforeRemovingObject(object: THREE.Object3D) {
+    // console.log('cleanupBeforeRemovingObject', object.name || object.type || object.uuid, object);
+    object.traverse((obj) => {
+      while (this.subscriptions[obj.uuid]?.length) {
+        this.subscriptions[obj.uuid].pop()!();
+      }
+
+      // if (obj === this.currentScene.__inspectorData.transformControlsRef?.current?.object) {}
+      if (obj === useAppStore.getState().getSelectedObject()) {
+        this.detachTransformControls({ resetSelectedObject: !obj.__inspectorData.isBeingAdded });
+      }
+
+      delete this.interactableObjects[obj.uuid];
+
+      if (this.cameraToUseOnPlay === obj) {
+        this.cameraToUseOnPlay = null;
+      }
+    });
+  },
+
+  // NOTE:
+  // - an object can be removed from its parent as a result of being added to another parent (isBeingAdded)
+  // - the object can be a picker/helper too
+  // - this is also called from offlineScene
+  cleanupAfterRemovedObject(object: THREE.Object3D) {
+    // console.log('cleanupAfterRemovedObject', object.name || object.type || object.uuid, object);
+    object.traverse((obj) => {
+      while (obj.__inspectorData.dependantObjects!.length) {
+        const dependantObject = obj.__inspectorData.dependantObjects!.pop()!;
+        const removed = dependantObject.removeFromParent();
+        if ((removed as Follower).dispose) {
+          (removed as Follower).dispose();
+        } else {
+          console.warn('dispose not available in a dependent object', removed);
+        }
+      }
+    });
   }
 };
 
@@ -563,48 +649,6 @@ module.updateCameras();
 // defaultPerspectiveCamera and defaultOrthographicCamera and cameraToUseOnPlay are used in App (when !isInjected)
 module.currentScene.__inspectorData.currentCamera =
   useAppStore.getState().cameraType === 'perspective' ? defaultPerspectiveCamera : defaultOrthographicCamera;
-
-// update helpers for selected object when it is changed
-useAppStore.subscribe(
-  (appStore) => appStore.selectedObjectStateFake,
-  () => {
-    const selectedObject = useAppStore.getState().getSelectedObject();
-
-    if (!selectedObject) return; // should not be the case because selectedObjectStateFake implies selectedObject
-
-    selectedObject.traverse((object) => {
-      const picker = object.__inspectorData.picker;
-      const helper = object.__inspectorData.helper;
-
-      if (helper) {
-        const update =
-          helper instanceof RectAreaLightHelper
-            ? helper.updateMatrixWorld
-            : helper instanceof LightProbeHelper
-              ? helper.onBeforeRender
-              : 'update' in helper
-                ? helper.update
-                : () => {}; // updates object.matrixWorld
-        // @ts-ignore
-        update.call(helper);
-      }
-
-      if (picker) {
-        if (object instanceof THREE.Light) {
-          // @ts-ignore
-          object.color && picker.material.color.copy(object.color);
-        }
-
-        if (object instanceof THREE.SpotLight) {
-          picker.lookAt(object.target.position);
-        } else if (object instanceof THREE.RectAreaLight) {
-          picker.geometry.dispose();
-          picker.geometry = new THREE.PlaneGeometry(object.width, object.height);
-        }
-      }
-    });
-  }
-);
 
 Object.keys(module).forEach((key) => {
   const typedKey = key as keyof typeof module;
@@ -615,3 +659,6 @@ Object.keys(module).forEach((key) => {
 });
 
 export default module;
+
+// @ts-ignore
+window.patchThree = module;

@@ -19,12 +19,9 @@ export const SceneButtons = ({ playingState, sceneObjects: { camera, scene } }: 
     title: 'Focus Selected Object',
     onClick: (() => {
       focusCamera({
-        camera,
-        orbitControls: scene.__inspectorData.orbitControlsRef?.current,
-        transformControls: scene.__inspectorData.transformControlsRef?.current
+        camera
       });
-    }) as onChange,
-    if: () => scene.__inspectorData.orbitControlsRef!.current
+    }) as onChange
   },
   2: {
     label: 'Show Helpers ( H|CAS+H )',

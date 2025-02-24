@@ -76,15 +76,18 @@ export const Object3DBindings = (params: CommonGetterParams) => ({
   },
   castShadow: {
     label: 'Cast Shadow',
-    view: 'toggle'
+    view: 'toggle',
+    if: (object: THREE.Object3D) => !(object as THREE.Camera).isCamera
   },
   receiveShadow: {
     label: 'Receive Shadow',
-    view: 'toggle'
+    view: 'toggle',
+    if: (object: THREE.Object3D) => !(object as THREE.Camera).isCamera
   },
   visible: {
     label: 'Visible',
-    view: 'toggle'
+    view: 'toggle',
+    if: (object: THREE.Object3D) => !(object as THREE.Camera).isCamera
   },
   material: {
     // for Mesh

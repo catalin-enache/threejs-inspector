@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import { ReactNode, StrictMode, useState, useEffect } from 'react';
 import { createRoot } from 'react-dom/client';
 import { Canvas } from '@react-three/fiber';
-import { CameraControls } from '@react-three/drei';
+import { CameraControls as _CameraControls, OrbitControls as _OrbitControls } from '@react-three/drei';
 import { Experience } from 'scenarios/Experience';
 import { Inspector } from 'lib/injectInspector';
 import './index.css';
@@ -82,10 +82,11 @@ export function App(props: AppProps) {
       }
       frameloop={'always'}
     >
-      <Inspector autoNavControls={false} customParams={customParams} />
+      <Inspector autoNavControls={true} customParams={customParams} />
       {/*dampingFactor={0.05} is default*/}
-      {/*<OrbitControls makeDefault={false} enableDamping={true} dampingFactor={0.1} />*/}
-      <CameraControls makeDefault={true} />
+      {/*<_OrbitControls makeDefault={true} enableDamping={true} dampingFactor={0.1} />*/}
+      {/*CameraControls do not allow controlling camera from outside*/}
+      <_CameraControls makeDefault={true} />
       {children}
     </Canvas>
   );

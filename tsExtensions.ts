@@ -71,6 +71,10 @@ export interface CubeCameraAsJson extends THREE.Object3DJSON {
 }
 
 declare module 'three' {
+  interface EventDispatcher {
+    clearListeners(type?: string): void;
+  }
+
   interface Object3D {
     __inspectorData: Partial<__inspectorData>;
     destroy: () => void;

@@ -284,6 +284,9 @@ const module: Module = {
   },
   setCurrentCamera(camera: THREE.PerspectiveCamera | THREE.OrthographicCamera) {
     this.currentCamera = camera;
+    if (this.transformControls) {
+      this.transformControls.camera = camera;
+    }
   },
   getOrbitControls() {
     return this.currentScene.__inspectorData.orbitControlsRef?.current;

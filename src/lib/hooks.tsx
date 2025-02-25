@@ -8,7 +8,7 @@ import { CPanel, CPanelProps } from 'components/CPanel/CPanel';
 import { KeyListener } from 'components/KeyListener';
 import patchThree from './patchThree';
 
-const { getCurrentScene } = patchThree;
+const { getCurrentScene, getCurrentCamera } = patchThree;
 
 let lastState: RootState;
 let lastXFrame: _XRFrame;
@@ -93,7 +93,7 @@ export const useDefaultSetup: UseInspector = ({
   onCPanelUnmounted
 } = {}) => {
   const currentCameraStateFake = useAppStore((state) => state.currentCameraStateFake);
-  const [camera, setCamera] = useState(getCurrentScene().__inspectorData.currentCamera);
+  const [camera, setCamera] = useState(getCurrentCamera());
 
   useEffect(() => {
     if (cameraType) {
@@ -103,7 +103,7 @@ export const useDefaultSetup: UseInspector = ({
 
   // cameraType in SetUp drives the currentCameraStateFake change
   useEffect(() => {
-    setCamera(getCurrentScene().__inspectorData.currentCamera);
+    setCamera(getCurrentCamera());
   }, [currentCameraStateFake]);
 
   const inspector = useMemo(() => {

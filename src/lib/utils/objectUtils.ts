@@ -128,7 +128,7 @@ export const deepTraverse = (
       if (field?.constructor?.name?.toLowerCase().includes('control')) {
         return;
       }
-      if (['_innerInspectorData', 'parent', 'hitRedirect', 'orbitControlsRef'].includes(key)) return;
+      if (['_innerInspectorData', 'parent', 'hitRedirect'].includes(key)) return;
       deepTraverse(field, callback, filter, [..._path, key], [..._ancestors, value], _encountered);
     });
   }

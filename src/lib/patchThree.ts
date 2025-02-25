@@ -22,6 +22,23 @@ import './patchCubeCamera';
 import type { __inspectorData } from 'tsExtensions';
 import { deepClean } from 'lib/utils/cleanUp';
 import type { RootState } from '@react-three/fiber';
+import { TransformControls } from 'three/examples/jsm/controls/TransformControls';
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
+
+THREE.EventDispatcher.prototype.clearListeners = (function () {
+  return function (type?: string) {
+    if (!type) {
+      // @ts-ignore
+      this._listeners = {};
+      return;
+    }
+    // @ts-ignore
+    const listeners = this._listeners[type];
+    if (listeners) {
+      listeners.length = 0;
+    }
+  };
+})();
 
 if (!Object.getPrototypeOf(THREE.Object3D.prototype).__inspectorData) {
   Object.defineProperty(THREE.Object3D.prototype, '__inspectorData', {
@@ -199,14 +216,13 @@ type Module = {
   getCurrentScene: () => THREE.Scene;
   setCurrentScene: (scene: THREE.Scene) => void;
   clearScene: () => void;
-  detachTransformControls: ({ resetSelectedObject }?: { resetSelectedObject?: boolean }) => void;
-  attachTransformControls: ({
-    selectedObject,
-    showHelper
-  }?: {
-    selectedObject?: THREE.Object3D | null;
-    showHelper?: boolean;
-  }) => void;
+  getCurrentCamera: () => THREE.Camera | null | undefined;
+  getOrbitControls: () => OrbitControls | null | undefined;
+  transformControls: TransformControls | null | undefined;
+  getTransformControls: () => TransformControls | null | undefined;
+  createTransformControls: () => void;
+  detachTransformControls: (_?: { resetSelectedObject?: boolean }) => void;
+  attachTransformControls: (_?: { selectedObject?: THREE.Object3D | null; showHelper?: boolean }) => void;
   showTransformControls: () => void;
   hideTransformControls: () => void;
   render: () => void;
@@ -258,40 +274,93 @@ const module: Module = {
     this.detachTransformControls({ resetSelectedObject: true });
     deepClean(this.currentScene);
   },
-  detachTransformControls({
-    resetSelectedObject = false
-  }: {
-    resetSelectedObject?: boolean;
-  } = {}) {
-    const transformControls = this.currentScene.__inspectorData.transformControlsRef?.current;
-    if (!transformControls) return;
-    transformControls.detach();
-    this.hideTransformControls();
-    resetSelectedObject && useAppStore.getState().setSelectedObject(null);
+  getCurrentCamera() {
+    return this.currentScene.__inspectorData.currentCamera;
+  },
+  getOrbitControls() {
+    return this.currentScene.__inspectorData.orbitControlsRef?.current;
+  },
+  transformControls: null,
+  getTransformControls() {
+    return this.transformControls;
+  },
+  createTransformControls() {
+    const transformControls = this.transformControls;
+    if (transformControls) {
+      return;
+    }
+
+    const camera = this.currentScene.__inspectorData.currentCamera;
+    const renderer = this.currentRenderer;
+    if (!camera || !renderer) {
+      return;
+    }
+
+    const handleTransformControlsObjectChange = (_event: THREE.Event<'objectChange', TransformControls>) => {
+      useAppStore.getState().triggerSelectedObjectChanged();
+    };
+
+    let orbitControlsEnabled = false;
+    // Preventing here for orbit controls to interfere with transform controls
+    const handleTransformControlsDraggingChanged = (event: any) => {
+      useAppStore.getState().setIsDraggingTransformControls(event.value);
+      const orbitControlsRef = this.currentScene.__inspectorData.orbitControlsRef;
+      if (!orbitControlsRef?.current) return;
+      if (event.value) {
+        orbitControlsEnabled = !!orbitControlsRef.current.enabled;
+        orbitControlsRef.current && (orbitControlsRef.current.enabled = false);
+      } else {
+        orbitControlsRef.current && (orbitControlsRef.current.enabled = orbitControlsEnabled);
+      }
+    };
+
+    this.transformControls = new TransformControls(camera, renderer.domElement);
+    this.transformControls.getHelper().name = 'DefaultTransformControls';
+    this.transformControls.addEventListener('objectChange', handleTransformControlsObjectChange);
+    this.transformControls.addEventListener('dragging-changed', handleTransformControlsDraggingChanged);
   },
   attachTransformControls({
     selectedObject = useAppStore.getState().getSelectedObject(),
     showHelper = useAppStore.getState().showGizmos
   }: { selectedObject?: THREE.Object3D | null; showHelper?: boolean } = {}) {
-    const transformControls = this.currentScene.__inspectorData.transformControlsRef?.current;
-    if (!transformControls || !selectedObject) return;
+    if (!selectedObject) {
+      return;
+    }
+    if (!this.transformControls) {
+      this.createTransformControls();
+    }
+    const transformControls = this.transformControls!;
     transformControls.attach(selectedObject);
     if (showHelper) {
       this.showTransformControls();
     }
   },
-  showTransformControls() {
-    const transformControls = this.currentScene.__inspectorData.transformControlsRef?.current;
+  detachTransformControls({ resetSelectedObject = false } = {}) {
+    const transformControls = this.transformControls;
     if (!transformControls) return;
+
+    if (resetSelectedObject) {
+      resetSelectedObject && useAppStore.getState().setSelectedObject(null);
+    }
+
+    this.hideTransformControls();
+    transformControls.detach();
+    transformControls.disconnect();
+    transformControls.dispose();
+    transformControls.clearListeners();
+    this.transformControls = null;
+  },
+  showTransformControls() {
+    if (!this.transformControls) return;
     // it will  not be added multiple times cos when adding something, three first removes it from parent
-    this.currentScene.add(transformControls.getHelper());
+    this.currentScene.add(this.transformControls.getHelper());
   },
   hideTransformControls() {
-    const transformControls = this.currentScene.__inspectorData.transformControlsRef?.current;
-    if (!transformControls) return;
-    transformControls.getHelper().removeFromParent();
+    if (!this.transformControls) return;
+    this.transformControls.getHelper().removeFromParent();
   },
   render() {
+    // TODO: should set the current camera on this as well as OrbitControls
     if (!this.currentRenderer || !this.currentScene || !this.currentScene.__inspectorData.currentCamera) return;
     this.currentRenderer?.render(this.currentScene, this.currentScene.__inspectorData.currentCamera);
   },
@@ -615,7 +684,7 @@ const module: Module = {
         this.subscriptions[obj.uuid].pop()!();
       }
 
-      // if (obj === this.currentScene.__inspectorData.transformControlsRef?.current?.object) {}
+      // if (obj === this.transformControls?.object) {}
       if (obj === useAppStore.getState().getSelectedObject()) {
         this.detachTransformControls({ resetSelectedObject: !obj.__inspectorData.isBeingAdded });
       }

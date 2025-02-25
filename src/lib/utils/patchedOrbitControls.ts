@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 
 export const getPatchedOrbitControls = (
-  camera: THREE.Camera,
+  camera: THREE.PerspectiveCamera | THREE.OrthographicCamera,
   canvas: HTMLCanvasElement,
   { usePointerLock = true } = {}
 ) => {

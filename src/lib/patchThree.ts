@@ -216,7 +216,9 @@ type Module = {
   getCurrentScene: () => THREE.Scene;
   setCurrentScene: (scene: THREE.Scene) => void;
   clearScene: () => void;
-  getCurrentCamera: () => THREE.Camera | null | undefined;
+  currentCamera: THREE.PerspectiveCamera | THREE.OrthographicCamera;
+  getCurrentCamera: () => THREE.PerspectiveCamera | THREE.OrthographicCamera;
+  setCurrentCamera: (camera: THREE.PerspectiveCamera | THREE.OrthographicCamera) => void;
   getOrbitControls: () => OrbitControls | null | undefined;
   transformControls: TransformControls | null | undefined;
   getTransformControls: () => TransformControls | null | undefined;
@@ -238,8 +240,8 @@ type Module = {
   defaultOrthographicCamera: THREE.OrthographicCamera;
   cameraToUseOnPlay: THREE.PerspectiveCamera | THREE.OrthographicCamera | null;
   getCameraToUseOnPlay: () => THREE.PerspectiveCamera | THREE.OrthographicCamera | null;
-  shouldUseFlyControls: (camera: THREE.Camera) => boolean;
-  getIsPlayingCamera: (camera: THREE.Camera) => boolean;
+  shouldUseFlyControls: (camera: THREE.PerspectiveCamera | THREE.OrthographicCamera) => boolean;
+  getIsPlayingCamera: (camera: THREE.PerspectiveCamera | THREE.OrthographicCamera) => boolean;
   isSafeToMakeHelpers: boolean;
   updateHelper: (helper: __inspectorData['helper']) => void;
   updateDependants: (object: THREE.Object3D) => void;
@@ -274,8 +276,14 @@ const module: Module = {
     this.detachTransformControls({ resetSelectedObject: true });
     deepClean(this.currentScene);
   },
+  // defaultPerspectiveCamera and defaultOrthographicCamera and cameraToUseOnPlay are used in App (when !isInjected)
+  currentCamera:
+    useAppStore.getState().cameraType === 'perspective' ? defaultPerspectiveCamera : defaultOrthographicCamera,
   getCurrentCamera() {
-    return this.currentScene.__inspectorData.currentCamera;
+    return this.currentCamera;
+  },
+  setCurrentCamera(camera: THREE.PerspectiveCamera | THREE.OrthographicCamera) {
+    this.currentCamera = camera;
   },
   getOrbitControls() {
     return this.currentScene.__inspectorData.orbitControlsRef?.current;
@@ -290,7 +298,7 @@ const module: Module = {
       return;
     }
 
-    const camera = this.currentScene.__inspectorData.currentCamera;
+    const camera = this.getCurrentCamera();
     const renderer = this.currentRenderer;
     if (!camera || !renderer) {
       return;
@@ -361,8 +369,8 @@ const module: Module = {
   },
   render() {
     // TODO: should set the current camera on this as well as OrbitControls
-    if (!this.currentRenderer || !this.currentScene || !this.currentScene.__inspectorData.currentCamera) return;
-    this.currentRenderer?.render(this.currentScene, this.currentScene.__inspectorData.currentCamera);
+    if (!this.currentRenderer || !this.currentScene || !this.getCurrentCamera()) return;
+    this.currentRenderer?.render(this.currentScene, this.getCurrentCamera()!);
   },
   interactableObjects: {},
   subscriptions: {},
@@ -385,7 +393,7 @@ const module: Module = {
     return this.cameraToUseOnPlay;
   },
 
-  shouldUseFlyControls(camera: THREE.Camera) {
+  shouldUseFlyControls(camera: THREE.PerspectiveCamera | THREE.OrthographicCamera) {
     const isPlayingCamera = this.getIsPlayingCamera(camera);
     const autoNavControls = useAppStore.getState().autoNavControls;
     const attachDefaultControllersToPlayingCamera = useAppStore.getState().attachDefaultControllersToPlayingCamera;
@@ -420,7 +428,7 @@ const module: Module = {
     }
   },
 
-  getIsPlayingCamera(camera: THREE.Camera): boolean {
+  getIsPlayingCamera(camera: THREE.PerspectiveCamera | THREE.OrthographicCamera): boolean {
     return !!camera.__inspectorData.useOnPlay;
   },
 
@@ -502,7 +510,7 @@ const module: Module = {
     // TODO: check other included helpers (e.g. OctreeHelper)
     const helper: THREE.Object3D['__inspectorData']['helper'] = hasSkeleton
       ? new THREE.SkeletonHelper(object)
-      : object instanceof THREE.Camera
+      : object instanceof THREE.PerspectiveCamera || object instanceof THREE.OrthographicCamera
         ? new THREE.CameraHelper(object)
         : object instanceof THREE.RectAreaLight
           ? new RectAreaLightHelper(object)
@@ -541,7 +549,7 @@ const module: Module = {
                 ? new CubeCameraPicker(object, { size: helperSize })
                 : object instanceof THREE.SpotLight
                   ? new SpotLightPicker(object, { size: helperSize })
-                  : object instanceof THREE.Camera
+                  : object instanceof THREE.PerspectiveCamera || object instanceof THREE.OrthographicCamera
                     ? new CameraPicker(object, { size: helperSize })
                     : new Follower(object, { size: helperSize, geometry: pickerGeometry });
 
@@ -718,10 +726,6 @@ const module: Module = {
 };
 
 module.updateCameras();
-
-// defaultPerspectiveCamera and defaultOrthographicCamera and cameraToUseOnPlay are used in App (when !isInjected)
-module.currentScene.__inspectorData.currentCamera =
-  useAppStore.getState().cameraType === 'perspective' ? defaultPerspectiveCamera : defaultOrthographicCamera;
 
 Object.keys(module).forEach((key) => {
   const typedKey = key as keyof typeof module;

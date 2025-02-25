@@ -3,7 +3,7 @@ import { useFrame, useThree } from '@react-three/fiber';
 import { useEffect, useRef } from 'react';
 import { getSceneBoundingBoxSize } from 'lib/utils/sizeUtils';
 
-const setupFlyControls = (camera: THREE.Camera, scene: THREE.Scene) => {
+const setupFlyControls = (camera: THREE.PerspectiveCamera | THREE.OrthographicCamera, scene: THREE.Scene) => {
   let moveForward = false;
   let moveBackward = false;
   let moveLeft = false;

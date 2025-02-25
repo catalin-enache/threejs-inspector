@@ -6,7 +6,6 @@ import { RectAreaLightUniformsLib } from 'three/examples/jsm/lights/RectAreaLigh
 import { FlyControls } from 'components/FlyControls';
 import { useAppStore } from 'src/store';
 import patchThree from 'lib/patchThree';
-import { getPatchedOrbitControls } from 'lib/utils/patchedOrbitControls';
 // @ts-ignore
 import { outliner } from 'lib/third_party/ui.outliner';
 
@@ -14,7 +13,6 @@ const {
   getCurrentScene,
   setCurrentScene,
   setCurrentRenderer,
-  getIsPlayingCamera,
   getCameraToUseOnPlay,
   updateCameras,
   shouldUseFlyControls,
@@ -38,7 +36,7 @@ export enum SETUP_EFFECT {
 const threeFields = ['camera', 'gl', 'raycaster', 'pointer', 'scene'] as (keyof RootState)[];
 
 export interface SetUpProps {
-  orbitControls?: OrbitControls | null;
+  cameraControls?: OrbitControls | null;
   autoNavControls: boolean; // considered when orbitControls is falsy
   isInjected?: boolean;
   // for tests
@@ -48,7 +46,7 @@ export interface SetUpProps {
 
 const SetUp = (props: SetUpProps) => {
   const {
-    orbitControls: inspectorOrbitControls = null,
+    cameraControls: inspectorCameraControls = null,
     // if using drei camera controls (especially with makeDefault false),
     // set autoNavControls to false, else will conflict
     // when drei camera controls has makeDefault true, orbitControls will be retrieved from the controls from useThree()
@@ -64,7 +62,7 @@ const SetUp = (props: SetUpProps) => {
 
   patchThree.setThreeRootState(three);
 
-  const orbitControls = inspectorOrbitControls ?? controls;
+  const receivedCameraControls = inspectorCameraControls ?? controls;
 
   const setIsInjected = useAppStore((state) => state.setIsInjected);
   const setAutoNavControls = useAppStore((state) => state.setAutoNavControls);
@@ -83,16 +81,16 @@ const SetUp = (props: SetUpProps) => {
   const transformControlsMode = useAppStore((state) => state.transformControlsMode);
   const transformControlsSpace = useAppStore((state) => state.transformControlsSpace);
 
-  const orbitControlsRef = useRef<OrbitControls | null | undefined>(null);
   const hitsRef = useRef<THREE.Intersection<THREE.Object3D>[]>([]);
   const lastHitRef = useRef<THREE.Intersection<THREE.Object3D> | null>(null);
-  const targetPositionRef = useRef<THREE.Vector3>(new THREE.Vector3());
 
   const cacheRef = useRef<any>({});
 
   useFrame(() => {
-    if (orbitControlsRef.current?.enabled && orbitControlsRef.current?.enableDamping) {
-      orbitControlsRef.current?.update();
+    const cameraControls = patchThree.getCameraControls();
+    if (!cameraControls) return;
+    if (cameraControls.enabled && cameraControls.enableDamping) {
+      cameraControls.update();
     }
   });
 
@@ -125,13 +123,9 @@ const SetUp = (props: SetUpProps) => {
   // defaultScene will be replaced by new scene when injected, and it will happen only once.
   // R3F does not support changing the scene after the initial configuration.
   useEffect(() => {
-    scene.__inspectorData.orbitControlsRef = orbitControlsRef;
-    const oldScene = getCurrentScene();
-
     outliner.scene = scene;
-
-    if (scene === getCurrentScene()) {
-      // prevent re-adding camera helpers once they were removed when playing
+    const oldScene = getCurrentScene();
+    if (scene === oldScene) {
       return;
     }
 
@@ -180,53 +174,13 @@ const SetUp = (props: SetUpProps) => {
       transformControls.setMode(transformControlsMode); // translate | rotate | scale
       transformControls.setSpace(transformControlsSpace); // local | world
     } else {
-      patchThree.detachTransformControls({ resetSelectedObject: !selectedObjectUUID });
+      patchThree.disposeTransformControls({ resetSelectedObject: !selectedObjectUUID });
     }
   }, [selectedObjectUUID, showGizmos, transformControlsMode, transformControlsSpace]);
 
-  // Update ObitControls (target, camera, enabled) and TransformControls camera
   useEffect(() => {
     patchThree.setCurrentCamera(camera); // used in App when !isInjected
     updateCameras();
-    if (!orbitControlsRef.current) return;
-
-    // We react to cameraControl too so that we can preserve the camera position
-    // when switching from fly to orbit controls on the same camera
-
-    // distance affects zoom behaviour, OrbitControls assume camera is rotating around 0,0,0
-    // the closer to 0,0,0 the less zoom is done
-    // Even if camera is looking elsewhere we take 0,0,0 as an arbitrary reference
-    const distance = camera.position.length();
-    const cameraDirection = new THREE.Vector3();
-    camera.getWorldDirection(cameraDirection);
-    cameraDirection.multiplyScalar(distance);
-    targetPositionRef.current = camera.position.clone().add(cameraDirection);
-
-    // Here's an experiment for understanding why camera rotation is changed for the first time it gets controlled by OrbitControls.
-    // Explanation is that initial camera rotation is most likely NOT aligned with the world up vector.
-    // Inside OrbitControls.update when lookAt is called, the lookAt function, by design,
-    // is aligning camera up vector with the world up vector.
-    // This experiment adjusts the uo vector based on camera rotation which results in no shifting when camera is attached to OrbitControls.
-    // However, the navigation will be more or less chaotic depending on how much the camera up vector is not aligned with world up vector.
-    // const localUp = new THREE.Vector3(0, 1, 0); // Local up vector
-    // const rotatedUp = localUp.applyQuaternion(camera.quaternion);
-    // camera.up.copy(rotatedUp);
-    // camera.lookAt(targetPositionRef.current);
-
-    orbitControlsRef.current.object = camera;
-    orbitControlsRef.current.target?.set(
-      targetPositionRef.current.x,
-      targetPositionRef.current.y,
-      targetPositionRef.current.z
-    );
-    // compatible with https://github.com/yomotsu/camera-controls
-    // @ts-ignore
-    orbitControlsRef.current.setTarget?.(
-      targetPositionRef.current.x,
-      targetPositionRef.current.y,
-      targetPositionRef.current.z
-    );
-    orbitControlsRef.current.update();
   }, [camera]);
 
   // On scene double click, set select object
@@ -276,46 +230,28 @@ const SetUp = (props: SetUpProps) => {
 
   useEffect(() => {
     return () => {
-      orbitControlsRef.current?.dispose();
+      patchThree.disposeCameraControls();
+      patchThree.disposeTransformControls({ resetSelectedObject: true });
     };
   }, []);
 
   useEffect(() => {
-    // Create/Enable/Disable orbit controls
-    // The playing camera is set by the App in the scene and received here after that
-
-    if (orbitControlsRef.current) {
-      // prevent having more orbit controls active at the same time
-      // for the case where orbit controls are injected, and we don't need our default orbit controls active
-      orbitControlsRef.current.enabled = false;
-    }
-    const oldOrbitControls = orbitControlsRef.current;
-
-    orbitControlsRef.current =
-      orbitControls ||
-      (autoNavControls && !orbitControlsRef.current
-        ? // TODO: try to simplify the logic here, also, maybe use CameraControl
-          // TODO set OrbitControls on patchThree rather than on scene.__inspectorData
-          getPatchedOrbitControls(camera, gl.domElement, { usePointerLock: true })
-        : orbitControlsRef.current);
-
-    if (oldOrbitControls && oldOrbitControls !== orbitControlsRef.current) {
-      // @ts-ignore
-      oldOrbitControls.disconnect?.();
-      oldOrbitControls.dispose();
-    }
-
-    if (orbitControlsRef.current) {
-      orbitControlsRef.current.enabled =
-        cameraControl === 'orbit' && (!getIsPlayingCamera(camera) || attachDefaultControllersToPlayingCamera);
-    }
-
+    const nextCameraControls = patchThree.getNextCameraControls({
+      receivedCameraControls,
+      cameraControl,
+      autoNavControls,
+      camera,
+      renderer: gl,
+      attachDefaultControllersToPlayingCamera
+    });
     onSetupEffect?.(SETUP_EFFECT.ORBIT_CONTROLS, {
-      orbitControlsInUse: orbitControlsRef.current,
-      orbitControlsReceived: orbitControls
+      orbitControlsInUse: nextCameraControls,
+      orbitControlsReceived: receivedCameraControls
     });
   }, [
-    orbitControls,
+    // all these deps needs to be here to re-trigger getNextCameraControls
+    // even if patchThree.getNextCameraControls can fetch them from internal state
+    receivedCameraControls,
     cameraControl,
     autoNavControls,
     camera,
@@ -326,7 +262,8 @@ const SetUp = (props: SetUpProps) => {
 
   // allow rerender when frameloop is 'demand'
   useEffect(() => {
-    if (!orbitControlsRef.current) return;
+    const cameraControls = patchThree.getCameraControls();
+    if (!cameraControls) return;
 
     let animFrameId: number;
     const _render = () => {
@@ -334,8 +271,8 @@ const SetUp = (props: SetUpProps) => {
       render();
     };
     const renderWithDumping = () => {
-      if (!orbitControlsRef.current?.enableDamping) return;
-      let dumpingFactor = ((orbitControlsRef.current?.dampingFactor || 0) + 0.3) * 1000;
+      if (!cameraControls.enableDamping) return;
+      let dumpingFactor = ((cameraControls.dampingFactor || 0) + 0.3) * 1000;
       let prevTime = new Date();
       const reRender = () => {
         const now = new Date();
@@ -343,7 +280,7 @@ const SetUp = (props: SetUpProps) => {
         prevTime = new Date();
         dumpingFactor -= delta;
         if (dumpingFactor > 0) {
-          orbitControlsRef.current?.update();
+          cameraControls.update();
           render();
           animFrameId = window.requestAnimationFrame(reRender);
         }
@@ -352,14 +289,14 @@ const SetUp = (props: SetUpProps) => {
     };
 
     // @ts-ignore
-    if (/*orbitControlsRef.current.isPatched &&*/ frameloop === 'demand') {
-      orbitControlsRef.current.addEventListener('change', _render);
-      orbitControlsRef.current.addEventListener('end', renderWithDumping);
+    if (/* cameraControls.isPatched && */ frameloop === 'demand') {
+      cameraControls.addEventListener('change', _render);
+      cameraControls.addEventListener('end', renderWithDumping);
     }
 
     return () => {
-      orbitControlsRef.current?.removeEventListener('change', _render);
-      orbitControlsRef.current?.removeEventListener('end', renderWithDumping);
+      cameraControls?.removeEventListener('change', _render);
+      cameraControls?.removeEventListener('end', renderWithDumping);
       window.cancelAnimationFrame(animFrameId);
     };
   }, [render, frameloop]);

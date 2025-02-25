@@ -1,4 +1,7 @@
 import * as THREE from 'three';
+import type { RootState } from '@react-three/fiber';
+import { TransformControls } from 'three/examples/jsm/controls/TransformControls';
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import { RectAreaLightHelper } from 'three/examples/jsm/helpers/RectAreaLightHelper';
 import { LightProbeHelper } from 'three/examples/jsm/helpers/LightProbeHelper';
 import { PositionalAudioHelper } from 'three/examples/jsm/helpers/PositionalAudioHelper';
@@ -21,9 +24,8 @@ import {
 import './patchCubeCamera';
 import type { __inspectorData } from 'tsExtensions';
 import { deepClean } from 'lib/utils/cleanUp';
-import type { RootState } from '@react-three/fiber';
-import { TransformControls } from 'three/examples/jsm/controls/TransformControls';
-import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
+
+import { getPatchedOrbitControls } from 'lib/utils/patchedOrbitControls';
 
 THREE.EventDispatcher.prototype.clearListeners = (function () {
   return function (type?: string) {
@@ -219,12 +221,23 @@ type Module = {
   currentCamera: THREE.PerspectiveCamera | THREE.OrthographicCamera;
   getCurrentCamera: () => THREE.PerspectiveCamera | THREE.OrthographicCamera;
   setCurrentCamera: (camera: THREE.PerspectiveCamera | THREE.OrthographicCamera) => void;
-  getOrbitControls: () => OrbitControls | null | undefined;
+  cameraControls: OrbitControls | null | undefined;
+  getNextCameraControls: (_: {
+    receivedCameraControls?: THREE.EventDispatcher | null;
+    cameraControl?: 'fly' | 'orbit';
+    autoNavControls?: boolean;
+    camera?: THREE.PerspectiveCamera | THREE.OrthographicCamera;
+    renderer?: THREE.WebGLRenderer;
+    attachDefaultControllersToPlayingCamera?: boolean;
+  }) => void;
+  getCameraControls: () => OrbitControls | null | undefined;
+  setCameraControls: (cameraControls: OrbitControls) => void;
+  disposeCameraControls: () => void;
   transformControls: TransformControls | null | undefined;
   getTransformControls: () => TransformControls | null | undefined;
   createTransformControls: () => void;
-  detachTransformControls: (_?: { resetSelectedObject?: boolean }) => void;
   attachTransformControls: (_?: { selectedObject?: THREE.Object3D | null; showHelper?: boolean }) => void;
+  disposeTransformControls: (_?: { resetSelectedObject?: boolean }) => void;
   showTransformControls: () => void;
   hideTransformControls: () => void;
   render: () => void;
@@ -241,7 +254,7 @@ type Module = {
   cameraToUseOnPlay: THREE.PerspectiveCamera | THREE.OrthographicCamera | null;
   getCameraToUseOnPlay: () => THREE.PerspectiveCamera | THREE.OrthographicCamera | null;
   shouldUseFlyControls: (camera: THREE.PerspectiveCamera | THREE.OrthographicCamera) => boolean;
-  getIsPlayingCamera: (camera: THREE.PerspectiveCamera | THREE.OrthographicCamera) => boolean;
+  getIsUseOnPlayCamera: (camera: THREE.PerspectiveCamera | THREE.OrthographicCamera) => boolean;
   isSafeToMakeHelpers: boolean;
   updateHelper: (helper: __inspectorData['helper']) => void;
   updateDependants: (object: THREE.Object3D) => void;
@@ -263,6 +276,7 @@ const module: Module = {
   getThreeRootState() {
     return this.threeRootState;
   },
+
   currentScene: defaultScene,
   getCurrentScene() {
     return this.currentScene;
@@ -273,9 +287,10 @@ const module: Module = {
   },
   clearScene() {
     window.dispatchEvent(new CustomEvent('TIFMK.ClearScene'));
-    this.detachTransformControls({ resetSelectedObject: true });
+    this.disposeTransformControls({ resetSelectedObject: true });
     deepClean(this.currentScene);
   },
+
   // defaultPerspectiveCamera and defaultOrthographicCamera and cameraToUseOnPlay are used in App (when !isInjected)
   currentCamera:
     useAppStore.getState().cameraType === 'perspective' ? defaultPerspectiveCamera : defaultOrthographicCamera,
@@ -287,10 +302,109 @@ const module: Module = {
     if (this.transformControls) {
       this.transformControls.camera = camera;
     }
+    if (this.cameraControls) {
+      // We react to cameraControl too so that we can preserve the camera position
+      // when switching from fly to orbit controls on the same camera
+
+      // distance affects zoom behaviour, OrbitControls assume camera is rotating around 0,0,0
+      // the closer to 0,0,0 the less zoom is done
+      // Even if camera is looking elsewhere we take 0,0,0 as an arbitrary reference
+      let targetPosition = new THREE.Vector3();
+      const distance = camera.position.length();
+      const cameraDirection = new THREE.Vector3();
+      camera.getWorldDirection(cameraDirection);
+      cameraDirection.multiplyScalar(distance);
+      targetPosition = camera.position.clone().add(cameraDirection);
+
+      // Here's an experiment for understanding why camera rotation is changed for the first time it gets controlled by OrbitControls.
+      // Explanation is that initial camera rotation is most likely NOT aligned with the world up vector.
+      // Inside OrbitControls.update when lookAt is called, the lookAt function, by design,
+      // is aligning camera up vector with the world up vector.
+      // This experiment adjusts the up vector based on camera rotation which results in no shifting when camera is attached to OrbitControls.
+      // However, the navigation will be more or less chaotic depending on how much the camera up vector is not aligned with world up vector.
+      // const localUp = new THREE.Vector3(0, 1, 0); // Local up vector
+      // const rotatedUp = localUp.applyQuaternion(camera.quaternion);
+      // camera.up.copy(rotatedUp);
+      // camera.lookAt(targetPositionRef.current);
+
+      if (this.cameraControls.object) {
+        this.cameraControls.object = camera;
+        // compatible with https://github.com/yomotsu/camera-controls
+        // @ts-ignore
+      } else if (this.cameraControls.camera) {
+        // @ts-ignore
+        this.cameraControls.camera = camera;
+      }
+
+      this.cameraControls.target?.set(targetPosition.x, targetPosition.y, targetPosition.z);
+      // compatible with https://github.com/yomotsu/camera-controls
+      // @ts-ignore
+      this.cameraControls.setTarget?.(targetPosition.x, targetPosition.y, targetPosition.z);
+      this.cameraControls.update();
+    }
   },
-  getOrbitControls() {
-    return this.currentScene.__inspectorData.orbitControlsRef?.current;
+
+  cameraControls: null,
+  getNextCameraControls(
+    this: typeof module,
+    {
+      receivedCameraControls,
+      camera = this.currentCamera,
+      renderer = this.currentRenderer,
+      cameraControl = useAppStore.getState().cameraControl,
+      autoNavControls = useAppStore.getState().autoNavControls,
+      attachDefaultControllersToPlayingCamera = useAppStore.getState().attachDefaultControllersToPlayingCamera
+    }
+  ) {
+    if (!camera || !renderer) {
+      return;
+    }
+
+    const existingCameraControls = this.getCameraControls();
+    const isUseOnPlayCamera = this.getIsUseOnPlayCamera(camera);
+
+    const nextCameraControls =
+      receivedCameraControls ||
+      (autoNavControls && !existingCameraControls
+        ? getPatchedOrbitControls(camera, renderer.domElement, { usePointerLock: true })
+        : existingCameraControls);
+
+    if (existingCameraControls && existingCameraControls !== nextCameraControls) {
+      // @ts-ignore
+      this.disposeCameraControls();
+    }
+
+    if (nextCameraControls) {
+      // compare with shouldUseFlyControls
+      const shouldEnable = cameraControl === 'orbit' && (!isUseOnPlayCamera || attachDefaultControllersToPlayingCamera);
+      if (shouldEnable) {
+        nextCameraControls.enabled = true;
+        nextCameraControls.disconnect();
+        nextCameraControls.connect();
+      } else {
+        nextCameraControls.enabled = false;
+        nextCameraControls.disconnect();
+      }
+    }
+
+    this.setCameraControls(nextCameraControls);
+    return nextCameraControls;
   },
+  getCameraControls() {
+    return this.cameraControls;
+  },
+  setCameraControls(cameraControls: OrbitControls) {
+    this.cameraControls = cameraControls;
+  },
+  disposeCameraControls() {
+    if (!this.cameraControls) return;
+    this.cameraControls.enabled = false;
+    this.cameraControls.disconnect();
+    this.cameraControls.dispose();
+    this.cameraControls.clearListeners();
+    this.cameraControls = null;
+  },
+
   transformControls: null,
   getTransformControls() {
     return this.transformControls;
@@ -311,17 +425,19 @@ const module: Module = {
       useAppStore.getState().triggerSelectedObjectChanged();
     };
 
-    let orbitControlsEnabled = false;
+    let cameraControlsEnabled = false;
     // Preventing here for orbit controls to interfere with transform controls
     const handleTransformControlsDraggingChanged = (event: any) => {
       useAppStore.getState().setIsDraggingTransformControls(event.value);
-      const orbitControlsRef = this.currentScene.__inspectorData.orbitControlsRef;
-      if (!orbitControlsRef?.current) return;
+      const cameraControls = this.getCameraControls();
+      if (!cameraControls) return;
       if (event.value) {
-        orbitControlsEnabled = !!orbitControlsRef.current.enabled;
-        orbitControlsRef.current && (orbitControlsRef.current.enabled = false);
+        cameraControlsEnabled = !!cameraControls.enabled;
+        cameraControls.enabled = false;
+        // cameraControls.disconnect(); // not needed
       } else {
-        orbitControlsRef.current && (orbitControlsRef.current.enabled = orbitControlsEnabled);
+        cameraControls.enabled = cameraControlsEnabled;
+        // cameraControls.connect(); // not needed
       }
     };
 
@@ -330,6 +446,7 @@ const module: Module = {
     this.transformControls.addEventListener('objectChange', handleTransformControlsObjectChange);
     this.transformControls.addEventListener('dragging-changed', handleTransformControlsDraggingChanged);
   },
+
   attachTransformControls({
     selectedObject = useAppStore.getState().getSelectedObject(),
     showHelper = useAppStore.getState().showGizmos
@@ -346,7 +463,8 @@ const module: Module = {
       this.showTransformControls();
     }
   },
-  detachTransformControls({ resetSelectedObject = false } = {}) {
+
+  disposeTransformControls({ resetSelectedObject = false } = {}) {
     const transformControls = this.transformControls;
     if (!transformControls) return;
 
@@ -361,15 +479,18 @@ const module: Module = {
     transformControls.clearListeners();
     this.transformControls = null;
   },
+
   showTransformControls() {
     if (!this.transformControls) return;
     // it will  not be added multiple times cos when adding something, three first removes it from parent
     this.currentScene.add(this.transformControls.getHelper());
   },
+
   hideTransformControls() {
     if (!this.transformControls) return;
     this.transformControls.getHelper().removeFromParent();
   },
+
   render() {
     // TODO: should set the current camera on this as well as OrbitControls
     if (!this.currentRenderer || !this.currentScene || !this.getCurrentCamera()) return;
@@ -397,14 +518,12 @@ const module: Module = {
   },
 
   shouldUseFlyControls(camera: THREE.PerspectiveCamera | THREE.OrthographicCamera) {
-    const isPlayingCamera = this.getIsPlayingCamera(camera);
+    const isUseOnPlayCamera = this.getIsUseOnPlayCamera(camera);
     const autoNavControls = useAppStore.getState().autoNavControls;
     const attachDefaultControllersToPlayingCamera = useAppStore.getState().attachDefaultControllersToPlayingCamera;
     const cameraControl = useAppStore.getState().cameraControl;
     return (
-      autoNavControls &&
-      ((isPlayingCamera && attachDefaultControllersToPlayingCamera && cameraControl === 'fly') ||
-        (!isPlayingCamera && cameraControl === 'fly'))
+      autoNavControls && cameraControl === 'fly' && (!isUseOnPlayCamera || attachDefaultControllersToPlayingCamera)
     );
   },
 
@@ -431,7 +550,7 @@ const module: Module = {
     }
   },
 
-  getIsPlayingCamera(camera: THREE.PerspectiveCamera | THREE.OrthographicCamera): boolean {
+  getIsUseOnPlayCamera(camera: THREE.PerspectiveCamera | THREE.OrthographicCamera): boolean {
     return !!camera.__inspectorData.useOnPlay;
   },
 
@@ -697,7 +816,7 @@ const module: Module = {
 
       // if (obj === this.transformControls?.object) {}
       if (obj === useAppStore.getState().getSelectedObject()) {
-        this.detachTransformControls({ resetSelectedObject: !obj.__inspectorData.isBeingAdded });
+        this.disposeTransformControls({ resetSelectedObject: !obj.__inspectorData.isBeingAdded });
       }
 
       delete this.interactableObjects[obj.uuid];

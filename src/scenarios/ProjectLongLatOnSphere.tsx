@@ -29,10 +29,7 @@ export function ProjectLongLatOnSphere() {
 
   useEffect(() => {
     useAppStore.getState().setCameraType('orthographic');
-    const currentCamera = patchThree.getCurrentScene().__inspectorData.currentCamera;
-    if (!currentCamera) {
-      return;
-    }
+    const currentCamera = patchThree.getCurrentCamera();
     currentCamera.position.set(-12, 0, 0);
     currentCamera.rotation.set(0, -90, 0);
     currentCamera.zoom = 31;

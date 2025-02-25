@@ -86,11 +86,44 @@ However, to test with multi texture bindings later
 
 Why on loading Jenifer the body texture changes luminosity after expanding body texture in CPanel ? *DONE* (because binding ranges did override initial values for IOR )
 
+CubeCamera remove/add cycle adds a new texture each time. This happens in a not cleared scene.
+In a cleared scene it doesn't happen.
+It is CanvasTexture which is deleted then added back for whatever reason.
+*DONE* (because another texture in th scene used directly the shadowMapMaterial custom shader used by TexturePlugin)
 
+Playing with custom controls advances the playing of the scene. Why ?
+The same happens when changing the window size.
+Related: CustomControls issue with usePlay - not stopping (see Experience)
+*DONE* fixed usePlay hook to not call boundCallback for stopped/pause when playingStateChanged is false. also added deps.
 
-Add a object/scene save and load button using three serialization.
+setFrameloop('never') conflicts with usePlay hook.
+*DONE* usePlay just overrides 'never' to 'always'
+
+Add a button on the scene panel to update CubeCameras on demand. *DONE*
+
 
 Remove everything from the scene and check geometries in scene renderer info, They should be 0.
+*DONE* they cannot be 0 due to internals of three, but they do not leak.
+
+In 'demand' mode we still need to allow object changes from CPanel to be reflected in the scene.
+*DONE* by adding change listeners on specific folders.
+
+TransformControls add their own geometry every cycle.
+Probably for better to remove TransformControls from the scene when not needed?
+*DONE*
+
+
+When loading CubeCamera no longer in the scene but still in memory. TransformControls are complaining.
+Does not happen with other objects like DirectionalLight.
+*DONE*
+
+
+
+
+
+
+
+
 
 Make sure we can use Experience and lib helpers without patchingThree or without using Setup and Inspector
 
@@ -163,5 +196,5 @@ Cleanup package.json
 
 Normalize all handlers to pointer instead of mouse ? Not sure if needed.
 
-
+Need another kind of serialization to be done later on a real project.
 

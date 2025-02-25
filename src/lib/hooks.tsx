@@ -94,6 +94,7 @@ export const useDefaultSetup: UseInspector = ({
 } = {}) => {
   const currentCameraStateFake = useAppStore((state) => state.currentCameraStateFake);
   const [camera, setCamera] = useState(getCurrentCamera());
+  const currentFrameLoopRef = useRef<RootState['frameloop'] | ''>('');
 
   useEffect(() => {
     if (cameraType) {
@@ -103,8 +104,13 @@ export const useDefaultSetup: UseInspector = ({
 
   // cameraType in SetUp drives the currentCameraStateFake change
   useEffect(() => {
+    currentFrameLoopRef.current = patchThree.getThreeRootState()?.frameloop || '';
     setCamera(getCurrentCamera());
   }, [currentCameraStateFake]);
+
+  useEffect(() => {
+    patchThree.getThreeRootState()?.setFrameloop?.(currentFrameLoopRef.current || 'always');
+  }, [camera]);
 
   const inspector = useMemo(() => {
     return (

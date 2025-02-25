@@ -11,7 +11,7 @@ export const focusCamera = ({
 }: {
   transformControls?: TransformControls | null;
   orbitControls?: OrbitControls | null;
-  camera?: THREE.Camera | null;
+  camera?: THREE.PerspectiveCamera | THREE.OrthographicCamera | null;
 } = {}) => {
   if (!camera) return;
   const focusOn = new THREE.Vector3(); // center of the stage by default
@@ -37,7 +37,7 @@ export const resetCamera = ({
   orbitControls = patchThree.getOrbitControls()
 }: {
   code: string;
-  camera?: THREE.Camera | null;
+  camera?: THREE.PerspectiveCamera | THREE.OrthographicCamera | null;
   orbitControls?: OrbitControls | null;
 }) => {
   if (!camera) return;
@@ -81,7 +81,7 @@ export const project3DCoordinateOnCamera = ({
   sceneSize,
   object
 }: {
-  camera: THREE.Camera;
+  camera: THREE.PerspectiveCamera | THREE.OrthographicCamera;
   sceneSize: SceneSize;
   object: THREE.Object3D;
 }) => {

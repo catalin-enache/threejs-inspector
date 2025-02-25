@@ -2,9 +2,9 @@ import { useCallback, useEffect, useRef } from 'react';
 import * as THREE from 'three';
 import { Modal } from 'components/Modal/Modal';
 import { useAppStore } from 'src/store';
-import { loadModel } from 'lib/utils/loadModel';
+import { loadObject } from 'lib/utils/loadObject';
 import patchThree from 'lib/patchThree';
-import './LoadModelForm.css';
+import './LoadObjectForm.css';
 
 // model extensions
 const rootExtensions = ['.glb', '.gltf', '.obj', '.fbx', '.dae', '.3ds', '.stl', '.ply', '.vtk'];
@@ -34,16 +34,16 @@ const allowedExtensions = [
   '.ejson'
 ];
 
-interface LoadModelFormProps {
+interface LoadObjectFormProps {
   scene: THREE.Scene;
   camera: THREE.PerspectiveCamera | THREE.OrthographicCamera;
 }
 
 // Using imperative DOM since we cannot use React predefined elements inside R3F canvas.
-export const LoadModelForm = (props: LoadModelFormProps) => {
+export const LoadObjectForm = (props: LoadObjectFormProps) => {
   const { scene, camera } = props;
-  const loadAssetIsOpen = useAppStore((state) => state.loadModelIsOpen);
-  const setLoadAssetIsOpen = useAppStore((state) => state.setLoadModelIsOpen);
+  const loadAssetIsOpen = useAppStore((state) => state.loadObjectIsOpen);
+  const setLoadAssetIsOpen = useAppStore((state) => state.setLoadObjectIsOpen);
   const contentRef = useRef<any>(null);
   const changeGeometry = useRef<'indexed' | 'non-indexed' | undefined>(undefined);
   const autoScaleRatio = useRef<number>(0.4);
@@ -58,7 +58,7 @@ export const LoadModelForm = (props: LoadModelFormProps) => {
     // This runs only once until the page is refreshed.
     // The HTML is reused as well as the state.
     const content = document.createElement('div');
-    content.className = 'loadModel';
+    content.className = 'loadObject';
     content.innerHTML = `
       <div>
         <div class="formRow">
@@ -138,7 +138,7 @@ export const LoadModelForm = (props: LoadModelFormProps) => {
       uploadInput.value = '';
       // this is for importing JSON scenario.
       patchThree.isSafeToMakeHelpers = false;
-      loadModel(filesArray, {
+      loadObject(filesArray, {
         scene,
         camera,
         changeGeometry: changeGeometry.current, // 'indexed' | 'non-indexed'

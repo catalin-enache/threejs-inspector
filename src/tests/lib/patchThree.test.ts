@@ -8,7 +8,7 @@ import { useAppStore } from 'src/store';
 import { TransformControls } from 'three/examples/jsm/controls/TransformControls';
 import { LightProbeGenerator } from 'three/examples/jsm/lights/LightProbeGenerator';
 import { RGBELoader } from 'three/examples/jsm/loaders/RGBELoader';
-import { loadModel } from 'lib/utils/loadModel';
+import { loadObject } from 'lib/utils/loadObject';
 
 // vi.mock('../../../../store');
 
@@ -597,7 +597,7 @@ describe('patchThree', () => {
       it('creates skeletonHelper', { timeout: 10000 }, async () => {
         return await withScene()(async ({ scene }) => {
           return new Promise<void>((done) => {
-            loadModel('/models/MyTests/test_multi_features/test_multi_features.fbx', { isInspectable: true }).then(
+            loadObject('/models/MyTests/test_multi_features/test_multi_features.fbx', { isInspectable: true }).then(
               (fbx) => {
                 if (!fbx) return;
                 scene.add(fbx);

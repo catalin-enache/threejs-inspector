@@ -2,8 +2,6 @@
 import * as THREE from 'three';
 import type { RectAreaLightHelper } from 'three/examples/jsm/helpers/RectAreaLightHelper';
 import type { LightProbeHelper } from 'three/examples/jsm/helpers/LightProbeHelper';
-import type { TransformControls } from 'three/examples/jsm/controls/TransformControls';
-import type { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import type { PositionalAudioHelper } from 'three/examples/jsm/helpers/PositionalAudioHelper';
 import type { Follower } from 'lib/followers';
 
@@ -33,14 +31,12 @@ export type __inspectorData = {
   updatingWorldMatrix?: boolean;
   currentCamera: THREE.PerspectiveCamera | THREE.OrthographicCamera;
   isRecombined: boolean;
-  transformControlsRef: { current?: TransformControls | null };
-  orbitControlsRef: { current?: OrbitControls | null };
   readonly dependantObjects: THREE.Object3D[];
   // specific to optimiseAsset flow
   geometryHasBeenIndexed: boolean;
   isDerivedMesh: boolean;
   mainDerivedMesh: THREE.Mesh;
-  // specific to optimiseAsset loadModel
+  // specific to optimiseAsset loadObject
   resourceName: string;
   // specific to bindings
   cpMixer: THREE.AnimationMixer;

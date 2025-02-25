@@ -155,8 +155,8 @@ export interface AppStore {
   ) => void;
   removeCPanelCustomParams: (name: string, path: string[]) => void;
   cPanelCustomParamsStructureStateFake: number;
-  loadModelIsOpen: boolean;
-  setLoadModelIsOpen: (isOpen: boolean) => void;
+  loadObjectIsOpen: boolean;
+  setLoadObjectIsOpen: (isOpen: boolean) => void;
   cameraControl: 'orbit' | 'fly';
   setCameraControl: (type: 'orbit' | 'fly') => void;
   toggleCameraControl: () => void;
@@ -213,7 +213,7 @@ export const useAppStore = create<AppStore>()(
         cPanelContinuousUpdate: true,
         cPanelStateFake: 0,
         cPanelCustomParamsStructureStateFake: 0,
-        loadModelIsOpen: false,
+        loadObjectIsOpen: false,
         cameraControl: cameraControlDefault,
         cameraType: cameraTypeDefault,
         currentCameraStateFake: 0,
@@ -409,8 +409,8 @@ export const useAppStore = create<AppStore>()(
       }));
     },
     cPanelCustomParamsStructureStateFake: 0,
-    loadModelIsOpen: false,
-    setLoadModelIsOpen: (loadModelIsOpen) => set({ loadModelIsOpen }),
+    loadObjectIsOpen: false,
+    setLoadObjectIsOpen: (loadObjectIsOpen) => set({ loadObjectIsOpen }),
     cameraControl: cameraControl,
     setCameraControl: (cameraControl) => {
       if (get().isDraggingTransformControls) return;

@@ -414,7 +414,7 @@ const _buildBindings = (folder: FolderApi, object: any, bindings: any, params: C
   }
 
   // Collecting all morph targets from all meshes grouped by name.
-  // As an edge case if 2 original meshes (before optimization done by loadModel) had the same morph target name
+  // As an edge case if 2 original meshes (before optimization done by loadObject) had the same morph target name
   // they will be grouped together
   if (folder.title === 'Object3D' && object.traverse) {
     const morphInfluences: Record<string, { index: number; influences: number[] }[]> = {};

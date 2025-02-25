@@ -33,7 +33,7 @@ import { outliner } from 'lib/third_party/ui.outliner';
 // @ts-ignore
 import { html } from '../../../README.md';
 import { CommonGetterParams } from './bindings/bindingTypes';
-import { LoadModelForm } from '../LoadModelForm/LoadModelForm';
+import { LoadObjectForm } from '../LoadObjectForm/LoadObjectForm';
 import './CPanel.css';
 
 const cPanel = document.createElement('div');
@@ -501,7 +501,7 @@ export const CPanel = (props: CPanelProps) => {
 
   return (
     <>
-      <LoadModelForm scene={scene} camera={camera} />
+      <LoadObjectForm scene={scene} camera={camera} />
       {showAxesHelper && <axesHelper args={[1000]} />}
       {showGridHelper && <gridHelper args={[1000, 1000]} />}
     </>

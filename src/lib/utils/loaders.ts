@@ -67,7 +67,7 @@ loadingManager.setURLModifier((resource) => {
   if (!blobs[normalizedResource]) return resource;
   const url = URL.createObjectURL(blobs[normalizedResource]);
   objectURLs.push(url);
-  // console.log('loadModel setURLModifier done', { resource, normalizedResource, url, blobs });
+  // console.log('loadObject setURLModifier done', { resource, normalizedResource, url, blobs });
   return url;
 });
 

@@ -1,15 +1,15 @@
 import * as THREE from 'three';
 import { expect, describe, it } from 'vitest';
 import { withScene } from 'testutils/testScene';
-import { loadModel } from 'lib/utils/loadModel';
+import { loadObject } from 'lib/utils/loadObject';
 import { waitFor } from '@testing-library/dom';
 
-describe('loadModel', () => {
+describe('loadObject', () => {
   // .fbx
   describe('when fbx file', () => {
     it('loads non native textures - considers resourcePath if provided', { timeout: 5000 }, async () =>
       withScene()(async ({ scene, camera }) => {
-        const fbx = await loadModel('with_non_native_textures.fbx', {
+        const fbx = await loadObject('with_non_native_textures.fbx', {
           autoScaleRatio: 0.01,
           scene,
           camera,
@@ -45,7 +45,7 @@ describe('loadModel', () => {
   describe('when gltf file', () => {
     it('loads model correctly', { timeout: 5000 }, async () =>
       withScene()(async ({ scene, camera }) => {
-        const gltf = await loadModel(['with_non_native_textures.gltf'], {
+        const gltf = await loadObject(['with_non_native_textures.gltf'], {
           autoScaleRatio: 0.1,
           scene,
           camera,
@@ -78,7 +78,7 @@ describe('loadModel', () => {
   describe('when obj file', () => {
     it('loads obj file including mtl file if provided', { timeout: 5000 }, async () =>
       withScene()(async ({ scene, camera }) => {
-        const obj = await loadModel(['female02.obj', 'female02.mtl'], {
+        const obj = await loadObject(['female02.obj', 'female02.mtl'], {
           autoScaleRatio: 0.1,
           scene,
           camera,
@@ -113,7 +113,7 @@ describe('loadModel', () => {
   describe('when collada file', () => {
     it('loads model correctly including animations', { timeout: 5000 }, async () =>
       withScene()(async ({ scene, camera }) => {
-        const collada = await loadModel('elf.dae', {
+        const collada = await loadObject('elf.dae', {
           autoScaleRatio: 0.1,
           scene,
           camera,
@@ -131,7 +131,7 @@ describe('loadModel', () => {
         // @ts-ignore
         await waitFor(() => expect(collada.children[0].material.map.image.src.endsWith('ce.jpg')).toBe(true));
 
-        const collada2 = await loadModel('stormtrooper.dae', {
+        const collada2 = await loadObject('stormtrooper.dae', {
           autoScaleRatio: 0.1,
           scene,
           camera,
@@ -159,7 +159,7 @@ describe('loadModel', () => {
   describe('when ply file', () => {
     it('loads geometry correctly', { timeout: 5000 }, async () =>
       withScene()(async ({ scene, camera }) => {
-        const ply = await loadModel('Lucy100k.ply', {
+        const ply = await loadObject('Lucy100k.ply', {
           autoScaleRatio: 0.1,
           scene,
           camera,
@@ -185,7 +185,7 @@ describe('loadModel', () => {
   describe('when stl file', () => {
     it('loads geometry correctly', { timeout: 5000 }, async () =>
       withScene()(async ({ scene, camera }) => {
-        const stl = await loadModel('colored.stl', {
+        const stl = await loadObject('colored.stl', {
           autoScaleRatio: 0.1,
           scene,
           camera,
@@ -214,7 +214,7 @@ describe('loadModel', () => {
   describe('when path has spaces', () => {
     it('loads model correctly', { timeout: 5000 }, async () =>
       withScene()(async ({ scene, camera }) => {
-        const fbx = await loadModel('asset with space in path.FBX', {
+        const fbx = await loadObject('asset with space in path.FBX', {
           autoScaleRatio: 0.01,
           scene,
           camera,
@@ -249,7 +249,7 @@ describe('loadModel', () => {
   describe('when animations are external', () => {
     it('they are loaded correctly', { timeout: 5000 }, async () =>
       withScene()(async ({ scene, camera }) => {
-        const glb = await loadModel(
+        const glb = await loadObject(
           [
             'Jennifer.glb',
             'Animations_gltf/Idle.glb',
@@ -287,7 +287,7 @@ describe('loadModel', () => {
     describe('when recombineByMaterial is false', () => {
       it('allows one mesh with more materials', { timeout: 5000 }, async () =>
         withScene()(async ({ scene, camera }) => {
-          const fbx = await loadModel('test_multi_features.fbx', {
+          const fbx = await loadObject('test_multi_features.fbx', {
             autoScaleRatio: 0.1,
             scene,
             camera,
@@ -315,7 +315,7 @@ describe('loadModel', () => {
     describe('when recombineByMaterial is true', () => {
       it('splits a mesh in how many materials it has', { timeout: 5000 }, async () =>
         withScene()(async ({ scene, camera }) => {
-          const fbx = await loadModel('test_multi_features.fbx', {
+          const fbx = await loadObject('test_multi_features.fbx', {
             autoScaleRatio: 0.1,
             scene,
             camera,

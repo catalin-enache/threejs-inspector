@@ -16,7 +16,7 @@ import {
   setSelectedTab
 } from 'components/CPanel/bindings/bindingHelpers';
 import { radToDegFormatter } from 'lib/utils/formatters';
-import { loadModel } from 'lib/utils/loadModel';
+import { loadObject } from 'lib/utils/loadObject';
 
 const setObjectTab = async (pane: Pane) => {
   await waitFor(() => expect(pane.children.length).toBeGreaterThan(0));
@@ -489,7 +489,7 @@ describe('bindingHelpers', () => {
           cubeCamera.position.set(0, 2, -0.3);
           scene.add(cubeCamera);
 
-          loadModel('/models/MyTests/test_multi_features/test_multi_features.glb', {
+          loadObject('/models/MyTests/test_multi_features/test_multi_features.glb', {
             scene,
             camera,
             recombineByMaterial: true
@@ -559,7 +559,7 @@ describe('bindingHelpers', () => {
           const ambientLight = new THREE.AmbientLight(0xffffff, 1);
           scene.add(ambientLight);
 
-          loadModel('/models/MyTests/test_multi_features/test_multi_features.glb', {
+          loadObject('/models/MyTests/test_multi_features/test_multi_features.glb', {
             scene,
             camera,
             recombineByMaterial: true
@@ -631,7 +631,7 @@ describe('bindingHelpers', () => {
           const ambientLight = new THREE.AmbientLight(0xffffff, 1);
           scene.add(ambientLight);
 
-          loadModel('/models/MyTests/test_multi_features/test_multi_features.glb', {
+          loadObject('/models/MyTests/test_multi_features/test_multi_features.glb', {
             scene,
             camera,
             recombineByMaterial: true
@@ -673,7 +673,7 @@ describe('bindingHelpers', () => {
           const ambientLight = new THREE.AmbientLight(0xffffff, 1);
           scene.add(ambientLight);
 
-          loadModel('/models/MyTests/test_multi_features/test_multi_features.glb', {
+          loadObject('/models/MyTests/test_multi_features/test_multi_features.glb', {
             scene,
             camera,
             recombineByMaterial: true

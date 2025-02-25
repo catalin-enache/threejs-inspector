@@ -2,7 +2,7 @@ import patchThree from './patchThree';
 import { deepTraverse, cloneObject3D } from './utils/objectUtils';
 import { deepClean } from './utils/cleanUp';
 import { createTexturesFromImages } from './utils/loadTexture';
-import { loadModel } from './utils/loadModel';
+import { loadObject } from './utils/loadObject';
 import { splitMeshesByMaterial } from './utils/optimiseModel';
 
 export default {
@@ -20,6 +20,6 @@ export default {
   deepClean,
 
   createTexturesFromImages,
-  loadModel,
+  loadObject,
   splitMeshesByMaterial
 };

@@ -72,7 +72,7 @@ export const SceneButtons = ({ playingState, sceneObjects: { camera, scene } }: 
     label: 'Load Object',
     title: 'Load Object',
     onClick: (() => {
-      useAppStore.getState().setLoadModelIsOpen(true);
+      useAppStore.getState().setLoadObjectIsOpen(true);
     }) as onChange
   },
   9: {

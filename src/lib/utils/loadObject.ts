@@ -234,7 +234,7 @@ const enhanceLoader = async ({
 // to copy a model locally and ensure it is well constructed example:
 // gltf-transform cp https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/main/Models/AnisotropyBarnLamp/glTF-KTX-BasisU/AnisotropyBarnLamp.gltf out/lamp.gltf --allow-http
 // https://github.com/mrdoob/three.js/issues/28258
-export const loadModel = async (
+export const loadObject = async (
   fileOrFiles: (File | string) | (File | string)[],
   {
     scene,
@@ -264,7 +264,7 @@ export const loadModel = async (
   const sources = [...new Set(files.map((f) => (f instanceof File ? f.name : f)))];
 
   debug &&
-    console.log('loadModel start', {
+    console.log('loadObject start', {
       changeGeometry,
       autoScaleRatio,
       recombineByMaterial,
@@ -321,14 +321,14 @@ export const loadModel = async (
     // restAssets most of the time contain just animations
     const restAssets = loadedAssets.filter((a) => a !== rootAsset);
     debug &&
-      console.log('loadModel multiAssetSources loadedAssets', { multiAssetSources, sources, loadedAssets, rootAsset });
+      console.log('loadObject multiAssetSources loadedAssets', { multiAssetSources, sources, loadedAssets, rootAsset });
 
     restAssets.forEach((externalAnimationAsset) => {
       // @ts-ignore
       mergeAnimationsFromRestAssets(result as THREE.Group, externalAnimationAsset);
     });
 
-    debug && console.log('loadModel multiAssetSources merged animations', { rootAsset, restAssets });
+    debug && console.log('loadObject multiAssetSources merged animations', { rootAsset, restAssets });
   } else {
     // dealing with NON fbx/gltf one file
     const types = sources.map((source) => getFileType(source, fileTypeMap));
@@ -389,7 +389,7 @@ export const loadModel = async (
   if (changeGeometry === 'indexed') {
     root.traverse((child) => {
       if (child instanceof THREE.Mesh && !child.geometry.index) {
-        debug && console.log('loadModel toIndexedGeometry', child);
+        debug && console.log('loadObject toIndexedGeometry', child);
         toIndexedGeometry(child);
         child.geometry.computeBoundingBox();
         child.geometry.computeBoundingSphere();
@@ -398,7 +398,7 @@ export const loadModel = async (
   } else if (changeGeometry === 'non-indexed') {
     root.traverse((child) => {
       if (child instanceof THREE.Mesh && child.geometry.index) {
-        debug && console.log('loadModel toNonIndexedGeometry', child);
+        debug && console.log('loadObject toNonIndexedGeometry', child);
         child.geometry = child.geometry.toNonIndexed();
         child.geometry.computeBoundingBox();
         child.geometry.computeBoundingSphere();
@@ -454,7 +454,7 @@ export const loadModel = async (
     root = splitMeshesByMaterial(root, { debug });
   }
 
-  debug && console.log('loadModel done', { fileName, fileType, result, root });
+  debug && console.log('loadObject done', { fileName, fileType, result, root });
 
   if (autoScaleRatio && scene && camera) {
     const meshSize = getBoundingBoxSize(root);

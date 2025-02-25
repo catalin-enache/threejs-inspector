@@ -11,7 +11,7 @@ import { useAppStore } from 'src/store';
 import patchThree from 'lib/patchThree';
 
 import { CPanelProps } from 'components/CPanel/CPanel';
-import { loadModel } from 'lib/utils/loadModel';
+import { loadObject } from 'lib/utils/loadObject';
 import { DirectionalLightPicker, SpotLightPicker } from 'lib/followers';
 
 const degToRad = THREE.MathUtils.degToRad;
@@ -403,7 +403,7 @@ describe('SetUp', () => {
           if (changed === 'scene') {
             sceneReady.current = true;
             const { scene, camera, gl } = three;
-            loadModel('/models/MyTests/test_multi_features/test_multi_features.fbx', {
+            loadObject('/models/MyTests/test_multi_features/test_multi_features.fbx', {
               isInspectable: true,
               scene,
               camera

@@ -252,7 +252,7 @@ export function Experience() {
         api.refreshCPanel();
         api.updateCubeCameras();
 
-        // api.loadModel('models/FromThreeRepo/ply/binary/Lucy100k.ply', {}).then((mesh) => {
+        // api.loadObject('models/FromThreeRepo/ply/binary/Lucy100k.ply', {}).then((mesh) => {
         //   if (!mesh) return;
         //   mesh.name = 'LoadedMesh';
         //
@@ -277,9 +277,9 @@ export function Experience() {
         // models/NonFree/Dark Elf Blader - Game Ready/Assets/Textures/DarkElfBlader_FBX_From3DsMax.fbx
         // models/Free/gltf/Mixamo/Jennifer/Jennifer.glb
         api
-          .loadModel(['Jennifer.glb', 'Animations_gltf/Idle.glb', 'Animations_gltf/Catwalk_Walk_Forward.glb'], {
-            // api.loadModel(['Samba Dancing.fbx'], {
-            // api.loadModel(['coffeemat.glb'], {
+          .loadObject(['Jennifer.glb', 'Animations_gltf/Idle.glb', 'Animations_gltf/Catwalk_Walk_Forward.glb'], {
+            // api.loadObject(['Samba Dancing.fbx'], {
+            // api.loadObject(['coffeemat.glb'], {
             scene,
             camera,
             autoScaleRatio: 0.4,

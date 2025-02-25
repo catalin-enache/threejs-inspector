@@ -248,7 +248,7 @@ export const loadModel = async (
     debug
   }: {
     scene?: THREE.Scene;
-    camera?: THREE.Camera;
+    camera?: THREE.PerspectiveCamera | THREE.OrthographicCamera;
     changeGeometry?: 'indexed' | 'non-indexed';
     recombineByMaterial?: boolean;
     autoScaleRatio?: number;

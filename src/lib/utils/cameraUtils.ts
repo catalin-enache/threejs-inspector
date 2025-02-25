@@ -6,26 +6,26 @@ import patchThree from 'lib/patchThree';
 
 export const focusCamera = ({
   transformControls = patchThree.getTransformControls(),
-  orbitControls = patchThree.getOrbitControls(),
+  cameraControls = patchThree.getCameraControls(),
   camera = patchThree.getCurrentCamera()
 }: {
   transformControls?: TransformControls | null;
-  orbitControls?: OrbitControls | null;
+  cameraControls?: OrbitControls | null;
   camera?: THREE.PerspectiveCamera | THREE.OrthographicCamera | null;
 } = {}) => {
   if (!camera) return;
   const focusOn = new THREE.Vector3(); // center of the stage by default
   transformControls?.['object']?.getWorldPosition(focusOn);
-  if (orbitControls) {
-    if (orbitControls.target) {
-      orbitControls.target.set(focusOn.x, focusOn.y, focusOn.z);
+  if (cameraControls) {
+    if (cameraControls.target) {
+      cameraControls.target.set(focusOn.x, focusOn.y, focusOn.z);
       // @ts-ignore
-    } else if (orbitControls.setTarget) {
+    } else if (cameraControls.setTarget) {
       // compatible with https://github.com/yomotsu/camera-controls
       // @ts-ignore
-      orbitControls.setTarget(focusOn.x, focusOn.y, focusOn.z);
+      cameraControls.setTarget(focusOn.x, focusOn.y, focusOn.z);
     }
-    orbitControls.update();
+    cameraControls.update();
   } else {
     camera.lookAt(focusOn);
   }
@@ -34,11 +34,11 @@ export const focusCamera = ({
 export const resetCamera = ({
   code,
   camera = patchThree.getCurrentCamera(),
-  orbitControls = patchThree.getOrbitControls()
+  cameraControls = patchThree.getCameraControls()
 }: {
   code: string;
   camera?: THREE.PerspectiveCamera | THREE.OrthographicCamera | null;
-  orbitControls?: OrbitControls | null;
+  cameraControls?: OrbitControls | null;
 }) => {
   if (!camera) return;
   const distance = camera.position.length();
@@ -57,22 +57,22 @@ export const resetCamera = ({
   }
   camera.lookAt(0, 0, 0);
 
-  if (!orbitControls) return;
+  if (!cameraControls) return;
 
-  if (orbitControls.target) {
-    orbitControls.target.set(0, 0, 0);
+  if (cameraControls.target) {
+    cameraControls.target.set(0, 0, 0);
     // @ts-ignore
-  } else if (orbitControls.setTarget) {
+  } else if (cameraControls.setTarget) {
     // compatible with https://github.com/yomotsu/camera-controls
     // @ts-ignore
-    orbitControls.setTarget(0, 0, 0);
+    cameraControls.setTarget(0, 0, 0);
     // @ts-ignore
-    orbitControls.setPosition(camera.position.x, camera.position.y, camera.position.z);
+    cameraControls.setPosition(camera.position.x, camera.position.y, camera.position.z);
     // alternate sets position and target
     // orbitControls.setLookAt(camera.position.x, camera.position.y, camera.position.z, 0, 0, 0);
   }
 
-  orbitControls.update();
+  cameraControls.update();
 };
 
 const _vector = new THREE.Vector3();

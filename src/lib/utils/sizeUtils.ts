@@ -4,6 +4,7 @@ import { OctreeHelper } from 'three/examples/jsm/helpers/OctreeHelper';
 import { RectAreaLightHelper } from 'three/examples/jsm/helpers/RectAreaLightHelper';
 import { PositionalAudioHelper } from 'three/examples/jsm/helpers/PositionalAudioHelper';
 import { ViewHelper } from 'three/examples/jsm/helpers/ViewHelper.js';
+import { Follower } from 'lib/followers';
 
 export function getBoundingBoxSize(object: THREE.Object3D) {
   const box = new THREE.Box3().setFromObject(object, true);
@@ -43,7 +44,8 @@ const isExcluded = (object: THREE.Object3D, exclude: Set<THREE.Object3D>) => {
       walker instanceof OctreeHelper ||
       walker instanceof THREE.AxesHelper ||
       walker instanceof THREE.GridHelper ||
-      walker instanceof THREE.PolarGridHelper
+      walker instanceof THREE.PolarGridHelper ||
+      walker instanceof Follower
     ) {
       return true;
     }
@@ -54,7 +56,7 @@ const isExcluded = (object: THREE.Object3D, exclude: Set<THREE.Object3D>) => {
 
 export function getSceneBoundingBoxSize(
   scene: THREE.Scene,
-  camera: THREE.Camera,
+  camera: THREE.PerspectiveCamera | THREE.OrthographicCamera,
   exclude: Set<THREE.Object3D> = new Set(),
   useFrustum = false
 ) {

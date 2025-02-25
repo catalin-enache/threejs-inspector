@@ -706,6 +706,7 @@ const module: Module = {
         (showGizmos) => {
           helper.visible = showGizmos;
           picker.visible = showGizmos;
+          this.render(); // support 'demand' frameloop
         }
       )
     );
@@ -715,6 +716,7 @@ const module: Module = {
         (appStore) => appStore.showHelpers && appStore.showGizmos,
         (showHelpers) => {
           helper.visible = showHelpers;
+          this.render(); // support 'demand' frameloop
         }
       )
     );

@@ -409,7 +409,6 @@ const _buildBindings = (folder: FolderApi, object: any, bindings: any, params: C
   if (['Object3D', 'Camera Current', 'Scene'].includes(folder.title ?? '')) {
     folder.on('change', () => {
       if (patchThree.getThreeRootState().frameloop !== 'demand') return;
-      console.log('change', folder.title);
       patchThree.render();
     });
   }

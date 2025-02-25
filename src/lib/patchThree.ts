@@ -378,12 +378,13 @@ const module: Module = {
       // compare with shouldUseFlyControls
       const shouldEnable = cameraControl === 'orbit' && (!isUseOnPlayCamera || attachDefaultControllersToPlayingCamera);
       if (shouldEnable) {
-        nextCameraControls.enabled = true;
         nextCameraControls.disconnect();
-        nextCameraControls.connect();
-      } else {
         nextCameraControls.enabled = false;
+        nextCameraControls.connect(this.currentRenderer?.domElement);
+        nextCameraControls.enabled = true;
+      } else {
         nextCameraControls.disconnect();
+        nextCameraControls.enabled = false;
       }
     }
 

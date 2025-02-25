@@ -2,7 +2,6 @@ import * as THREE from 'three';
 import { RootState, useThree, useFrame } from '@react-three/fiber';
 import { useCallback, useEffect, useRef } from 'react';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
-import { TransformControls } from 'three/examples/jsm/controls/TransformControls';
 import { RectAreaLightUniformsLib } from 'three/examples/jsm/lights/RectAreaLightUniformsLib';
 import { FlyControls } from 'components/FlyControls';
 import { useAppStore } from 'src/store';
@@ -83,7 +82,6 @@ const SetUp = (props: SetUpProps) => {
 
   const transformControlsMode = useAppStore((state) => state.transformControlsMode);
   const transformControlsSpace = useAppStore((state) => state.transformControlsSpace);
-  const transformControlsRef = useRef<TransformControls | null>(null);
 
   const orbitControlsRef = useRef<OrbitControls | null | undefined>(null);
   const hitsRef = useRef<THREE.Intersection<THREE.Object3D>[]>([]);
@@ -127,7 +125,6 @@ const SetUp = (props: SetUpProps) => {
   // defaultScene will be replaced by new scene when injected, and it will happen only once.
   // R3F does not support changing the scene after the initial configuration.
   useEffect(() => {
-    patchThree.setCurrentCamera(camera); // used in App when !isInjected
     scene.__inspectorData.orbitControlsRef = orbitControlsRef;
     const oldScene = getCurrentScene();
 
@@ -189,8 +186,8 @@ const SetUp = (props: SetUpProps) => {
 
   // Update ObitControls (target, camera, enabled) and TransformControls camera
   useEffect(() => {
+    patchThree.setCurrentCamera(camera); // used in App when !isInjected
     updateCameras();
-    if (transformControlsRef.current) transformControlsRef.current.camera = camera;
     if (!orbitControlsRef.current) return;
 
     // We react to cameraControl too so that we can preserve the camera position

@@ -75,7 +75,6 @@ const SetUp = (props: SetUpProps) => {
 
   const selectedObjectUUID = useAppStore((state) => state.selectedObjectUUID);
   const setSelectedObject = useAppStore((state) => state.setSelectedObject);
-  const triggerSelectedObjectChanged = useAppStore((state) => state.triggerSelectedObjectChanged);
 
   const showGizmos = useAppStore((state) => state.showGizmos);
 
@@ -130,7 +129,6 @@ const SetUp = (props: SetUpProps) => {
   useEffect(() => {
     scene.__inspectorData.currentCamera = camera; // used in App when !isInjected
     scene.__inspectorData.orbitControlsRef = orbitControlsRef;
-    scene.__inspectorData.transformControlsRef = transformControlsRef;
     const oldScene = getCurrentScene();
 
     outliner.scene = scene;
@@ -178,38 +176,11 @@ const SetUp = (props: SetUpProps) => {
     useAppStore.getState().triggerCurrentCameraChanged();
   }, [playingState, cameraType, scene, isInjected]);
 
-  // Create transform controls (singleton) and attach it to the scene
-  useEffect(() => {
-    // prettier-ignore
-    transformControlsRef.current = new TransformControls(camera, gl.domElement);
-    transformControlsRef.current.getHelper().name = 'DefaultTransformControls';
-    transformControlsRef.current.addEventListener('objectChange', (_event) => {
-      triggerSelectedObjectChanged();
-    });
-    // Preventing here for orbit controls to interfere with transform controls
-    let currentEnabled = false;
-    transformControlsRef.current.addEventListener('dragging-changed', function (event: any) {
-      if (!orbitControlsRef.current) return;
-      useAppStore.getState().setIsDraggingTransformControls(event.value);
-      if (event.value) {
-        currentEnabled = !!orbitControlsRef.current?.enabled;
-        orbitControlsRef.current && (orbitControlsRef.current.enabled = false);
-      } else {
-        orbitControlsRef.current && (orbitControlsRef.current.enabled = currentEnabled);
-      }
-    });
-    onSetupEffect?.(SETUP_EFFECT.TRANSFORM_CONTROLS, {
-      transformControls: transformControlsRef.current
-    });
-    // eslint-disable-next-line
-  }, []);
-
   // Update transform controls behavior
   useEffect(() => {
-    if (!transformControlsRef.current) return;
-    const transformControls = transformControlsRef.current;
     if (selectedObjectUUID && showGizmos) {
       patchThree.attachTransformControls({ showHelper: showGizmos });
+      const transformControls = patchThree.getTransformControls()!;
       transformControls.setMode(transformControlsMode); // translate | rotate | scale
       transformControls.setSpace(transformControlsSpace); // local | world
     } else {
@@ -247,7 +218,18 @@ const SetUp = (props: SetUpProps) => {
     // camera.lookAt(targetPositionRef.current);
 
     orbitControlsRef.current.object = camera;
-    orbitControlsRef.current.target.copy(targetPositionRef.current);
+    orbitControlsRef.current.target?.set(
+      targetPositionRef.current.x,
+      targetPositionRef.current.y,
+      targetPositionRef.current.z
+    );
+    // compatible with https://github.com/yomotsu/camera-controls
+    // @ts-ignore
+    orbitControlsRef.current.setTarget?.(
+      targetPositionRef.current.x,
+      targetPositionRef.current.y,
+      targetPositionRef.current.z
+    );
     orbitControlsRef.current.update();
   }, [camera]);
 
@@ -316,7 +298,9 @@ const SetUp = (props: SetUpProps) => {
     orbitControlsRef.current =
       orbitControls ||
       (autoNavControls && !orbitControlsRef.current
-        ? getPatchedOrbitControls(camera, gl.domElement, { usePointerLock: true })
+        ? // TODO: try to simplify the logic here, also, maybe use CameraControl
+          // TODO set OrbitControls on patchThree rather than on scene.__inspectorData
+          getPatchedOrbitControls(camera, gl.domElement, { usePointerLock: true })
         : orbitControlsRef.current);
 
     if (oldOrbitControls && oldOrbitControls !== orbitControlsRef.current) {

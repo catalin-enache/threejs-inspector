@@ -129,7 +129,7 @@ export function TestInjectedInspectorApp(props: TestInjectedInspectorAppProps) {
       useAppStore.getState().reset();
       // should dbe covered by SetUp unmount
       // threeStateRef.current?.gl.dispose();
-      // threeStateRef.current?.scene.__inspectorData.orbitControlsRef?.current?.dispose();
+      // patchThree.disposeCameraControls();;
     };
   }, []);
 

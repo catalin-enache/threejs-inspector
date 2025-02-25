@@ -49,7 +49,7 @@ function init({ useFloor = true, sizeUnit = 100 }: SceneInitConfig = {}) {
   const scene = new THREE.Scene();
   scene.background = new THREE.Color(0xa0a0a0);
   // scene.fog = new THREE.Fog(0xa0a0a0, sizeUnit * 2, sizeUnit * 10);
-  scene.__inspectorData.currentCamera = camera;
+  patchThree.setCurrentCamera(camera);
   patchThree.setCurrentScene(scene);
 
   const hemiLight = new THREE.HemisphereLight(0xffffff, 0x444444, 5);

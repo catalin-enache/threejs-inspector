@@ -74,12 +74,12 @@ export function App(props: AppProps) {
       camera={camera}
       scene={scene}
       shadows={'soft'}
-      gl={(canvas) =>
-        new THREE.WebGLRenderer({
-          canvas,
+      gl={(defaultProps) => {
+        return new THREE.WebGLRenderer({
+          ...defaultProps,
           ...glOptions
-        })
-      }
+        });
+      }}
       frameloop={'always'}
     >
       <Inspector autoNavControls={true} customParams={customParams} />

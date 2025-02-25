@@ -158,7 +158,7 @@ export function TestInjectedInspectorApp(props: TestInjectedInspectorAppProps) {
       {/* orbitControls is first null then if useDreiOrbitControls is the one from Drei */}
       <Inspector
         autoNavControls={autoNavControls}
-        orbitControls={orbitControls}
+        cameraControls={orbitControls}
         onSetupEffect={onSetupEffect}
         onThreeChange={handleThreeChange}
         onCPanelReady={onCPanelReady}

@@ -22,7 +22,7 @@ export interface BaseInspectorProps {
   // autoNavControls enable OrbitControls and FlyControls
   autoNavControls?: boolean;
   // if orbitControls are provided, they replace internal OrbitControls when autoNavControls is true
-  orbitControls?: any;
+  cameraControls?: any;
   customParams?: CustomParams;
   // for testing
   onSetupEffect?: SetUpProps['onSetupEffect'];
@@ -66,7 +66,7 @@ export interface InspectorProps extends BaseInspectorProps {
 
 export const Inspector = memo(
   ({
-    orbitControls,
+    cameraControls,
     autoNavControls = false,
     customParams,
     onSetupEffect,
@@ -88,7 +88,7 @@ export const Inspector = memo(
     return (
       <>
         <SetUp
-          orbitControls={orbitControls}
+          cameraControls={cameraControls}
           isInjected={true}
           autoNavControls={autoNavControls}
           onSetupEffect={onSetupEffect}
@@ -115,7 +115,7 @@ const configureAndRender = (params: InjectInspectorParams) => {
     scene,
     camera,
     frameloop,
-    orbitControls,
+    cameraControls,
     autoNavControls,
     customParams,
     onSetupEffect,
@@ -139,7 +139,7 @@ const configureAndRender = (params: InjectInspectorParams) => {
 
   root?.render(
     React.createElement(Inspector, {
-      orbitControls,
+      cameraControls,
       autoNavControls,
       customParams,
       version: ++version,

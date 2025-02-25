@@ -132,7 +132,7 @@ export function initNativeApp(props: InitNativeAppProps) {
     scene,
     renderer,
     frameloop,
-    orbitControls,
+    cameraControls: orbitControls,
     autoNavControls,
     customParams,
     // for testing

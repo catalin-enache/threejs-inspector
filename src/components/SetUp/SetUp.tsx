@@ -127,7 +127,7 @@ const SetUp = (props: SetUpProps) => {
   // defaultScene will be replaced by new scene when injected, and it will happen only once.
   // R3F does not support changing the scene after the initial configuration.
   useEffect(() => {
-    scene.__inspectorData.currentCamera = camera; // used in App when !isInjected
+    patchThree.setCurrentCamera(camera); // used in App when !isInjected
     scene.__inspectorData.orbitControlsRef = orbitControlsRef;
     const oldScene = getCurrentScene();
 
@@ -165,16 +165,15 @@ const SetUp = (props: SetUpProps) => {
     // It is passed to R3F when useDefaultSetup notifies camera changed.
     // It is ignored when injectInspector is used.
     if (['playing', 'paused'].includes(playingState)) {
-      scene.__inspectorData.currentCamera = getCameraToUseOnPlay() || scene.__inspectorData.currentCamera;
+      patchThree.setCurrentCamera(getCameraToUseOnPlay() || patchThree.getCurrentCamera());
     } else {
       // Note: when using useDefaultSetup hook, the App !MUST! use the scene and camera from the hook.
       // If that's not desired do not use useDefaultSetup hook but inject the <Inspector /> component instead.
-      scene.__inspectorData.currentCamera =
-        cameraType === 'perspective' ? defaultPerspectiveCamera : defaultOrthographicCamera;
+      patchThree.setCurrentCamera(cameraType === 'perspective' ? defaultPerspectiveCamera : defaultOrthographicCamera);
     }
     // notify main App to re-render and send new camera into canvas
     useAppStore.getState().triggerCurrentCameraChanged();
-  }, [playingState, cameraType, scene, isInjected]);
+  }, [playingState, cameraType, isInjected]);
 
   // Update transform controls behavior
   useEffect(() => {

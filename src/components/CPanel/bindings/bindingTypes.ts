@@ -3,7 +3,7 @@ import { FolderApi, Pane } from 'tweakpane';
 
 export type SceneObjects = {
   scene: THREE.Scene;
-  camera: THREE.Camera & { manual?: boolean | undefined };
+  camera: THREE.PerspectiveCamera | THREE.OrthographicCamera;
   gl: THREE.WebGLRenderer;
 };
 

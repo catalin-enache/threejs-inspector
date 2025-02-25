@@ -2,22 +2,23 @@ import { TransformControls } from 'three/examples/jsm/controls/TransformControls
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import * as THREE from 'three';
 import { SceneSize } from 'old_src/config';
+import patchThree from 'lib/patchThree';
 
 export const focusCamera = ({
-  transformControls,
-  orbitControls,
-  camera
+  transformControls = patchThree.getTransformControls(),
+  orbitControls = patchThree.getOrbitControls(),
+  camera = patchThree.getCurrentCamera()
 }: {
   transformControls?: TransformControls | null;
   orbitControls?: OrbitControls | null;
-  camera?: THREE.Camera;
-}) => {
+  camera?: THREE.Camera | null;
+} = {}) => {
   if (!camera) return;
   const focusOn = new THREE.Vector3(); // center of the stage by default
   transformControls?.['object']?.getWorldPosition(focusOn);
   if (orbitControls) {
     if (orbitControls.target) {
-      orbitControls.target.copy(focusOn);
+      orbitControls.target.set(focusOn.x, focusOn.y, focusOn.z);
       // @ts-ignore
     } else if (orbitControls.setTarget) {
       // compatible with https://github.com/yomotsu/camera-controls
@@ -32,11 +33,11 @@ export const focusCamera = ({
 
 export const resetCamera = ({
   code,
-  camera,
-  orbitControls
+  camera = patchThree.getCurrentCamera(),
+  orbitControls = patchThree.getOrbitControls()
 }: {
   code: string;
-  camera?: THREE.Camera;
+  camera?: THREE.Camera | null;
   orbitControls?: OrbitControls | null;
 }) => {
   if (!camera) return;
@@ -55,7 +56,23 @@ export const resetCamera = ({
     camera.position.negate();
   }
   camera.lookAt(0, 0, 0);
-  orbitControls?.target.set(0, 0, 0);
+
+  if (!orbitControls) return;
+
+  if (orbitControls.target) {
+    orbitControls.target.set(0, 0, 0);
+    // @ts-ignore
+  } else if (orbitControls.setTarget) {
+    // compatible with https://github.com/yomotsu/camera-controls
+    // @ts-ignore
+    orbitControls.setTarget(0, 0, 0);
+    // @ts-ignore
+    orbitControls.setPosition(camera.position.x, camera.position.y, camera.position.z);
+    // alternate sets position and target
+    // orbitControls.setLookAt(camera.position.x, camera.position.y, camera.position.z, 0, 0, 0);
+  }
+
+  orbitControls.update();
 };
 
 const _vector = new THREE.Vector3();

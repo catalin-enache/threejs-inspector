@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import type { CommonGetterParams, onChange } from './bindingTypes';
-import { numberCommon } from './bindingHelpers';
+import { numberCommon, numberFormat } from './bindingHelpers';
 import { radToDegFormatter } from 'lib/utils/formatters';
 import { MaterialBindings } from './MaterialBindings';
 import { useAppStore } from 'src/store';
@@ -49,7 +49,12 @@ export const Object3DBindings = (params: CommonGetterParams) => ({
   // or if enabled it should target the CameraControls
   position: {
     label: 'Position(L)',
-    ...numberCommon
+    keyScale: numberCommon.keyScale * useAppStore.getState().positionPointerKeyMultiplier.y,
+    pointerScale: numberCommon.pointerScale * useAppStore.getState().positionPointerKeyMultiplier.x,
+    // Note: this step might be doing scene flickering if not enough precision
+    // (3 decimals should be enough precision)
+    step: numberCommon.step,
+    format: numberFormat(3)
     // if: (object: THREE.Object3D) => !isSkinnedMesh(object)
   },
   rotation: {

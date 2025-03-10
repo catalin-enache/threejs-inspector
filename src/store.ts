@@ -76,6 +76,11 @@ const destroyOnRemove = localStorage.getItem('threeInspector__destroyOnRemove')
   ? localStorage.getItem('threeInspector__destroyOnRemove') === 'true'
   : destroyOnRemoveDefault;
 
+const positionPointerKeyMultiplierDefault = { x: 1, y: 1 };
+const positionPointerKeyMultiplier = localStorage.getItem('threeInspector__positionPointerKeyMultiplier')
+  ? JSON.parse(localStorage.getItem('threeInspector__positionPointerKeyMultiplier')!)
+  : positionPointerKeyMultiplierDefault;
+
 export const clearLocalStorage = () => {
   localStorage.removeItem('threeInspector__showAxesHelper');
   localStorage.removeItem('threeInspector__showGridHelper');
@@ -88,6 +93,7 @@ export const clearLocalStorage = () => {
   localStorage.removeItem('threeInspector__cPanelSize');
   localStorage.removeItem('threeInspector__attachDefaultControllersToPlayingCamera');
   localStorage.removeItem('threeInspector__destroyOnRemove');
+  localStorage.removeItem('threeInspector__positionPointerKeyMultiplier');
 };
 
 export interface AppStore {
@@ -179,6 +185,8 @@ export interface AppStore {
   destroyOnRemove: boolean;
   setDestroyOnRemove: (destroyOnRemove: boolean) => void;
   toggleDestroyOnRemove: () => void;
+  positionPointerKeyMultiplier: { x: number; y: number };
+  setPositionPointerKeyMultiplier: (positionPointerKeyMultiplier: { x: number; y: number }) => void;
 }
 
 export const useAppStore = create<AppStore>()(
@@ -520,6 +528,14 @@ export const useAppStore = create<AppStore>()(
     toggleDestroyOnRemove: () => {
       set((state) => ({ destroyOnRemove: !state.destroyOnRemove }));
       localStorage.setItem('threeInspector__destroyOnRemove', get().destroyOnRemove.toString());
+    },
+    positionPointerKeyMultiplier,
+    setPositionPointerKeyMultiplier: (positionPointerKeyMultiplier) => {
+      set({ positionPointerKeyMultiplier });
+      localStorage.setItem(
+        'threeInspector__positionPointerKeyMultiplier',
+        JSON.stringify(positionPointerKeyMultiplier)
+      );
     }
   }))
   // )

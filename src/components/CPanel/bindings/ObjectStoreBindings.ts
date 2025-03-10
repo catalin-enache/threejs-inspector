@@ -1,5 +1,6 @@
 import { useAppStore } from 'src/store';
 import type { onChange, CommonGetterParams } from './bindingTypes';
+import { numberFormat } from 'components/CPanel/bindings/bindingHelpers';
 
 export const ObjectStoreBindings = (_params: CommonGetterParams) => ({
   transformControlsMode: {
@@ -26,6 +27,17 @@ export const ObjectStoreBindings = (_params: CommonGetterParams) => ({
     }),
     onChange: ((_, space) => {
       useAppStore.getState().setTransformControlsSpace(space.value);
+    }) as onChange
+  },
+  positionPointerKeyMultiplier: {
+    label: 'Position Pointer/Key Multiplier (refresh)',
+    keyScale: 0.1,
+    pointerScale: 0.1,
+    step: 0.1,
+    format: numberFormat(1),
+    onChange: ((_, evt) => {
+      const value = evt.value as { x: number; y: number };
+      useAppStore.getState().setPositionPointerKeyMultiplier(value);
     }) as onChange
   }
 });

@@ -1,7 +1,6 @@
 import * as THREE from 'three';
-import { useMemo, useEffect, useState, useRef } from 'react';
+import { useMemo, useEffect, useState, useRef, JSX } from 'react';
 import { RootState, useFrame } from '@react-three/fiber';
-import { _XRFrame } from '@react-three/fiber/dist/declarations/src/core/utils';
 import { AppStore, useAppStore } from 'src/store';
 import { SetUp, SetUpProps } from 'components/SetUp/SetUp';
 import { CPanel, CPanelProps } from 'components/CPanel/CPanel';
@@ -11,14 +10,14 @@ import patchThree from './patchThree';
 const { getCurrentScene, getCurrentCamera } = patchThree;
 
 let lastState: RootState;
-let lastXFrame: _XRFrame;
-const noop = (_playingState: AppStore['playingState'], _state: RootState, _delta: number, _xrFrame?: _XRFrame) => {
+let lastXFrame: XRFrame | undefined;
+const noop = (_playingState: AppStore['playingState'], _state: RootState, _delta: number, _xrFrame?: XRFrame) => {
   lastState = _state;
   lastXFrame = _xrFrame;
 };
 
 export const usePlay = (
-  callback: (playingState: AppStore['playingState'], state: RootState, delta: number, xrFrame?: _XRFrame) => void,
+  callback: (playingState: AppStore['playingState'], state: RootState, delta: number, xrFrame?: XRFrame) => void,
   renderPriority = 0,
   deps: any[] = []
 ) => {

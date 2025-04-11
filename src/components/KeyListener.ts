@@ -1,8 +1,6 @@
 // React component that listens for key presses and calls a callback when a key is pressed.
 import { useEffect, useMemo } from 'react';
 import { useAppStore } from 'src/store';
-import { focusCamera, resetCamera } from 'lib/utils/cameraUtils';
-// import { useThree } from '@react-three/fiber';
 
 // TODO: implement typing multiple letters ? add minimal custom controls to use in Experience for play/pause
 
@@ -114,18 +112,6 @@ export function KeyListener() {
           break;
         case 'BracketLeft':
           isEditorMode && useAppStore.getState().toggleAngleFormat();
-          break;
-        case 'Numpad1':
-        case 'Numpad7':
-        case 'Numpad3':
-        case 'Numpad9':
-          isEditorMode &&
-            resetCamera({
-              code: e.code
-            });
-          break;
-        case 'KeyF':
-          isEditorMode && focusCamera();
           break;
         case 'Delete':
           isEditorMode && useAppStore.getState().deleteSelectedObject();

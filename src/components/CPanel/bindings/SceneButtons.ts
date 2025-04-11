@@ -6,7 +6,7 @@ import { numberCommon } from './bindingHelpers';
 import patchThree from 'lib/patchThree';
 
 // keys are not relevant for buttons
-export const SceneButtons = ({ playingState, sceneObjects: { camera, scene } }: CommonGetterParams) => ({
+export const SceneButtons = ({ playingState, sceneObjects: { scene } }: CommonGetterParams) => ({
   0: {
     label: 'Full Screen Toggle( \\ | F11(native) )',
     title: 'Toggle Full Screen',
@@ -18,9 +18,7 @@ export const SceneButtons = ({ playingState, sceneObjects: { camera, scene } }: 
     label: 'Focus Camera ( F )',
     title: 'Focus Selected Object',
     onClick: (() => {
-      focusCamera({
-        camera
-      });
+      focusCamera();
     }) as onChange
   },
   2: {

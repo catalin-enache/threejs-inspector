@@ -29,15 +29,16 @@ const setupFlyControls = (
 
   const mouseDelta = new THREE.Vector2(0, 0); // Raw input
   const easedDelta = new THREE.Vector2(0, 0); // Eased input
-  const rotationVelocity = new THREE.Vector2(0, 0);
+  const flyRotationVelocity = new THREE.Vector2(0, 0);
+  const orbitMovementVelocity = new THREE.Vector2(0, 0);
 
   const sceneBoundingBox = getSceneBoundingBoxSize(scene, camera);
   const sceneSize = Math.max(sceneBoundingBox.x, sceneBoundingBox.y, sceneBoundingBox.z);
   const ratio = sceneSize / 23; // 23 is the scene size the defaults were tested with
 
   const flyCameraEnabled = { current: false };
+  const flyEuler = new THREE.Euler(0, 0, 0, 'YXZ');
   const speed = { current: 0.05 * ratio };
-  const euler = new THREE.Euler(0, 0, 0, 'YXZ');
   const cameraDirection = new THREE.Vector3();
   const rightVector = new THREE.Vector3();
 
@@ -199,8 +200,8 @@ const setupFlyControls = (
 
     const offset = new THREE.Vector3().subVectors(camera.position, targetPosition);
     const spherical = new THREE.Spherical().setFromVector3(offset);
-    spherical.phi = Math.max(0, Math.min(Math.PI, spherical.phi));
     spherical.makeSafe();
+    spherical.phi = Math.max(0.01, Math.min(Math.PI - 0.01, spherical.phi));
     radius = spherical.radius;
     angleX = spherical.phi; // vertical
     angleY = spherical.theta; // horizontal
@@ -223,87 +224,118 @@ const setupFlyControls = (
   const handleMouseMove = (evt: MouseEvent) => {
     if (!flyCameraEnabled.current) return;
 
-    const sensitivity = 0.005;
-    const movementX = evt.movementX * sensitivity;
-    const movementY = evt.movementY * sensitivity;
-
-    mouseDelta.x -= evt.movementX;
-    mouseDelta.y -= evt.movementY;
-
-    // orbit
-    if (isMouseButton0) {
-      const dampingFactor = 50;
-      angleY -= movementX; // horizontal drag
-      angleX -= movementY; // vertical drag
-
-      const spherical = new THREE.Spherical(radius, angleX, angleY);
-      spherical.makeSafe();
-      // prevent camera oscillating at poles
-      spherical.phi = Math.max(0.01, Math.min(Math.PI - 0.01, spherical.phi));
-
-      const newPos = new THREE.Vector3().setFromSpherical(spherical).add(targetPosition);
-
-      update(() => {
-        const dt = clock.getDelta();
-
-        const newPosSmoothX = THREE.MathUtils.damp(camera.position.x, newPos.x, dampingFactor, dt);
-        const newPosSmoothY = THREE.MathUtils.damp(camera.position.y, newPos.y, dampingFactor, dt);
-        const newPosSmoothZ = THREE.MathUtils.damp(camera.position.z, newPos.z, dampingFactor, dt);
-        camera.position.x = newPosSmoothX;
-        camera.position.y = newPosSmoothY;
-        camera.position.z = newPosSmoothZ;
-        camera.lookAt(targetPosition);
-        return (
-          Math.abs(camera.position.x - newPos.x) > 0.0001 &&
-          Math.abs(camera.position.y - newPos.y) > 0.0001 &&
-          Math.abs(camera.position.z - newPos.z) > 0.0001
-        );
-      });
-
-      // pan
-    } else if (isMouseButton1) {
+    // pan
+    if (isMouseButton1) {
+      const sensitivity = 0.005;
+      const movementX = evt.movementX * sensitivity;
+      const movementY = evt.movementY * sensitivity;
       // Right (local X)
       const right = new THREE.Vector3(1, 0, 0).applyQuaternion(camera.quaternion);
       // Up (local Y)
       const up = new THREE.Vector3(0, 1, 0).applyQuaternion(camera.quaternion);
 
       // Move the camera along with target
-      camera.position.addScaledVector(right, -movementX * ratio);
-      camera.position.addScaledVector(up, movementY * ratio);
-      targetPosition.addScaledVector(right, -movementX * ratio);
-      targetPosition.addScaledVector(up, movementY * ratio);
+      const panOffset = right.multiplyScalar(-movementX * ratio).add(up.multiplyScalar(movementY * ratio));
+      camera.position.add(panOffset);
+      targetPosition.add(panOffset);
       camera.lookAt(targetPosition);
-
-      // wasd fly
-    } else if (isMouseButton2) {
+    }
+    // orbit
+    else if (isMouseButton0) {
       const inputEase = 100; // Increase for snappier input, decrease for smoother
       const rotationEase = 100; // Controls how fast camera turns
 
-      euler.setFromQuaternion(camera.quaternion);
+      mouseDelta.x -= evt.movementX;
+      mouseDelta.y -= evt.movementY;
+
       update(() => {
         const dt = clock.getDelta();
 
         // Easing the raw mouse delta
         easedDelta.x = THREE.MathUtils.damp(easedDelta.x, mouseDelta.x, inputEase, dt);
         easedDelta.y = THREE.MathUtils.damp(easedDelta.y, mouseDelta.y, inputEase, dt);
+        // Decay raw delta after applying it
+        mouseDelta.set(0, 0);
 
         // Apply eased delta to rotation target velocity
         const sensitivity = 0.002;
-        rotationVelocity.x = THREE.MathUtils.damp(rotationVelocity.x, easedDelta.x * sensitivity, rotationEase, dt);
-        rotationVelocity.y = THREE.MathUtils.damp(rotationVelocity.y, easedDelta.y * sensitivity, rotationEase, dt);
+        orbitMovementVelocity.x = THREE.MathUtils.damp(
+          orbitMovementVelocity.x,
+          easedDelta.y * sensitivity,
+          rotationEase,
+          dt
+        );
+        orbitMovementVelocity.y = THREE.MathUtils.damp(
+          orbitMovementVelocity.y,
+          easedDelta.x * sensitivity,
+          rotationEase,
+          dt
+        );
+
+        angleY += orbitMovementVelocity.y; // horizontal drag
+        angleX += orbitMovementVelocity.x; // vertical drag
+
+        const spherical = new THREE.Spherical(radius, angleX, angleY);
+        spherical.makeSafe();
+        // prevent camera jittering at poles
+        spherical.phi = Math.max(0.01, Math.min(Math.PI - 0.01, spherical.phi));
+
+        const newPos = new THREE.Vector3().setFromSpherical(spherical).add(targetPosition);
+
+        camera.position.x = newPos.x;
+        camera.position.y = newPos.y;
+        camera.position.z = newPos.z;
+        camera.lookAt(targetPosition);
+
+        return Math.abs(easedDelta.x) > 0.000000001 && Math.abs(easedDelta.y) > 0.000000001;
+      });
+    }
+    // wasd fly
+    else if (isMouseButton2) {
+      const inputEase = 100; // Increase for snappier input, decrease for smoother
+      const rotationEase = 100; // Controls how fast camera turns
+
+      mouseDelta.x -= evt.movementX;
+      mouseDelta.y -= evt.movementY;
+
+      // this needs to stay outside the update loop to prevent jittering
+      flyEuler.setFromQuaternion(camera.quaternion);
+
+      update(() => {
+        const dt = clock.getDelta();
+
+        // Easing the raw mouse delta
+        easedDelta.x = THREE.MathUtils.damp(easedDelta.x, mouseDelta.x, inputEase, dt);
+        easedDelta.y = THREE.MathUtils.damp(easedDelta.y, mouseDelta.y, inputEase, dt);
+        // Decay raw delta after applying it
+        mouseDelta.set(0, 0);
+
+        // Apply eased delta to rotation target velocity
+        const sensitivity = 0.002;
+        flyRotationVelocity.x = THREE.MathUtils.damp(
+          flyRotationVelocity.x,
+          easedDelta.x * sensitivity,
+          rotationEase,
+          dt
+        );
+        flyRotationVelocity.y = THREE.MathUtils.damp(
+          flyRotationVelocity.y,
+          easedDelta.y * sensitivity,
+          rotationEase,
+          dt
+        );
 
         // Apply rotation
-        // euler.setFromQuaternion(camera.quaternion);
-        euler.y += rotationVelocity.x;
-        euler.x += rotationVelocity.y;
+        flyEuler.y += flyRotationVelocity.x;
+        flyEuler.x += flyRotationVelocity.y;
 
         // Clamp pitch (X axis)
         const maxPitch = Math.PI / 2 - 0.01;
         const minPitch = -maxPitch;
-        euler.x = THREE.MathUtils.clamp(euler.x, minPitch, maxPitch);
+        flyEuler.x = THREE.MathUtils.clamp(flyEuler.x, minPitch, maxPitch);
 
         // Apply to camera
-        camera.quaternion.setFromEuler(euler);
+        camera.quaternion.setFromEuler(flyEuler);
 
         // Forward direction (camera's -Z axis in world space)
         const direction = new THREE.Vector3(0, 0, -1).applyQuaternion(camera.quaternion);
@@ -313,12 +345,7 @@ const setupFlyControls = (
         // Move Target
         targetPosition.copy(camera.position).add(direction);
 
-        // Decay raw delta after applying it
-        mouseDelta.set(0, 0);
-        // return true;
-        return (
-          Math.abs(mouseDelta.x - easedDelta.x) > 0.000000001 && Math.abs(mouseDelta.y - easedDelta.y) > 0.000000001
-        );
+        return Math.abs(easedDelta.x) > 0.000000001 && Math.abs(easedDelta.y) > 0.000000001;
       });
     }
   };
@@ -329,11 +356,21 @@ const setupFlyControls = (
       speed.current -= evt.deltaY * 0.00005 * ratio;
       speed.current = Math.max(0.000001, speed.current);
     } else if (evt.altKey) {
+      animFrameId && cancelAnimationFrame(animFrameId);
+      animFrameId = null;
       if (camera instanceof THREE.OrthographicCamera) {
         camera.zoom += -evt.deltaY * 0.005 * ratio;
         camera.updateProjectionMatrix();
       } else {
-        camera.position.addScaledVector(cameraDirection, -evt.deltaY * 0.005 * ratio);
+        const moveAmount = -evt.deltaY * 0.005 * ratio;
+        camera.getWorldDirection(cameraDirection);
+        const movement = cameraDirection.clone().multiplyScalar(moveAmount);
+        const remainingDistance = camera.position.distanceTo(targetPosition);
+        const stopDistance = 1;
+        if (moveAmount > 0 && remainingDistance - movement.length() <= stopDistance) {
+          return;
+        }
+        camera.position.add(movement);
       }
     }
   };

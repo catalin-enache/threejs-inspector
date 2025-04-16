@@ -7,11 +7,44 @@ import { useAppStore } from 'src/store';
 const center = new THREE.Vector3(0, 0, 0);
 let targetPosition = center.clone();
 
-const setupFlyControls = (
-  camera: THREE.PerspectiveCamera | THREE.OrthographicCamera,
-  scene: THREE.Scene,
-  clock: THREE.Clock
-) => {
+function computeScreenSpacePan({
+  camera,
+  renderer,
+  targetPosition,
+  referenceDistance
+}: {
+  camera: THREE.PerspectiveCamera | THREE.OrthographicCamera;
+  renderer: THREE.WebGLRenderer;
+  targetPosition: THREE.Vector3;
+  referenceDistance?: number;
+}) {
+  // returns world units per pixel
+
+  const screenHeight = renderer.domElement.clientHeight;
+
+  if (camera instanceof THREE.PerspectiveCamera) {
+    const fovInRadians = camera.fov * (Math.PI / 180);
+    const distance = referenceDistance ?? camera.position.distanceTo(targetPosition);
+    return (2 * distance * Math.tan(fovInRadians / 2)) / screenHeight;
+  } else if (camera instanceof THREE.OrthographicCamera) {
+    const viewHeight = camera.top - camera.bottom;
+    return viewHeight / screenHeight;
+  }
+
+  return 1; // fallback
+}
+
+const setupFlyControls = ({
+  clock,
+  camera,
+  renderer,
+  scene
+}: {
+  camera: THREE.PerspectiveCamera | THREE.OrthographicCamera;
+  renderer: THREE.WebGLRenderer;
+  scene: THREE.Scene;
+  clock: THREE.Clock;
+}) => {
   let moveForward = false;
   let moveBackward = false;
   let moveLeft = false;
@@ -226,9 +259,17 @@ const setupFlyControls = (
 
     // pan
     if (isMouseButton1) {
-      const sensitivity = 0.005;
-      const movementX = evt.movementX * sensitivity;
-      const movementY = evt.movementY * sensitivity;
+      const sensitivity = computeScreenSpacePan({
+        camera,
+        renderer,
+        targetPosition,
+        referenceDistance: 300
+      });
+
+      // const cameraDistance = camera.position.distanceTo(targetPosition);
+      // const sensitivity = (0.005 * cameraDistance) / 1000;
+      const movementX = (evt.movementX * sensitivity) / 60;
+      const movementY = (evt.movementY * sensitivity) / 60;
       // Right (local X)
       const right = new THREE.Vector3(1, 0, 0).applyQuaternion(camera.quaternion);
       // Up (local Y)
@@ -400,16 +441,16 @@ const setupFlyControls = (
 // TODO: improve this to fly when frameloop is 'demand'
 
 export const FlyControls = () => {
-  const { camera, scene, clock } = useThree();
+  const { camera, scene, clock, gl } = useThree();
   const flyCameraRef = useRef<(() => void) | null>(null);
   const cleanupRef = useRef<(() => void) | null>(null);
 
   useEffect(() => {
     cleanupRef.current?.();
-    const { flyCamera, cleanup } = setupFlyControls(camera, scene, clock);
+    const { flyCamera, cleanup } = setupFlyControls({ camera, renderer: gl, scene, clock });
     flyCameraRef.current = flyCamera;
     cleanupRef.current = cleanup;
-  }, [camera, scene]);
+  }, [camera, clock, gl, scene]);
 
   useFrame((_state, _delta) => {
     flyCameraRef.current && flyCameraRef.current();

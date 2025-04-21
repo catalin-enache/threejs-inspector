@@ -1,41 +1,14 @@
 import * as THREE from 'three';
 import { useFrame, useThree } from '@react-three/fiber';
 import { useEffect, useRef } from 'react';
-import { getSceneBoundingBoxSize } from 'lib/utils/sizeUtils';
+import { getSceneBoundingBoxSize, getWorldScreenRatio } from 'lib/utils/sizeUtils';
 import { useAppStore } from 'src/store';
 
 const center = new THREE.Vector3(0, 0, 0);
 let targetPosition = center.clone();
-
-function computeScreenSpacePan({
-  camera,
-  renderer,
-  targetPosition,
-  referenceDistance
-}: {
-  camera: THREE.PerspectiveCamera | THREE.OrthographicCamera;
-  renderer: THREE.WebGLRenderer;
-  targetPosition: THREE.Vector3;
-  referenceDistance?: number;
-}) {
-  // returns world units per pixel
-
-  const screenHeight = renderer.domElement.clientHeight;
-
-  if (camera instanceof THREE.PerspectiveCamera) {
-    const fovInRadians = camera.fov * (Math.PI / 180);
-    const distance = referenceDistance ?? camera.position.distanceTo(targetPosition);
-    return (2 * distance * Math.tan(fovInRadians / 2)) / screenHeight;
-  } else if (camera instanceof THREE.OrthographicCamera) {
-    const viewHeight = camera.top - camera.bottom;
-    return viewHeight / screenHeight;
-  }
-
-  return 1; // fallback
-}
+const clock = new THREE.Clock();
 
 const setupFlyControls = ({
-  clock,
   camera,
   renderer,
   scene
@@ -43,7 +16,6 @@ const setupFlyControls = ({
   camera: THREE.PerspectiveCamera | THREE.OrthographicCamera;
   renderer: THREE.WebGLRenderer;
   scene: THREE.Scene;
-  clock: THREE.Clock;
 }) => {
   let moveForward = false;
   let moveBackward = false;
@@ -54,20 +26,29 @@ const setupFlyControls = ({
 
   let angleX = 0;
   let angleY = 0;
-  let radius = 0;
+  let cameraDistance = 0;
 
-  let isMouseButton0 = false;
-  let isMouseButton1 = false;
-  let isMouseButton2 = false;
+  const mouseButton = {
+    current: null as number | null
+  };
 
   const mouseDelta = new THREE.Vector2(0, 0); // Raw input
+  const mouseDeltaSmooth = new THREE.Vector2(0, 0); // Raw input smooth
   const easedDelta = new THREE.Vector2(0, 0); // Eased input
   const flyRotationVelocity = new THREE.Vector2(0, 0);
   const orbitMovementVelocity = new THREE.Vector2(0, 0);
 
-  const sceneBoundingBox = getSceneBoundingBoxSize(scene, camera);
-  const sceneSize = Math.max(sceneBoundingBox.x, sceneBoundingBox.y, sceneBoundingBox.z);
-  const ratio = sceneSize / 23; // 23 is the scene size the defaults were tested with
+  let sceneBoundingBox = new THREE.Vector3();
+  let sceneSize = 0.01;
+  let ratio = 0.01; // 23 is the scene size the defaults were tested with
+
+  // TODO: should update scene size when objects are added/removed and not on mouseDown
+  const updateSceneSize = () => {
+    sceneBoundingBox = getSceneBoundingBoxSize(scene, camera);
+    sceneSize = Math.max(sceneBoundingBox.x, sceneBoundingBox.y, sceneBoundingBox.z);
+    ratio = sceneSize / 23;
+  };
+  updateSceneSize();
 
   const flyCameraEnabled = { current: false };
   const flyEuler = new THREE.Euler(0, 0, 0, 'YXZ');
@@ -75,27 +56,34 @@ const setupFlyControls = ({
   const cameraDirection = new THREE.Vector3();
   const rightVector = new THREE.Vector3();
 
-  let animFrameId: ReturnType<typeof requestAnimationFrame> | null = null;
+  const animationFrameId = {
+    current: null as ReturnType<typeof requestAnimationFrame> | null
+  };
   const update = (cb: () => boolean) => {
-    if (animFrameId) {
+    if (animationFrameId.current) {
       console.log('cancelAnimationFrame 1');
-      cancelAnimationFrame(animFrameId);
-      animFrameId = null;
+      cancelAnimationFrame(animationFrameId.current);
+      animationFrameId.current = null;
     }
     const keepUpdating = () => {
       const shouldKeepUpdating = cb();
       if (shouldKeepUpdating) {
-        animFrameId = requestAnimationFrame(keepUpdating);
+        animationFrameId.current = requestAnimationFrame(keepUpdating);
       } else {
-        console.log('cancelAnimationFrame 2');
-        animFrameId && cancelAnimationFrame(animFrameId);
-        animFrameId = null;
+        cancelUpdate();
       }
     };
     keepUpdating();
   };
 
-  // TODO: maybe we can find a way to make it more smooth (look into OrbitControls source code)
+  const cancelUpdate = () => {
+    if (animationFrameId.current) {
+      console.log('cancelAnimationFrame 2');
+      cancelAnimationFrame(animationFrameId.current);
+      animationFrameId.current = null;
+    }
+  };
+
   // move camera wasd/qe
   const flyCamera = () => {
     // this will only fire if frameloop is not 'never'
@@ -146,22 +134,34 @@ const setupFlyControls = ({
     };
     switch (evt.code) {
       case 'KeyW':
-        moveForward = true;
+        if (mouseButton.current === 2) {
+          moveForward = true;
+        }
         break;
       case 'KeyA':
-        moveLeft = true;
+        if (mouseButton.current === 2) {
+          moveLeft = true;
+        }
         break;
       case 'KeyS':
-        moveBackward = true;
+        if (mouseButton.current === 2) {
+          moveBackward = true;
+        }
         break;
       case 'KeyD':
-        moveRight = true;
+        if (mouseButton.current === 2) {
+          moveRight = true;
+        }
         break;
       case 'KeyQ':
-        moveUp = true;
+        if (mouseButton.current === 2) {
+          moveUp = true;
+        }
         break;
       case 'KeyE':
-        moveDown = true;
+        if (mouseButton.current === 2) {
+          moveDown = true;
+        }
         break;
       case 'KeyF':
         targetPosition = useAppStore.getState().getSelectedObject()?.position.clone() ?? center.clone();
@@ -169,24 +169,28 @@ const setupFlyControls = ({
         break;
       case 'Numpad1':
         // front
+        cancelUpdate();
         targetPosition = center.clone();
         camera.position.set(0, 0, distance);
         adjustCamera();
         break;
       case 'Numpad7':
         // top
+        cancelUpdate();
         targetPosition = center.clone();
-        camera.position.set(0, distance, 0.01);
+        camera.position.set(-0.01, distance, -0.01);
         adjustCamera();
         break;
       case 'Numpad3':
         // right
+        cancelUpdate();
         targetPosition = center.clone();
         camera.position.set(distance, 0, 0);
         adjustCamera();
         break;
       case 'Numpad9':
         // inverse
+        cancelUpdate();
         targetPosition = center.clone();
         camera.position.negate();
         adjustCamera();
@@ -218,16 +222,10 @@ const setupFlyControls = ({
   };
 
   const handleMouseDown = (evt: MouseEvent) => {
-    if (evt.button === 0) {
-      isMouseButton0 = true;
-    } else if (evt.button === 1) {
-      isMouseButton1 = true;
-    } else if (evt.button === 2) {
-      isMouseButton2 = true;
-    }
-
-    animFrameId && cancelAnimationFrame(animFrameId);
-    animFrameId = null;
+    mouseButton.current = evt.button;
+    clock.getDelta();
+    updateSceneSize();
+    cancelUpdate();
 
     flyCameraEnabled.current = true;
 
@@ -235,11 +233,11 @@ const setupFlyControls = ({
     const spherical = new THREE.Spherical().setFromVector3(offset);
     spherical.makeSafe();
     spherical.phi = Math.max(0.01, Math.min(Math.PI - 0.01, spherical.phi));
-    radius = spherical.radius;
+    cameraDistance = spherical.radius;
     angleX = spherical.phi; // vertical
     angleY = spherical.theta; // horizontal
 
-    if (isMouseButton1 || isMouseButton2) {
+    if (mouseButton.current === 1 || mouseButton.current === 2) {
       // @ts-ignore
       document.body.requestPointerLock({ unadjustedMovement: true });
     }
@@ -247,9 +245,7 @@ const setupFlyControls = ({
 
   const handleMouseUp = () => {
     flyCameraEnabled.current = false;
-    isMouseButton0 = false;
-    isMouseButton1 = false;
-    isMouseButton2 = false;
+    mouseButton.current = null;
     document.exitPointerLock();
   };
 
@@ -258,33 +254,32 @@ const setupFlyControls = ({
     if (!flyCameraEnabled.current) return;
 
     // pan
-    if (isMouseButton1) {
-      const sensitivity = computeScreenSpacePan({
-        camera,
-        renderer,
-        targetPosition,
-        referenceDistance: 300
-      });
+    if (mouseButton.current === 1) {
+      const sensitivity =
+        getWorldScreenRatio({
+          camera,
+          renderer,
+          targetPosition
+        }) / 2;
 
-      // const cameraDistance = camera.position.distanceTo(targetPosition);
-      // const sensitivity = (0.005 * cameraDistance) / 1000;
-      const movementX = (evt.movementX * sensitivity) / 60;
-      const movementY = (evt.movementY * sensitivity) / 60;
+      const movementX = evt.movementX * sensitivity;
+      const movementY = evt.movementY * sensitivity;
+
       // Right (local X)
       const right = new THREE.Vector3(1, 0, 0).applyQuaternion(camera.quaternion);
       // Up (local Y)
       const up = new THREE.Vector3(0, 1, 0).applyQuaternion(camera.quaternion);
 
-      // Move the camera along with target
-      const panOffset = right.multiplyScalar(-movementX * ratio).add(up.multiplyScalar(movementY * ratio));
+      const panOffset = right.multiplyScalar(-movementX).add(up.multiplyScalar(movementY));
+
       camera.position.add(panOffset);
       targetPosition.add(panOffset);
       camera.lookAt(targetPosition);
     }
     // orbit
-    else if (isMouseButton0) {
-      const inputEase = 100; // Increase for snappier input, decrease for smoother
-      const rotationEase = 100; // Controls how fast camera turns
+    else if (mouseButton.current === 0) {
+      const inputEase = 30; // Increase for snappier input, decrease for smoother
+      const rotationEase = 30; // Controls how fast camera turns
 
       mouseDelta.x -= evt.movementX;
       mouseDelta.y -= evt.movementY;
@@ -293,13 +288,18 @@ const setupFlyControls = ({
         const dt = clock.getDelta();
 
         // Easing the raw mouse delta
-        easedDelta.x = THREE.MathUtils.damp(easedDelta.x, mouseDelta.x, inputEase, dt);
-        easedDelta.y = THREE.MathUtils.damp(easedDelta.y, mouseDelta.y, inputEase, dt);
+        // One-frame input injection with smoothed output over time (eas-out)
+        mouseDeltaSmooth.x = THREE.MathUtils.damp(mouseDeltaSmooth.x, mouseDelta.x, inputEase, dt);
+        mouseDeltaSmooth.y = THREE.MathUtils.damp(mouseDeltaSmooth.y, mouseDelta.y, inputEase, dt);
+
+        easedDelta.x = THREE.MathUtils.damp(easedDelta.x, mouseDeltaSmooth.x, inputEase, dt);
+        easedDelta.y = THREE.MathUtils.damp(easedDelta.y, mouseDeltaSmooth.y, inputEase, dt);
+
         // Decay raw delta after applying it
         mouseDelta.set(0, 0);
 
         // Apply eased delta to rotation target velocity
-        const sensitivity = 0.002;
+        const sensitivity = 0.01;
         orbitMovementVelocity.x = THREE.MathUtils.damp(
           orbitMovementVelocity.x,
           easedDelta.y * sensitivity,
@@ -316,7 +316,7 @@ const setupFlyControls = ({
         angleY += orbitMovementVelocity.y; // horizontal drag
         angleX += orbitMovementVelocity.x; // vertical drag
 
-        const spherical = new THREE.Spherical(radius, angleX, angleY);
+        const spherical = new THREE.Spherical(cameraDistance, angleX, angleY);
         spherical.makeSafe();
         // prevent camera jittering at poles
         spherical.phi = Math.max(0.01, Math.min(Math.PI - 0.01, spherical.phi));
@@ -331,10 +331,10 @@ const setupFlyControls = ({
         return Math.abs(easedDelta.x) > 0.000000001 && Math.abs(easedDelta.y) > 0.000000001;
       });
     }
-    // wasd fly
-    else if (isMouseButton2) {
-      const inputEase = 100; // Increase for snappier input, decrease for smoother
-      const rotationEase = 100; // Controls how fast camera turns
+    // fly wasd/qe
+    else if (mouseButton.current === 2) {
+      const inputEase = 30; // Increase for snappier input, decrease for smoother
+      const rotationEase = 30; // Controls how fast camera turns
 
       mouseDelta.x -= evt.movementX;
       mouseDelta.y -= evt.movementY;
@@ -345,14 +345,17 @@ const setupFlyControls = ({
       update(() => {
         const dt = clock.getDelta();
 
-        // Easing the raw mouse delta
-        easedDelta.x = THREE.MathUtils.damp(easedDelta.x, mouseDelta.x, inputEase, dt);
-        easedDelta.y = THREE.MathUtils.damp(easedDelta.y, mouseDelta.y, inputEase, dt);
+        mouseDeltaSmooth.x = THREE.MathUtils.damp(mouseDeltaSmooth.x, mouseDelta.x, inputEase, dt);
+        mouseDeltaSmooth.y = THREE.MathUtils.damp(mouseDeltaSmooth.y, mouseDelta.y, inputEase, dt);
+
+        easedDelta.x = THREE.MathUtils.damp(easedDelta.x, mouseDeltaSmooth.x, inputEase, dt);
+        easedDelta.y = THREE.MathUtils.damp(easedDelta.y, mouseDeltaSmooth.y, inputEase, dt);
+
         // Decay raw delta after applying it
         mouseDelta.set(0, 0);
 
         // Apply eased delta to rotation target velocity
-        const sensitivity = 0.002;
+        const sensitivity = 0.01;
         flyRotationVelocity.x = THREE.MathUtils.damp(
           flyRotationVelocity.x,
           easedDelta.x * sensitivity,
@@ -393,12 +396,11 @@ const setupFlyControls = ({
 
   // on mouse wheel change speed or zoom
   const handleMouseWheel = (evt: WheelEvent) => {
-    if (isMouseButton2) {
+    if (mouseButton.current === 2) {
       speed.current -= evt.deltaY * 0.00005 * ratio;
       speed.current = Math.max(0.000001, speed.current);
     } else if (evt.altKey) {
-      animFrameId && cancelAnimationFrame(animFrameId);
-      animFrameId = null;
+      cancelUpdate();
       if (camera instanceof THREE.OrthographicCamera) {
         camera.zoom += -evt.deltaY * 0.005 * ratio;
         camera.updateProjectionMatrix();
@@ -447,7 +449,7 @@ export const FlyControls = () => {
 
   useEffect(() => {
     cleanupRef.current?.();
-    const { flyCamera, cleanup } = setupFlyControls({ camera, renderer: gl, scene, clock });
+    const { flyCamera, cleanup } = setupFlyControls({ camera, renderer: gl, scene });
     flyCameraRef.current = flyCamera;
     cleanupRef.current = cleanup;
   }, [camera, clock, gl, scene]);

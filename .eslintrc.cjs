@@ -12,6 +12,7 @@ module.exports = {
     '@typescript-eslint/no-this-alias': 'off',
     '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
     'no-empty': 'off',
-    'prefer-const': 'warn'
+    'prefer-const': 'warn',
+    'no-case-declarations': 'off'
   }
 };

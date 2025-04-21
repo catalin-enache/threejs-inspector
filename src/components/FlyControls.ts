@@ -100,6 +100,7 @@ const setupFlyControls = ({
         camera.updateProjectionMatrix();
       } else {
         camera.position.addScaledVector(cameraDirection, speed.current);
+        targetPosition.addScaledVector(cameraDirection, speed.current);
       }
     }
     if (moveBackward) {
@@ -108,19 +109,24 @@ const setupFlyControls = ({
         camera.updateProjectionMatrix();
       } else {
         camera.position.addScaledVector(cameraDirection, -speed.current);
+        targetPosition.addScaledVector(cameraDirection, -speed.current);
       }
     }
     if (moveLeft) {
       camera.position.addScaledVector(rightVector, -speed.current);
+      targetPosition.addScaledVector(rightVector, -speed.current);
     }
     if (moveRight) {
       camera.position.addScaledVector(rightVector, speed.current);
+      targetPosition.addScaledVector(rightVector, speed.current);
     }
     if (moveUp) {
       camera.position.y -= speed.current;
+      targetPosition.y -= speed.current;
     }
     if (moveDown) {
       camera.position.y += speed.current;
+      targetPosition.y += speed.current;
     }
   };
 

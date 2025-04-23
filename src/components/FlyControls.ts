@@ -80,6 +80,40 @@ const setupFlyControls = ({
     }
   };
 
+  const syncAngles = () => {
+    const offset = new THREE.Vector3().subVectors(camera.position, targetPosition);
+    const spherical = new THREE.Spherical().setFromVector3(offset);
+    spherical.makeSafe();
+    spherical.phi = Math.max(0.01, Math.min(Math.PI - 0.01, spherical.phi));
+    cameraDistance = spherical.radius;
+    euler.x = spherical.phi; // vertical
+    euler.y = spherical.theta; // horizontal
+  };
+
+  const updateEuler = ({ dt }: { dt: number }) => {
+    const inputEase = 30; // Increase for snappier input, decrease for smoother
+    const rotationEase = 30; // Controls how fast camera turns
+
+    // Easing the raw mouse delta
+    // One-frame input injection with smoothed output over time (eas-out)
+    mouseDeltaSmooth.x = THREE.MathUtils.damp(mouseDeltaSmooth.x, mouseDelta.x, inputEase, dt);
+    mouseDeltaSmooth.y = THREE.MathUtils.damp(mouseDeltaSmooth.y, mouseDelta.y, inputEase, dt);
+
+    easedDelta.x = THREE.MathUtils.damp(easedDelta.x, mouseDeltaSmooth.x, inputEase, dt);
+    easedDelta.y = THREE.MathUtils.damp(easedDelta.y, mouseDeltaSmooth.y, inputEase, dt);
+
+    // Decay raw delta after applying it
+    mouseDelta.set(0, 0);
+
+    // Apply eased delta to rotation target velocity
+    const sensitivity = 0.01;
+    rotationVelocity.x = THREE.MathUtils.damp(rotationVelocity.x, easedDelta.x * sensitivity, rotationEase, dt);
+    rotationVelocity.y = THREE.MathUtils.damp(rotationVelocity.y, easedDelta.y * sensitivity, rotationEase, dt);
+
+    euler.y += rotationVelocity.x; // horizontal drag
+    euler.x += rotationVelocity.y; // vertical drag
+  };
+
   // move camera wasd/qe
   const flyCamera = () => {
     // this will only fire if frameloop is not 'never'
@@ -234,16 +268,6 @@ const setupFlyControls = ({
     }
   };
 
-  const syncAngles = () => {
-    const offset = new THREE.Vector3().subVectors(camera.position, targetPosition);
-    const spherical = new THREE.Spherical().setFromVector3(offset);
-    spherical.makeSafe();
-    spherical.phi = Math.max(0.01, Math.min(Math.PI - 0.01, spherical.phi));
-    cameraDistance = spherical.radius;
-    euler.x = spherical.phi; // vertical
-    euler.y = spherical.theta; // horizontal
-  };
-
   const handleMouseDown = (evt: MouseEvent) => {
     mouseButton.current = evt.button;
     clock.getDelta();
@@ -252,7 +276,7 @@ const setupFlyControls = ({
 
     controlCameraEnabled.current = true;
 
-    syncAngles();
+    syncAngles(); // updates euler for orbit
 
     if (mouseButton.current === 1 || mouseButton.current === 2) {
       // @ts-ignore
@@ -295,33 +319,13 @@ const setupFlyControls = ({
     }
     // orbit
     else if (mouseButton.current === 0) {
-      const inputEase = 30; // Increase for snappier input, decrease for smoother
-      const rotationEase = 30; // Controls how fast camera turns
-
       mouseDelta.x -= evt.movementX;
       mouseDelta.y -= evt.movementY;
 
       update(() => {
         const dt = clock.getDelta();
 
-        // Easing the raw mouse delta
-        // One-frame input injection with smoothed output over time (eas-out)
-        mouseDeltaSmooth.x = THREE.MathUtils.damp(mouseDeltaSmooth.x, mouseDelta.x, inputEase, dt);
-        mouseDeltaSmooth.y = THREE.MathUtils.damp(mouseDeltaSmooth.y, mouseDelta.y, inputEase, dt);
-
-        easedDelta.x = THREE.MathUtils.damp(easedDelta.x, mouseDeltaSmooth.x, inputEase, dt);
-        easedDelta.y = THREE.MathUtils.damp(easedDelta.y, mouseDeltaSmooth.y, inputEase, dt);
-
-        // Decay raw delta after applying it
-        mouseDelta.set(0, 0);
-
-        // Apply eased delta to rotation target velocity
-        const sensitivity = 0.01;
-        rotationVelocity.x = THREE.MathUtils.damp(rotationVelocity.x, easedDelta.x * sensitivity, rotationEase, dt);
-        rotationVelocity.y = THREE.MathUtils.damp(rotationVelocity.y, easedDelta.y * sensitivity, rotationEase, dt);
-
-        euler.y += rotationVelocity.x; // horizontal drag
-        euler.x += rotationVelocity.y; // vertical drag
+        updateEuler({ dt });
 
         const spherical = new THREE.Spherical(cameraDistance, euler.x, euler.y);
         spherical.makeSafe();
@@ -340,9 +344,6 @@ const setupFlyControls = ({
     }
     // fly wasd/qe
     else if (mouseButton.current === 2) {
-      const inputEase = 30; // Increase for snappier input, decrease for smoother
-      const rotationEase = 30; // Controls how fast camera turns
-
       mouseDelta.x -= evt.movementX;
       mouseDelta.y -= evt.movementY;
 
@@ -352,23 +353,7 @@ const setupFlyControls = ({
       update(() => {
         const dt = clock.getDelta();
 
-        mouseDeltaSmooth.x = THREE.MathUtils.damp(mouseDeltaSmooth.x, mouseDelta.x, inputEase, dt);
-        mouseDeltaSmooth.y = THREE.MathUtils.damp(mouseDeltaSmooth.y, mouseDelta.y, inputEase, dt);
-
-        easedDelta.x = THREE.MathUtils.damp(easedDelta.x, mouseDeltaSmooth.x, inputEase, dt);
-        easedDelta.y = THREE.MathUtils.damp(easedDelta.y, mouseDeltaSmooth.y, inputEase, dt);
-
-        // Decay raw delta after applying it
-        mouseDelta.set(0, 0);
-
-        // Apply eased delta to rotation target velocity
-        const sensitivity = 0.01;
-        rotationVelocity.x = THREE.MathUtils.damp(rotationVelocity.x, easedDelta.x * sensitivity, rotationEase, dt);
-        rotationVelocity.y = THREE.MathUtils.damp(rotationVelocity.y, easedDelta.y * sensitivity, rotationEase, dt);
-
-        // Apply rotation
-        euler.y += rotationVelocity.x;
-        euler.x += rotationVelocity.y;
+        updateEuler({ dt });
 
         // Clamp pitch (X axis)
         const maxPitch = Math.PI / 2 - 0.01;

@@ -5,7 +5,6 @@ import { getSceneBoundingBoxSize, getWorldScreenRatio } from 'lib/utils/sizeUtil
 import { useAppStore } from 'src/store';
 
 const center = new THREE.Vector3(0, 0, 0);
-let targetPosition = center.clone();
 const clock = new THREE.Clock();
 
 const setupFlyControls = ({
@@ -35,7 +34,7 @@ const setupFlyControls = ({
   let moveUp = false;
   let moveDown = false;
 
-  let cameraDistance = 0;
+  let targetPosition = center.clone();
 
   const mouseButton = {
     current: null as number | null
@@ -80,16 +79,6 @@ const setupFlyControls = ({
     }
   };
 
-  const syncAngles = () => {
-    const offset = new THREE.Vector3().subVectors(camera.position, targetPosition);
-    const spherical = new THREE.Spherical().setFromVector3(offset);
-    spherical.makeSafe();
-    spherical.phi = Math.max(0.01, Math.min(Math.PI - 0.01, spherical.phi));
-    cameraDistance = spherical.radius;
-    euler.x = spherical.phi; // vertical
-    euler.y = spherical.theta; // horizontal
-  };
-
   const updateEuler = ({ dt }: { dt: number }) => {
     const inputEase = 30; // Increase for snappier input, decrease for smoother
     const rotationEase = 30; // Controls how fast camera turns
@@ -112,6 +101,26 @@ const setupFlyControls = ({
 
     euler.y += rotationVelocity.x; // horizontal drag
     euler.x += rotationVelocity.y; // vertical drag
+  };
+
+  const getSphericalPosition = ({ phi, theta }: { phi?: number; theta?: number } = {}) => {
+    const offset = new THREE.Vector3().subVectors(camera.position, targetPosition);
+    const spherical = new THREE.Spherical().setFromVector3(offset);
+    if (phi !== undefined) {
+      spherical.phi = phi;
+    }
+    if (theta !== undefined) {
+      spherical.theta = theta;
+    }
+    spherical.makeSafe();
+    spherical.phi = Math.max(0.01, Math.min(Math.PI - 0.01, spherical.phi));
+    const position = new THREE.Vector3().setFromSpherical(spherical).add(targetPosition);
+    // spherical.radius === camera.position.distanceTo(targetPosition);
+    return {
+      offset,
+      spherical,
+      position
+    };
   };
 
   // move camera wasd/qe
@@ -167,7 +176,6 @@ const setupFlyControls = ({
       camera.updateProjectionMatrix();
       camera.getWorldDirection(cameraDirection);
       cameraDirection.normalize();
-      // syncAngles();
     };
     switch (evt.code) {
       case 'KeyW':
@@ -215,17 +223,10 @@ const setupFlyControls = ({
         // top
         cancelUpdate();
         targetPosition = center.clone();
-        // camera.position.set(0, distance, 0.01 * distance); // alternative to following code
-        const offset = new THREE.Vector3().subVectors(camera.position, targetPosition);
-        const spherical = new THREE.Spherical().setFromVector3(offset);
-        spherical.phi = 0;
-        spherical.theta = 0;
-        spherical.makeSafe();
-        spherical.phi = Math.max(0.01, Math.min(Math.PI - 0.01, spherical.phi));
-        const newPos = new THREE.Vector3().setFromSpherical(spherical).add(targetPosition);
-        camera.position.x = newPos.x;
-        camera.position.y = newPos.y;
-        camera.position.z = newPos.z;
+        const { position } = getSphericalPosition({ phi: 0, theta: 0 });
+        camera.position.x = position.x;
+        camera.position.y = position.y;
+        camera.position.z = position.z;
         adjustCamera();
         break;
       case 'Numpad3':
@@ -276,7 +277,14 @@ const setupFlyControls = ({
 
     controlCameraEnabled.current = true;
 
-    syncAngles(); // updates euler for orbit
+    const { spherical } = getSphericalPosition();
+
+    if (mouseButton.current === 0) {
+      euler.x = spherical.phi; // vertical
+      euler.y = spherical.theta; // horizontal
+    } else if (mouseButton.current === 2) {
+      euler.setFromQuaternion(camera.quaternion);
+    }
 
     if (mouseButton.current === 1 || mouseButton.current === 2) {
       // @ts-ignore
@@ -327,28 +335,20 @@ const setupFlyControls = ({
 
         updateEuler({ dt });
 
-        const spherical = new THREE.Spherical(cameraDistance, euler.x, euler.y);
-        spherical.makeSafe();
-        // prevent camera jittering at poles
-        spherical.phi = Math.max(0.01, Math.min(Math.PI - 0.01, spherical.phi));
+        const { position } = getSphericalPosition({ phi: euler.x, theta: euler.y });
 
-        const newPos = new THREE.Vector3().setFromSpherical(spherical).add(targetPosition);
-
-        camera.position.x = newPos.x;
-        camera.position.y = newPos.y;
-        camera.position.z = newPos.z;
+        camera.position.x = position.x;
+        camera.position.y = position.y;
+        camera.position.z = position.z;
         camera.lookAt(targetPosition);
 
-        return Math.abs(easedDelta.x) > 0.000000001 && Math.abs(easedDelta.y) > 0.000000001;
+        return Math.abs(easedDelta.x) > 0.000001 && Math.abs(easedDelta.y) > 0.000001;
       });
     }
     // fly wasd/qe
     else if (mouseButton.current === 2) {
       mouseDelta.x -= evt.movementX;
       mouseDelta.y -= evt.movementY;
-
-      // this needs to stay outside the update loop to prevent jittering
-      euler.setFromQuaternion(camera.quaternion);
 
       update(() => {
         const dt = clock.getDelta();
@@ -371,7 +371,7 @@ const setupFlyControls = ({
         // Move Target
         targetPosition.copy(camera.position).add(direction);
 
-        return Math.abs(easedDelta.x) > 0.000000001 && Math.abs(easedDelta.y) > 0.000000001;
+        return Math.abs(easedDelta.x) > 0.000001 && Math.abs(easedDelta.y) > 0.000001;
       });
     }
   };

@@ -386,7 +386,7 @@ const setupFlyControls = ({
   // on mouse wheel change speed or zoom
   const handleMouseWheel = (evt: WheelEvent) => {
     if (mouseButton.current === 2) {
-      speed.current -= evt.deltaY * 0.00005 * ratio;
+      speed.current -= evt.deltaY * 0.0005 * ratio;
       speed.current = Math.max(0.000001, speed.current);
     } else if (evt.altKey) {
       cancelUpdate();

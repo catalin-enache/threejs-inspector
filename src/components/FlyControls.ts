@@ -44,8 +44,7 @@ const setupFlyControls = ({
   const mouseDelta = new THREE.Vector2(0, 0); // Raw input
   const mouseDeltaSmooth = new THREE.Vector2(0, 0); // Raw input smooth
   const easedDelta = new THREE.Vector2(0, 0); // Eased input
-  const flyRotationVelocity = new THREE.Vector2(0, 0);
-  const orbitMovementVelocity = new THREE.Vector2(0, 0);
+  const rotationVelocity = new THREE.Vector2(0, 0);
 
   const controlCameraEnabled = { current: false };
   const euler = new THREE.Euler(0, 0, 0, 'YXZ');
@@ -318,21 +317,11 @@ const setupFlyControls = ({
 
         // Apply eased delta to rotation target velocity
         const sensitivity = 0.01;
-        orbitMovementVelocity.x = THREE.MathUtils.damp(
-          orbitMovementVelocity.x,
-          easedDelta.x * sensitivity,
-          rotationEase,
-          dt
-        );
-        orbitMovementVelocity.y = THREE.MathUtils.damp(
-          orbitMovementVelocity.y,
-          easedDelta.y * sensitivity,
-          rotationEase,
-          dt
-        );
+        rotationVelocity.x = THREE.MathUtils.damp(rotationVelocity.x, easedDelta.x * sensitivity, rotationEase, dt);
+        rotationVelocity.y = THREE.MathUtils.damp(rotationVelocity.y, easedDelta.y * sensitivity, rotationEase, dt);
 
-        euler.y += orbitMovementVelocity.x; // horizontal drag
-        euler.x += orbitMovementVelocity.y; // vertical drag
+        euler.y += rotationVelocity.x; // horizontal drag
+        euler.x += rotationVelocity.y; // vertical drag
 
         const spherical = new THREE.Spherical(cameraDistance, euler.x, euler.y);
         spherical.makeSafe();
@@ -374,22 +363,12 @@ const setupFlyControls = ({
 
         // Apply eased delta to rotation target velocity
         const sensitivity = 0.01;
-        flyRotationVelocity.x = THREE.MathUtils.damp(
-          flyRotationVelocity.x,
-          easedDelta.x * sensitivity,
-          rotationEase,
-          dt
-        );
-        flyRotationVelocity.y = THREE.MathUtils.damp(
-          flyRotationVelocity.y,
-          easedDelta.y * sensitivity,
-          rotationEase,
-          dt
-        );
+        rotationVelocity.x = THREE.MathUtils.damp(rotationVelocity.x, easedDelta.x * sensitivity, rotationEase, dt);
+        rotationVelocity.y = THREE.MathUtils.damp(rotationVelocity.y, easedDelta.y * sensitivity, rotationEase, dt);
 
         // Apply rotation
-        euler.y += flyRotationVelocity.x;
-        euler.x += flyRotationVelocity.y;
+        euler.y += rotationVelocity.x;
+        euler.x += rotationVelocity.y;
 
         // Clamp pitch (X axis)
         const maxPitch = Math.PI / 2 - 0.01;

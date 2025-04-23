@@ -17,6 +17,17 @@ const setupFlyControls = ({
   renderer: THREE.WebGLRenderer;
   scene: THREE.Scene;
 }) => {
+  let sceneBoundingBox = new THREE.Vector3();
+  let sceneSize = 0.01;
+  let ratio = 0.01; // 23 is the scene size the defaults were tested with
+  // TODO: should update scene size when objects are added/removed and not on mouseDown
+  const updateSceneSize = () => {
+    sceneBoundingBox = getSceneBoundingBoxSize(scene, camera);
+    sceneSize = Math.max(sceneBoundingBox.x, sceneBoundingBox.y, sceneBoundingBox.z);
+    ratio = sceneSize / 23;
+  };
+  updateSceneSize();
+
   let moveForward = false;
   let moveBackward = false;
   let moveLeft = false;
@@ -24,8 +35,6 @@ const setupFlyControls = ({
   let moveUp = false;
   let moveDown = false;
 
-  let angleX = 0;
-  let angleY = 0;
   let cameraDistance = 0;
 
   const mouseButton = {
@@ -38,20 +47,8 @@ const setupFlyControls = ({
   const flyRotationVelocity = new THREE.Vector2(0, 0);
   const orbitMovementVelocity = new THREE.Vector2(0, 0);
 
-  let sceneBoundingBox = new THREE.Vector3();
-  let sceneSize = 0.01;
-  let ratio = 0.01; // 23 is the scene size the defaults were tested with
-
-  // TODO: should update scene size when objects are added/removed and not on mouseDown
-  const updateSceneSize = () => {
-    sceneBoundingBox = getSceneBoundingBoxSize(scene, camera);
-    sceneSize = Math.max(sceneBoundingBox.x, sceneBoundingBox.y, sceneBoundingBox.z);
-    ratio = sceneSize / 23;
-  };
-  updateSceneSize();
-
-  const flyCameraEnabled = { current: false };
-  const flyEuler = new THREE.Euler(0, 0, 0, 'YXZ');
+  const controlCameraEnabled = { current: false };
+  const euler = new THREE.Euler(0, 0, 0, 'YXZ');
   const speed = { current: 0.05 * ratio };
   const cameraDirection = new THREE.Vector3();
   const rightVector = new THREE.Vector3();
@@ -87,7 +84,7 @@ const setupFlyControls = ({
   // move camera wasd/qe
   const flyCamera = () => {
     // this will only fire if frameloop is not 'never'
-    if (!flyCameraEnabled.current) return;
+    if (!controlCameraEnabled.current) return;
 
     camera.getWorldDirection(cameraDirection); // Get the forward vector
     cameraDirection.normalize();
@@ -137,6 +134,7 @@ const setupFlyControls = ({
       camera.updateProjectionMatrix();
       camera.getWorldDirection(cameraDirection);
       cameraDirection.normalize();
+      // syncAngles();
     };
     switch (evt.code) {
       case 'KeyW':
@@ -184,7 +182,17 @@ const setupFlyControls = ({
         // top
         cancelUpdate();
         targetPosition = center.clone();
-        camera.position.set(-0.01, distance, -0.01);
+        // camera.position.set(0, distance, 0.01 * distance); // alternative to following code
+        const offset = new THREE.Vector3().subVectors(camera.position, targetPosition);
+        const spherical = new THREE.Spherical().setFromVector3(offset);
+        spherical.phi = 0;
+        spherical.theta = 0;
+        spherical.makeSafe();
+        spherical.phi = Math.max(0.01, Math.min(Math.PI - 0.01, spherical.phi));
+        const newPos = new THREE.Vector3().setFromSpherical(spherical).add(targetPosition);
+        camera.position.x = newPos.x;
+        camera.position.y = newPos.y;
+        camera.position.z = newPos.z;
         adjustCamera();
         break;
       case 'Numpad3':
@@ -227,21 +235,25 @@ const setupFlyControls = ({
     }
   };
 
+  const syncAngles = () => {
+    const offset = new THREE.Vector3().subVectors(camera.position, targetPosition);
+    const spherical = new THREE.Spherical().setFromVector3(offset);
+    spherical.makeSafe();
+    spherical.phi = Math.max(0.01, Math.min(Math.PI - 0.01, spherical.phi));
+    cameraDistance = spherical.radius;
+    euler.x = spherical.phi; // vertical
+    euler.y = spherical.theta; // horizontal
+  };
+
   const handleMouseDown = (evt: MouseEvent) => {
     mouseButton.current = evt.button;
     clock.getDelta();
     updateSceneSize();
     cancelUpdate();
 
-    flyCameraEnabled.current = true;
+    controlCameraEnabled.current = true;
 
-    const offset = new THREE.Vector3().subVectors(camera.position, targetPosition);
-    const spherical = new THREE.Spherical().setFromVector3(offset);
-    spherical.makeSafe();
-    spherical.phi = Math.max(0.01, Math.min(Math.PI - 0.01, spherical.phi));
-    cameraDistance = spherical.radius;
-    angleX = spherical.phi; // vertical
-    angleY = spherical.theta; // horizontal
+    syncAngles();
 
     if (mouseButton.current === 1 || mouseButton.current === 2) {
       // @ts-ignore
@@ -250,14 +262,14 @@ const setupFlyControls = ({
   };
 
   const handleMouseUp = () => {
-    flyCameraEnabled.current = false;
+    controlCameraEnabled.current = false;
     mouseButton.current = null;
     document.exitPointerLock();
   };
 
   // on mouse move rotate camera
   const handleMouseMove = (evt: MouseEvent) => {
-    if (!flyCameraEnabled.current) return;
+    if (!controlCameraEnabled.current) return;
 
     // pan
     if (mouseButton.current === 1) {
@@ -308,21 +320,21 @@ const setupFlyControls = ({
         const sensitivity = 0.01;
         orbitMovementVelocity.x = THREE.MathUtils.damp(
           orbitMovementVelocity.x,
-          easedDelta.y * sensitivity,
+          easedDelta.x * sensitivity,
           rotationEase,
           dt
         );
         orbitMovementVelocity.y = THREE.MathUtils.damp(
           orbitMovementVelocity.y,
-          easedDelta.x * sensitivity,
+          easedDelta.y * sensitivity,
           rotationEase,
           dt
         );
 
-        angleY += orbitMovementVelocity.y; // horizontal drag
-        angleX += orbitMovementVelocity.x; // vertical drag
+        euler.y += orbitMovementVelocity.x; // horizontal drag
+        euler.x += orbitMovementVelocity.y; // vertical drag
 
-        const spherical = new THREE.Spherical(cameraDistance, angleX, angleY);
+        const spherical = new THREE.Spherical(cameraDistance, euler.x, euler.y);
         spherical.makeSafe();
         // prevent camera jittering at poles
         spherical.phi = Math.max(0.01, Math.min(Math.PI - 0.01, spherical.phi));
@@ -346,7 +358,7 @@ const setupFlyControls = ({
       mouseDelta.y -= evt.movementY;
 
       // this needs to stay outside the update loop to prevent jittering
-      flyEuler.setFromQuaternion(camera.quaternion);
+      euler.setFromQuaternion(camera.quaternion);
 
       update(() => {
         const dt = clock.getDelta();
@@ -376,16 +388,16 @@ const setupFlyControls = ({
         );
 
         // Apply rotation
-        flyEuler.y += flyRotationVelocity.x;
-        flyEuler.x += flyRotationVelocity.y;
+        euler.y += flyRotationVelocity.x;
+        euler.x += flyRotationVelocity.y;
 
         // Clamp pitch (X axis)
         const maxPitch = Math.PI / 2 - 0.01;
         const minPitch = -maxPitch;
-        flyEuler.x = THREE.MathUtils.clamp(flyEuler.x, minPitch, maxPitch);
+        euler.x = THREE.MathUtils.clamp(euler.x, minPitch, maxPitch);
 
         // Apply to camera
-        camera.quaternion.setFromEuler(flyEuler);
+        camera.quaternion.setFromEuler(euler);
 
         // Forward direction (camera's -Z axis in world space)
         const direction = new THREE.Vector3(0, 0, -1).applyQuaternion(camera.quaternion);

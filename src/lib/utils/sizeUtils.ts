@@ -6,6 +6,33 @@ import { PositionalAudioHelper } from 'three/examples/jsm/helpers/PositionalAudi
 import { ViewHelper } from 'three/examples/jsm/helpers/ViewHelper.js';
 import { Follower } from 'lib/followers';
 
+export function getWorldScreenRatio({
+  camera,
+  renderer,
+  targetPosition,
+  referenceDistance
+}: {
+  camera: THREE.PerspectiveCamera | THREE.OrthographicCamera;
+  renderer: THREE.WebGLRenderer;
+  targetPosition: THREE.Vector3;
+  referenceDistance?: number;
+}) {
+  // returns world units per pixel
+
+  const screenHeight = renderer.domElement.clientHeight;
+
+  if (camera instanceof THREE.PerspectiveCamera) {
+    const fovInRadians = camera.fov * (Math.PI / 180);
+    const distance = referenceDistance ?? camera.position.distanceTo(targetPosition);
+    return (2 * distance * Math.tan(fovInRadians / 2)) / screenHeight;
+  } else if (camera instanceof THREE.OrthographicCamera) {
+    const viewHeight = camera.top - camera.bottom;
+    return viewHeight / screenHeight;
+  }
+
+  return 1; // fallback
+}
+
 export function getBoundingBoxSize(object: THREE.Object3D) {
   const box = new THREE.Box3().setFromObject(object, true);
   const size = new THREE.Vector3();

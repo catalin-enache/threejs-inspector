@@ -113,7 +113,9 @@ const setupFlyControls = ({
       spherical.theta = theta;
     }
     spherical.makeSafe();
-    spherical.phi = Math.max(0.01, Math.min(Math.PI - 0.01, spherical.phi));
+    const minPitch = 0.01;
+    const maxPitch = Math.PI - 0.01;
+    spherical.phi = Math.max(minPitch, Math.min(maxPitch, spherical.phi));
     const position = new THREE.Vector3().setFromSpherical(spherical).add(targetPosition);
     // spherical.radius === camera.position.distanceTo(targetPosition);
     return {

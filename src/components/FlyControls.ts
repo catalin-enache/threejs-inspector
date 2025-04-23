@@ -276,12 +276,14 @@ const setupFlyControls = ({
   };
 
   const handleMouseDown = (evt: MouseEvent) => {
+    controlCameraEnabled.current = evt.target === renderer.domElement;
+
+    if (!controlCameraEnabled.current) return;
+
     mouseButton.current = evt.button;
     clock.getDelta();
     updateSceneSize();
     cancelUpdate();
-
-    controlCameraEnabled.current = true;
 
     const { spherical } = getSphericalPosition();
 

@@ -79,7 +79,7 @@ const setupFlyControls = ({
     }
   };
 
-  const updateEuler = ({ dt }: { dt: number }) => {
+  const updateEuler = ({ dt, minPitch, maxPitch }: { dt: number; minPitch?: number; maxPitch?: number }) => {
     const inputEase = 30; // Increase for snappier input, decrease for smoother
     const rotationEase = 30; // Controls how fast camera turns
 
@@ -101,6 +101,10 @@ const setupFlyControls = ({
 
     euler.y += rotationVelocity.x; // horizontal drag
     euler.x += rotationVelocity.y; // vertical drag
+
+    if (minPitch !== undefined && maxPitch !== undefined) {
+      euler.x = THREE.MathUtils.clamp(euler.x, minPitch, maxPitch);
+    }
   };
 
   const getSphericalPosition = ({ phi, theta }: { phi?: number; theta?: number } = {}) => {
@@ -335,7 +339,9 @@ const setupFlyControls = ({
       update(() => {
         const dt = clock.getDelta();
 
-        updateEuler({ dt });
+        const minPitch = 0.01;
+        const maxPitch = Math.PI - 0.01;
+        updateEuler({ dt, minPitch, maxPitch });
 
         const { position } = getSphericalPosition({ phi: euler.x, theta: euler.y });
 
@@ -355,12 +361,9 @@ const setupFlyControls = ({
       update(() => {
         const dt = clock.getDelta();
 
-        updateEuler({ dt });
-
-        // Clamp pitch (X axis)
         const maxPitch = Math.PI / 2 - 0.01;
         const minPitch = -maxPitch;
-        euler.x = THREE.MathUtils.clamp(euler.x, minPitch, maxPitch);
+        updateEuler({ dt, minPitch, maxPitch });
 
         // Apply to camera
         camera.quaternion.setFromEuler(euler);

@@ -85,9 +85,6 @@ export function KeyListener() {
         case 'KeyU':
           isEditorMode && useAppStore.getState().toggleCPanelContinuousUpdate();
           break;
-        case 'KeyN':
-          isEditorMode && autoNavControls && useAppStore.getState().toggleCameraControl();
-          break;
         // Transform Controls
         case 'Comma':
           isEditorMode && useAppStore.getState().setTransformControlsMode('translate');

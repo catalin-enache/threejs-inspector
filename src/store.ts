@@ -40,13 +40,6 @@ const angleFormat = (
     : angleFormatDefault
 ) as 'deg' | 'rad';
 
-const cameraControlDefault = 'orbit';
-const cameraControl = (
-  localStorage.getItem('threeInspector__cameraControl')
-    ? localStorage.getItem('threeInspector__cameraControl')
-    : cameraControlDefault
-) as 'orbit' | 'fly';
-
 const cameraTypeDefault = 'perspective';
 const cameraType = (
   localStorage.getItem('threeInspector__cameraType')
@@ -87,7 +80,6 @@ export const clearLocalStorage = () => {
   localStorage.removeItem('threeInspector__showGizmos');
   localStorage.removeItem('threeInspector__showHelpers');
   localStorage.removeItem('threeInspector__angleFormat');
-  localStorage.removeItem('threeInspector__cameraControl');
   localStorage.removeItem('threeInspector__cameraType');
   localStorage.removeItem('threeInspector__cPanelOpacity');
   localStorage.removeItem('threeInspector__cPanelSize');
@@ -163,9 +155,6 @@ export interface AppStore {
   cPanelCustomParamsStructureStateFake: number;
   loadObjectIsOpen: boolean;
   setLoadObjectIsOpen: (isOpen: boolean) => void;
-  cameraControl: 'orbit' | 'fly';
-  setCameraControl: (type: 'orbit' | 'fly') => void;
-  toggleCameraControl: () => void;
   cameraType: 'perspective' | 'orthographic';
   setCameraType: (type: 'perspective' | 'orthographic') => void;
   toggleCameraType: () => void;
@@ -222,7 +211,6 @@ export const useAppStore = create<AppStore>()(
         cPanelStateFake: 0,
         cPanelCustomParamsStructureStateFake: 0,
         loadObjectIsOpen: false,
-        cameraControl: cameraControlDefault,
         cameraType: cameraTypeDefault,
         currentCameraStateFake: 0,
         currentSceneStateFake: 0,
@@ -419,19 +407,6 @@ export const useAppStore = create<AppStore>()(
     cPanelCustomParamsStructureStateFake: 0,
     loadObjectIsOpen: false,
     setLoadObjectIsOpen: (loadObjectIsOpen) => set({ loadObjectIsOpen }),
-    cameraControl: cameraControl,
-    setCameraControl: (cameraControl) => {
-      if (get().isDraggingTransformControls) return;
-      set({ cameraControl });
-      localStorage.setItem('threeInspector__cameraControl', cameraControl);
-    },
-    toggleCameraControl: () => {
-      if (get().isDraggingTransformControls) return;
-      set((state) => ({
-        cameraControl: state.cameraControl === 'fly' ? 'orbit' : 'fly'
-      }));
-      localStorage.setItem('threeInspector__cameraControl', get().cameraControl);
-    },
     cameraType: cameraType, // Warning: orthographic camera does not work with CubeTexture for Scene.background
     setCameraType: (cameraType) => {
       if (get().isDraggingTransformControls) return;

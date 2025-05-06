@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { useFrame, useThree } from '@react-three/fiber';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, Ref, RefObject, useImperativeHandle } from 'react';
 import { getSceneBoundingBoxSize, getWorldScreenRatio } from 'lib/utils/sizeUtils';
 import { useAppStore } from 'src/store';
 
@@ -10,11 +10,13 @@ const clock = new THREE.Clock();
 const setupFlyControls = ({
   camera,
   renderer,
-  scene
+  scene,
+  isDisabledRef
 }: {
   camera: THREE.PerspectiveCamera | THREE.OrthographicCamera;
   renderer: THREE.WebGLRenderer;
   scene: THREE.Scene;
+  isDisabledRef: RefObject<boolean>;
 }) => {
   let sceneBoundingBox = new THREE.Vector3();
   let sceneSize = 0.01;
@@ -375,7 +377,7 @@ const setupFlyControls = ({
   const handleMouseDown = (evt: MouseEvent) => {
     controlCameraEnabled.current = evt.target === renderer.domElement;
 
-    if (!controlCameraEnabled.current) return;
+    if (!controlCameraEnabled.current || isDisabledRef.current) return;
 
     mouseButton.current = evt.button;
     clock.getDelta();
@@ -534,15 +536,30 @@ const setupFlyControls = ({
 };
 
 // TODO: improve this to fly when frameloop is 'demand'
+export type FlyControlsRefType = { setIsDisabled: (isDisabled: boolean) => void };
+export interface FlyControlsProps {
+  ref: Ref<FlyControlsRefType>;
+}
 
-export const FlyControls = () => {
+export const FlyControls = ({ ref }: FlyControlsProps) => {
   const { camera, scene, clock, gl } = useThree();
   const flyCameraRef = useRef<(() => void) | null>(null);
   const cleanupRef = useRef<(() => void) | null>(null);
+  const isDisabledRef = useRef(false);
+
+  useImperativeHandle(
+    ref,
+    () => ({
+      setIsDisabled: (isDisabled: boolean) => {
+        isDisabledRef.current = isDisabled;
+      }
+    }),
+    []
+  );
 
   useEffect(() => {
     cleanupRef.current?.();
-    const { moveCamera, cleanup } = setupFlyControls({ camera, renderer: gl, scene });
+    const { moveCamera, cleanup } = setupFlyControls({ camera, renderer: gl, scene, isDisabledRef });
     flyCameraRef.current = moveCamera;
     cleanupRef.current = cleanup;
   }, [camera, clock, gl, scene]);

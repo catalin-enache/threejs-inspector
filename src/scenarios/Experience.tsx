@@ -475,6 +475,19 @@ export function Experience() {
         <meshPhysicalMaterial ref={doorMaterialRef} side={THREE.DoubleSide} />
       </mesh>
 
+      {/*<mesh*/}
+      {/*  name="door"*/}
+      {/*  rotation={[0, 0, 0]}*/}
+      {/*  position={[2000, 2000, -2000]}*/}
+      {/*  receiveShadow*/}
+      {/*  castShadow*/}
+      {/*  __inspectorData={{ isInspectable: true }}*/}
+      {/*>*/}
+      {/*  <planeGeometry args={[16, 16]} />*/}
+      {/*  /!*@ts-ignore*!/*/}
+      {/*  <meshPhysicalMaterial ref={doorMaterialRef} side={THREE.DoubleSide} />*/}
+      {/*</mesh>*/}
+
       <positionalAudio args={[audioListenerRef.current]} position={[0, 0, 5]} />
 
       <perspectiveCamera

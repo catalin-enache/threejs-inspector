@@ -120,7 +120,7 @@ export function TestInjectedInspectorApp(props: TestInjectedInspectorAppProps) {
     onCPanelReady,
     onCPanelUnmounted
   } = props;
-  const [orbitControls, setOrbitControls] = useState<any>(null);
+  const [, setOrbitControls] = useState<any>(null);
   const threeStateRef = useRef<RootState | null>(null);
 
   useEffect(() => {
@@ -158,7 +158,6 @@ export function TestInjectedInspectorApp(props: TestInjectedInspectorAppProps) {
       {/* orbitControls is first null then if useDreiOrbitControls is the one from Drei */}
       <Inspector
         autoNavControls={autoNavControls}
-        cameraControls={orbitControls}
         onSetupEffect={onSetupEffect}
         onThreeChange={handleThreeChange}
         onCPanelReady={onCPanelReady}

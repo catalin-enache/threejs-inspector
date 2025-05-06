@@ -1,9 +1,8 @@
 import * as THREE from 'three';
-import { RootState, useThree, useFrame } from '@react-three/fiber';
+import { RootState, useThree } from '@react-three/fiber';
 import { useCallback, useEffect, useRef } from 'react';
-import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import { RectAreaLightUniformsLib } from 'three/examples/jsm/lights/RectAreaLightUniformsLib';
-import { FlyControls } from 'components/FlyControls';
+import { FlyControls, FlyControlsRefType } from 'components/FlyControls';
 import { useAppStore } from 'src/store';
 import patchThree from 'lib/patchThree';
 // @ts-ignore
@@ -28,7 +27,6 @@ const preventContextMenu = (evt: MouseEvent) => {
 };
 
 export enum SETUP_EFFECT {
-  ORBIT_CONTROLS = 'OrbitControlsEffect',
   TRANSFORM_CONTROLS = 'TransformControlsEffect',
   VERSION_CHANGED = 'VersionChangedEffect' // triggered by Inspector
 }
@@ -36,7 +34,6 @@ export enum SETUP_EFFECT {
 const threeFields = ['camera', 'gl', 'raycaster', 'pointer', 'scene'] as (keyof RootState)[];
 
 export interface SetUpProps {
-  cameraControls?: OrbitControls | null;
   autoNavControls: boolean; // considered when orbitControls is falsy
   isInjected?: boolean;
   // for tests
@@ -46,23 +43,18 @@ export interface SetUpProps {
 
 const SetUp = (props: SetUpProps) => {
   const {
-    cameraControls: inspectorCameraControls = null,
     // if using drei camera controls (especially with makeDefault false),
     // set autoNavControls to false, else will conflict
-    // when drei camera controls has makeDefault true, orbitControls will be retrieved from the controls from useThree()
-    // and autoNavControls will be ignored
     autoNavControls = false,
     isInjected = true,
-    onSetupEffect,
+    // onSetupEffect,
     onThreeChange
   } = props;
   const three = useThree();
   // The scene received here is settled and will not change. It is either the defaultScene or the scene from the App where Inspector is injected
-  const { camera, gl, raycaster, pointer, scene, controls, frameloop } = three;
+  const { camera, gl, raycaster, pointer, scene, frameloop, controls } = three;
 
   patchThree.setThreeRootState(three);
-
-  const receivedCameraControls = inspectorCameraControls ?? controls;
 
   const setIsInjected = useAppStore((state) => state.setIsInjected);
   const setAutoNavControls = useAppStore((state) => state.setAutoNavControls);
@@ -75,24 +67,15 @@ const SetUp = (props: SetUpProps) => {
 
   const showGizmos = useAppStore((state) => state.showGizmos);
 
-  const cameraControl = useAppStore((state) => state.cameraControl);
-  const attachDefaultControllersToPlayingCamera = useAppStore((state) => state.attachDefaultControllersToPlayingCamera);
-
   const transformControlsMode = useAppStore((state) => state.transformControlsMode);
   const transformControlsSpace = useAppStore((state) => state.transformControlsSpace);
 
   const hitsRef = useRef<THREE.Intersection<THREE.Object3D>[]>([]);
   const lastHitRef = useRef<THREE.Intersection<THREE.Object3D> | null>(null);
 
-  const cacheRef = useRef<any>({});
+  const flyControlsRef = useRef<FlyControlsRefType>(null);
 
-  useFrame(() => {
-    const cameraControls = patchThree.getCameraControls();
-    if (!cameraControls) return;
-    if (cameraControls.enabled && cameraControls.enableDamping) {
-      cameraControls.update();
-    }
-  });
+  const cacheRef = useRef<any>({});
 
   useEffect(() => {
     (threeFields as (keyof RootState)[]).forEach((key) => {
@@ -108,8 +91,9 @@ const SetUp = (props: SetUpProps) => {
 
   useEffect(() => {
     setIsInjected(isInjected);
-    setAutoNavControls(autoNavControls);
-  }, [isInjected, setIsInjected, autoNavControls, setAutoNavControls]);
+    // if controls is not null, it means that the App is using external controls and autoNavControls is not needed
+    setAutoNavControls(autoNavControls && !controls);
+  }, [isInjected, setIsInjected, autoNavControls, setAutoNavControls, controls]);
 
   useEffect(() => {
     setCurrentRenderer(gl);
@@ -169,7 +153,7 @@ const SetUp = (props: SetUpProps) => {
   // Update transform controls behavior
   useEffect(() => {
     if (selectedObjectUUID && showGizmos) {
-      patchThree.attachTransformControls({ showHelper: showGizmos });
+      patchThree.attachTransformControls({ showHelper: showGizmos, flyControlsRef });
       const transformControls = patchThree.getTransformControls()!;
       transformControls.setMode(transformControlsMode); // translate | rotate | scale
       transformControls.setSpace(transformControlsSpace); // local | world
@@ -230,78 +214,15 @@ const SetUp = (props: SetUpProps) => {
 
   useEffect(() => {
     return () => {
-      patchThree.disposeCameraControls();
       patchThree.disposeTransformControls({ resetSelectedObject: true });
     };
   }, []);
 
   useEffect(() => {
-    const nextCameraControls = patchThree.getNextCameraControls({
-      receivedCameraControls,
-      cameraControl,
-      autoNavControls,
-      camera,
-      renderer: gl,
-      attachDefaultControllersToPlayingCamera
-    });
-    onSetupEffect?.(SETUP_EFFECT.ORBIT_CONTROLS, {
-      orbitControlsInUse: nextCameraControls,
-      orbitControlsReceived: receivedCameraControls
-    });
-  }, [
-    // all these deps needs to be here to re-trigger getNextCameraControls
-    // even if patchThree.getNextCameraControls can fetch them from internal state
-    receivedCameraControls,
-    cameraControl,
-    autoNavControls,
-    camera,
-    gl,
-    attachDefaultControllersToPlayingCamera,
-    onSetupEffect
-  ]);
-
-  // allow rerender when frameloop is 'demand'
-  useEffect(() => {
-    const cameraControls = patchThree.getCameraControls();
-    if (!cameraControls) return;
-
-    let animFrameId: number;
-    const _render = () => {
-      window.cancelAnimationFrame(animFrameId);
-      render();
-    };
-    const renderWithDumping = () => {
-      if (!cameraControls.enableDamping) return;
-      let dumpingFactor = ((cameraControls.dampingFactor || 0) + 0.3) * 1000;
-      let prevTime = new Date();
-      const reRender = () => {
-        const now = new Date();
-        const delta = now.getTime() - prevTime.getTime();
-        prevTime = new Date();
-        dumpingFactor -= delta;
-        if (dumpingFactor > 0) {
-          cameraControls.update();
-          render();
-          animFrameId = window.requestAnimationFrame(reRender);
-        }
-      };
-      animFrameId = window.requestAnimationFrame(reRender);
-    };
-
-    // @ts-ignore
-    if (/* cameraControls.isPatched && */ frameloop === 'demand') {
-      cameraControls.addEventListener('change', _render);
-      cameraControls.addEventListener('end', renderWithDumping);
-    }
-
-    return () => {
-      cameraControls?.removeEventListener('change', _render);
-      cameraControls?.removeEventListener('end', renderWithDumping);
-      window.cancelAnimationFrame(animFrameId);
-    };
+    render();
   }, [render, frameloop]);
 
-  return <>{shouldUseFlyControls(camera) && <FlyControls />}</>;
+  return <>{shouldUseFlyControls(camera) && <FlyControls ref={flyControlsRef} />}</>;
 };
 
 // eslint-disable-next-line

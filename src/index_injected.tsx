@@ -82,7 +82,7 @@ export function App(props: AppProps) {
       }}
       frameloop={'always'}
     >
-      <Inspector autoNavControls={true} customParams={customParams} />
+      <Inspector autoNavControls={false} customParams={customParams} />
       {/*dampingFactor={0.05} is default*/}
       {/*<_OrbitControls makeDefault={true} enableDamping={true} dampingFactor={0.1} />*/}
       {/*CameraControls do not allow controlling camera from outside*/}

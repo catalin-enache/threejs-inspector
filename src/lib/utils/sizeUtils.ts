@@ -26,7 +26,7 @@ export function getWorldScreenRatio({
     const distance = referenceDistance ?? camera.position.distanceTo(targetPosition);
     return (2 * distance * Math.tan(fovInRadians / 2)) / screenHeight;
   } else if (camera instanceof THREE.OrthographicCamera) {
-    const viewHeight = camera.top - camera.bottom;
+    const viewHeight = (camera.top - camera.bottom) / camera.zoom;
     return viewHeight / screenHeight;
   }
 

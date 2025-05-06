@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import { RootState, useThree } from '@react-three/fiber';
 import { useCallback, useEffect, useRef } from 'react';
 import { RectAreaLightUniformsLib } from 'three/examples/jsm/lights/RectAreaLightUniformsLib';
-import { FlyControls, FlyControlsRefType } from 'components/FlyControls';
+import { CameraControls, CameraControlsRefType } from 'components/CameraControls';
 import { useAppStore } from 'src/store';
 import patchThree from 'lib/patchThree';
 // @ts-ignore
@@ -14,7 +14,7 @@ const {
   setCurrentRenderer,
   getCameraToUseOnPlay,
   updateCameras,
-  shouldUseFlyControls,
+  shouldUseCameraControls,
   interactableObjects,
   defaultPerspectiveCamera,
   defaultOrthographicCamera
@@ -73,7 +73,7 @@ const SetUp = (props: SetUpProps) => {
   const hitsRef = useRef<THREE.Intersection<THREE.Object3D>[]>([]);
   const lastHitRef = useRef<THREE.Intersection<THREE.Object3D> | null>(null);
 
-  const flyControlsRef = useRef<FlyControlsRefType>(null);
+  const cameraControlsRef = useRef<CameraControlsRefType>(null);
 
   const cacheRef = useRef<any>({});
 
@@ -153,7 +153,7 @@ const SetUp = (props: SetUpProps) => {
   // Update transform controls behavior
   useEffect(() => {
     if (selectedObjectUUID && showGizmos) {
-      patchThree.attachTransformControls({ showHelper: showGizmos, flyControlsRef });
+      patchThree.attachTransformControls({ showHelper: showGizmos, cameraControlsRef: cameraControlsRef });
       const transformControls = patchThree.getTransformControls()!;
       transformControls.setMode(transformControlsMode); // translate | rotate | scale
       transformControls.setSpace(transformControlsSpace); // local | world
@@ -222,7 +222,7 @@ const SetUp = (props: SetUpProps) => {
     render();
   }, [render, frameloop]);
 
-  return <>{shouldUseFlyControls(camera) && <FlyControls ref={flyControlsRef} />}</>;
+  return <>{shouldUseCameraControls(camera) && <CameraControls ref={cameraControlsRef} />}</>;
 };
 
 // eslint-disable-next-line

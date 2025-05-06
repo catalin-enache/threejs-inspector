@@ -362,13 +362,13 @@ describe('SetUp', () => {
           const handleThreeChange: SetUpProps['onThreeChange'] = async (changed, three) => {
             const { camera } = three;
             if (changed === 'camera' && camera.name === 'DefaultPerspectiveCamera') {
-              await waitFor(() => expect(patchThree.shouldUseFlyControls(camera)).toBe(true));
+              await waitFor(() => expect(patchThree.shouldUseCameraControls(camera)).toBe(true));
               useAppStore.getState().setPlaying('playing'); // will change camera to myPerspectiveCamera because is useOnPlay
             }
             if (changed === 'camera' && camera.name === 'myPerspectiveCamera') {
-              await waitFor(() => expect(patchThree.shouldUseFlyControls(camera)).toBe(false)); // because not attaching controls to playing camera
+              await waitFor(() => expect(patchThree.shouldUseCameraControls(camera)).toBe(false)); // because not attaching controls to playing camera
               useAppStore.getState().setAttachDefaultControllersToPlayingCamera(true);
-              await waitFor(() => expect(patchThree.shouldUseFlyControls(camera)).toBe(true));
+              await waitFor(() => expect(patchThree.shouldUseCameraControls(camera)).toBe(true));
               res.unmount();
             }
           };

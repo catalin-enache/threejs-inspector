@@ -24,7 +24,7 @@ import {
 import './patchCubeCamera';
 import type { __inspectorData } from 'tsExtensions';
 import { deepClean } from 'lib/utils/cleanUp';
-import { FlyControlsRefType } from 'components/FlyControls';
+import { CameraControlsRefType } from 'components/CameraControls';
 
 THREE.EventDispatcher.prototype.clearListeners = (function () {
   return function (type?: string) {
@@ -221,11 +221,11 @@ type Module = {
   setCurrentCamera: (camera: THREE.PerspectiveCamera | THREE.OrthographicCamera) => void;
   transformControls: TransformControls | null | undefined;
   getTransformControls: () => TransformControls | null | undefined;
-  createTransformControls: (flyControlsRef: RefObject<FlyControlsRefType | null>) => void;
+  createTransformControls: (cameraControlsRef: RefObject<CameraControlsRefType | null>) => void;
   attachTransformControls: (_: {
     selectedObject?: THREE.Object3D | null;
     showHelper?: boolean;
-    flyControlsRef: RefObject<FlyControlsRefType | null>;
+    cameraControlsRef: RefObject<CameraControlsRefType | null>;
   }) => void;
   disposeTransformControls: (_?: { resetSelectedObject?: boolean }) => void;
   showTransformControls: () => void;
@@ -243,7 +243,7 @@ type Module = {
   defaultOrthographicCamera: THREE.OrthographicCamera;
   cameraToUseOnPlay: THREE.PerspectiveCamera | THREE.OrthographicCamera | null;
   getCameraToUseOnPlay: () => THREE.PerspectiveCamera | THREE.OrthographicCamera | null;
-  shouldUseFlyControls: (camera: THREE.PerspectiveCamera | THREE.OrthographicCamera) => boolean;
+  shouldUseCameraControls: (camera: THREE.PerspectiveCamera | THREE.OrthographicCamera) => boolean;
   getIsUseOnPlayCamera: (camera: THREE.PerspectiveCamera | THREE.OrthographicCamera) => boolean;
   isSafeToMakeHelpers: boolean;
   updateHelper: (helper: __inspectorData['helper']) => void;
@@ -298,7 +298,7 @@ const module: Module = {
   getTransformControls() {
     return this.transformControls;
   },
-  createTransformControls(flyControlsRef: RefObject<FlyControlsRefType | null>) {
+  createTransformControls(cameraControlsRef: RefObject<CameraControlsRefType | null>) {
     const transformControls = this.transformControls;
     if (transformControls) {
       return;
@@ -317,7 +317,7 @@ const module: Module = {
     // Preventing here for camera controls to interfere with transform controls
     const handleTransformControlsDraggingChanged = (event: any) => {
       useAppStore.getState().setIsDraggingTransformControls(event.value);
-      flyControlsRef.current?.setIsDisabled(event.value);
+      cameraControlsRef.current?.setIsDisabled(event.value);
     };
 
     this.transformControls = new TransformControls(camera, renderer.domElement);
@@ -329,17 +329,17 @@ const module: Module = {
   attachTransformControls({
     selectedObject = useAppStore.getState().getSelectedObject(),
     showHelper = useAppStore.getState().showGizmos,
-    flyControlsRef
+    cameraControlsRef
   }: {
     selectedObject?: THREE.Object3D | null;
     showHelper?: boolean;
-    flyControlsRef: RefObject<FlyControlsRefType | null>;
+    cameraControlsRef: RefObject<CameraControlsRefType | null>;
   }) {
     if (!selectedObject) {
       return;
     }
     if (!this.transformControls) {
-      this.createTransformControls(flyControlsRef);
+      this.createTransformControls(cameraControlsRef);
     }
     const transformControls = this.transformControls!;
     transformControls.attach(selectedObject);
@@ -400,7 +400,7 @@ const module: Module = {
     return this.cameraToUseOnPlay;
   },
 
-  shouldUseFlyControls(camera: THREE.PerspectiveCamera | THREE.OrthographicCamera) {
+  shouldUseCameraControls(camera: THREE.PerspectiveCamera | THREE.OrthographicCamera) {
     const isUseOnPlayCamera = this.getIsUseOnPlayCamera(camera);
     const autoNavControls = useAppStore.getState().autoNavControls;
     const attachDefaultControllersToPlayingCamera = useAppStore.getState().attachDefaultControllersToPlayingCamera;

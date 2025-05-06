@@ -7,7 +7,7 @@ import { useAppStore } from 'src/store';
 const center = new THREE.Vector3(0, 0, 0);
 const clock = new THREE.Clock();
 
-const setupFlyControls = ({
+const setupCameraControls = ({
   camera,
   renderer,
   scene,
@@ -535,15 +535,15 @@ const setupFlyControls = ({
   };
 };
 
-// TODO: improve this to fly when frameloop is 'demand'
-export type FlyControlsRefType = { setIsDisabled: (isDisabled: boolean) => void };
-export interface FlyControlsProps {
-  ref: Ref<FlyControlsRefType>;
+// TODO: improve this to control when frameloop is 'demand'
+export type CameraControlsRefType = { setIsDisabled: (isDisabled: boolean) => void };
+export interface CameraControlsProps {
+  ref: Ref<CameraControlsRefType>;
 }
 
-export const FlyControls = ({ ref }: FlyControlsProps) => {
+export const CameraControls = ({ ref }: CameraControlsProps) => {
   const { camera, scene, clock, gl } = useThree();
-  const flyCameraRef = useRef<(() => void) | null>(null);
+  const moveCameraRef = useRef<(() => void) | null>(null);
   const cleanupRef = useRef<(() => void) | null>(null);
   const isDisabledRef = useRef(false);
 
@@ -559,13 +559,13 @@ export const FlyControls = ({ ref }: FlyControlsProps) => {
 
   useEffect(() => {
     cleanupRef.current?.();
-    const { moveCamera, cleanup } = setupFlyControls({ camera, renderer: gl, scene, isDisabledRef });
-    flyCameraRef.current = moveCamera;
+    const { moveCamera, cleanup } = setupCameraControls({ camera, renderer: gl, scene, isDisabledRef });
+    moveCameraRef.current = moveCamera;
     cleanupRef.current = cleanup;
   }, [camera, clock, gl, scene]);
 
   useFrame((_state, _delta) => {
-    flyCameraRef.current && flyCameraRef.current();
+    moveCameraRef.current && moveCameraRef.current();
   });
 
   useEffect(() => () => cleanupRef.current?.(), []);

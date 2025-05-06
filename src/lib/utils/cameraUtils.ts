@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import { SceneSize } from 'old_src/config';
 
 export const focusCamera = () => {
-  // handled by FlyControls
+  // handled by CameraControls
   window.dispatchEvent(new KeyboardEvent('keydown', { key: 'f', code: 'KeyF' }));
 };
 

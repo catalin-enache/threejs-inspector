@@ -7,7 +7,7 @@ import { CustomControl } from 'components/CustomControl/CustomControl';
 import { CustomParams, isCustomParamStruct } from 'lib/customParam.types';
 // KeyListener depends on CPanel (sideEffect) to add in DOM CPanel elements to listen to
 import { KeyListener } from 'components/KeyListener';
-extend(THREE);
+extend(THREE as any);
 
 // singleton
 let root: ReconcilerRoot<HTMLCanvasElement> | null;
@@ -19,10 +19,7 @@ type buildCustomParamsElementsParams = {
 };
 
 export interface BaseInspectorProps {
-  // autoNavControls enable OrbitControls and FlyControls
   autoNavControls?: boolean;
-  // if orbitControls are provided, they replace internal OrbitControls when autoNavControls is true
-  cameraControls?: any;
   customParams?: CustomParams;
   // for testing
   onSetupEffect?: SetUpProps['onSetupEffect'];
@@ -66,7 +63,6 @@ export interface InspectorProps extends BaseInspectorProps {
 
 export const Inspector = memo(
   ({
-    cameraControls,
     autoNavControls = false,
     customParams,
     onSetupEffect,
@@ -88,7 +84,6 @@ export const Inspector = memo(
     return (
       <>
         <SetUp
-          cameraControls={cameraControls}
           isInjected={true}
           autoNavControls={autoNavControls}
           onSetupEffect={onSetupEffect}
@@ -115,7 +110,6 @@ const configureAndRender = (params: InjectInspectorParams) => {
     scene,
     camera,
     frameloop,
-    cameraControls,
     autoNavControls,
     customParams,
     onSetupEffect,
@@ -139,7 +133,6 @@ const configureAndRender = (params: InjectInspectorParams) => {
 
   root?.render(
     React.createElement(Inspector, {
-      cameraControls,
       autoNavControls,
       customParams,
       version: ++version,

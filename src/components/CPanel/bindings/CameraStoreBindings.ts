@@ -2,20 +2,6 @@ import { useAppStore } from 'src/store';
 import type { onChange, CommonGetterParams } from './bindingTypes';
 
 export const CameraStoreBindings = (_params: CommonGetterParams) => ({
-  cameraControl: {
-    label: 'Control ( N )',
-    view: 'radiogrid',
-    groupName: 'cameraControl',
-    size: [2, 1],
-    cells: (x: number, _y: number) => ({
-      title: x === 0 ? 'Orbit' : 'Fly',
-      value: x === 0 ? 'orbit' : 'fly'
-    }),
-    onChange: ((_, evt: any) => {
-      useAppStore.getState().setCameraControl(evt.value);
-    }) as onChange,
-    if: () => useAppStore.getState().autoNavControls
-  },
   cameraType: {
     label: 'Type ( C )',
     view: 'radiogrid',

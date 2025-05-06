@@ -40,10 +40,17 @@ const setupFlyControls = ({
     current: null as number | null
   };
 
+  let mouseIsMoving = false;
+
   const mouseDelta = new THREE.Vector2(0, 0); // Raw input
   const mouseDeltaSmooth = new THREE.Vector2(0, 0); // Raw input smooth
   const easedDelta = new THREE.Vector2(0, 0); // Eased input
   const rotationVelocity = new THREE.Vector2(0, 0);
+
+  const moveDelta = new THREE.Vector3(0, 0, 0);
+  const moveDeltaSmooth = new THREE.Vector3(0, 0, 0);
+  const easedMove = new THREE.Vector3(0, 0, 0);
+  const moveVelocity = new THREE.Vector3(0, 0, 0);
 
   const controlCameraEnabled = { current: false };
   const euler = new THREE.Euler(0, 0, 0, 'YXZ');
@@ -51,17 +58,43 @@ const setupFlyControls = ({
   const cameraDirection = new THREE.Vector3();
   const rightVector = new THREE.Vector3();
 
+  const resetOrbitDeltas = () => {
+    mouseDelta.set(0, 0);
+    mouseDeltaSmooth.set(0, 0);
+    easedDelta.set(0, 0);
+    rotationVelocity.set(0, 0);
+  };
+
+  const resetMoveDeltas = () => {
+    moveDelta.set(0, 0, 0);
+    moveDeltaSmooth.set(0, 0, 0);
+    easedMove.set(0, 0, 0);
+    moveVelocity.set(0, 0, 0);
+  };
+
+  const cancelUpdate = () => {
+    if (animationFrameId.current) {
+      // console.log('cancelAnimationFrame 2');
+      cancelAnimationFrame(animationFrameId.current);
+      animationFrameId.current = null;
+
+      resetOrbitDeltas();
+      resetMoveDeltas();
+    }
+  };
+
   const animationFrameId = {
     current: null as ReturnType<typeof requestAnimationFrame> | null
   };
   const update = (cb: () => boolean) => {
     if (animationFrameId.current) {
-      console.log('cancelAnimationFrame 1');
+      // console.log('cancelAnimationFrame 1');
       cancelAnimationFrame(animationFrameId.current);
       animationFrameId.current = null;
     }
     const keepUpdating = () => {
       const shouldKeepUpdating = cb();
+
       if (shouldKeepUpdating) {
         animationFrameId.current = requestAnimationFrame(keepUpdating);
       } else {
@@ -71,20 +104,12 @@ const setupFlyControls = ({
     keepUpdating();
   };
 
-  const cancelUpdate = () => {
-    if (animationFrameId.current) {
-      console.log('cancelAnimationFrame 2');
-      cancelAnimationFrame(animationFrameId.current);
-      animationFrameId.current = null;
-    }
-  };
-
   const updateEuler = ({ dt, minPitch, maxPitch }: { dt: number; minPitch?: number; maxPitch?: number }) => {
     const inputEase = 30; // Increase for snappier input, decrease for smoother
     const rotationEase = 30; // Controls how fast camera turns
 
     // Easing the raw mouse delta
-    // One-frame input injection with smoothed output over time (eas-out)
+    // One-frame input injection with smoothed output over time (ease-out)
     mouseDeltaSmooth.x = THREE.MathUtils.damp(mouseDeltaSmooth.x, mouseDelta.x, inputEase, dt);
     mouseDeltaSmooth.y = THREE.MathUtils.damp(mouseDeltaSmooth.y, mouseDelta.y, inputEase, dt);
 
@@ -130,9 +155,11 @@ const setupFlyControls = ({
   };
 
   // move camera wasd/qe
-  const flyCamera = () => {
+  const moveCamera = () => {
     // this will only fire if frameloop is not 'never'
     if (!controlCameraEnabled.current) return;
+
+    const easedMovement = !mouseIsMoving;
 
     camera.getWorldDirection(cameraDirection); // Get the forward vector
     cameraDirection.normalize();
@@ -144,8 +171,12 @@ const setupFlyControls = ({
         camera.zoom += speed.current;
         camera.updateProjectionMatrix();
       } else {
-        camera.position.addScaledVector(cameraDirection, speed.current);
-        targetPosition.addScaledVector(cameraDirection, speed.current);
+        if (!easedMovement) {
+          camera.position.addScaledVector(cameraDirection, speed.current);
+          targetPosition.addScaledVector(cameraDirection, speed.current);
+        } else {
+          moveDelta.z += speed.current;
+        }
       }
     }
     if (moveBackward) {
@@ -153,29 +184,87 @@ const setupFlyControls = ({
         camera.zoom -= speed.current;
         camera.updateProjectionMatrix();
       } else {
-        camera.position.addScaledVector(cameraDirection, -speed.current);
-        targetPosition.addScaledVector(cameraDirection, -speed.current);
+        if (!easedMovement) {
+          camera.position.addScaledVector(cameraDirection, -speed.current);
+          targetPosition.addScaledVector(cameraDirection, -speed.current);
+        } else {
+          moveDelta.z -= speed.current;
+        }
       }
     }
     if (moveLeft) {
-      camera.position.addScaledVector(rightVector, -speed.current);
-      targetPosition.addScaledVector(rightVector, -speed.current);
+      if (!easedMovement) {
+        camera.position.addScaledVector(rightVector, -speed.current);
+        targetPosition.addScaledVector(rightVector, -speed.current);
+      } else {
+        moveDelta.x -= speed.current;
+      }
     }
     if (moveRight) {
-      camera.position.addScaledVector(rightVector, speed.current);
-      targetPosition.addScaledVector(rightVector, speed.current);
+      if (!easedMovement) {
+        camera.position.addScaledVector(rightVector, speed.current);
+        targetPosition.addScaledVector(rightVector, speed.current);
+      } else {
+        moveDelta.x += speed.current;
+      }
     }
     if (moveUp) {
-      camera.position.y -= speed.current;
-      targetPosition.y -= speed.current;
+      if (!easedMovement) {
+        camera.position.y -= speed.current;
+        targetPosition.y -= speed.current;
+      } else {
+        moveDelta.y -= speed.current;
+      }
     }
     if (moveDown) {
-      camera.position.y += speed.current;
-      targetPosition.y += speed.current;
+      if (!easedMovement) {
+        camera.position.y += speed.current;
+        targetPosition.y += speed.current;
+      } else {
+        moveDelta.y += speed.current;
+      }
+    }
+
+    if (!easedMovement) return;
+
+    if (moveLeft || moveRight || moveUp || moveDown || moveForward || moveBackward) {
+      const lambda = 35;
+      update(() => {
+        const dt = clock.getDelta();
+
+        moveDeltaSmooth.x = THREE.MathUtils.damp(moveDeltaSmooth.x, moveDelta.x, lambda, dt);
+        moveDeltaSmooth.y = THREE.MathUtils.damp(moveDeltaSmooth.y, moveDelta.y, lambda, dt);
+        moveDeltaSmooth.z = THREE.MathUtils.damp(moveDeltaSmooth.z, moveDelta.z, lambda, dt);
+        easedMove.x = THREE.MathUtils.damp(easedMove.x, moveDeltaSmooth.x, lambda, dt);
+        easedMove.y = THREE.MathUtils.damp(easedMove.y, moveDeltaSmooth.y, lambda, dt);
+        easedMove.z = THREE.MathUtils.damp(easedMove.z, moveDeltaSmooth.z, lambda, dt);
+        moveVelocity.x = THREE.MathUtils.damp(moveVelocity.x, easedMove.x, lambda, dt);
+        moveVelocity.y = THREE.MathUtils.damp(moveVelocity.y, easedMove.y, lambda, dt);
+        moveVelocity.z = THREE.MathUtils.damp(moveVelocity.z, easedMove.z, lambda, dt);
+
+        const moveLeftRightVector = rightVector.clone().multiplyScalar(moveVelocity.x);
+        const moveUpDownVector = camera.up.clone().multiplyScalar(moveVelocity.y);
+        const moveForwardBackwardVector = cameraDirection.clone().multiplyScalar(moveVelocity.z);
+        camera.position.add(moveLeftRightVector);
+        targetPosition.add(moveLeftRightVector);
+        camera.position.add(moveUpDownVector);
+        targetPosition.add(moveUpDownVector);
+        camera.position.add(moveForwardBackwardVector);
+        targetPosition.add(moveForwardBackwardVector);
+
+        moveDelta.x = 0;
+        moveDelta.y = 0;
+        moveDelta.z = 0;
+
+        return Math.abs(easedMove.x) > 0.0001 || Math.abs(easedMove.y) > 0.0001 || Math.abs(easedMove.z) > 0.0001;
+      });
     }
   };
 
   const handleKeyDown = (evt: KeyboardEvent) => {
+    if (evt.repeat) return;
+    mouseIsMoving = false;
+    resetMoveDeltas();
     const distance = camera.position.length();
     const adjustCamera = () => {
       camera.lookAt(targetPosition);
@@ -215,6 +304,7 @@ const setupFlyControls = ({
         }
         break;
       case 'KeyF':
+        cancelUpdate();
         targetPosition = useAppStore.getState().getSelectedObject()?.position.clone() ?? center.clone();
         adjustCamera();
         break;
@@ -253,26 +343,33 @@ const setupFlyControls = ({
   };
 
   const handleKeyUp = (evt: KeyboardEvent) => {
-    switch (evt.code) {
-      case 'KeyW':
-        moveForward = false;
-        break;
-      case 'KeyA':
-        moveLeft = false;
-        break;
-      case 'KeyS':
-        moveBackward = false;
-        break;
-      case 'KeyD':
-        moveRight = false;
-        break;
-      case 'KeyQ':
-        moveUp = false;
-        break;
-      case 'KeyE':
-        moveDown = false;
-        break;
-    }
+    // optimistic try to enable smooth WASD-QE moving.
+    // If mouse is actually moving it will be set to true in the next mouse move handling
+    // canceling WASD-QE smooth moving and enabling smooth camera rotation instead.
+    mouseIsMoving = false;
+    const code = evt.code;
+    setTimeout(() => {
+      switch (code) {
+        case 'KeyW':
+          moveForward = false;
+          break;
+        case 'KeyA':
+          moveLeft = false;
+          break;
+        case 'KeyS':
+          moveBackward = false;
+          break;
+        case 'KeyD':
+          moveRight = false;
+          break;
+        case 'KeyQ':
+          moveUp = false;
+          break;
+        case 'KeyE':
+          moveDown = false;
+          break;
+      }
+    }, 0);
   };
 
   const handleMouseDown = (evt: MouseEvent) => {
@@ -310,6 +407,8 @@ const setupFlyControls = ({
   const handleMouseMove = (evt: MouseEvent) => {
     if (!controlCameraEnabled.current) return;
 
+    mouseIsMoving = true;
+
     // pan
     if (mouseButton.current === 1) {
       const sensitivity =
@@ -333,7 +432,7 @@ const setupFlyControls = ({
       targetPosition.add(panOffset);
       camera.lookAt(targetPosition);
     }
-    // orbit
+    // orbit camera around targetPosition
     else if (mouseButton.current === 0) {
       mouseDelta.x -= evt.movementX;
       mouseDelta.y -= evt.movementY;
@@ -352,21 +451,15 @@ const setupFlyControls = ({
         camera.position.z = position.z;
         camera.lookAt(targetPosition);
 
-        return Math.abs(easedDelta.x) > 0.000001 && Math.abs(easedDelta.y) > 0.000001;
+        return Math.abs(easedDelta.x) > 0.0001 || Math.abs(easedDelta.y) > 0.0001;
       });
     }
-    // fly wasd/qe
+    // rotate camera in place
     else if (mouseButton.current === 2) {
-      mouseDelta.x -= evt.movementX;
-      mouseDelta.y -= evt.movementY;
+      const maxPitch = Math.PI / 2 - 0.01;
+      const minPitch = -maxPitch;
 
-      update(() => {
-        const dt = clock.getDelta();
-
-        const maxPitch = Math.PI / 2 - 0.01;
-        const minPitch = -maxPitch;
-        updateEuler({ dt, minPitch, maxPitch });
-
+      const applyRotation = () => {
         // Apply to camera
         camera.quaternion.setFromEuler(euler);
 
@@ -377,8 +470,19 @@ const setupFlyControls = ({
         direction.multiplyScalar(distance);
         // Move Target
         targetPosition.copy(camera.position).add(direction);
+      };
 
-        return Math.abs(easedDelta.x) > 0.000001 && Math.abs(easedDelta.y) > 0.000001;
+      mouseDelta.x -= evt.movementX;
+      mouseDelta.y -= evt.movementY;
+
+      update(() => {
+        const dt = clock.getDelta();
+
+        updateEuler({ dt, minPitch, maxPitch });
+
+        applyRotation();
+
+        return Math.abs(easedDelta.x) > 0.0001 || Math.abs(easedDelta.y) > 0.0001;
       });
     }
   };
@@ -424,7 +528,7 @@ const setupFlyControls = ({
   };
 
   return {
-    flyCamera,
+    moveCamera,
     cleanup
   };
 };
@@ -438,8 +542,8 @@ export const FlyControls = () => {
 
   useEffect(() => {
     cleanupRef.current?.();
-    const { flyCamera, cleanup } = setupFlyControls({ camera, renderer: gl, scene });
-    flyCameraRef.current = flyCamera;
+    const { moveCamera, cleanup } = setupFlyControls({ camera, renderer: gl, scene });
+    flyCameraRef.current = moveCamera;
     cleanupRef.current = cleanup;
   }, [camera, clock, gl, scene]);
 

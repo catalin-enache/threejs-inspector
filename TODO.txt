@@ -126,10 +126,17 @@ Rename loadModel function and file to loadObject *DONE*
 Make position change in CPanel be in relation with scene size.
 *DONE*
 
+When the angle is capped, continue dragging still adds offset
+that needs to be countered with moving back the mouse the same amount
+*DONE* added minPitch and maxPitch to limit the pitch angle
+
 
 With injected scene, in Scene tab => camera current section, controls do not influence the camera
 Found reason: camera is controlled by CameraControls.
 Must either disable position/rotation for that case or target the CameraControls.
+*DONE* (enhanced FlyControls and removed support for OrbitControls)
+
+ssh-add ~/.ssh/id_ed25519
 
 
 Deleting an object does not delete all geometries/textures - this should have been fixed, confirm.

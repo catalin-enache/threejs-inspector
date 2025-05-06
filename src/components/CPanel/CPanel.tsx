@@ -172,7 +172,6 @@ export const CPanel = (props: CPanelProps) => {
   const { camera, scene, gl, raycaster, frameloop } = useThree();
   const playingState = useAppStore((state) => state.playingState);
   const paneRef = useRef<Pane | null>(null);
-  const cameraControl = useAppStore((state) => state.cameraControl);
   const attachDefaultControllersToPlayingCamera = useAppStore((state) => state.attachDefaultControllersToPlayingCamera);
   const cameraType = useAppStore((state) => state.cameraType);
   const transformControlsMode = useAppStore((state) => state.transformControlsMode);
@@ -409,7 +408,7 @@ export const CPanel = (props: CPanelProps) => {
     );
 
     // if there is at least something to show, create the folder
-    if (!useAppStore.getState().isInjected || useAppStore.getState().autoNavControls) {
+    if (!useAppStore.getState().isInjected) {
       const cameraEditorFolder = sceneTab.addFolder({
         title: 'Camera Control',
         expanded: true
@@ -467,7 +466,6 @@ export const CPanel = (props: CPanelProps) => {
     cPanelContinuousUpdate,
     angleFormat,
     playingState,
-    cameraControl,
     attachDefaultControllersToPlayingCamera,
     cameraType,
     camera,
@@ -487,7 +485,6 @@ export const CPanel = (props: CPanelProps) => {
     transformControlsSpace,
     cPanelCustomParams,
     cPanelContinuousUpdate,
-    cameraControl,
     attachDefaultControllersToPlayingCamera,
     cameraType,
     camera,

@@ -54,13 +54,15 @@ export const Object3DBindings = (params: CommonGetterParams) => ({
     // Note: this step might be doing scene flickering if not enough precision
     // (3 decimals should be enough precision)
     step: numberCommon.step,
-    format: numberFormat(3)
-    // if: (object: THREE.Object3D) => !isSkinnedMesh(object)
+    format: numberFormat(3),
+    disabled: !useAppStore.getState().autoNavControls
+    // if: (object: THREE.Object3D) => useAppStore.getState().autoNavControls
   },
   rotation: {
     label: `Rotation(${params.angleFormat})(L)`,
     ...numberCommon,
-    ...(params.angleFormat === 'deg' ? { format: radToDegFormatter } : {})
+    ...(params.angleFormat === 'deg' ? { format: radToDegFormatter } : {}),
+    disabled: !useAppStore.getState().autoNavControls
     // if: (object: THREE.Object3D) => !isSkinnedMesh(object)
   },
   // quaternion is not displayed because it interferes with rotation when cPanel updates

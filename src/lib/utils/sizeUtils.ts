@@ -72,7 +72,8 @@ const isExcluded = (object: THREE.Object3D, exclude: Set<THREE.Object3D>) => {
       walker instanceof THREE.AxesHelper ||
       walker instanceof THREE.GridHelper ||
       walker instanceof THREE.PolarGridHelper ||
-      walker instanceof Follower
+      walker instanceof Follower ||
+      walker instanceof THREE.Box3Helper
     ) {
       return true;
     }
@@ -81,12 +82,25 @@ const isExcluded = (object: THREE.Object3D, exclude: Set<THREE.Object3D>) => {
   return false;
 };
 
-export function getSceneBoundingBoxSize(
-  scene: THREE.Scene,
-  camera: THREE.PerspectiveCamera | THREE.OrthographicCamera,
-  exclude: Set<THREE.Object3D> = new Set(),
-  useFrustum = false
-) {
+export function getSceneBoundingBoxSize({
+  scene,
+  camera,
+  exclude = new Set(),
+  useFrustum = false,
+  sceneBBox = new THREE.Box3(),
+  sceneSizeV3 = new THREE.Vector3(),
+  objects,
+  precise = true
+}: {
+  scene: THREE.Scene;
+  camera: THREE.PerspectiveCamera | THREE.OrthographicCamera;
+  exclude?: Set<THREE.Object3D>;
+  useFrustum: boolean;
+  sceneBBox?: THREE.Box3;
+  sceneSizeV3?: THREE.Vector3;
+  objects?: THREE.Object3D[];
+  precise?: boolean;
+}) {
   const frustum = new THREE.Frustum();
   const cameraViewProjectionMatrix = new THREE.Matrix4();
 
@@ -94,17 +108,16 @@ export function getSceneBoundingBoxSize(
   cameraViewProjectionMatrix.multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse);
   frustum.setFromProjectionMatrix(cameraViewProjectionMatrix);
 
-  const visibleObjectsBoundingBox = new THREE.Box3();
-  scene.children.forEach((object) => {
+  (objects ?? scene.children).forEach((object) => {
     if (!isExcluded(object, exclude)) {
-      const objectBoundingBox = new THREE.Box3().setFromObject(object, true);
+      const objectBoundingBox = new THREE.Box3().setFromObject(object, precise);
       if (!useFrustum || frustum.intersectsBox(objectBoundingBox)) {
-        visibleObjectsBoundingBox.union(objectBoundingBox);
+        sceneBBox.union(objectBoundingBox);
       }
     }
   });
 
-  const size = new THREE.Vector3();
-  visibleObjectsBoundingBox.getSize(size);
-  return size;
+  sceneBBox.getSize(sceneSizeV3);
+  const sceneSize = Math.max(sceneSizeV3.x, sceneSizeV3.y, sceneSizeV3.z);
+  return { sceneSizeV3, sceneBBox, sceneSize };
 }

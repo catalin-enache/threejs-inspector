@@ -50,6 +50,13 @@ export const SceneButtons = ({ playingState, sceneObjects: { scene } }: CommonGe
     }) as onChange
   },
   6: {
+    label: 'Toggle SceneSize Helper',
+    title: 'Toggle SceneSize Helper',
+    onClick: ((_) => {
+      useAppStore.getState().toggleShowSceneSizeHelper();
+    }) as onChange
+  },
+  7: {
     label: 'Play/Pause ( Space|CAS+Space )',
     title: playingState === 'playing' ? 'Pause' : 'Play',
     onClick: (() => {
@@ -58,7 +65,7 @@ export const SceneButtons = ({ playingState, sceneObjects: { scene } }: CommonGe
     }) as onChange,
     if: () => !useAppStore.getState().isInjected
   },
-  7: {
+  8: {
     label: 'Stop ( Backspace|CAS+Backspace )',
     title: 'Stop',
     onClick: (() => {
@@ -66,21 +73,21 @@ export const SceneButtons = ({ playingState, sceneObjects: { scene } }: CommonGe
     }) as onChange,
     if: () => !useAppStore.getState().isInjected
   },
-  8: {
+  9: {
     label: 'Load Object',
     title: 'Load Object',
     onClick: (() => {
       useAppStore.getState().setLoadObjectIsOpen(true);
     }) as onChange
   },
-  9: {
+  10: {
     label: 'Clear Scene',
     title: 'Clear Scene',
     onClick: (() => {
       patchThree.clearScene();
     }) as onChange
   },
-  10: {
+  11: {
     label: 'Download Scene',
     title: 'Download Scene',
     onClick: (async () => {
@@ -89,7 +96,7 @@ export const SceneButtons = ({ playingState, sceneObjects: { scene } }: CommonGe
     }) as onChange,
     if: () => scene.children.length > 0
   },
-  11: {
+  12: {
     title: 'Update Cube Cameras',
     label: 'Update Cube Cameras',
     onClick: (async () => {

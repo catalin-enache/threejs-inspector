@@ -14,6 +14,8 @@ export default {
   setCurrentRenderer: patchThree.setCurrentRenderer,
   refreshCPanel: patchThree.refreshCPanel,
   updateCubeCameras: patchThree.updateCubeCameras,
+  getShouldUpdateSceneBBoxOnRemoval: patchThree.getShouldUpdateSceneBBoxOnRemoval,
+  setShouldUpdateSceneBBoxOnRemoval: patchThree.setShouldUpdateSceneBBoxOnRemoval,
 
   cloneObject3D,
   deepTraverse,

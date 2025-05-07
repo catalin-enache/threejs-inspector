@@ -458,8 +458,8 @@ export const loadObject = async (
 
   if (autoScaleRatio && scene && camera) {
     const meshSize = getBoundingBoxSize(root);
-    const sceneSize = getSceneBoundingBoxSize(scene, camera, new Set([root]), true);
-    const scaleFactor = calculateScaleFactor(meshSize, sceneSize, autoScaleRatio);
+    const { sceneSizeV3 } = getSceneBoundingBoxSize({ scene, camera, exclude: new Set([root]), useFrustum: true });
+    const scaleFactor = calculateScaleFactor(meshSize, sceneSizeV3, autoScaleRatio);
     root.scale.set(scaleFactor, scaleFactor, scaleFactor);
   }
 

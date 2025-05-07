@@ -6,6 +6,7 @@ import * as EssentialsPlugin from '@tweakpane/plugin-essentials';
 import { gsap } from 'gsap';
 import { Draggable } from 'gsap/Draggable';
 import { useAppStore } from 'src/store';
+import { SceneSizeHelper } from 'components/Helpers/SceneSizeHelper';
 import { makeContinuousUpdate } from './continuousUpdate';
 import TexturePlugin from './Plugins/TexturePlugin';
 import { manipulateMouseSpeed } from './manipulateMouseSpeed';
@@ -181,6 +182,7 @@ export const CPanel = (props: CPanelProps) => {
   const angleFormat = useAppStore((state) => state.angleFormat);
   const showAxesHelper = useAppStore((state) => state.showAxesHelper);
   const showGridHelper = useAppStore((state) => state.showGridHelper);
+  const showSceneSizeHelper = useAppStore((state) => state.showSceneSizeHelper);
 
   const cPanelVisible = useAppStore((state) => state.cPanelVisible);
   const selectedObjectUUID = useAppStore((state) => state.selectedObjectUUID);
@@ -501,6 +503,7 @@ export const CPanel = (props: CPanelProps) => {
       <LoadObjectForm scene={scene} camera={camera} />
       {showAxesHelper && <axesHelper args={[1000]} />}
       {showGridHelper && <gridHelper args={[1000, 1000]} />}
+      {showSceneSizeHelper && <SceneSizeHelper />}
     </>
   );
 };

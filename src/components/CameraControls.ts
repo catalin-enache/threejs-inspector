@@ -1,8 +1,9 @@
 import * as THREE from 'three';
 import { useFrame, useThree } from '@react-three/fiber';
 import { useEffect, useRef, Ref, RefObject, useImperativeHandle } from 'react';
-import { getSceneBoundingBoxSize, getWorldScreenRatio } from 'lib/utils/sizeUtils';
+import { getWorldScreenRatio } from 'lib/utils/sizeUtils';
 import { useAppStore } from 'src/store';
+import patchThree from 'lib/patchThree';
 
 const center = new THREE.Vector3(0, 0, 0);
 const clock = new THREE.Clock();
@@ -10,24 +11,20 @@ const clock = new THREE.Clock();
 const setupCameraControls = ({
   camera,
   renderer,
-  scene,
   isDisabledRef
 }: {
   camera: THREE.PerspectiveCamera | THREE.OrthographicCamera;
   renderer: THREE.WebGLRenderer;
-  scene: THREE.Scene;
   isDisabledRef: RefObject<boolean>;
 }) => {
-  let sceneBoundingBox = new THREE.Vector3();
-  let sceneSize = 0.01;
-  let ratio = 0.01; // 23 is the scene size the defaults were tested with
-  // TODO: should update scene size when objects are added/removed and not on mouseDown
-  const updateSceneSize = () => {
-    sceneBoundingBox = getSceneBoundingBoxSize(scene, camera);
-    sceneSize = Math.max(sceneBoundingBox.x, sceneBoundingBox.y, sceneBoundingBox.z);
-    ratio = sceneSize / 23;
+  let sceneSize = patchThree.sceneSize;
+  let ratio = 0.01;
+
+  const refreshSceneSize = () => {
+    sceneSize = patchThree.sceneSize;
+    ratio = sceneSize / 23; // 23 is the scene size the defaults were tested with
   };
-  updateSceneSize();
+  refreshSceneSize();
 
   let moveForward = false;
   let moveBackward = false;
@@ -381,7 +378,7 @@ const setupCameraControls = ({
 
     mouseButton.current = evt.button;
     clock.getDelta();
-    updateSceneSize();
+    refreshSceneSize();
     cancelUpdate();
 
     const { spherical } = getSphericalPosition();
@@ -394,8 +391,7 @@ const setupCameraControls = ({
     }
 
     if (mouseButton.current === 1 || mouseButton.current === 2) {
-      // @ts-ignore
-      document.body.requestPointerLock({ unadjustedMovement: true });
+      void document.body.requestPointerLock({ unadjustedMovement: true });
     }
   };
 
@@ -492,7 +488,7 @@ const setupCameraControls = ({
   // on mouse wheel change speed or zoom
   const handleMouseWheel = (evt: WheelEvent) => {
     if (mouseButton.current === 2) {
-      speed.current -= evt.deltaY * 0.0005 * ratio;
+      speed.current -= evt.deltaY * 0.0001 * ratio;
       speed.current = Math.max(0.000001, speed.current);
     } else if (evt.altKey) {
       cancelUpdate();
@@ -542,7 +538,7 @@ export interface CameraControlsProps {
 }
 
 export const CameraControls = ({ ref }: CameraControlsProps) => {
-  const { camera, scene, clock, gl } = useThree();
+  const { camera, clock, gl } = useThree();
   const moveCameraRef = useRef<(() => void) | null>(null);
   const cleanupRef = useRef<(() => void) | null>(null);
   const isDisabledRef = useRef(false);
@@ -559,10 +555,10 @@ export const CameraControls = ({ ref }: CameraControlsProps) => {
 
   useEffect(() => {
     cleanupRef.current?.();
-    const { moveCamera, cleanup } = setupCameraControls({ camera, renderer: gl, scene, isDisabledRef });
+    const { moveCamera, cleanup } = setupCameraControls({ camera, renderer: gl, isDisabledRef });
     moveCameraRef.current = moveCamera;
     cleanupRef.current = cleanup;
-  }, [camera, clock, gl, scene]);
+  }, [camera, clock, gl]);
 
   useFrame((_state, _delta) => {
     moveCameraRef.current && moveCameraRef.current();

@@ -25,6 +25,7 @@ import './patchCubeCamera';
 import type { __inspectorData } from 'tsExtensions';
 import { deepClean } from 'lib/utils/cleanUp';
 import { CameraControlsRefType } from 'components/CameraControls';
+import { getSceneBoundingBoxSize } from 'lib/utils/sizeUtils';
 
 THREE.EventDispatcher.prototype.clearListeners = (function () {
   return function (type?: string) {
@@ -216,6 +217,13 @@ type Module = {
   getCurrentScene: () => THREE.Scene;
   setCurrentScene: (scene: THREE.Scene) => void;
   clearScene: () => void;
+  sceneSizeV3: THREE.Vector3;
+  sceneSize: number;
+  sceneBBox: THREE.Box3;
+  updateSceneBBox: (params: { action: 'add' | 'remove'; object: THREE.Object3D }) => void;
+  shouldUpdateSceneBBoxOnRemoval: boolean;
+  setShouldUpdateSceneBBoxOnRemoval: (shouldUpdate: boolean) => void;
+  getShouldUpdateSceneBBoxOnRemoval: () => boolean;
   currentCamera: THREE.PerspectiveCamera | THREE.OrthographicCamera;
   getCurrentCamera: () => THREE.PerspectiveCamera | THREE.OrthographicCamera;
   setCurrentCamera: (camera: THREE.PerspectiveCamera | THREE.OrthographicCamera) => void;
@@ -279,6 +287,35 @@ const module: Module = {
     window.dispatchEvent(new CustomEvent('TIFMK.ClearScene'));
     this.disposeTransformControls({ resetSelectedObject: true });
     deepClean(this.currentScene);
+  },
+
+  sceneSizeV3: new THREE.Vector3(),
+  sceneSize: 0.01,
+  sceneBBox: new THREE.Box3(),
+  shouldUpdateSceneBBoxOnRemoval: true,
+  setShouldUpdateSceneBBoxOnRemoval: (shouldUpdate: boolean) => {
+    module.shouldUpdateSceneBBoxOnRemoval = shouldUpdate;
+  },
+  getShouldUpdateSceneBBoxOnRemoval: () => {
+    return module.shouldUpdateSceneBBoxOnRemoval;
+  },
+
+  updateSceneBBox({ action, object }) {
+    if (action === 'remove' && !module.shouldUpdateSceneBBoxOnRemoval) {
+      return;
+    }
+    const { sceneSizeV3, sceneBBox, sceneSize } = getSceneBoundingBoxSize({
+      scene: module.getCurrentScene(),
+      camera: module.getCurrentCamera(),
+      exclude: undefined,
+      useFrustum: false,
+      sceneBBox: action === 'add' ? module.sceneBBox : undefined,
+      objects: action === 'add' ? [object] : undefined
+    });
+
+    module.sceneBBox = sceneBBox;
+    module.sceneSizeV3 = sceneSizeV3;
+    module.sceneSize = sceneSize;
   },
 
   // defaultPerspectiveCamera and defaultOrthographicCamera and cameraToUseOnPlay are used in App (when !isInjected)
@@ -683,6 +720,9 @@ const module: Module = {
         this.updateCubeCamera(obj); // assumes CubeCamera helper has been created
       }
     });
+    if (object.name !== 'DefaultTransformControls') {
+      module.updateSceneBBox({ action: 'add', object });
+    }
   },
 
   // NOTE:
@@ -714,7 +754,6 @@ const module: Module = {
   // - the object can be a picker/helper too
   // - this is also called from offlineScene
   cleanupAfterRemovedObject(object: THREE.Object3D) {
-    // console.log('cleanupAfterRemovedObject', object.name || object.type || object.uuid, object);
     object.traverse((obj) => {
       while (obj.__inspectorData.dependantObjects!.length) {
         const dependantObject = obj.__inspectorData.dependantObjects!.pop()!;
@@ -726,6 +765,9 @@ const module: Module = {
         }
       }
     });
+    if (object.name !== 'DefaultTransformControls') {
+      module.updateSceneBBox({ action: 'remove', object });
+    }
   }
 };
 

@@ -19,6 +19,8 @@ const showGridHelper = localStorage.getItem('threeInspector__showGridHelper')
   ? localStorage.getItem('threeInspector__showGridHelper') === 'true'
   : showGridHelperDefault;
 
+const showSceneSizeHelper = false;
+
 const showGizmosDefault = true;
 const showGizmos = localStorage.getItem('threeInspector__showGizmos')
   ? localStorage.getItem('threeInspector__showGizmos') === 'true'
@@ -127,6 +129,8 @@ export interface AppStore {
   showGridHelper: boolean;
   setShowGridHelper: (showGridHelper: boolean) => void;
   toggleShowGridHelper: () => void;
+  showSceneSizeHelper: boolean;
+  toggleShowSceneSizeHelper: () => void;
   cPanelShowHelp: boolean;
   setCPanelShowHelp: (show: boolean) => void;
   toggleCPanelShowHelp: () => void;
@@ -203,6 +207,7 @@ export const useAppStore = create<AppStore>()(
         gizmoSize: gizmoSizeDefault,
         showAxesHelper: showAxisHelperDefault,
         showGridHelper: showGridHelperDefault,
+        showSceneSizeHelper,
         cPanelShowHelp: false,
         cPanelOpacity: cPanelOpacityDefault,
         cPanelSize: cPanelSizeDefault,
@@ -312,6 +317,12 @@ export const useAppStore = create<AppStore>()(
         showGridHelper: !state.showGridHelper
       }));
       localStorage.setItem('threeInspector__showGridHelper', get().showGridHelper.toString());
+    },
+    showSceneSizeHelper: showSceneSizeHelper,
+    toggleShowSceneSizeHelper: () => {
+      set((state) => ({
+        showSceneSizeHelper: !state.showSceneSizeHelper
+      }));
     },
     cPanelShowHelp: false,
     setCPanelShowHelp: (cPanelShowHelp) => set({ cPanelShowHelp }),

@@ -18,12 +18,16 @@ const setupCameraControls = ({
   isDisabledRef: RefObject<boolean>;
 }) => {
   let sceneSize = patchThree.sceneSize;
+
   let ratio = 0.01;
+  const speed = { current: 0.05 * ratio };
 
   const refreshSceneSize = () => {
     sceneSize = patchThree.sceneSize;
     ratio = sceneSize / 23; // 23 is the scene size the defaults were tested with
+    speed.current = 0.05 * ratio;
   };
+
   refreshSceneSize();
 
   let moveForward = false;
@@ -53,7 +57,6 @@ const setupCameraControls = ({
 
   const controlCameraEnabled = { current: false };
   const euler = new THREE.Euler(0, 0, 0, 'YXZ');
-  const speed = { current: 0.05 * ratio };
   const cameraDirection = new THREE.Vector3();
   const rightVector = new THREE.Vector3();
 

@@ -11,21 +11,26 @@ const clock = new THREE.Clock();
 const setupCameraControls = ({
   camera,
   renderer,
-  isDisabledRef
+  isDisabledRef,
+  invalidate
 }: {
   camera: THREE.PerspectiveCamera | THREE.OrthographicCamera;
   renderer: THREE.WebGLRenderer;
   isDisabledRef: RefObject<boolean>;
+  invalidate: (frames?: number) => void;
 }) => {
   let sceneSize = patchThree.sceneSize;
 
   let ratio = 0.01;
   const speed = { current: 0.05 * ratio };
 
+  let lastRatio = ratio;
   const refreshSceneSize = () => {
     sceneSize = patchThree.sceneSize;
-    ratio = sceneSize / 23; // 23 is the scene size the defaults were tested with
-    speed.current = 0.05 * ratio;
+    ratio = sceneSize / 4;
+    speed.current -= 0.05 * lastRatio;
+    speed.current += 0.05 * ratio;
+    lastRatio = ratio;
   };
 
   refreshSceneSize();
@@ -75,30 +80,32 @@ const setupCameraControls = ({
   };
 
   const cancelUpdate = () => {
-    if (animationFrameId.current) {
+    if (updateAnimationFrameId.current) {
       // console.log('cancelAnimationFrame 2');
-      cancelAnimationFrame(animationFrameId.current);
-      animationFrameId.current = null;
+      cancelAnimationFrame(updateAnimationFrameId.current);
+      updateAnimationFrameId.current = null;
 
       resetOrbitDeltas();
       resetMoveDeltas();
     }
   };
 
-  const animationFrameId = {
+  const updateAnimationFrameId = {
     current: null as ReturnType<typeof requestAnimationFrame> | null
   };
   const update = (cb: () => boolean) => {
-    if (animationFrameId.current) {
+    if (updateAnimationFrameId.current) {
       // console.log('cancelAnimationFrame 1');
-      cancelAnimationFrame(animationFrameId.current);
-      animationFrameId.current = null;
+      cancelAnimationFrame(updateAnimationFrameId.current);
+      updateAnimationFrameId.current = null;
     }
     const keepUpdating = () => {
       const shouldKeepUpdating = cb();
+      // this continues re-rendering until ease is done, even after mouse is released
+      invalidate();
 
       if (shouldKeepUpdating) {
-        animationFrameId.current = requestAnimationFrame(keepUpdating);
+        updateAnimationFrameId.current = requestAnimationFrame(keepUpdating);
       } else {
         cancelUpdate();
       }
@@ -160,6 +167,9 @@ const setupCameraControls = ({
   const moveCamera = () => {
     // this will only fire if frameloop is not 'never'
     if (!controlCameraEnabled.current) return;
+
+    // this allows re-rendering continuously while mouse button is down.
+    invalidate();
 
     const easedMovement = !mouseIsMoving;
 
@@ -227,9 +237,15 @@ const setupCameraControls = ({
       }
     }
 
-    if (!easedMovement) return;
+    // when mouse is moving, we have either orbit or camera rotation,
+    // and we don't apply ease on moving while already having ease on camera orbit or rotation.
+    if (!easedMovement) {
+      return;
+    }
 
-    if (moveLeft || moveRight || moveUp || moveDown || moveForward || moveBackward) {
+    const isMoving = moveLeft || moveRight || moveUp || moveDown || moveForward || moveBackward;
+
+    if (isMoving) {
       const lambda = 35;
       update(() => {
         const dt = clock.getDelta();
@@ -378,6 +394,8 @@ const setupCameraControls = ({
     controlCameraEnabled.current = evt.target === renderer.domElement;
 
     if (!controlCameraEnabled.current || isDisabledRef.current) return;
+
+    moveCamera(); // moveCamera calls invalidate which will make moveCamera be called again by useFrame
 
     mouseButton.current = evt.button;
     clock.getDelta();
@@ -541,7 +559,7 @@ export interface CameraControlsProps {
 }
 
 export const CameraControls = ({ ref }: CameraControlsProps) => {
-  const { camera, clock, gl } = useThree();
+  const { camera, clock, gl, invalidate } = useThree();
   const moveCameraRef = useRef<(() => void) | null>(null);
   const cleanupRef = useRef<(() => void) | null>(null);
   const isDisabledRef = useRef(false);
@@ -558,10 +576,11 @@ export const CameraControls = ({ ref }: CameraControlsProps) => {
 
   useEffect(() => {
     cleanupRef.current?.();
-    const { moveCamera, cleanup } = setupCameraControls({ camera, renderer: gl, isDisabledRef });
+    // passing invalidate down for frameloop 'demand'
+    const { moveCamera, cleanup } = setupCameraControls({ camera, renderer: gl, isDisabledRef, invalidate });
     moveCameraRef.current = moveCamera;
     cleanupRef.current = cleanup;
-  }, [camera, clock, gl]);
+  }, [camera, clock, gl, invalidate]);
 
   useFrame((_state, _delta) => {
     moveCameraRef.current && moveCameraRef.current();

@@ -79,7 +79,7 @@
     renderer = new THREE.WebGLRenderer( { antialias: true } );
     renderer.setPixelRatio( window.devicePixelRatio );
     renderer.setSize( window.innerWidth, window.innerHeight );
-    renderer.setAnimationLoop( animate );
+    // renderer.setAnimationLoop( animate );
     renderer.shadowMap.enabled = true;
     container.appendChild( renderer.domElement );
 
@@ -196,6 +196,10 @@
 
   }
 
+  function onUseThree(useThreeObj) {
+    console.log({useThreeObj});
+  }
+
   const customParams = {
     asset: {
       object: params,
@@ -218,9 +222,11 @@
     camera,
     scene,
     renderer,
-    frameloop: 'always',
+    frameloop: 'demand',
     autoNavControls: true,
-    customParams
+    customParams,
+    onRender: animate,
+    onUseThree
   });
 
 </script>

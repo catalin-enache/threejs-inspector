@@ -1,6 +1,15 @@
 import * as THREE from 'three';
 import React, { ReactNode, memo, useMemo } from 'react';
-import { extend, createRoot, events, ReconcilerRoot, useFrame, RenderCallback } from '@react-three/fiber';
+import {
+  extend,
+  createRoot,
+  events,
+  ReconcilerRoot,
+  useFrame,
+  RenderCallback,
+  useThree,
+  RootState
+} from '@react-three/fiber';
 import { SetUp, SetUpProps, SETUP_EFFECT } from 'components/SetUp/SetUp'; // patching Object3D
 import { CPanel, CPanelProps } from 'components/CPanel/CPanel';
 import { CustomControl } from 'components/CustomControl/CustomControl';
@@ -27,6 +36,7 @@ export interface BaseInspectorProps {
   onCPanelReady?: CPanelProps['onCPanelReady'];
   onCPanelUnmounted?: CPanelProps['onCPanelUnmounted'];
   onRender?: RenderCallback;
+  onUseThree?: (useThreeObject: RootState) => void;
 }
 
 export const buildCustomParamsElements = ({
@@ -71,9 +81,13 @@ export const Inspector = memo(
     onCPanelReady,
     onCPanelUnmounted,
     version = 0,
-    onRender = () => {}
+    onRender = () => {},
+    onUseThree
   }: InspectorProps) => {
     useFrame(onRender);
+    const useThreeObject = useThree();
+    onUseThree?.(useThreeObject);
+
     const customParamsElements = useMemo(() => {
       !customParams && onSetupEffect?.(SETUP_EFFECT.VERSION_CHANGED, { version, customParamsElements: null });
       if (!customParams) return null;
@@ -119,7 +133,8 @@ const configureAndRender = (params: InjectInspectorParams) => {
     onThreeChange,
     onCPanelReady,
     onCPanelUnmounted,
-    onRender
+    onRender,
+    onUseThree
   } = params;
   /*
   similar to:
@@ -145,7 +160,8 @@ const configureAndRender = (params: InjectInspectorParams) => {
       onThreeChange,
       onCPanelReady,
       onCPanelUnmounted,
-      onRender
+      onRender,
+      onUseThree
     })
   );
 };

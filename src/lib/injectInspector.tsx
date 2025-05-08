@@ -36,7 +36,13 @@ export interface BaseInspectorProps {
   onCPanelReady?: CPanelProps['onCPanelReady'];
   onCPanelUnmounted?: CPanelProps['onCPanelUnmounted'];
   onRender?: RenderCallback;
-  onUseThree?: (useThreeObject: RootState) => void;
+  r3fThreeGetSet?: ({
+    r3fThreeGet,
+    r3fThreeSet
+  }: {
+    r3fThreeGet: RootState['get'];
+    r3fThreeSet: RootState['set'];
+  }) => void;
 }
 
 export const buildCustomParamsElements = ({
@@ -82,11 +88,12 @@ export const Inspector = memo(
     onCPanelUnmounted,
     version = 0,
     onRender = () => {},
-    onUseThree
+    r3fThreeGetSet
   }: InspectorProps) => {
     useFrame(onRender);
-    const useThreeObject = useThree();
-    onUseThree?.(useThreeObject);
+    const r3fThreeGet = useThree((state) => state.get);
+    const r3fThreeSet = useThree((state) => state.set);
+    r3fThreeGetSet?.({ r3fThreeGet, r3fThreeSet });
 
     const customParamsElements = useMemo(() => {
       !customParams && onSetupEffect?.(SETUP_EFFECT.VERSION_CHANGED, { version, customParamsElements: null });
@@ -134,7 +141,7 @@ const configureAndRender = (params: InjectInspectorParams) => {
     onCPanelReady,
     onCPanelUnmounted,
     onRender,
-    onUseThree
+    r3fThreeGetSet
   } = params;
   /*
   similar to:
@@ -161,7 +168,7 @@ const configureAndRender = (params: InjectInspectorParams) => {
       onCPanelReady,
       onCPanelUnmounted,
       onRender,
-      onUseThree
+      r3fThreeGetSet
     })
   );
 };

@@ -187,8 +187,9 @@
     renderer.setSize( window.innerWidth, window.innerHeight );
   }
 
-  function animate() {
-    const delta = clock.getDelta();
+  // onRender sends in params while setAnimationLoop doesn't
+  function animate(_state, _delta) {
+    const delta = _delta ?? clock.getDelta();
 
     if ( mixer ) mixer.update( delta );
     renderer.render( scene, camera );
@@ -196,8 +197,8 @@
 
   }
 
-  function onUseThree(useThreeObj) {
-    console.log({useThreeObj});
+  function r3fThreeGetSet({ r3fThreeGet, r3fThreeSet }) {
+    console.log({ r3fThreeGet: r3fThreeGet(), r3fThreeSet });
   }
 
   const customParams = {
@@ -226,7 +227,7 @@
     autoNavControls: true,
     customParams,
     onRender: animate,
-    onUseThree
+    r3fThreeGetSet
   });
 
 </script>

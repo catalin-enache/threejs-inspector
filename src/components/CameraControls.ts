@@ -65,6 +65,11 @@ const setupCameraControls = ({
   const cameraDirection = new THREE.Vector3();
   const rightVector = new THREE.Vector3();
 
+  const updateCameraWorldDirection = () => {
+    camera.getWorldDirection(cameraDirection);
+    cameraDirection.normalize();
+  };
+
   const resetOrbitDeltas = () => {
     mouseDelta.set(0, 0);
     mouseDeltaSmooth.set(0, 0);
@@ -163,6 +168,56 @@ const setupCameraControls = ({
     };
   };
 
+  const applyEasedMove = ({ isMoving, syncTarget = true }: { isMoving: boolean; syncTarget?: boolean }) => {
+    if (isMoving) {
+      const lambda = 35;
+      update(() => {
+        const dt = clock.getDelta();
+
+        const isMovingForward = moveDelta.z > 0 || moveDeltaSmooth.z;
+
+        moveDeltaSmooth.x = THREE.MathUtils.damp(moveDeltaSmooth.x, moveDelta.x, lambda, dt);
+        moveDeltaSmooth.y = THREE.MathUtils.damp(moveDeltaSmooth.y, moveDelta.y, lambda, dt);
+        moveDeltaSmooth.z = THREE.MathUtils.damp(moveDeltaSmooth.z, moveDelta.z, lambda, dt);
+        easedMove.x = THREE.MathUtils.damp(easedMove.x, moveDeltaSmooth.x, lambda, dt);
+        easedMove.y = THREE.MathUtils.damp(easedMove.y, moveDeltaSmooth.y, lambda, dt);
+        easedMove.z = THREE.MathUtils.damp(easedMove.z, moveDeltaSmooth.z, lambda, dt);
+        moveVelocity.x = THREE.MathUtils.damp(moveVelocity.x, easedMove.x, lambda, dt);
+        moveVelocity.y = THREE.MathUtils.damp(moveVelocity.y, easedMove.y, lambda, dt);
+        moveVelocity.z = THREE.MathUtils.damp(moveVelocity.z, easedMove.z, lambda, dt);
+
+        const moveLeftRightVector = rightVector.clone().multiplyScalar(moveVelocity.x);
+        const moveUpDownVector = camera.up.clone().multiplyScalar(moveVelocity.y);
+        const moveForwardBackwardVector = cameraDirection.clone().multiplyScalar(moveVelocity.z);
+
+        camera.position.add(moveLeftRightVector);
+        syncTarget && targetPosition.add(moveLeftRightVector);
+        camera.position.add(moveUpDownVector);
+        syncTarget && targetPosition.add(moveUpDownVector);
+        camera.position.add(moveForwardBackwardVector);
+        syncTarget && targetPosition.add(moveForwardBackwardVector);
+
+        const direction = new THREE.Vector3().subVectors(targetPosition, camera.position).normalize();
+        const dot = cameraDirection.dot(direction);
+        if (!syncTarget && isMovingForward) {
+          if (dot <= 0) {
+            camera.position.copy(targetPosition);
+            // move a little bit back to not break orbit control
+            camera.position.add(cameraDirection.clone().multiplyScalar(-0.000001));
+            resetMoveDeltas();
+            return true;
+          }
+        }
+
+        moveDelta.x = 0;
+        moveDelta.y = 0;
+        moveDelta.z = 0;
+
+        return Math.abs(easedMove.x) > 0.0001 || Math.abs(easedMove.y) > 0.0001 || Math.abs(easedMove.z) > 0.0001;
+      });
+    }
+  };
+
   // move camera wasd/qe
   const moveCamera = () => {
     // this will only fire if frameloop is not 'never'
@@ -173,8 +228,7 @@ const setupCameraControls = ({
 
     const easedMovement = !mouseIsMoving;
 
-    camera.getWorldDirection(cameraDirection); // Get the forward vector
-    cameraDirection.normalize();
+    updateCameraWorldDirection();
 
     rightVector.crossVectors(cameraDirection, camera.up).normalize(); // Get right vector
 
@@ -242,41 +296,8 @@ const setupCameraControls = ({
     if (!easedMovement) {
       return;
     }
-
     const isMoving = moveLeft || moveRight || moveUp || moveDown || moveForward || moveBackward;
-
-    if (isMoving) {
-      const lambda = 35;
-      update(() => {
-        const dt = clock.getDelta();
-
-        moveDeltaSmooth.x = THREE.MathUtils.damp(moveDeltaSmooth.x, moveDelta.x, lambda, dt);
-        moveDeltaSmooth.y = THREE.MathUtils.damp(moveDeltaSmooth.y, moveDelta.y, lambda, dt);
-        moveDeltaSmooth.z = THREE.MathUtils.damp(moveDeltaSmooth.z, moveDelta.z, lambda, dt);
-        easedMove.x = THREE.MathUtils.damp(easedMove.x, moveDeltaSmooth.x, lambda, dt);
-        easedMove.y = THREE.MathUtils.damp(easedMove.y, moveDeltaSmooth.y, lambda, dt);
-        easedMove.z = THREE.MathUtils.damp(easedMove.z, moveDeltaSmooth.z, lambda, dt);
-        moveVelocity.x = THREE.MathUtils.damp(moveVelocity.x, easedMove.x, lambda, dt);
-        moveVelocity.y = THREE.MathUtils.damp(moveVelocity.y, easedMove.y, lambda, dt);
-        moveVelocity.z = THREE.MathUtils.damp(moveVelocity.z, easedMove.z, lambda, dt);
-
-        const moveLeftRightVector = rightVector.clone().multiplyScalar(moveVelocity.x);
-        const moveUpDownVector = camera.up.clone().multiplyScalar(moveVelocity.y);
-        const moveForwardBackwardVector = cameraDirection.clone().multiplyScalar(moveVelocity.z);
-        camera.position.add(moveLeftRightVector);
-        targetPosition.add(moveLeftRightVector);
-        camera.position.add(moveUpDownVector);
-        targetPosition.add(moveUpDownVector);
-        camera.position.add(moveForwardBackwardVector);
-        targetPosition.add(moveForwardBackwardVector);
-
-        moveDelta.x = 0;
-        moveDelta.y = 0;
-        moveDelta.z = 0;
-
-        return Math.abs(easedMove.x) > 0.0001 || Math.abs(easedMove.y) > 0.0001 || Math.abs(easedMove.z) > 0.0001;
-      });
-    }
+    applyEasedMove({ isMoving });
   };
 
   const handleKeyDown = (evt: KeyboardEvent) => {
@@ -287,8 +308,7 @@ const setupCameraControls = ({
     const adjustCamera = () => {
       camera.lookAt(targetPosition);
       camera.updateProjectionMatrix();
-      camera.getWorldDirection(cameraDirection);
-      cameraDirection.normalize();
+      updateCameraWorldDirection();
     };
     switch (evt.code) {
       case 'KeyW':
@@ -511,21 +531,17 @@ const setupCameraControls = ({
     if (mouseButton.current === 2) {
       speed.current -= evt.deltaY * 0.0001 * ratio;
       speed.current = Math.max(0.000001, speed.current);
-    } else if (evt.altKey) {
-      cancelUpdate();
+    } else if (evt.target === renderer.domElement || evt.altKey) {
       if (camera instanceof THREE.OrthographicCamera) {
         camera.zoom += -evt.deltaY * 0.005 * ratio;
         camera.updateProjectionMatrix();
       } else {
         const moveAmount = -evt.deltaY * 0.005 * ratio;
-        camera.getWorldDirection(cameraDirection);
-        const movement = cameraDirection.clone().multiplyScalar(moveAmount);
-        const remainingDistance = camera.position.distanceTo(targetPosition);
-        const stopDistance = 1;
-        if (moveAmount > 0 && remainingDistance - movement.length() <= stopDistance) {
-          return;
-        }
-        camera.position.add(movement);
+
+        updateCameraWorldDirection(); // coop-ing with orbit
+
+        moveDelta.z += moveAmount;
+        applyEasedMove({ isMoving: true, syncTarget: false });
       }
     }
   };

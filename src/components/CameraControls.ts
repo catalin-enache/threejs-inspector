@@ -539,7 +539,7 @@ const setupCameraControls = ({
     if (mouseButton.current === 2) {
       speed.current -= evt.deltaY * 0.0001 * ratio;
       speed.current = Math.max(0.000001, speed.current);
-    } else if (evt.target === renderer.domElement || evt.altKey) {
+    } else if (mouseButton.current === null && (evt.target === renderer.domElement || evt.altKey)) {
       const moveAmount = -evt.deltaY * 0.005 * ratio;
       updateCameraWorldDirection(); // coop-ing with orbit
       moveDelta.z += moveAmount;

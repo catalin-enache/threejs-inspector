@@ -93,10 +93,10 @@ const configMesh = (mesh: THREE.Object3D) => {
   const isBSONLoaded = (mesh.name || '').toLowerCase().endsWith('.bson');
   const isEJSONLoaded = (mesh.name || '').toLowerCase().endsWith('.ejson');
 
-  if (isJSONLoaded || isBSONLoaded || isEJSONLoaded) {
-    deepTraverse(
-      mesh,
-      ({ value }) => {
+  deepTraverse(
+    mesh,
+    ({ value }) => {
+      if (isJSONLoaded || isBSONLoaded || isEJSONLoaded) {
         // mesh can be a scene when importing a scene saved as json
         // before exporting to json we copy the isInspectable flag from __inspectorData to userData
         // here we get it back
@@ -105,12 +105,16 @@ const configMesh = (mesh: THREE.Object3D) => {
         }
         delete value?.userData?.isInspectable;
         value.uuid = THREE.MathUtils.generateUUID();
-      },
-      ({ value }) => {
-        return value?.uuid;
       }
-    );
-  }
+      if (value instanceof THREE.Mesh) {
+        value.castShadow = true;
+        value.receiveShadow = true;
+      }
+    },
+    ({ value }) => {
+      return value?.uuid;
+    }
+  );
 };
 
 const collectDescendantAnimationsIfAny = (mesh: THREE.Group | THREE.Mesh) => {

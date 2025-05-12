@@ -190,11 +190,18 @@ const setupCameraControls = ({
         const moveUpDownVector = camera.up.clone().multiplyScalar(moveVelocity.y);
         const moveForwardBackwardVector = cameraDirection.clone().multiplyScalar(moveVelocity.z);
 
+        if (camera instanceof THREE.PerspectiveCamera) {
+          camera.position.add(moveForwardBackwardVector);
+        } else {
+          camera.zoom += moveVelocity.z;
+          camera.zoom = Math.max(0.000001, camera.zoom);
+          camera.updateProjectionMatrix();
+        }
         camera.position.add(moveLeftRightVector);
-        syncTarget && targetPosition.add(moveLeftRightVector);
         camera.position.add(moveUpDownVector);
+
+        syncTarget && targetPosition.add(moveLeftRightVector);
         syncTarget && targetPosition.add(moveUpDownVector);
-        camera.position.add(moveForwardBackwardVector);
         syncTarget && targetPosition.add(moveForwardBackwardVector);
 
         const direction = new THREE.Vector3().subVectors(targetPosition, camera.position).normalize();
@@ -233,29 +240,30 @@ const setupCameraControls = ({
     rightVector.crossVectors(cameraDirection, camera.up).normalize(); // Get right vector
 
     if (moveForward) {
-      if (camera instanceof THREE.OrthographicCamera) {
-        camera.zoom += speed.current;
-        camera.updateProjectionMatrix();
-      } else {
-        if (!easedMovement) {
+      if (!easedMovement) {
+        if (camera instanceof THREE.OrthographicCamera) {
+          camera.zoom += speed.current;
+          camera.updateProjectionMatrix();
+        } else {
           camera.position.addScaledVector(cameraDirection, speed.current);
           targetPosition.addScaledVector(cameraDirection, speed.current);
-        } else {
-          moveDelta.z += speed.current;
         }
+      } else {
+        moveDelta.z += speed.current;
       }
     }
     if (moveBackward) {
-      if (camera instanceof THREE.OrthographicCamera) {
-        camera.zoom -= speed.current;
-        camera.updateProjectionMatrix();
-      } else {
-        if (!easedMovement) {
+      if (!easedMovement) {
+        if (camera instanceof THREE.OrthographicCamera) {
+          camera.zoom -= speed.current;
+          camera.zoom = Math.max(0.000001, camera.zoom);
+          camera.updateProjectionMatrix();
+        } else {
           camera.position.addScaledVector(cameraDirection, -speed.current);
           targetPosition.addScaledVector(cameraDirection, -speed.current);
-        } else {
-          moveDelta.z -= speed.current;
         }
+      } else {
+        moveDelta.z -= speed.current;
       }
     }
     if (moveLeft) {
@@ -532,17 +540,10 @@ const setupCameraControls = ({
       speed.current -= evt.deltaY * 0.0001 * ratio;
       speed.current = Math.max(0.000001, speed.current);
     } else if (evt.target === renderer.domElement || evt.altKey) {
-      if (camera instanceof THREE.OrthographicCamera) {
-        camera.zoom += -evt.deltaY * 0.005 * ratio;
-        camera.updateProjectionMatrix();
-      } else {
-        const moveAmount = -evt.deltaY * 0.005 * ratio;
-
-        updateCameraWorldDirection(); // coop-ing with orbit
-
-        moveDelta.z += moveAmount;
-        applyEasedMove({ isMoving: true, syncTarget: false });
-      }
+      const moveAmount = -evt.deltaY * 0.005 * ratio;
+      updateCameraWorldDirection(); // coop-ing with orbit
+      moveDelta.z += moveAmount;
+      applyEasedMove({ isMoving: true, syncTarget: false });
     }
   };
 

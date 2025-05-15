@@ -52,15 +52,20 @@ Draggable.create('#controlPanel', {
   minimumMovement: 0
 });
 
+const cPanelContent = document.getElementById('controlPanelContent')!;
+
+const dragMe = document.getElementById('dragMe')!;
+dragMe.addEventListener('click', () => {
+  cPanelContent.style.display = cPanelContent.style.display === 'none' ? 'block' : 'none';
+});
+
 const cPanelContainer = document.getElementById('controlPanel')!;
 const helpContainer = document.getElementById('help')!;
 // "public/textures" is used in GitHub repo description while "textures" is used in running app in help section.
 // We share the same README.md file for both, so we need to replace the path in the help section.
 helpContainer.innerHTML = html.replaceAll('public/textures', 'textures');
 
-// prettier-ignore
-// @ts-ignore
-document.querySelector('#controlPanelContent')?.addEventListener('mousedown', manipulateMouseSpeed, true);
+cPanelContent.addEventListener('mousedown', manipulateMouseSpeed, true);
 
 // ----------------------- >> Remember last scroll position >> --------------------------------
 
@@ -500,7 +505,7 @@ export const CPanel = (props: CPanelProps) => {
 
   return (
     <>
-      <LoadObjectForm scene={scene} camera={camera} />
+      <LoadObjectForm />
       {showAxesHelper && <axesHelper args={[1000]} />}
       {showGridHelper && <gridHelper args={[1000, 1000]} />}
       {showSceneSizeHelper && <SceneSizeHelper />}

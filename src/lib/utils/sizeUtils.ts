@@ -73,7 +73,9 @@ const isExcluded = (object: THREE.Object3D, exclude: Set<THREE.Object3D>) => {
       walker instanceof THREE.GridHelper ||
       walker instanceof THREE.PolarGridHelper ||
       walker instanceof Follower ||
-      walker instanceof THREE.Box3Helper
+      walker instanceof THREE.Box3Helper ||
+      walker instanceof THREE.BoxHelper ||
+      walker instanceof THREE.SkeletonHelper
     ) {
       return true;
     }
@@ -110,6 +112,9 @@ export function getSceneBoundingBoxSize({
 
   (objects ?? scene.children).forEach((object) => {
     if (!isExcluded(object, exclude)) {
+      // SkinnedMesh needs updateMatrixWorld when loaded from JSON
+      // else the bounding box is wrong (test Jennifer as JSON)
+      object.updateMatrixWorld();
       const objectBoundingBox = new THREE.Box3().setFromObject(object, precise);
       if (!useFrustum || frustum.intersectsBox(objectBoundingBox)) {
         sceneBBox.union(objectBoundingBox);

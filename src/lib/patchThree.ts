@@ -301,16 +301,19 @@ const module: Module = {
   },
 
   updateSceneBBox({ action, object }) {
+    if (!module.isSafeToMakeHelpers) return;
     if (action === 'remove' && !module.shouldUpdateSceneBBoxOnRemoval) {
       return;
     }
+
     const { sceneSizeV3, sceneBBox, sceneSize } = getSceneBoundingBoxSize({
       scene: module.getCurrentScene(),
       camera: module.getCurrentCamera(),
       exclude: undefined,
       useFrustum: false,
       sceneBBox: action === 'add' ? module.sceneBBox : undefined,
-      objects: action === 'add' ? [object] : undefined
+      objects: action === 'add' ? [object] : undefined,
+      precise: false
     });
 
     module.sceneBBox = sceneBBox;
@@ -720,7 +723,11 @@ const module: Module = {
         this.updateCubeCamera(obj); // assumes CubeCamera helper has been created
       }
     });
-    if (object.name !== 'DefaultTransformControls') {
+    if (
+      object.name !== 'DefaultTransformControls' &&
+      object.parent === module.currentScene &&
+      !object.__inspectorData.isHelper
+    ) {
       module.updateSceneBBox({ action: 'add', object });
     }
   },

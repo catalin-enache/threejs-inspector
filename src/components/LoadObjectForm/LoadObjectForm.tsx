@@ -34,25 +34,20 @@ const allowedExtensions = [
   '.ejson'
 ];
 
-interface LoadObjectFormProps {
-  scene: THREE.Scene;
-  camera: THREE.PerspectiveCamera | THREE.OrthographicCamera;
-}
-
 // Using imperative DOM since we cannot use React predefined elements inside R3F canvas.
-export const LoadObjectForm = (props: LoadObjectFormProps) => {
-  const { scene, camera } = props;
+export const LoadObjectForm = () => {
   const loadAssetIsOpen = useAppStore((state) => state.loadObjectIsOpen);
   const setLoadAssetIsOpen = useAppStore((state) => state.setLoadObjectIsOpen);
   const contentRef = useRef<any>(null);
   const changeGeometry = useRef<'indexed' | 'non-indexed' | undefined>(undefined);
   const autoScaleRatio = useRef<number>(0.4);
   const recombineByMaterial = useRef<boolean>(false);
+  const makeInspectable = useRef<boolean>(true);
   const debug = useRef<string>('');
 
   const handleClose = useCallback(() => {
     setLoadAssetIsOpen(false);
-  }, []);
+  }, [setLoadAssetIsOpen]);
 
   useEffect(() => {
     // This runs only once until the page is refreshed.
@@ -61,6 +56,12 @@ export const LoadObjectForm = (props: LoadObjectFormProps) => {
     content.className = 'loadObject';
     content.innerHTML = `
       <div>
+        <div class="formRow">
+          <label>
+            <span>Make Inspectable</span>
+            <input type="checkbox" class="makeInspectable" />
+          </label>
+        </div>
         <div class="formRow">
           <label>
             <span>Change geometry:</span>
@@ -110,6 +111,12 @@ export const LoadObjectForm = (props: LoadObjectFormProps) => {
       autoScaleRatio.current = value;
     });
 
+    const makeInspectableInput = content.querySelector('.makeInspectable') as HTMLInputElement;
+    makeInspectableInput.checked = makeInspectable.current;
+    makeInspectableInput?.addEventListener('change', (e) => {
+      makeInspectable.current = (e.target as HTMLInputElement).checked;
+    });
+
     const recombineByMaterialInput = content.querySelector('.recombineByMaterial') as HTMLInputElement;
     recombineByMaterialInput.checked = recombineByMaterial.current;
     recombineByMaterialInput?.addEventListener('change', (e) => {
@@ -130,6 +137,8 @@ export const LoadObjectForm = (props: LoadObjectFormProps) => {
     uploadInput.multiple = true;
 
     uploadInput.onchange = (e) => {
+      const scene = patchThree.getCurrentScene();
+      const camera = patchThree.getCurrentCamera();
       setLoadAssetIsOpen(false);
       const files = (e.target as HTMLInputElement).files;
       if (!files || !files.length) return;
@@ -151,7 +160,11 @@ export const LoadObjectForm = (props: LoadObjectFormProps) => {
           if (object) {
             // @ts-ignore
             if (!object.isScene) {
+              if (makeInspectable.current) {
+                object.__inspectorData.isInspectable = true;
+              }
               scene.add(object);
+              patchThree.updateSceneBBox({ action: 'add', object });
             } else {
               patchThree.clearScene();
               const importedScene = object as unknown as THREE.Scene;
@@ -162,6 +175,7 @@ export const LoadObjectForm = (props: LoadObjectFormProps) => {
 
               importedSceneChildren.forEach((child) => {
                 scene.add(child);
+                patchThree.updateSceneBBox({ action: 'add', object: child });
               });
 
               patchThree.refreshCPanel();
@@ -176,7 +190,7 @@ export const LoadObjectForm = (props: LoadObjectFormProps) => {
     };
 
     contentRef.current = content;
-  }, []);
+  }, [setLoadAssetIsOpen]);
 
   return (
     <Modal isOpen={loadAssetIsOpen} onClose={handleClose} title="Options" width="250px">

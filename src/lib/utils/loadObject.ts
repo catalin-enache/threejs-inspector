@@ -92,11 +92,12 @@ const configMesh = (mesh: THREE.Object3D) => {
   const isJSONLoaded = (mesh.name || '').toLowerCase().endsWith('.json');
   const isBSONLoaded = (mesh.name || '').toLowerCase().endsWith('.bson');
   const isEJSONLoaded = (mesh.name || '').toLowerCase().endsWith('.ejson');
+  const isJSON = isJSONLoaded || isBSONLoaded || isEJSONLoaded;
 
   deepTraverse(
     mesh,
     ({ value }) => {
-      if (isJSONLoaded || isBSONLoaded || isEJSONLoaded) {
+      if (isJSON) {
         // mesh can be a scene when importing a scene saved as json
         // before exporting to json we copy the isInspectable flag from __inspectorData to userData
         // here we get it back

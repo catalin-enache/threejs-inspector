@@ -136,14 +136,26 @@ Found reason: camera is controlled by CameraControls.
 Must either disable position/rotation for that case or target the CameraControls.
 *DONE* (enhanced FlyControls and removed support for OrbitControls)
 
-ssh-add ~/.ssh/id_ed25519
+CameraControls need to work with 'demand' frameloop as well.
+CameraControls works now on demand when CPanel is set to continuously update (a happy coincidence it looks like).
+*DONE* improved CameraControls to work with demand frameloop.
+
+Make Inspector toggleable by clicking on the drag bar.
+*DONE*
+
+Cannot load JSON saved scene. It raises error.
+*DONE* not calculating anymore scene size until isSafeToMakeHelpers (deferring in LoadObjectForm)
+
+Scene BBox is not calculated correct for Jennifer imported as JSON until selecting a random object from scene
+*DONE* added object.updateMatrixWorld(); before Box3 setFromObject in getSceneBoundingBoxSize
 
 
 Deleting an object does not delete all geometries/textures - this should have been fixed, confirm.
 When deleting all objects manually geometries and textures are not cleaned up the same way as when clearing the scene.
 
-Ensure OrbitControls and FlyControls do everything as expected.
-FlyControls need to work with 'demand' mode as well.
+
+
+ssh-add ~/.ssh/id_ed25519
 
 
 

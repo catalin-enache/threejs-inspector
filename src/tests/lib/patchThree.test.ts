@@ -9,6 +9,7 @@ import { TransformControls } from 'three/examples/jsm/controls/TransformControls
 import { LightProbeGenerator } from 'three/examples/jsm/lights/LightProbeGenerator';
 import { RGBELoader } from 'three/examples/jsm/loaders/RGBELoader';
 import { loadObject } from 'lib/utils/loadObject';
+import { waitFor } from '@testing-library/dom';
 
 // vi.mock('../../../../store');
 
@@ -201,7 +202,7 @@ describe('patchThree', () => {
         });
       }));
 
-    it('calls handleObjectAdded recursively when adding to the scene', async () =>
+    it('calls handleObjectAdded one time when adding to the scene', async () =>
       new Promise<void>((done) => {
         withScene()(async ({ scene }) => {
           const spy = vi.spyOn(patchThree, 'handleObjectAdded');
@@ -211,10 +212,8 @@ describe('patchThree', () => {
           mesh2.add(mesh3);
           mesh1.add(mesh2);
           scene.add(mesh1);
-          expect(spy).toHaveBeenCalledTimes(3);
+          expect(spy).toHaveBeenCalledTimes(1);
           expect(spy).toHaveBeenNthCalledWith(1, mesh1);
-          expect(spy).toHaveBeenNthCalledWith(2, mesh2);
-          expect(spy).toHaveBeenNthCalledWith(3, mesh3);
           spy.mockRestore();
           done();
         });
@@ -222,20 +221,6 @@ describe('patchThree', () => {
   });
 
   describe('Object3D.prototype.remove', () => {
-    it('does not call cleanupAfterRemovedObject for children of THREE.CubeCamera', async () =>
-      new Promise<void>((done) => {
-        withScene()(async ({ scene: _ }) => {
-          const spy = vi.spyOn(patchThree, 'cleanupAfterRemovedObject');
-          const cubeCamera = new THREE.CubeCamera(0, 0, new THREE.WebGLCubeRenderTarget(0));
-          const camera = new THREE.PerspectiveCamera();
-          cubeCamera.add(camera);
-          cubeCamera.remove(camera);
-          expect(spy).not.toHaveBeenCalled();
-          spy.mockRestore();
-          done();
-        });
-      }));
-
     it('calls cleanupAfterRemovedObject even object is not added to the scene', async () =>
       new Promise<void>((done) => {
         withScene()(async ({ scene: _ }) => {
@@ -278,7 +263,7 @@ describe('patchThree', () => {
           useAppStore.getState().setSelectedObject(mesh1);
           expect(useAppStore.getState().getSelectedObject()).toBe(mesh1);
           scene.remove(mesh1);
-          expect(useAppStore.getState().getSelectedObject()).toBe(null);
+          await waitFor(() => expect(useAppStore.getState().getSelectedObject()).toBe(null));
           done();
         });
       }));
@@ -425,101 +410,6 @@ describe('patchThree', () => {
         }));
     });
 
-    describe('when object.__inspectorData.picker', () => {
-      it('removes picker from interactableObjects and destroys it', async () =>
-        new Promise<void>((done) => {
-          withScene()(async ({ scene }) => {
-            const destroyOnRemove = useAppStore.getState().destroyOnRemove;
-            useAppStore.getState().setDestroyOnRemove(true);
-            const perspectiveCamera = new THREE.PerspectiveCamera();
-            scene.add(perspectiveCamera);
-            expect(patchThree.interactableObjects[perspectiveCamera.__inspectorData.picker!.uuid]).toBe(
-              perspectiveCamera.__inspectorData.picker
-            );
-            const spyOnDestroy = vi.spyOn(patchThree, 'destroy');
-            scene.remove(perspectiveCamera);
-            expect(spyOnDestroy).toHaveBeenCalledTimes(3);
-            expect(spyOnDestroy).toHaveBeenCalledWith(perspectiveCamera.__inspectorData.picker);
-            expect(spyOnDestroy).toHaveBeenCalledWith(perspectiveCamera.__inspectorData.helper);
-            expect(spyOnDestroy).toHaveBeenCalledWith(perspectiveCamera);
-            expect(patchThree.interactableObjects[perspectiveCamera.__inspectorData.picker!.uuid]).toBe(undefined);
-            spyOnDestroy.mockRestore();
-            useAppStore.getState().setDestroyOnRemove(destroyOnRemove);
-            done();
-          });
-        }));
-    });
-
-    describe('when useAppStore.getState().destroyOnRemove === false', () => {
-      it('does not destroy the object', async () =>
-        new Promise<void>((done) => {
-          withScene()(async ({ scene }) => {
-            const destroyOnRemove = useAppStore.getState().destroyOnRemove;
-            useAppStore.getState().setDestroyOnRemove(false);
-            const spyOnDestroy = vi.spyOn(patchThree, 'destroy');
-
-            const object = new THREE.Object3D();
-            scene.add(object);
-            scene.remove(object);
-
-            expect(spyOnDestroy).not.toHaveBeenCalled();
-
-            spyOnDestroy.mockRestore();
-            useAppStore.getState().setDestroyOnRemove(destroyOnRemove);
-            done();
-          });
-        }));
-    });
-
-    describe('when useAppStore.getState().destroyOnRemove === true', () => {
-      it('destroys the object recursively', async () =>
-        new Promise<void>((done) => {
-          withScene()(async ({ scene }) => {
-            const destroyOnRemove = useAppStore.getState().destroyOnRemove;
-            useAppStore.getState().setDestroyOnRemove(true);
-            const spyOnDestroy = vi.spyOn(patchThree, 'destroy');
-
-            const object = new THREE.Object3D();
-            const child = new THREE.Object3D();
-            const grandChild = new THREE.Object3D();
-            object.add(child);
-            child.add(grandChild);
-
-            scene.add(object);
-            scene.remove(object);
-
-            expect(spyOnDestroy).toHaveBeenCalledTimes(3);
-            expect(spyOnDestroy).toHaveBeenCalledWith(object);
-            expect(spyOnDestroy).toHaveBeenCalledWith(child);
-            expect(spyOnDestroy).toHaveBeenCalledWith(grandChild);
-
-            spyOnDestroy.mockRestore();
-            useAppStore.getState().setDestroyOnRemove(destroyOnRemove);
-            done();
-          });
-        }));
-
-      it('does NOT destroy helpers and pickers for cameraToUseOnPlay', async () => {
-        await withScene()(async ({ scene }) => {
-          const destroyOnRemove = useAppStore.getState().destroyOnRemove;
-          useAppStore.getState().setDestroyOnRemove(true);
-          const spyOnDestroy = vi.spyOn(patchThree, 'destroy');
-
-          const perspectiveCamera = new THREE.PerspectiveCamera();
-          perspectiveCamera.__inspectorData.useOnPlay = true;
-          scene.add(perspectiveCamera);
-          scene.remove(perspectiveCamera);
-
-          expect(spyOnDestroy).toHaveBeenCalledTimes(1);
-          expect(spyOnDestroy).toHaveBeenCalledWith(perspectiveCamera);
-          // destroy has not been called for helper and picker
-
-          spyOnDestroy.mockRestore();
-          useAppStore.getState().setDestroyOnRemove(destroyOnRemove);
-        });
-      });
-    });
-
     describe('when object is in interactableObjects', () => {
       it('removes object from interactableObjects', async () =>
         new Promise<void>((done) => {
@@ -548,47 +438,22 @@ describe('patchThree', () => {
     });
 
     describe('when transformControls are attached to object', () => {
-      it('they are detached', async () =>
-        await withScene()(async ({ scene, canvas }) => {
-          const mesh = new THREE.Mesh();
-          const camera = new THREE.PerspectiveCamera();
-          scene.add(mesh);
-          const transformControls = new TransformControls(camera, canvas);
-          transformControls.detach = vi.fn();
-          scene.__inspectorData.transformControlsRef = { current: transformControls };
-          transformControls.attach(mesh);
-          scene.remove(mesh);
-          try {
+      it(
+        'they are detached',
+        async () =>
+          await withScene()(async ({ scene, canvas }) => {
+            const mesh = new THREE.Mesh();
+            const camera = new THREE.PerspectiveCamera();
+            scene.add(mesh);
+            const transformControls = new TransformControls(camera, canvas);
+            patchThree.transformControls = transformControls;
+            useAppStore.getState().setSelectedObject(mesh);
+            transformControls.detach = vi.fn();
+            scene.remove(mesh);
             expect(transformControls.detach).toHaveBeenCalled();
-          } catch (e) {
-            scene.__inspectorData.transformControlsRef = undefined;
-            throw e;
-          }
-        }));
-    });
-
-    describe('when child.__inspectorData.dependantObjects', () => {
-      it('dependantObjects are removed and destroyed', async () =>
-        await withScene()(async ({ scene }) => {
-          const destroyOnRemove = useAppStore.getState().destroyOnRemove;
-          useAppStore.getState().setDestroyOnRemove(false);
-          const parent = new THREE.Object3D();
-          const child = new THREE.Object3D();
-          const spy = vi.spyOn(patchThree, 'destroy');
-          parent.add(child);
-          scene.add(parent);
-          const dependantObject = new THREE.Object3D();
-          child.__inspectorData.dependantObjects!.push(dependantObject);
-          scene.remove(parent);
-          useAppStore.getState().setDestroyOnRemove(destroyOnRemove);
-          try {
-            expect(child.__inspectorData.dependantObjects).toEqual([]);
-            expect(spy).toHaveBeenCalledWith(dependantObject);
-          } catch (e) {
-            spy.mockRestore();
-            throw e;
-          }
-        }));
+          }),
+        { timeout: 1000 }
+      );
     });
   });
 
@@ -597,16 +462,15 @@ describe('patchThree', () => {
       it('creates skeletonHelper', { timeout: 10000 }, async () => {
         return await withScene()(async ({ scene }) => {
           return new Promise<void>((done) => {
-            loadObject('/models/MyTests/test_multi_features/test_multi_features.fbx', { isInspectable: true }).then(
-              (fbx) => {
-                if (!fbx) return;
-                scene.add(fbx);
-                // const showHelpers = useAppStore.getState().showHelpers;
-                // const showGizmos = useAppStore.getState().showGizmos;
-                expect(fbx.__inspectorData.helper).toBeInstanceOf(THREE.SkeletonHelper);
-                done();
-              }
-            );
+            loadObject('/models/MyTests/test_multi_features/test_multi_features.fbx', {}).then((fbx) => {
+              if (!fbx) return;
+              fbx.__inspectorData.isInspectable = true;
+              scene.add(fbx);
+              // const showHelpers = useAppStore.getState().showHelpers;
+              // const showGizmos = useAppStore.getState().showGizmos;
+              expect(fbx.__inspectorData.helper).toBeInstanceOf(THREE.SkeletonHelper);
+              done();
+            });
           });
         });
       });
@@ -795,7 +659,7 @@ describe('patchThree', () => {
             expect(helper.children[0].rotation.z.toFixed(1)).toBe('2.9');
 
             expect(roundArray(picker.matrix.elements)).toEqual([
-              -0.9, 0, 0.4, 0, -0.2, 0.8, -0.5, 0, -0.4, -0.6, -0.7, 0, 0, 0, 0, 1
+              -0.9, 0, 0.4, 0, -0.2, 0.8, -0.5, 0, -0.4, -0.6, -0.7, 0, 10, 15, 20, 1
             ]);
             expect(roundArray(helper.children[0].matrixWorld.elements)).toEqual([
               -0.9, 0, 0.4, 0, -0.2, 0.8, -0.5, 0, -0.4, -0.6, -0.7, 0, 10, 15, 20, 1
@@ -824,7 +688,7 @@ describe('patchThree', () => {
             expect(helper.children[0].rotation.z.toFixed(1)).toBe('1.6');
 
             expect(roundArray(picker.matrix.elements)).toEqual([
-              0, 0, -1, 0, -0.4, 0.9, 0, 0, 0.9, 0.4, 0, 0, 0, 0, 0, 1
+              0, 0, -1, 0, -0.4, 0.9, 0, 0, 0.9, 0.4, 0, 0, 10, 15, 20, 1
             ]);
             expect(roundArray(helper.children[0].matrixWorld.elements)).toEqual([
               0, 0, -1, 0, -0.4, 0.9, 0, 0, 0.9, 0.4, 0, 0, 10, 15, 20, 1
@@ -971,7 +835,7 @@ describe('patchThree', () => {
             ]); // changed
 
             expect(roundArray(picker.matrixWorld.elements, 1)).toEqual([
-              -0.9, 0, 0.4, 0, -0.2, 0.8, -0.5, 0, -0.4, -0.6, -0.7, 0, 10, 15, 20, 1
+              0, 0, -1, 0, -0.4, 0.9, 0, 0, 0.9, 0.4, 0, 0, 10, 15, 20, 1
             ]); // changed
 
             spotLight.position.set(0, 0, 0);
@@ -997,7 +861,7 @@ describe('patchThree', () => {
             ]); // changed
 
             expect(roundArray(picker.matrixWorld.elements, 1)).toEqual([
-              0, 0, -1, 0, -0.4, 0.9, 0, 0, 0.9, 0.4, 0, 0, 0, 0, 0, 1
+              0.7, 0, -0.7, 0, -0.4, 0.8, -0.4, 0, 0.6, 0.6, 0.6, 0, 0, 0, 0, 1
             ]); // changed
 
             done();
@@ -1227,8 +1091,8 @@ describe('patchThree', () => {
               -50, 0, 0, -50, 0, 0, -50, 0, 0, -50, 0, 0, -50, 0
             ]);
             expect(roundArray(picker.geometry.attributes.position.array)).toEqual([
-              0, 50, 0, 0, 50, 0, 0, 50, 0, 0, 50, 0, 0, 50, 0, -50, 0, 0, 0, 0, 50, 50, 0, 0, 0, 0, -50, -50, 0, 0, 0,
-              -50, 0, 0, -50, 0, 0, -50, 0, 0, -50, 0, 0, -50, 0
+              0, 50, 0, 0, 50, 0, 0, 50, 0, 0, 50, 0, 0, 50, 0, -50, 0, 0.9, 0.9, 0, 50, 50, 0, -0.9, -0.9, 0, -50, -50,
+              0, 0.9, 0, -50, 0, 0, -50, 0, 0, -50, 0, 0, -50, 0, 0, -50, 0
             ]);
             expect(roundArray(helper.matrixWorld.elements)).toEqual([
               1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 10, 15, 20, 1

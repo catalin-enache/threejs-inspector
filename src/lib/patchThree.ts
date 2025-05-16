@@ -389,12 +389,11 @@ const module: Module = {
   },
 
   disposeTransformControls({ resetSelectedObject = false } = {}) {
-    const transformControls = this.transformControls;
-    if (!transformControls) return;
-
     if (resetSelectedObject) {
       resetSelectedObject && useAppStore.getState().setSelectedObject(null);
     }
+    const transformControls = this.transformControls;
+    if (!transformControls) return;
 
     this.hideTransformControls();
     transformControls.detach();

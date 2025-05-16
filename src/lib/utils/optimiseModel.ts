@@ -67,8 +67,8 @@ const putGeometryNamesBack = (newGeometry: THREE.BufferGeometry, oldGeometry: TH
     newGeometry.attributes[key].name = oldGeometry.attributes[key].name;
   });
   Object.keys(oldGeometry.morphAttributes).forEach((key) => {
-    oldGeometry.morphAttributes[key].forEach((buffer, index) => {
-      newGeometry.morphAttributes[key][index].name = buffer.name;
+    oldGeometry.morphAttributes[key as keyof typeof oldGeometry.morphAttributes].forEach((buffer, index) => {
+      newGeometry.morphAttributes[key as keyof typeof oldGeometry.morphAttributes][index].name = buffer.name;
     });
   });
 };
@@ -77,7 +77,7 @@ const putGeometryNamesBack = (newGeometry: THREE.BufferGeometry, oldGeometry: TH
 const putNamesOnMorphAttributes = (mesh: THREE.Mesh) => {
   Object.keys(mesh.geometry.morphAttributes).forEach((attr) => {
     // position, normal, ...
-    mesh.geometry.morphAttributes[attr].forEach((buffer, index) => {
+    mesh.geometry.morphAttributes[attr as keyof typeof mesh.geometry.morphAttributes].forEach((buffer, index) => {
       const name = Object.keys(mesh.morphTargetDictionary || {}).find((key) => {
         return mesh.morphTargetDictionary![key] === index;
       });
@@ -293,7 +293,7 @@ export function splitMeshesByMaterial(root: THREE.Mesh | THREE.Group, { debug }:
             // key is 'position', 'normal', 'color', ...
             mergedMorphAttributes = mergedMorphAttributes || {};
             mergedMorphAttributes[key] = [];
-            geometryClone.morphAttributes[key].forEach((_, idx) => {
+            geometryClone.morphAttributes[key as keyof typeof geometryClone.morphAttributes].forEach((_, idx) => {
               mergedMorphAttributes![key][idx] = [];
             });
           });
@@ -315,7 +315,7 @@ export function splitMeshesByMaterial(root: THREE.Mesh | THREE.Group, { debug }:
           });
 
           morphAttributesKeys?.forEach((key) => {
-            geometryClone.morphAttributes[key].forEach((buffer, idx) => {
+            geometryClone.morphAttributes[key as keyof typeof geometryClone.morphAttributes].forEach((buffer, idx) => {
               const slice = buffer.array.slice(
                 group.start * buffer.itemSize,
                 (group.start + group.count) * buffer.itemSize
@@ -355,7 +355,8 @@ export function splitMeshesByMaterial(root: THREE.Mesh | THREE.Group, { debug }:
         mergedMorphAttributes &&
           Object.keys(mergedMorphAttributes).forEach((morphKey) => {
             const newMorphAttributes = mergedMorphAttributes![morphKey]; // e.g. position: [array, array]
-            const oldMorphAttributeSample = geometryClone.morphAttributes[morphKey][0];
+            const oldMorphAttributeSample =
+              geometryClone.morphAttributes[morphKey as keyof typeof geometryClone.morphAttributes][0];
             const itemSize = oldMorphAttributeSample.itemSize;
             const normalized = oldMorphAttributeSample.normalized;
             // @ts-ignore
@@ -367,14 +368,15 @@ export function splitMeshesByMaterial(root: THREE.Mesh | THREE.Group, { debug }:
               const morphData: number[] = newMorphAttributes[idx];
               // If BufferConstructor is BufferAttribute class, it only accepts typed arrays
               const newMorphGeoBuffer = new BufferConstructor(new ArrayConstructor(morphData), itemSize, normalized);
-              newMorphGeoBuffer.name = geometryClone.morphAttributes[morphKey][idx].name;
+              newMorphGeoBuffer.name =
+                geometryClone.morphAttributes[morphKey as keyof typeof geometryClone.morphAttributes][idx].name;
               newMorphGeoBuffer.gpuType = gpuType;
               return newMorphGeoBuffer;
             });
 
             // morphBuffers: position: [Buffer, Buffer]
             if (newMorphBuffers.length === 0) return;
-            mergedGeometry.morphAttributes[morphKey] = newMorphBuffers;
+            mergedGeometry.morphAttributes[morphKey as keyof typeof mergedGeometry.morphAttributes] = newMorphBuffers;
           });
 
         mergedGeometry.morphTargetsRelative = geometryClone.morphTargetsRelative;
@@ -461,7 +463,8 @@ export function splitMeshesByMaterial(root: THREE.Mesh | THREE.Group, { debug }:
         mergedGeometry.setIndex(new THREE.Uint32BufferAttribute(new Uint32Array(remappedIndices), 1));
 
         morphAttributesKeys?.forEach((morphKey) => {
-          const oldMorphAttributeSample = geometryClone.morphAttributes[morphKey][0];
+          const oldMorphAttributeSample =
+            geometryClone.morphAttributes[morphKey as keyof typeof geometryClone.morphAttributes][0];
           const oldBuffer = oldMorphAttributeSample.array;
           const itemSize = oldMorphAttributeSample.itemSize;
           const normalized = oldMorphAttributeSample.normalized;
@@ -470,7 +473,9 @@ export function splitMeshesByMaterial(root: THREE.Mesh | THREE.Group, { debug }:
           const BufferConstructor = oldMorphAttributeSample.constructor as BufferAttributeConstructor;
           const ArrayConstructor = oldBuffer.constructor as TypedArrayConstructor;
 
-          const newMorphBuffers = geometryClone.morphAttributes[morphKey].map((morphAttribute) => {
+          const newMorphBuffers = geometryClone.morphAttributes[
+            morphKey as keyof typeof geometryClone.morphAttributes
+          ].map((morphAttribute) => {
             const name = morphAttribute.name;
             const morphData = morphAttribute.array;
             const compactedBuffer = new ArrayConstructor(indicesMapper.size * itemSize);
@@ -489,7 +494,7 @@ export function splitMeshesByMaterial(root: THREE.Mesh | THREE.Group, { debug }:
 
           // morphBuffers: position: [Buffer, Buffer]
           if (newMorphBuffers.length === 0) return;
-          mergedGeometry.morphAttributes[morphKey] = newMorphBuffers;
+          mergedGeometry.morphAttributes[morphKey as keyof typeof mergedGeometry.morphAttributes] = newMorphBuffers;
         });
 
         mergedGeometry.morphTargetsRelative = geometryClone.morphTargetsRelative;

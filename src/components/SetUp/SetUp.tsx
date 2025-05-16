@@ -27,6 +27,8 @@ const preventContextMenu = (evt: MouseEvent) => {
 };
 
 export enum SETUP_EFFECT {
+  SETUP_INITIATED = 'SetupInitiatedEffect',
+  PLAYING_STATE_OR_CAMERA_TYPE = 'PlayingStateOrCameraTypeEffect',
   TRANSFORM_CONTROLS = 'TransformControlsEffect',
   VERSION_CHANGED = 'VersionChangedEffect' // triggered by Inspector
 }
@@ -47,7 +49,7 @@ const SetUp = (props: SetUpProps) => {
     // set autoNavControls to false, else will conflict
     autoNavControls = false,
     isInjected = true,
-    // onSetupEffect,
+    onSetupEffect,
     onThreeChange
   } = props;
   const three = useThree();
@@ -148,7 +150,11 @@ const SetUp = (props: SetUpProps) => {
     }
     // notify main App to re-render and send new camera into canvas
     useAppStore.getState().triggerCurrentCameraChanged();
-  }, [playingState, cameraType, isInjected]);
+    onSetupEffect?.(SETUP_EFFECT.PLAYING_STATE_OR_CAMERA_TYPE, {
+      playingState,
+      cameraType
+    });
+  }, [playingState, cameraType, isInjected, onSetupEffect]);
 
   // Update transform controls behavior
   useEffect(() => {
@@ -160,7 +166,10 @@ const SetUp = (props: SetUpProps) => {
     } else {
       patchThree.disposeTransformControls({ resetSelectedObject: !selectedObjectUUID });
     }
-  }, [selectedObjectUUID, showGizmos, transformControlsMode, transformControlsSpace]);
+    onSetupEffect?.(SETUP_EFFECT.TRANSFORM_CONTROLS, {
+      transformControls: patchThree.getTransformControls()
+    });
+  }, [selectedObjectUUID, showGizmos, transformControlsMode, transformControlsSpace, onSetupEffect]);
 
   useEffect(() => {
     patchThree.setCurrentCamera(camera); // used in App when !isInjected
@@ -213,14 +222,18 @@ const SetUp = (props: SetUpProps) => {
   }, [gl]);
 
   useEffect(() => {
+    render();
+  }, [render, frameloop]);
+
+  useEffect(() => {
     return () => {
       patchThree.disposeTransformControls({ resetSelectedObject: true });
     };
   }, []);
 
   useEffect(() => {
-    render();
-  }, [render, frameloop]);
+    onSetupEffect?.(SETUP_EFFECT.SETUP_INITIATED, {});
+  }, [onSetupEffect]);
 
   return <>{shouldUseCameraControls(camera) && <CameraControls ref={cameraControlsRef} />}</>;
 };

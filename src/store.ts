@@ -188,6 +188,7 @@ export const useAppStore = create<AppStore>()(
   subscribeWithSelector((set, get) => ({
     reset: () => {
       clearLocalStorage();
+      get().setSelectedObject(null);
       set({
         isInjected: true,
         outlinerSearch: '',

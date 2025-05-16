@@ -159,6 +159,17 @@ ssh-add ~/.ssh/id_ed25519
 
 
 
+
+
+Make sure we can use Experience and lib helpers without patchingThree or without using Setup and Inspector
+
+Add experience switcher in CPanel to easy switch between available experiences
+
+Get all calculations from old scene
+See how we can use labels/projections in the scene leveraging Drei (we have some old helpers for that)
+
+
+
 Add an object/scene save and load button using three serialization (be able to chose JSON serialization type).
 Related: Check imported json objects not respecting scene scale from LoadObjectForm
 Add tests for changes related to serialization and download/loadObject changes.
@@ -166,13 +177,6 @@ Add tests for changes related to serialization and download/loadObject changes.
 
 Allow loading more json objects in the scene and save/load them.
 
-
-
-
-Make sure we can use Experience and lib helpers without patchingThree or without using Setup and Inspector
-
-Get all calculations from old scene
-See how we can use labels/projections in the scene leveraging Drei (we have some old helpers for that)
 
 Add scene navigator (top/bottom/left/right) from threejs editor
 Show scene performance and statistics
@@ -185,7 +189,7 @@ Add loaders so that we can start the scene after everything was loaded.
 
 Maybe we can make the modal a non React component to use it in React rather than the other way around as we do it now.
 
-Add experience switcher in CPanel to easy switch between available experiences
+
 
 Implement typing multiple letters as key listeners?
 

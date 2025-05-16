@@ -169,12 +169,6 @@ Allow loading more json objects in the scene and save/load them.
 
 
 
-
-
-
-
-
-
 Make sure we can use Experience and lib helpers without patchingThree or without using Setup and Inspector
 
 Get all calculations from old scene
@@ -204,6 +198,11 @@ Test with WebGPURenderer (for now R3F does not support it)
 
 Write doc about loading models.
 
+Maybe allow saving as gltf ???
+
+Allow adding primitive objects (box, sphere, plane, cylinder) to the scene. ???
+
+Allow having scripts scripting along with a json project ???
 
 Allow seeing bounding boxes and spheres for objects.
 Use other helpers provided by ThreeJs (for seeing normals, tangents, see the helpers in the library)

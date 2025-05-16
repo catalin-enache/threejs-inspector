@@ -22,43 +22,43 @@ describe('getSceneBoundingBoxSize', () => {
           cube1.position.set(5, 0, 0);
           scene.add(cube1);
 
-          expect(getSceneBoundingBoxSize(scene, camera)).toEqual(new THREE.Vector3(2, 2, 2));
+          expect(getSceneBoundingBoxSize({ scene, camera }).sceneSizeV3).toEqual(new THREE.Vector3(2, 2, 2));
 
           const cube2 = new THREE.Mesh(geometry, new THREE.MeshStandardMaterial({ color: 0xff0000 }));
           cube2.position.set(-5, 0, 0);
           scene.add(cube2);
 
-          expect(getSceneBoundingBoxSize(scene, camera)).toEqual(new THREE.Vector3(12, 2, 2));
+          expect(getSceneBoundingBoxSize({ scene, camera }).sceneSizeV3).toEqual(new THREE.Vector3(12, 2, 2));
 
           const cube3 = new THREE.Mesh(geometry, new THREE.MeshStandardMaterial({ color: 0x0000ff }));
           cube3.position.set(0, 5, 0);
           scene.add(cube3);
 
-          expect(getSceneBoundingBoxSize(scene, camera)).toEqual(new THREE.Vector3(12, 7, 2));
+          expect(getSceneBoundingBoxSize({ scene, camera }).sceneSizeV3).toEqual(new THREE.Vector3(12, 7, 2));
 
           const cube4 = new THREE.Mesh(geometry, new THREE.MeshStandardMaterial({ color: 0x00ffff }));
           cube4.position.set(0, -5, 0);
           scene.add(cube4);
 
-          expect(getSceneBoundingBoxSize(scene, camera)).toEqual(new THREE.Vector3(12, 12, 2));
+          expect(getSceneBoundingBoxSize({ scene, camera }).sceneSizeV3).toEqual(new THREE.Vector3(12, 12, 2));
 
           const cube5 = new THREE.Mesh(geometry, new THREE.MeshStandardMaterial({ color: 0xffff00 }));
           cube5.position.set(0, 0, 5);
           scene.add(cube5);
 
-          expect(getSceneBoundingBoxSize(scene, camera)).toEqual(new THREE.Vector3(12, 12, 7));
+          expect(getSceneBoundingBoxSize({ scene, camera }).sceneSizeV3).toEqual(new THREE.Vector3(12, 12, 7));
 
           const cube6 = new THREE.Mesh(geometry, new THREE.MeshStandardMaterial({ color: 0x000000 }));
           cube6.position.set(0, 0, -5);
           scene.add(cube6);
 
-          expect(getSceneBoundingBoxSize(scene, camera)).toEqual(new THREE.Vector3(12, 12, 12));
+          expect(getSceneBoundingBoxSize({ scene, camera }).sceneSizeV3).toEqual(new THREE.Vector3(12, 12, 12));
 
           const cube7 = new THREE.Mesh(geometry, new THREE.MeshStandardMaterial({ color: 0xeeeeee }));
           cube7.position.set(0, 0, 0);
           scene.add(cube7);
 
-          expect(getSceneBoundingBoxSize(scene, camera)).toEqual(new THREE.Vector3(12, 12, 12));
+          expect(getSceneBoundingBoxSize({ scene, camera }).sceneSizeV3).toEqual(new THREE.Vector3(12, 12, 12));
 
           scene.remove(cube7);
 
@@ -66,19 +66,25 @@ describe('getSceneBoundingBoxSize', () => {
           camera.lookAt(0, 0, 0);
           camera.updateProjectionMatrix();
 
-          expect(getSceneBoundingBoxSize(scene, camera, undefined, true)).toEqual(new THREE.Vector3(2, 2, 2));
+          expect(getSceneBoundingBoxSize({ scene, camera, exclude: undefined, useFrustum: true }).sceneSizeV3).toEqual(
+            new THREE.Vector3(2, 2, 2)
+          );
 
           camera.position.set(0, -8, 0);
           camera.rotation.set(1, 0, 0);
           camera.updateProjectionMatrix();
 
-          expect(getSceneBoundingBoxSize(scene, camera, undefined, true)).toEqual(new THREE.Vector3(2, 7, 7));
+          expect(getSceneBoundingBoxSize({ scene, camera, exclude: undefined, useFrustum: true }).sceneSizeV3).toEqual(
+            new THREE.Vector3(2, 7, 7)
+          );
 
           camera.position.set(0, -8, 0);
           camera.rotation.set(1, 0.3, 0);
           camera.updateProjectionMatrix();
 
-          expect(getSceneBoundingBoxSize(scene, camera, undefined, true)).toEqual(new THREE.Vector3(7, 7, 7));
+          expect(getSceneBoundingBoxSize({ scene, camera, exclude: undefined, useFrustum: true }).sceneSizeV3).toEqual(
+            new THREE.Vector3(7, 7, 7)
+          );
 
           // await new Promise((resolve) => setTimeout(resolve, 60000));
 

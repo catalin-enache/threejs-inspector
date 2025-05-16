@@ -97,7 +97,7 @@ export function getSceneBoundingBoxSize({
   scene: THREE.Scene;
   camera: THREE.PerspectiveCamera | THREE.OrthographicCamera;
   exclude?: Set<THREE.Object3D>;
-  useFrustum: boolean;
+  useFrustum?: boolean;
   sceneBBox?: THREE.Box3;
   sceneSizeV3?: THREE.Vector3;
   objects?: THREE.Object3D[];

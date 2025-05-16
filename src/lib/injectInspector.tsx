@@ -121,7 +121,7 @@ export const Inspector = memo(
   }
 );
 
-interface InjectInspectorParams extends BaseInspectorProps {
+export interface InjectInspectorParams extends BaseInspectorProps {
   renderer: THREE.WebGLRenderer;
   scene: THREE.Scene;
   camera: THREE.PerspectiveCamera | THREE.OrthographicCamera;

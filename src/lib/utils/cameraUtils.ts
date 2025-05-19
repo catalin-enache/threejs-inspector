@@ -1,5 +1,4 @@
 import * as THREE from 'three';
-import { SceneSize } from 'old_src/config';
 
 export const focusCamera = () => {
   // handled by CameraControls
@@ -13,7 +12,7 @@ export const project3DCoordinateOnCamera = ({
   object
 }: {
   camera: THREE.PerspectiveCamera | THREE.OrthographicCamera;
-  sceneSize: SceneSize;
+  sceneSize: { width: number; height: number };
   object: THREE.Object3D;
 }) => {
   const widthHalf = 0.5 * sceneSize.width;

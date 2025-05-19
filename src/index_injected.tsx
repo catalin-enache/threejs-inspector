@@ -2,10 +2,14 @@ import * as THREE from 'three';
 import { ReactNode, StrictMode, useState, useEffect } from 'react';
 import { createRoot } from 'react-dom/client';
 import { Canvas } from '@react-three/fiber';
-import { CameraControls as _CameraControls, OrbitControls as _OrbitControls } from '@react-three/drei';
+// import { CameraControls as _CameraControls, OrbitControls as _OrbitControls } from '@react-three/drei';
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import { Experience } from 'scenarios/Experience';
 import { Inspector } from 'lib/injectInspector';
+import { extend } from '@react-three/fiber';
 import './index.css';
+
+extend({ OrbitControls });
 
 const params = {
   asset: 'two'
@@ -86,7 +90,12 @@ export function App(props: AppProps) {
       {/*dampingFactor={0.05} is default*/}
       {/*<_OrbitControls makeDefault={true} enableDamping={true} dampingFactor={0.1} />*/}
       {/*CameraControls do not allow controlling camera from outside*/}
-      <_CameraControls makeDefault={true} />
+      {/*<_CameraControls makeDefault={true} />*/}
+      <orbitControls
+        args={[camera, document.getElementById('main') as HTMLElement]}
+        enableDamping={false}
+        // dampingFactor={0.1}
+      />
       {children}
     </Canvas>
   );

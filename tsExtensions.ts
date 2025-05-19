@@ -3,7 +3,9 @@ import * as THREE from 'three';
 import type { RectAreaLightHelper } from 'three/examples/jsm/helpers/RectAreaLightHelper';
 import type { LightProbeHelper } from 'three/examples/jsm/helpers/LightProbeHelper';
 import type { PositionalAudioHelper } from 'three/examples/jsm/helpers/PositionalAudioHelper';
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import type { Follower } from 'lib/followers';
+import { type ThreeElement } from '@react-three/fiber';
 
 export type __inspectorData = {
   fullData: any;
@@ -93,5 +95,11 @@ declare module 'three' {
       textures: { [key: string]: THREE.Texture },
       animations: { [key: string]: THREE.AnimationClip }
     ): THREE.Object3D;
+  }
+}
+
+declare module '@react-three/fiber' {
+  interface ThreeElements {
+    orbitControls: ThreeElement<typeof OrbitControls>;
   }
 }

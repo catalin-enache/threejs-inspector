@@ -1,8 +1,7 @@
-import { ReactNode, useMemo, useState, useEffect, useCallback, useRef } from 'react';
+import { ReactNode, useMemo, useEffect, useCallback, useRef } from 'react';
 import * as THREE from 'three';
 import { Canvas, RootState } from '@react-three/fiber';
 import { Inspector, InspectorProps } from 'lib/injectInspector';
-import { OrbitControls } from '@react-three/drei';
 import { defaultScene, defaultPerspectiveCamera, defaultOrthographicCamera } from 'lib/patchThree';
 import { SetUpProps } from 'components/SetUp/SetUp';
 import { useAppStore } from 'src/store';
@@ -79,7 +78,6 @@ const glOptions = { antialias: true, precision: 'highp' };
 
 export interface TestInjectedInspectorAppProps {
   children?: ReactNode;
-  useDreiOrbitControls?: boolean;
   autoNavControls?: boolean;
   customParams?: InspectorProps['customParams'];
   includeDirLight?: boolean;
@@ -107,7 +105,6 @@ export function TestInjectedInspectorApp(props: TestInjectedInspectorAppProps) {
 
   const {
     children,
-    useDreiOrbitControls = false,
     autoNavControls = true,
     customParams,
     includeDirLight = true,
@@ -120,7 +117,6 @@ export function TestInjectedInspectorApp(props: TestInjectedInspectorAppProps) {
     onCPanelReady,
     onCPanelUnmounted
   } = props;
-  const [, setOrbitControls] = useState<any>(null);
   const threeStateRef = useRef<RootState | null>(null);
 
   useEffect(() => {
@@ -164,7 +160,6 @@ export function TestInjectedInspectorApp(props: TestInjectedInspectorAppProps) {
         onCPanelUnmounted={onCPanelUnmounted}
         customParams={customParams}
       />
-      {useDreiOrbitControls ? <OrbitControls ref={setOrbitControls} enableDamping={false} /> : null}
       {includeDirLight ? (
         <directionalLight name="dirLight" position={[1, 5, 1]} intensity={4.5} castShadow color={'white'} />
       ) : null}

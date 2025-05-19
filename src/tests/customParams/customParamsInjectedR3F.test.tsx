@@ -70,7 +70,6 @@ describe('CustomControl with injected Inspector in R3F App', () => {
 
       const res = render(
         <TestInjectedInspectorApp
-          useDreiOrbitControls={false}
           useDefaultPerspectiveCamera={true}
           useDefaultScene={true}
           onCPanelReady={handleCPanelReady}

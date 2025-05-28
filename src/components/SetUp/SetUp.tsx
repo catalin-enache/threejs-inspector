@@ -68,6 +68,7 @@ const SetUp = (props: SetUpProps) => {
   const setSelectedObject = useAppStore((state) => state.setSelectedObject);
 
   const showGizmos = useAppStore((state) => state.showGizmos);
+  const useTransformControls = useAppStore((state) => state.useTransformControls);
 
   const transformControlsMode = useAppStore((state) => state.transformControlsMode);
   const transformControlsSpace = useAppStore((state) => state.transformControlsSpace);
@@ -166,7 +167,7 @@ const SetUp = (props: SetUpProps) => {
 
   // Update transform controls behavior
   useEffect(() => {
-    if (selectedObjectUUID && showGizmos) {
+    if (selectedObjectUUID && useTransformControls && showGizmos) {
       patchThree.attachTransformControls({ showHelper: showGizmos, cameraControlsRef: cameraControlsRef });
       const transformControls = patchThree.getTransformControls()!;
       transformControls.setMode(transformControlsMode); // translate | rotate | scale
@@ -177,7 +178,14 @@ const SetUp = (props: SetUpProps) => {
     onSetupEffect?.(SETUP_EFFECT.TRANSFORM_CONTROLS, {
       transformControls: patchThree.getTransformControls()
     });
-  }, [selectedObjectUUID, showGizmos, transformControlsMode, transformControlsSpace, onSetupEffect]);
+  }, [
+    selectedObjectUUID,
+    showGizmos,
+    useTransformControls,
+    transformControlsMode,
+    transformControlsSpace,
+    onSetupEffect
+  ]);
 
   useEffect(() => {
     patchThree.setCurrentCamera(camera); // currentCamera is used in App when !isInjected

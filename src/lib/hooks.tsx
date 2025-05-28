@@ -64,32 +64,35 @@ export const usePlay = (
   // useFrame(_cbRef.current, renderPriority);
 };
 
-type UseInspector = ({
-  cameraType,
-  useHotKeys,
-  onSetupEffect,
-  onThreeChange,
-  onCPanelReady,
-  onCPanelUnmounted
-}: {
+type DefaultSetup = (config: {
   cameraType?: 'perspective' | 'orthographic';
   useHotKeys?: boolean;
+  autoNavControls?: boolean;
+  showInspector?: boolean;
+  showGizmos?: boolean;
+  useTransformControls?: boolean;
+  onTransformControlsDragging?: (isDragging: boolean) => void;
   // for testing
   onSetupEffect?: SetUpProps['onSetupEffect'];
   onThreeChange?: SetUpProps['onThreeChange'];
   onCPanelReady?: CPanelProps['onCPanelReady'];
   onCPanelUnmounted?: CPanelProps['onCPanelUnmounted'];
 }) => {
-  camera?: THREE.PerspectiveCamera | THREE.OrthographicCamera;
+  camera: THREE.PerspectiveCamera | THREE.OrthographicCamera;
   scene: THREE.Scene;
   inspector: JSX.Element;
 };
 
 // Note: when using useDefaultSetup hook, the App !MUST! use the scene and camera from the hook.
 // If that's not desired do not use useDefaultSetup hook but inject the <Inspector /> component instead.
-export const useDefaultSetup: UseInspector = ({
+export const useDefaultSetup: DefaultSetup = ({
   cameraType,
   useHotKeys = true,
+  autoNavControls = true,
+  showInspector = true,
+  showGizmos = true,
+  useTransformControls = true,
+  onTransformControlsDragging = () => {},
   onSetupEffect,
   onThreeChange,
   onCPanelReady,
@@ -98,6 +101,10 @@ export const useDefaultSetup: UseInspector = ({
   const currentCameraStateFake = useAppStore((state) => state.currentCameraStateFake);
   const [camera, setCamera] = useState(getCurrentCamera());
   const currentFrameLoopRef = useRef<RootState['frameloop'] | ''>('');
+  const isDraggingTransformControls = useAppStore((state) => state.isDraggingTransformControls);
+  const onTransformControlsDraggingRef = useRef(onTransformControlsDragging);
+  onTransformControlsDraggingRef.current = onTransformControlsDragging;
+
   // const [CPanelComponent, setCPanelComponent] = useState<typeof import('components/CPanel/CPanel').CPanel | null>(null);
   //
   // const isMountedRef = useRef(false);
@@ -119,10 +126,22 @@ export const useDefaultSetup: UseInspector = ({
   // }, [CPanelComponent]);
 
   useEffect(() => {
+    onTransformControlsDraggingRef.current(isDraggingTransformControls);
+  }, [isDraggingTransformControls]);
+
+  useEffect(() => {
     if (cameraType) {
       useAppStore.getState().setCameraType(cameraType);
     }
   }, [cameraType]);
+
+  useEffect(() => {
+    useAppStore.getState().setShowGizmos(showGizmos);
+  }, [showGizmos]);
+
+  useEffect(() => {
+    useAppStore.getState().setUseTransformControls(useTransformControls);
+  }, [useTransformControls]);
 
   // cameraType in SetUp drives the currentCameraStateFake change
   useEffect(() => {
@@ -147,12 +166,17 @@ export const useDefaultSetup: UseInspector = ({
   const inspector = useMemo(() => {
     return (
       <>
-        <SetUp isInjected={false} autoNavControls={true} onSetupEffect={onSetupEffect} onThreeChange={onThreeChange} />
-        <CPanel onCPanelReady={onCPanelReady} onCPanelUnmounted={onCPanelUnmounted} />
+        <SetUp
+          isInjected={false}
+          autoNavControls={autoNavControls}
+          onSetupEffect={onSetupEffect}
+          onThreeChange={onThreeChange}
+        />
+        {showInspector && <CPanel onCPanelReady={onCPanelReady} onCPanelUnmounted={onCPanelUnmounted} />}
         {useHotKeys && <KeyListener />}
       </>
     );
-  }, [onCPanelReady, onCPanelUnmounted, onThreeChange, onSetupEffect, useHotKeys]);
+  }, [onCPanelReady, onCPanelUnmounted, onThreeChange, onSetupEffect, useHotKeys, showInspector, autoNavControls]);
 
   return {
     camera,

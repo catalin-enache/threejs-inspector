@@ -17,6 +17,8 @@
   import { FBXLoader } from 'three/addons/loaders/FBXLoader.js';
   import Stats from 'three/addons/libs/stats.module.js';
 
+  const customCameraControls = false;
+
   const manager = new THREE.LoadingManager();
 
   let camera, scene, renderer, stats, object, loader, controls;
@@ -84,9 +86,12 @@
     renderer.shadowMap.enabled = true;
     container.appendChild( renderer.domElement );
 
-    // controls = new OrbitControls( camera, renderer.domElement );
-    // controls.target.set( 0, 100, 0 );
-    // controls.update();
+    if (customCameraControls) {
+      controls = new OrbitControls( camera, renderer.domElement );
+      controls.target.set( 0, 100, 0 );
+      controls.update();
+    }
+
 
     window.addEventListener( 'resize', onWindowResize );
 
@@ -227,9 +232,17 @@
     scene,
     renderer,
     frameloop: 'always',
-    autoNavControls: true,
+    autoNavControls: !customCameraControls,
     customParams,
     useHotKeys: true,
+    showInspector: true,
+    showGizmos: true,
+    useTransformControls: false,
+    onTransformControlsDragging: (dragging) => {
+      if (controls) {
+        controls.enabled = !dragging;
+      }
+    },
     // onRender: animate,
     r3fThreeGetSet
   });

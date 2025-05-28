@@ -61,9 +61,12 @@ interface AppProps {
 
 export function App(props: AppProps) {
   const { children } = props;
+
+  const customCameraControls = true;
   // @ts-ignore
   const [camera, setCamera] = useState<THREE.PerspectiveCamera | THREE.OrthographicCamera>(camera1);
   const [renderer, setRenderer] = useState<THREE.WebGLRenderer | null>(null);
+  const [isDraggingTransformControls, setIsDraggingTransformControls] = useState(false);
 
   useEffect(() => {
     const intervalId = setInterval(() => {
@@ -91,12 +94,23 @@ export function App(props: AppProps) {
       }}
       frameloop={'always'}
     >
-      <Inspector autoNavControls={false} customParams={customParams} useHotKeys={true} />
+      <Inspector
+        autoNavControls={!customCameraControls}
+        customParams={customParams}
+        useHotKeys={true}
+        onTransformControlsDragging={setIsDraggingTransformControls}
+      />
       {/*dampingFactor={0.05} is default*/}
       {/*<_OrbitControls makeDefault={true} enableDamping={true} dampingFactor={0.1} />*/}
       {/*CameraControls do not allow controlling camera from outside*/}
       {/*<_CameraControls makeDefault={true} />*/}
-      {renderer && <orbitControls args={[camera, renderer.domElement]} enableDamping={false} />}
+      {customCameraControls && renderer && (
+        <orbitControls
+          args={[camera, renderer.domElement]}
+          enabled={!isDraggingTransformControls}
+          enableDamping={false}
+        />
+      )}
       {children}
     </Canvas>
   );

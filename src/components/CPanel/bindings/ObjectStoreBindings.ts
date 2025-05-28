@@ -14,7 +14,8 @@ export const ObjectStoreBindings = (_params: CommonGetterParams) => ({
     }),
     onChange: ((_, evt: any) => {
       useAppStore.getState().setTransformControlsMode(evt.value);
-    }) as onChange
+    }) as onChange,
+    if: () => useAppStore.getState().useTransformControls
   },
   transformControlsSpace: {
     label: "TSpace ( ;' )",
@@ -27,7 +28,8 @@ export const ObjectStoreBindings = (_params: CommonGetterParams) => ({
     }),
     onChange: ((_, space) => {
       useAppStore.getState().setTransformControlsSpace(space.value);
-    }) as onChange
+    }) as onChange,
+    if: () => useAppStore.getState().useTransformControls
   },
   positionPointerKeyMultiplier: {
     label: 'Position Pointer/Key Multiplier (refresh)',

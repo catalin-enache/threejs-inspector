@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { ReactNode, memo, useMemo, createElement } from 'react';
+import { ReactNode, memo, useMemo, createElement, useEffect, useRef } from 'react';
 // import { useState, useEffect } from 'react';
 import {
   extend,
@@ -17,6 +17,7 @@ import { CustomControl } from 'components/CustomControl/CustomControl';
 import { CustomParams, isCustomParamStruct } from 'lib/customParam.types';
 // KeyListener depends on CPanel (sideEffect) to add in DOM CPanel elements to listen to
 import { KeyListener } from 'components/KeyListener';
+import { useAppStore } from 'src/store';
 // import { getCPanel } from 'lib/utils/lazyLoaders';
 extend(THREE as any);
 
@@ -33,6 +34,10 @@ export interface BaseInspectorProps {
   autoNavControls?: boolean;
   customParams?: CustomParams;
   useHotKeys?: boolean;
+  showInspector?: boolean;
+  showGizmos?: boolean;
+  useTransformControls?: boolean;
+  onTransformControlsDragging?: (isDragging: boolean) => void;
   // for testing
   onSetupEffect?: SetUpProps['onSetupEffect'];
   onThreeChange?: SetUpProps['onThreeChange'];
@@ -86,6 +91,10 @@ export const Inspector = memo(
     autoNavControls = false,
     customParams,
     useHotKeys = true,
+    showInspector = true,
+    showGizmos = true,
+    useTransformControls = true,
+    onTransformControlsDragging = () => {},
     onSetupEffect,
     onThreeChange,
     onCPanelReady,
@@ -98,6 +107,10 @@ export const Inspector = memo(
     const r3fThreeGet = useThree((state) => state.get);
     const r3fThreeSet = useThree((state) => state.set);
     r3fThreeGetSet?.({ r3fThreeGet, r3fThreeSet });
+
+    const isDraggingTransformControls = useAppStore((state) => state.isDraggingTransformControls);
+    const onTransformControlsDraggingRef = useRef(onTransformControlsDragging);
+    onTransformControlsDraggingRef.current = onTransformControlsDragging;
 
     const customParamsElements = useMemo(() => {
       !customParams && onSetupEffect?.(SETUP_EFFECT.VERSION_CHANGED, { version, customParamsElements: null });
@@ -144,6 +157,19 @@ export const Inspector = memo(
     //     {customParamsElements}
     //   </>
     // );
+
+    useEffect(() => {
+      useAppStore.getState().setShowGizmos(showGizmos);
+    }, [showGizmos]);
+
+    useEffect(() => {
+      useAppStore.getState().setUseTransformControls(useTransformControls);
+    }, [useTransformControls]);
+
+    useEffect(() => {
+      onTransformControlsDraggingRef.current(isDraggingTransformControls);
+    }, [isDraggingTransformControls]);
+
     return (
       <>
         <SetUp
@@ -152,7 +178,7 @@ export const Inspector = memo(
           onSetupEffect={onSetupEffect}
           onThreeChange={onThreeChange}
         />
-        <CPanel onCPanelReady={onCPanelReady} onCPanelUnmounted={onCPanelUnmounted} />
+        {showInspector && <CPanel onCPanelReady={onCPanelReady} onCPanelUnmounted={onCPanelUnmounted} />}
         {useHotKeys && <KeyListener />}
         {customParamsElements}
       </>
@@ -176,6 +202,10 @@ const configureAndRender = (params: InjectInspectorParams) => {
     autoNavControls,
     customParams,
     useHotKeys,
+    showInspector,
+    showGizmos,
+    useTransformControls,
+    onTransformControlsDragging,
     onSetupEffect,
     onThreeChange,
     onCPanelReady,
@@ -203,6 +233,10 @@ const configureAndRender = (params: InjectInspectorParams) => {
       customParams,
       useHotKeys,
       version: ++version,
+      showInspector,
+      showGizmos,
+      useTransformControls,
+      onTransformControlsDragging,
       // for testing
       onSetupEffect,
       onThreeChange,

@@ -113,8 +113,11 @@ export interface AppStore {
   setTransformControlsMode: (mode: 'translate' | 'rotate' | 'scale') => void;
   transformControlsSpace: 'world' | 'local';
   setTransformControlsSpace: (space: 'world' | 'local') => void;
+  useTransformControls: boolean;
+  setUseTransformControls: (useTransformControls: boolean) => void;
   isDraggingTransformControls: boolean;
   setIsDraggingTransformControls: (isDraggingTransformControls: boolean) => void;
+  getIsDraggingTransformControls: () => boolean;
   showGizmos: boolean;
   setShowGizmos: (showGizmos: boolean) => void;
   toggleShowGizmos: () => void;
@@ -200,6 +203,7 @@ export const useAppStore = create<AppStore>()(
         isFullscreen:
           // @ts-ignore
           document.fullscreenElement || document.webkitFullscreenElement,
+        useTransformControls: true,
         transformControlsMode: 'translate',
         transformControlsSpace: 'world',
         isDraggingTransformControls: false,
@@ -261,12 +265,17 @@ export const useAppStore = create<AppStore>()(
         !(document.fullscreenElement || document.webkitFullscreenElement)
       );
     },
+    useTransformControls: true,
+    setUseTransformControls: (useTransformControls) => {
+      set({ useTransformControls });
+    },
     transformControlsMode: 'translate',
     setTransformControlsMode: (mode) => set({ transformControlsMode: mode }),
     transformControlsSpace: 'world',
     setTransformControlsSpace: (space) => set({ transformControlsSpace: space }),
     isDraggingTransformControls: false,
     setIsDraggingTransformControls: (isDraggingTransformControls) => set({ isDraggingTransformControls }),
+    getIsDraggingTransformControls: () => get().isDraggingTransformControls,
     showGizmos: showGizmos,
     setShowGizmos: (showGizmos) => {
       set({ showGizmos, showHelpers: showGizmos });

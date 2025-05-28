@@ -1,6 +1,11 @@
-import { ReactNode } from 'react';
+import { ReactNode, useState } from 'react';
 import { Canvas } from '@react-three/fiber';
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
+import { extend } from '@react-three/fiber';
 import { useDefaultSetup } from 'src/lib/hooks';
+import * as THREE from 'three';
+
+extend({ OrbitControls });
 
 const glOptions = { antialias: true, precision: 'highp' };
 
@@ -10,7 +15,19 @@ interface AppProps {
 
 export function App(props: AppProps) {
   const { children } = props;
-  const { camera, scene, inspector } = useDefaultSetup({ useHotKeys: true });
+  const [renderer, setRenderer] = useState<THREE.WebGLRenderer | null>(null);
+  const [isDraggingTransformControls, setIsDraggingTransformControls] = useState(false);
+
+  const customCameraControls = false;
+
+  const { camera, scene, inspector } = useDefaultSetup({
+    useHotKeys: true,
+    showInspector: true,
+    autoNavControls: !customCameraControls,
+    showGizmos: true,
+    useTransformControls: true,
+    onTransformControlsDragging: setIsDraggingTransformControls
+  });
 
   /*
   shadow types
@@ -34,12 +51,28 @@ export function App(props: AppProps) {
         camera={camera}
         scene={scene}
         shadows="soft"
-        gl={glOptions}
+        gl={(defaultProps) => {
+          const _renderer =
+            renderer ??
+            new THREE.WebGLRenderer({
+              ...defaultProps,
+              ...glOptions
+            });
+          !renderer && setRenderer(() => _renderer);
+          return _renderer;
+        }}
         frameloop="always" // 'always' | 'demand' | 'never'
         // legacy
         // when legacy is true it sets THREE.ColorManagement.enabled = false, by default THREE.ColorManagement is enabled
         // when THREE.ColorManagement is enabled, ThreeJS will automatically handle the conversion of textures and colors to linear space.
       >
+        {customCameraControls && renderer && (
+          <orbitControls
+            args={[camera, renderer.domElement]}
+            enabled={!isDraggingTransformControls}
+            enableDamping={false}
+          />
+        )}
         {inspector}
         {children}
       </Canvas>

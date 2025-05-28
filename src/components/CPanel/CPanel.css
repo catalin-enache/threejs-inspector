@@ -29,23 +29,16 @@
 }
 
 
-/* overriding host start >> */
-body * {
-  /* needed for correct display of CPanel help */
+#controlPanel * {
   box-sizing: border-box;
 }
 
-html, body {
-  margin: 0;
-  padding: 0;
-  overflow: hidden;
+#controlPanel {
   -webkit-user-select: none; /* Safari */
   -ms-user-select: none; /* IE 10 and IE 11 */
   user-select: none; /* Standard syntax */
-}
-/* << overriding host end */
 
-#controlPanel {
+
   --cPanelNestingOffset: 10px; /* account for cPanel Global tab initial nesting */
   --cPanelWidth: 340px;
   --cPanelRightMargin: 10px;
@@ -73,12 +66,12 @@ html, body {
   z-index: 99990; /* 1 is enough but if used in other apps we need to be sure is on top of everything */
 }
 
-#dragMe {
+#controlPanel #dragMe {
   background-color: var(--tp-base-background-color);
   height: 8px
 }
 
-#help {
+#controlPanel #help {
   --helpWidth: calc(100vw - var(--cPanelFinalWidth) - var(--leftRightMargin));
   position: absolute;
   top: 0;
@@ -91,14 +84,14 @@ html, body {
   padding: min(16px, calc(var(--helpWidth) * 0.035));
 }
 
-#help code {
+#controlPanel #help code {
   font-weight: bold;
   font-size: 16px;
   color: orange;
 }
 
 /* make controlPanelContent scrollable */
-#controlPanelContent {
+#controlPanel #controlPanelContent {
   flex: 1;
   display: flex;
   flex-direction: column;
@@ -113,7 +106,7 @@ html, body {
   overflow-y: scroll;
 }
 /* attempt to improve aliasing */
-#controlPanelContent > div {
+#controlPanel #controlPanelContent > div {
   transform: translateZ(0);
 }
 
@@ -122,28 +115,28 @@ Here, we allow draggable input control to be displayed when dragged outside the 
 in combination with JS pointerdown event in charge with setting .cPanel-mousedown class
 and in charge with shifting position according with last scrollTop value
 */
-#controlPanelContent.cPanel-mousedown {
+#controlPanel #controlPanelContent.cPanel-mousedown {
   overflow-y: clip;
 }
 
 /* hide scrollbar */
-#controlPanelContent::-webkit-scrollbar,
-#help::-webkit-scrollbar {
+#controlPanel #controlPanelContent::-webkit-scrollbar,
+#controlPanel #help::-webkit-scrollbar {
   display: none;
 }
-#controlPanelContent,
-#help {
+#controlPanel #controlPanelContent,
+#controlPanel #help {
   -ms-overflow-style: none;  /* IE and Edge */
   scrollbar-width: none;  /* Firefox */
 }
 
 /* make cPanel full width of container */
-#controlPanelContent > div {
+#controlPanel #controlPanelContent > div {
   width: 100%;
 }
 
 /* add label ellipsis and allow it be expanded even when input is disabled */
-#controlPanelContent .binding-label {
+#controlPanel #controlPanelContent .binding-label {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -151,24 +144,24 @@ and in charge with shifting position according with last scrollTop value
   pointer-events: all;
 }
 
-#controlPanelContent .binding .binding-label:hover + div {
+#controlPanel #controlPanelContent .binding .binding-label:hover + div {
   transition: width 0.0001s, opacity 0.0001s !important;
   transition-delay: 0.35s !important;
 }
 
 /* allow expanding labels by shrinking value containers */
-#controlPanelContent:not(.cPanel-mousedown) .binding .binding-label:hover + div {
+#controlPanel #controlPanelContent:not(.cPanel-mousedown) .binding .binding-label:hover + div {
   width: 0;
   opacity: 0;
 }
 
 /* make values bigger to fit Vector4 value */
-#controlPanelContent .binding-value {
+#controlPanel #controlPanelContent .binding-value {
   width: 240px;
 }
 
 /* prevent animation buttons text being ugly displayed */
-#controlPanelContent .binding-value button > div {
+#controlPanel #controlPanelContent .binding-value button > div {
   padding-left: 6px;
   padding-right: 6px;
   overflow: hidden;
@@ -176,23 +169,23 @@ and in charge with shifting position according with last scrollTop value
   white-space: nowrap;
 }
 
-#controlPanelContent .binding-value input:disabled {
+#controlPanel #controlPanelContent .binding-value input:disabled {
   /* so that we can click on it, then shift the text with keyboard left/right arrows */
   pointer-events: all;
 }
 
 /* hint that tabs are clickable */
-#controlPanelContent .cPanel-tab > button > div {
+#controlPanel #controlPanelContent .cPanel-tab > button > div {
   cursor: pointer;
 }
 
-#controlPanelContent input[type="checkbox"] ~ div {
+#controlPanel #controlPanelContent input[type="checkbox"] ~ div {
   border: 1px solid #ccc;
   opacity: 0.2;
 }
 
 /* adjusting separator color */
-#controlPanelContent div > hr {
+#controlPanel #controlPanelContent div > hr {
   background-color: var(--tp-container-background-color);
 }
 
@@ -201,12 +194,12 @@ make panel reconstruction unobservable
 transition 0 introduces a bug which is fixed in bindings
 by dispatching "transitionend" event which it seams that Tweakpane relies on
 */
-#controlPanelContent  * {
+#controlPanel #controlPanelContent * {
   transition: none !important;
   text-transform: none;
 }
 
-#controlPanelContent .outlinerSearch {
+#controlPanel #controlPanelContent .outlinerSearch {
   padding: 0 26px;
 }
 
@@ -216,7 +209,7 @@ by dispatching "transitionend" event which it seams that Tweakpane relies on
 }
 
 /* fix cubicBezier gradation */
-#controlPanelContent .tp-cbzprvv {
+#controlPanel #controlPanelContent .tp-cbzprvv {
   padding: 0;
 }
 

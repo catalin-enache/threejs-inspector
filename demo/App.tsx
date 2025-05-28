@@ -1,6 +1,6 @@
 import { ReactNode } from 'react';
 import { Canvas } from '@react-three/fiber';
-import { useDefaultSetup } from 'lib/hooks';
+import { useDefaultSetup } from 'src/lib/hooks';
 
 const glOptions = { antialias: true, precision: 'highp' };
 
@@ -10,7 +10,7 @@ interface AppProps {
 
 export function App(props: AppProps) {
   const { children } = props;
-  const { camera, scene, inspector } = useDefaultSetup({});
+  const { camera, scene, inspector } = useDefaultSetup({ useHotKeys: true });
 
   /*
   shadow types

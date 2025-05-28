@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { injectInspector } from 'src/lib/injectInspector';
+import { injectInspector } from 'lib/inspector';
 import { CustomParams } from 'lib/customParam.types';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import Stats from 'three/examples/jsm/libs/stats.module';

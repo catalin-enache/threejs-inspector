@@ -16,6 +16,9 @@ export default {
   updateCubeCameras: patchThree.updateCubeCameras,
   getShouldUpdateSceneBBoxOnRemoval: patchThree.getShouldUpdateSceneBBoxOnRemoval,
   setShouldUpdateSceneBBoxOnRemoval: patchThree.setShouldUpdateSceneBBoxOnRemoval,
+  getSceneSizeV3: patchThree.getSceneSizeV3(),
+  getSceneSize: patchThree.getSceneSize(),
+  getSceneBBox: patchThree.getSceneBBox(),
 
   cloneObject3D,
   deepTraverse,

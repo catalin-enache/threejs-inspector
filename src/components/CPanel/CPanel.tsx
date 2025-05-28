@@ -10,6 +10,8 @@ import { SceneSizeHelper } from 'components/Helpers/SceneSizeHelper';
 import { makeContinuousUpdate } from './continuousUpdate';
 import TexturePlugin from './Plugins/TexturePlugin';
 import { manipulateMouseSpeed } from './manipulateMouseSpeed';
+import { injectMainCss } from 'lib/cssInjector';
+void injectMainCss(); // when running in lib mode, we need to inject the css manually
 
 import {
   getObject3DBindings,
@@ -41,7 +43,7 @@ const cPanel = document.createElement('div');
 cPanel.id = 'controlPanel';
 cPanel.innerHTML = `
 <div id="dragMe"></div>
-<div id="help"></div>
+<div id="help" style="display: none"></div>
 <div id="controlPanelContent"></div>
 `;
 document.body.appendChild(cPanel);

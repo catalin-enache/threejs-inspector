@@ -1,5 +1,6 @@
 import * as THREE from 'three';
-import React, { ReactNode, memo, useMemo } from 'react';
+import { ReactNode, memo, useMemo, createElement } from 'react';
+// import { useState, useEffect } from 'react';
 import {
   extend,
   createRoot,
@@ -11,11 +12,12 @@ import {
   RootState
 } from '@react-three/fiber';
 import { SetUp, SetUpProps, SETUP_EFFECT } from 'components/SetUp/SetUp'; // patching Object3D
-import { CPanel, CPanelProps } from 'components/CPanel/CPanel';
+import { CPanel, type CPanelProps } from 'components/CPanel/CPanel';
 import { CustomControl } from 'components/CustomControl/CustomControl';
 import { CustomParams, isCustomParamStruct } from 'lib/customParam.types';
 // KeyListener depends on CPanel (sideEffect) to add in DOM CPanel elements to listen to
 import { KeyListener } from 'components/KeyListener';
+// import { getCPanel } from 'lib/utils/lazyLoaders';
 extend(THREE as any);
 
 // singleton
@@ -30,6 +32,7 @@ type buildCustomParamsElementsParams = {
 export interface BaseInspectorProps {
   autoNavControls?: boolean;
   customParams?: CustomParams;
+  useHotKeys?: boolean;
   // for testing
   onSetupEffect?: SetUpProps['onSetupEffect'];
   onThreeChange?: SetUpProps['onThreeChange'];
@@ -82,6 +85,7 @@ export const Inspector = memo(
   ({
     autoNavControls = false,
     customParams,
+    useHotKeys = true,
     onSetupEffect,
     onThreeChange,
     onCPanelReady,
@@ -105,6 +109,41 @@ export const Inspector = memo(
       // eslint-disable-next-line react-hooks/exhaustive-deps -- version is needed because customParams are mutated
     }, [customParams, version]);
 
+    // const [CPanelComponent, setCPanelComponent] = useState<typeof import('components/CPanel/CPanel').CPanel | null>(
+    //   null
+    // );
+    //
+    // const isMountedRef = useRef(false);
+    // useEffect(() => {
+    //   isMountedRef.current = true;
+    //   return () => {
+    //     isMountedRef.current = false;
+    //     // onCPanelUnmounted?.();
+    //   };
+    // }, [onCPanelUnmounted]);
+    //
+    // useEffect(() => {
+    //   if (CPanelComponent || !isMountedRef.current) {
+    //     return;
+    //   }
+    //   getCPanel().then((CPanel) => {
+    //     setCPanelComponent(() => CPanel);
+    //   });
+    // }, [CPanelComponent]);
+
+    // return (
+    //   <>
+    //     <SetUp
+    //       isInjected={true}
+    //       autoNavControls={autoNavControls}
+    //       onSetupEffect={onSetupEffect}
+    //       onThreeChange={onThreeChange}
+    //     />
+    //     {CPanelComponent && <CPanelComponent onCPanelReady={onCPanelReady} onCPanelUnmounted={onCPanelUnmounted} />}
+    //     {CPanelComponent && useHotKeys && <KeyListener />}
+    //     {customParamsElements}
+    //   </>
+    // );
     return (
       <>
         <SetUp
@@ -114,7 +153,7 @@ export const Inspector = memo(
           onThreeChange={onThreeChange}
         />
         <CPanel onCPanelReady={onCPanelReady} onCPanelUnmounted={onCPanelUnmounted} />
-        <KeyListener />
+        {useHotKeys && <KeyListener />}
         {customParamsElements}
       </>
     );
@@ -136,6 +175,7 @@ const configureAndRender = (params: InjectInspectorParams) => {
     frameloop,
     autoNavControls,
     customParams,
+    useHotKeys,
     onSetupEffect,
     onThreeChange,
     onCPanelReady,
@@ -158,9 +198,10 @@ const configureAndRender = (params: InjectInspectorParams) => {
   });
 
   root?.render(
-    React.createElement(Inspector, {
+    createElement(Inspector, {
       autoNavControls,
       customParams,
+      useHotKeys,
       version: ++version,
       // for testing
       onSetupEffect,

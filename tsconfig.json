@@ -1,14 +1,19 @@
 {
   "compilerOptions": {
+    "outDir": "dist",
+    "declaration": true,
+    "emitDeclarationOnly": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "module": "ESNext",
     "target": "ESNext",
     "useDefineForClassFields": true,
-    "lib": ["ES2023", "DOM", "DOM.Iterable"],
-    "module": "ESNext",
     "skipLibCheck": true,
+    "lib": ["ES2023", "DOM", "DOM.Iterable"],
     "types": ["node", "@vitest/browser/providers/playwright"],
 
     /* Bundler mode */
-    "moduleResolution": "Node",
+    "moduleResolution": "node",
     "allowImportingTsExtensions": false,
     "allowSyntheticDefaultImports": true,
     "resolveJsonModule": true,
@@ -25,15 +30,17 @@
     "baseUrl": "./",
     "paths": {
       "src/*": ["src/*"],
-      "assets/*": ["src/assets/*"],
       "components/*": ["src/components/*"],
       "lib/*": ["src/lib/*"],
       "scenarios/*": ["src/scenarios/*"],
-      "testutils/*": ["src/tests/testutils/*"],
-    }
+      "testutils/*": ["src/tests/testutils/*"]
+    },
+
+    /* others */
+    "removeComments": true
   },
   "include": [
-    "src", "./tsExtensions.ts"
+    "src/**/*"
   ],
   "references": [{ "path": "./tsconfig.node.json" }]
 }

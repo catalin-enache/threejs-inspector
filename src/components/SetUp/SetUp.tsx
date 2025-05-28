@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { RootState, useThree } from '@react-three/fiber';
-import { useCallback, useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { RectAreaLightUniformsLib } from 'three/examples/jsm/lights/RectAreaLightUniformsLib';
 import { CameraControls, CameraControlsRefType } from 'components/CameraControls';
 import { useAppStore } from 'src/store';
@@ -39,7 +39,7 @@ export interface SetUpProps {
   autoNavControls: boolean; // considered when orbitControls is falsy
   isInjected?: boolean;
   // for tests
-  onThreeChange?: (changed: any, three: RootState) => void;
+  onThreeChange?: (changed: keyof RootState, three: RootState) => void;
   onSetupEffect?: (effect: SETUP_EFFECT, data: Record<string, any>) => void;
 }
 
@@ -79,6 +79,13 @@ const SetUp = (props: SetUpProps) => {
 
   const cacheRef = useRef<any>({});
 
+  const lastGLRef = useRef<THREE.WebGLRenderer | null>(gl);
+
+  const [, updateCounter] = useState(0);
+  const forceUpdate = useCallback(() => {
+    updateCounter((c) => c + 1);
+  }, []);
+
   useEffect(() => {
     (threeFields as (keyof RootState)[]).forEach((key) => {
       if (three[key] !== cacheRef.current[key]) {
@@ -89,13 +96,14 @@ const SetUp = (props: SetUpProps) => {
         }
       }
     });
-  }, [threeFields.map((f) => three[f]), onThreeChange]);
+  }, [three, ...threeFields.map((f) => three[f]), onThreeChange]);
 
   useEffect(() => {
     setIsInjected(isInjected);
     // if controls is not null, it means that the App is using external controls and autoNavControls is not needed
     setAutoNavControls(autoNavControls && !controls);
-  }, [isInjected, setIsInjected, autoNavControls, setAutoNavControls, controls]);
+    forceUpdate();
+  }, [isInjected, setIsInjected, autoNavControls, setAutoNavControls, controls, forceUpdate]);
 
   useEffect(() => {
     setCurrentRenderer(gl);
@@ -172,7 +180,7 @@ const SetUp = (props: SetUpProps) => {
   }, [selectedObjectUUID, showGizmos, transformControlsMode, transformControlsSpace, onSetupEffect]);
 
   useEffect(() => {
-    patchThree.setCurrentCamera(camera); // used in App when !isInjected
+    patchThree.setCurrentCamera(camera); // currentCamera is used in App when !isInjected
     updateCameras();
   }, [camera]);
 
@@ -217,7 +225,12 @@ const SetUp = (props: SetUpProps) => {
 
   useEffect(() => {
     return () => {
-      gl.dispose();
+      // this is a workaround for React strict mode
+      if (lastGLRef.current !== gl) {
+        // If the gl is changed, dispose the old one
+        lastGLRef.current?.dispose();
+        lastGLRef.current = gl;
+      }
     };
   }, [gl]);
 

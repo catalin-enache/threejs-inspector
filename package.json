@@ -2,29 +2,84 @@
   "name": "threejs-inspector",
   "homepage": "https://catalin-enache.github.io/threejs-inspector/",
   "private": false,
-  "version": "0.0.1",
+  "version": "0.0.45",
   "type": "module",
+  "typesVersions": {
+    "*": {
+      "": ["dist/index.d.ts"],
+      "api": ["dist/lib/api.d.ts"],
+      "hooks": ["dist/lib/hooks.d.ts"],
+      "inspector": ["dist/lib/inspector.d.ts"],
+      "CustomControl": ["dist/components/CustomControl/CustomControl.d.ts"],
+      "tsExtensions": ["dist/tsExtensions.d.ts"]
+    }
+  },
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types":  "./dist/index.d.ts"
+    },
+    "./api": {
+      "import": "./dist/lib/api.js",
+      "types":  "./dist/lib/api.d.ts"
+    },
+    "./hooks": {
+      "import": "./dist/lib/hooks.js",
+      "types":  "./dist/lib/hooks.d.ts"
+    },
+    "./inspector": {
+      "import": "./dist/lib/inspector.js",
+      "types":  "./dist/lib/inspector.d.ts"
+    },
+    "./CustomControl": {
+      "import": "./dist/components/CustomControl/CustomControl.js",
+      "types":  "./dist/components/CustomControl/CustomControl.d.ts"
+    },
+    "./tsExtensions": {
+      "import": "./dist/tsExtensions.js",
+      "types":  "./dist/tsExtensions.d.ts"
+    },
+    "./threejs-inspector.css": {
+      "import": "./dist/threejs-inspector.css"
+    }
+  },
+  "files": [
+    "dist/**/*",
+    "README.md",
+    "LICENSE"
+  ],
   "scripts": {
-    "dev": "vite",
-    "build": "tsc && vite build",
-    "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
-    "vitest-headless": "vitest run --browser.headless",
-    "vitest-watch": "vitest",
-    "preview": "vite preview",
-    "predeploy": "npm run build",
-    "deploy": "gh-pages -d dist"
+    "dev": "vite --config vite.config.demo.ts",
+    "build-demo": "vite build --config vite.config.demo.ts",
+    "build-lib": "vite build --config vite.config.lib.ts",
+    "lint": "eslint . --ext ts,tsx --report-unused-disable-directives",
+    "vitest-headless": "vitest run --browser.headless --config vite.config.ts",
+    "vitest-watch": "vitest --config vite.config.ts",
+    "preview-build": "vite preview --config vite.config.demo.ts",
+    "predeploy": "npm run build-demo",
+    "prepublishOnly": "npm run build-lib",
+    "deploy": "gh-pages -d dist-demo"
+  },
+  "peerDependencies": {
+    "@react-three/fiber": "^9.0.0",
+    "react": "^19",
+    "react-dom": "^19",
+    "three": ">=0.175"
+  },
+  "peerDependenciesMeta": {
+    "react-dom": {
+      "optional": true
+    }
   },
   "dependencies": {
-    "@react-three/drei": "^10.0.7",
-    "@react-three/fiber": "^9.1.2",
-    "@redux-devtools/extension": "^3.3.0",
+    "@react-three/fiber": "^9.0.0",
     "@tweakpane/core": "2.0.3",
     "@tweakpane/plugin-essentials": "^0.2.1",
-    "bson": "^6.10.2",
+    "bson": "^6.10.3",
     "gsap": "^3.12.5",
-    "react": "^19.1.0",
-    "react-dom": "^19.1.0",
-    "three": "^0.175.0",
+    "react": "^19",
+    "react-dom": "^19",
+    "three": ">=0.175",
     "tweakpane": "4.0.5",
     "zustand": "^4.5.2"
   },
@@ -33,6 +88,7 @@
     "@gltf-transform/core": "^3.10.1",
     "@gltf-transform/extensions": "^3.10.1",
     "@gltf-transform/functions": "^3.10.1",
+    "@redux-devtools/extension": "^3.3.0",
     "@testing-library/dom": "^10.4.0",
     "@testing-library/react": "^16.2.0",
     "@types/node": "^20.11.30",
@@ -41,21 +97,26 @@
     "@types/three": "^0.175.0",
     "@typescript-eslint/eslint-plugin": "^7.3.1",
     "@typescript-eslint/parser": "^7.3.1",
-    "@vitejs/plugin-react-swc": "^3.7.1",
-    "@vitest/browser": "^2.0.5",
+    "@vitejs/plugin-react-swc": "^3.9.0",
+    "@vitest/browser": "^3.1.4",
     "chalk": "^5.3.0",
     "eslint": "^8.57.0",
     "eslint-plugin-react-hooks": "^4.6.0",
     "eslint-plugin-react-refresh": "^0.4.6",
+    "fast-glob": "^3.3.3",
     "gh-pages": "^6.1.1",
     "gsap": "^3.12.5",
-    "playwright": "^1.48.1",
+    "playwright": "^1.52.0",
     "prettier": "^3.2.5",
+    "rollup": "^4.41.0",
+    "rollup-plugin-dts": "^6.2.1",
     "ts-node": "^10.9.2",
-    "typescript": "^5.5.3",
-    "vite": "^5.2.10",
+    "typescript": "^5.8.3",
+    "vite": "^6.3.5",
+    "vite-plugin-dts": "^4.5.4",
     "vite-plugin-markdown": "^2.2.0",
-    "vitest": "^2.1.3",
-    "vitest-browser-react": "^0.0.3"
+    "vite-plugin-static-copy": "^3.0.0",
+    "vitest": "^3.1.4",
+    "vitest-browser-react": "^0.2.0"
   }
 }

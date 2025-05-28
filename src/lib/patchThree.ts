@@ -22,7 +22,7 @@ import {
   LightProbePicker
 } from 'lib/followers';
 import './patchCubeCamera';
-import type { __inspectorData } from 'tsExtensions';
+import type { __inspectorData } from 'src/tsExtensions';
 import { deepClean } from 'lib/utils/cleanUp';
 import { CameraControlsRefType } from 'components/CameraControls';
 import { getSceneBoundingBoxSize } from 'lib/utils/sizeUtils';
@@ -218,8 +218,11 @@ type Module = {
   setCurrentScene: (scene: THREE.Scene) => void;
   clearScene: () => void;
   sceneSizeV3: THREE.Vector3;
+  getSceneSizeV3: () => THREE.Vector3;
   sceneSize: number;
+  getSceneSize: () => number;
   sceneBBox: THREE.Box3;
+  getSceneBBox: () => THREE.Box3;
   updateSceneBBox: (params: { action: 'add' | 'remove'; object: THREE.Object3D }) => void;
   shouldUpdateSceneBBoxOnRemoval: boolean;
   setShouldUpdateSceneBBoxOnRemoval: (shouldUpdate: boolean) => void;
@@ -290,8 +293,17 @@ const module: Module = {
   },
 
   sceneSizeV3: new THREE.Vector3(),
+  getSceneSizeV3() {
+    return this.sceneSizeV3;
+  },
   sceneSize: 0.01,
+  getSceneSize() {
+    return this.sceneSize;
+  },
   sceneBBox: new THREE.Box3(),
+  getSceneBBox() {
+    return this.sceneBBox;
+  },
   shouldUpdateSceneBBoxOnRemoval: true,
   setShouldUpdateSceneBBoxOnRemoval: (shouldUpdate: boolean) => {
     module.shouldUpdateSceneBBoxOnRemoval = shouldUpdate;

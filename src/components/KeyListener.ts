@@ -6,14 +6,12 @@ import { useAppStore } from 'src/store';
 
 let isMouseDown = false;
 
-export const panelContainer = document.querySelector('#controlPanelContent') as HTMLElement;
-
-panelContainer.addEventListener('mousedown', (_evt) => {
+const handleMouseDown = (_e: MouseEvent) => {
   isMouseDown = true;
-});
-document.addEventListener('mouseup', () => {
+};
+const handleMouseUp = (_e: MouseEvent) => {
   isMouseDown = false;
-});
+};
 
 const getAllMetaPressed = (e: KeyboardEvent) => {
   return e.altKey && e.ctrlKey && e.shiftKey;
@@ -26,6 +24,16 @@ export function KeyListener() {
   const autoNavControls = useAppStore((state) => state.autoNavControls);
   // const { scene, camera } = useThree();
   const keysPressed: any = useMemo(() => ({}), []);
+
+  useEffect(() => {
+    const panelContainer = document.querySelector('#controlPanelContent') as HTMLElement;
+    panelContainer.addEventListener('mousedown', handleMouseDown);
+    document.addEventListener('mouseup', handleMouseUp);
+    return () => {
+      panelContainer.removeEventListener('mousedown', handleMouseDown);
+      document.removeEventListener('mouseup', handleMouseUp);
+    };
+  }, []);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {

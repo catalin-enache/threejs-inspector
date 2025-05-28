@@ -1,7 +1,7 @@
 import { ReactNode, useMemo, useEffect, useCallback, useRef } from 'react';
 import * as THREE from 'three';
 import { Canvas, RootState } from '@react-three/fiber';
-import { Inspector, InspectorProps } from 'lib/injectInspector';
+import { Inspector, InspectorProps } from 'lib/inspector';
 import { defaultScene, defaultPerspectiveCamera, defaultOrthographicCamera } from 'lib/patchThree';
 import { SetUpProps } from 'components/SetUp/SetUp';
 import { useAppStore } from 'src/store';

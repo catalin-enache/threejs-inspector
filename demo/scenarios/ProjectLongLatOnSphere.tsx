@@ -2,11 +2,11 @@ import { useEffect, useRef, useState } from 'react';
 import { useFrame } from '@react-three/fiber';
 // @ts-ignore
 import Stats from 'three/addons/libs/stats.module.js';
-import { CustomControl } from 'components/CustomControl/CustomControl';
-import { usePlay } from 'lib/hooks';
-import { projectLongLatOnSphere } from 'lib/utils/projectLongLatOnSphere';
+import { CustomControl } from 'src/components/CustomControl/CustomControl';
+import { usePlay } from 'src/lib/hooks';
+import { projectLongLatOnSphere } from 'src/lib/utils/projectLongLatOnSphere';
 import { useAppStore } from 'src/store';
-import patchThree from 'lib/patchThree';
+import patchThree from 'src/lib/patchThree';
 
 const stats = new Stats();
 document.body.appendChild(stats.dom);

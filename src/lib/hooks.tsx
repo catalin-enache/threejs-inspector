@@ -3,9 +3,10 @@ import { useMemo, useEffect, useState, useRef, JSX } from 'react';
 import { RootState, useFrame } from '@react-three/fiber';
 import { AppStore, useAppStore } from 'src/store';
 import { SetUp, SetUpProps } from 'components/SetUp/SetUp';
-import { CPanel, CPanelProps } from 'components/CPanel/CPanel';
+import { CPanel, type CPanelProps } from 'components/CPanel/CPanel';
 import { KeyListener } from 'components/KeyListener';
 import patchThree from './patchThree';
+// import { getCPanel } from 'lib/utils/lazyLoaders';
 
 const { getCurrentScene, getCurrentCamera } = patchThree;
 
@@ -65,12 +66,14 @@ export const usePlay = (
 
 type UseInspector = ({
   cameraType,
+  useHotKeys,
   onSetupEffect,
   onThreeChange,
   onCPanelReady,
   onCPanelUnmounted
 }: {
   cameraType?: 'perspective' | 'orthographic';
+  useHotKeys?: boolean;
   // for testing
   onSetupEffect?: SetUpProps['onSetupEffect'];
   onThreeChange?: SetUpProps['onThreeChange'];
@@ -86,6 +89,7 @@ type UseInspector = ({
 // If that's not desired do not use useDefaultSetup hook but inject the <Inspector /> component instead.
 export const useDefaultSetup: UseInspector = ({
   cameraType,
+  useHotKeys = true,
   onSetupEffect,
   onThreeChange,
   onCPanelReady,
@@ -94,6 +98,25 @@ export const useDefaultSetup: UseInspector = ({
   const currentCameraStateFake = useAppStore((state) => state.currentCameraStateFake);
   const [camera, setCamera] = useState(getCurrentCamera());
   const currentFrameLoopRef = useRef<RootState['frameloop'] | ''>('');
+  // const [CPanelComponent, setCPanelComponent] = useState<typeof import('components/CPanel/CPanel').CPanel | null>(null);
+  //
+  // const isMountedRef = useRef(false);
+  // useEffect(() => {
+  //   isMountedRef.current = true;
+  //   return () => {
+  //     isMountedRef.current = false;
+  //     // onCPanelUnmounted?.();
+  //   };
+  // }, [onCPanelUnmounted]);
+  //
+  // useEffect(() => {
+  //   if (CPanelComponent || !isMountedRef.current) {
+  //     return;
+  //   }
+  //   getCPanel().then((CPanel) => {
+  //     setCPanelComponent(() => CPanel);
+  //   });
+  // }, [CPanelComponent]);
 
   useEffect(() => {
     if (cameraType) {
@@ -111,15 +134,25 @@ export const useDefaultSetup: UseInspector = ({
     patchThree.getThreeRootState()?.setFrameloop?.(currentFrameLoopRef.current || 'always');
   }, [camera]);
 
+  // const inspector = useMemo(() => {
+  //   return (
+  //     <>
+  //       <SetUp isInjected={false} autoNavControls={true} onSetupEffect={onSetupEffect} onThreeChange={onThreeChange} />
+  //       {CPanelComponent && <CPanelComponent onCPanelReady={onCPanelReady} onCPanelUnmounted={onCPanelUnmounted} />}
+  //       {CPanelComponent && useHotKeys && <KeyListener />}
+  //     </>
+  //   );
+  // }, [CPanelComponent, onCPanelReady, onCPanelUnmounted, onThreeChange, onSetupEffect, useHotKeys]);
+
   const inspector = useMemo(() => {
     return (
       <>
         <SetUp isInjected={false} autoNavControls={true} onSetupEffect={onSetupEffect} onThreeChange={onThreeChange} />
         <CPanel onCPanelReady={onCPanelReady} onCPanelUnmounted={onCPanelUnmounted} />
-        <KeyListener />
+        {useHotKeys && <KeyListener />}
       </>
     );
-  }, []);
+  }, [onCPanelReady, onCPanelUnmounted, onThreeChange, onSetupEffect, useHotKeys]);
 
   return {
     camera,

@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import 'src/lib/patchRenderTarget';
-import type { CubeCameraAsJson } from 'tsExtensions';
+import type { CubeCameraAsJson } from 'src/tsExtensions';
 
 THREE.CubeCamera.prototype.toJSON = (function () {
   return function (this: THREE.CubeCamera, meta?: THREE.JSONMeta): CubeCameraAsJson {

@@ -4,6 +4,7 @@
   <title>three.js webgl - FBX loader</title>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+  <link rel="stylesheet" href="main.css" />
 </head>
 
 <body>
@@ -11,7 +12,7 @@
 <script type="module">
 
   import * as THREE from 'three';
-  import { injectInspector } from 'src/lib/injectInspector';
+  import { injectInspector } from 'src/lib/inspector.js';
   import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
   import { FBXLoader } from 'three/addons/loaders/FBXLoader.js';
   import Stats from 'three/addons/libs/stats.module.js';
@@ -79,7 +80,7 @@
     renderer = new THREE.WebGLRenderer( { antialias: true } );
     renderer.setPixelRatio( window.devicePixelRatio );
     renderer.setSize( window.innerWidth, window.innerHeight );
-    // renderer.setAnimationLoop( animate );
+    renderer.setAnimationLoop( animate );
     renderer.shadowMap.enabled = true;
     container.appendChild( renderer.domElement );
 
@@ -173,7 +174,9 @@
         }
       } );
 
-      updateInspector();
+      if (typeof updateInspector !== "undefined") {
+        updateInspector();
+      }
 
       scene.add( object );
 
@@ -226,7 +229,8 @@
     frameloop: 'always',
     autoNavControls: true,
     customParams,
-    onRender: animate,
+    useHotKeys: true,
+    // onRender: animate,
     r3fThreeGetSet
   });
 

@@ -55,7 +55,7 @@ export const LoadObjectForm = () => {
     const content = document.createElement('div');
     content.className = 'loadObject';
     content.innerHTML = `
-      <div>
+      <div id="loadObjectForm">
         <div class="formRow">
           <label>
             <span>Make Inspectable</span>

@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import type { RenderTargetAsJson } from 'tsExtensions';
+import type { RenderTargetAsJson } from 'src/tsExtensions';
 
 THREE.RenderTarget.prototype.toJSON = (function () {
   return function (this: THREE.RenderTarget, meta?: THREE.JSONMeta): RenderTargetAsJson {

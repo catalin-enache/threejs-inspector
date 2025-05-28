@@ -2,12 +2,13 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react-swc';
 import { Mode, plugin as mdPlugin } from 'vite-plugin-markdown';
+// @ts-ignore
 import { alias, extensions } from './vite.config.shared';
 
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [react(), mdPlugin({ mode: [Mode.HTML, Mode.MARKDOWN] })],
-  root: 'src/',
+  root: 'demo/',
   // base: process.env.NODE_ENV === 'production' ? '/threejs-inspector/' : './',
   base: './',
   publicDir: '../public',
@@ -25,31 +26,16 @@ export default defineConfig({
       'top-level-await': true
     }
   },
+  build: {
+    outDir: '../dist-demo',
+    emptyOutDir: true,
+    sourcemap: true,
+    assetsInlineLimit: 0,
+    target: 'esnext'
+  },
   resolve: {
     alias,
     extensions
   },
-  assetsInclude: [],
-  test: {
-    // root: './src/tests',
-    browser: {
-      provider: 'playwright', // 'webdriverio' | 'playwright'
-      enabled: true,
-      headless: false, // overridden in CLI
-      viewport: { width: 800, height: 600 },
-      instances: [
-        {
-          browser: 'chromium'
-        }
-      ]
-    },
-    allowOnly: true,
-    maxConcurrency: 1,
-    minWorkers: 1,
-    testTimeout: 5000,
-    restoreMocks: true,
-    sequence: {
-      concurrent: false
-    }
-  }
+  assetsInclude: []
 });

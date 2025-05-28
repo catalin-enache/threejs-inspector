@@ -3,14 +3,14 @@ import { useEffect, useRef, useState } from 'react';
 import { useFrame, ThreeElements, useThree } from '@react-three/fiber';
 // @ts-ignore
 import Stats from 'three/addons/libs/stats.module.js';
-import { CustomControl } from 'components/CustomControl/CustomControl';
-import { usePlay } from 'lib/hooks';
-import { TestIndexedCube3Materials } from './TestIndexedCube3Materials';
+import { CustomControl } from 'src/components/CustomControl/CustomControl';
+import { usePlay } from 'src/lib/hooks';
+import { TestIndexedCube3Materials } from './stuff/TestIndexedCube3Materials';
 // import { TestMorphTargets } from './TestMorphTargets';
 // @ts-ignore
 import { LightProbeGenerator } from 'three/examples/jsm/lights/LightProbeGenerator';
-import { getShadowMapMaterial } from 'lib/utils/customShaders';
-import api from 'lib/api';
+import { getShadowMapMaterial } from 'src/lib/utils/customShaders';
+import api from 'src/lib/api';
 
 const degToRad = THREE.MathUtils.degToRad;
 

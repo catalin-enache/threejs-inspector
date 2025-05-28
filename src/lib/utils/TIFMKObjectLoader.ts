@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { getExtension } from 'lib/utils/fileUtils';
-import type { RenderTargetAsJson } from 'tsExtensions';
+import type { RenderTargetAsJson } from 'src/tsExtensions';
 import { InstancedBufferGeometry } from 'three/src/core/InstancedBufferGeometry';
 import { BufferGeometry } from 'three/src/core/BufferGeometry';
 import { Material } from 'three/src/materials/Material';

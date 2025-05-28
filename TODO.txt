@@ -158,15 +158,27 @@ When deleting all objects manually geometries and textures are not cleaned up th
 ssh-add ~/.ssh/id_ed25519
 
 
+Maybe import CPanel async ?
 
+Cant select stuff in index_injected autoNavControls={false}
+External OrbitControls do not cooperate with TransformControls (they need to stop orbiting when TransformControls dragging).
+Probably better to report when TransformControls is dragging so that the app can disable OrbitControls.
 
+libs folder (draco/basis/...) needs to be added to the public folder of the application when threejs is used as library
+clarify this when we need it (what assets, test it)
+See the Draco importer and whitelist drc extension
+
+Make hotkeys optional, make a play mode to be sent from the app and to disable CameraController nav keys
+
+Decide if we need Setup when CPanel is not used.
 
 Make sure we can use Experience and lib helpers without patchingThree or without using Setup and Inspector
 
 Add experience switcher in CPanel to easy switch between available experiences
 
-Get all calculations from old scene
-See how we can use labels/projections in the scene leveraging Drei (we have some old helpers for that)
+Make a use case (Scenario) where user wants to test textures on some object using different material templates.
+
+
 
 
 

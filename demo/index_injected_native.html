@@ -17,7 +17,7 @@
   import { FBXLoader } from 'three/addons/loaders/FBXLoader.js';
   import Stats from 'three/addons/libs/stats.module.js';
 
-  const customCameraControls = false;
+  const customCameraControls = true;
 
   const manager = new THREE.LoadingManager();
 
@@ -237,7 +237,7 @@
     useHotKeys: true,
     showInspector: true,
     showGizmos: true,
-    useTransformControls: false,
+    useTransformControls: true,
     onTransformControlsDragging: (dragging) => {
       if (controls) {
         controls.enabled = !dragging;

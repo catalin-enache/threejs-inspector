@@ -57,21 +57,21 @@ export const SceneButtons = ({ playingState, sceneObjects: { scene } }: CommonGe
     }) as onChange
   },
   7: {
-    label: 'Play/Pause ( Space|CAS+Space )',
+    label: 'Play/Pause',
     title: playingState === 'playing' ? 'Pause' : 'Play',
     onClick: (() => {
       const currentPlayingState = useAppStore.getState().playingState;
-      useAppStore.getState().setPlaying(currentPlayingState === 'playing' ? 'paused' : 'playing');
-    }) as onChange,
-    if: () => !useAppStore.getState().isInjected
+      useAppStore.getState().setPlayingState(currentPlayingState === 'playing' ? 'paused' : 'playing');
+    }) as onChange
+    // if: () => !useAppStore.getState().isInjected
   },
   8: {
-    label: 'Stop ( Backspace|CAS+Backspace )',
+    label: 'Stop',
     title: 'Stop',
     onClick: (() => {
-      useAppStore.getState().setPlaying('stopped');
-    }) as onChange,
-    if: () => !useAppStore.getState().isInjected
+      useAppStore.getState().setPlayingState('stopped');
+    }) as onChange
+    // if: () => !useAppStore.getState().isInjected
   },
   9: {
     label: 'Load Object',

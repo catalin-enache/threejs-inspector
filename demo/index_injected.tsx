@@ -98,6 +98,7 @@ export function App(props: AppProps) {
         autoNavControls={!customCameraControls}
         customParams={customParams}
         useHotKeys={true}
+        showInspector={true}
         onTransformControlsDragging={setIsDraggingTransformControls}
       />
       {/*dampingFactor={0.05} is default*/}

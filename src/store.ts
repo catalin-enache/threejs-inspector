@@ -99,7 +99,8 @@ export interface AppStore {
   autoNavControls: boolean;
   setAutoNavControls: (autoNavControls: boolean) => void;
   playingState: 'stopped' | 'playing' | 'paused';
-  setPlaying: (playingState: AppStore['playingState']) => void;
+  setPlayingState: (playingState: AppStore['playingState']) => void;
+  getPlayingState: () => AppStore['playingState'];
   angleFormat: 'deg' | 'rad';
   setAngleFormat: (angleFormat: 'deg' | 'rad') => void;
   toggleAngleFormat: () => void;
@@ -237,10 +238,11 @@ export const useAppStore = create<AppStore>()(
     autoNavControls: false,
     setAutoNavControls: (autoNavControls) => set({ autoNavControls }),
     playingState: 'stopped',
-    setPlaying: (playingState) => {
+    setPlayingState: (playingState) => {
       if (get().isDraggingTransformControls) return;
       set({ playingState });
     },
+    getPlayingState: () => get().playingState,
     angleFormat: angleFormat,
     setAngleFormat: (angleFormat) => {
       set({ angleFormat });

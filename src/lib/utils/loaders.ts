@@ -93,7 +93,7 @@ export const rgbeLoader = new RGBELoader(loadingManager);
 export const tgaLoader = new TGALoader(loadingManager);
 export const ddsLoader = new DDSLoader(loadingManager);
 export const tiffLoader = new TIFFLoader(loadingManager);
-export const ktx2Loader = new KTX2Loader(loadingManager).setTranscoderPath('libs/basis/').detectSupport(gl);
+export const ktx2Loader = new KTX2Loader(loadingManager).setTranscoderPath('/libs/basis/').detectSupport(gl);
 export const pvrLoader = new PVRLoader(loadingManager);
 export const ultraHdrLoader = new UltraHDRLoader(loadingManager);
 export const textureLoader = new THREE.TextureLoader(loadingManager);
@@ -109,10 +109,12 @@ loadingManager.addHandler(/\.tif$/i, tiffLoader);
 loadingManager.addHandler(/\.tiff$/i, tiffLoader);
 
 // Model loaders
-export const dracoLoader = new DRACOLoader(loadingManager).setDecoderPath('libs/draco/gltf/');
+export const dracoLoader = new DRACOLoader(loadingManager).setDecoderPath('/libs/draco/');
+export const dracoLoaderForGLTF = new DRACOLoader(loadingManager).setDecoderPath('/libs/draco/gltf/');
+
 export const gltfLoader = new GLTFLoader(loadingManager)
   .setCrossOrigin('anonymous')
-  .setDRACOLoader(dracoLoader)
+  .setDRACOLoader(dracoLoaderForGLTF)
   .setKTX2Loader(ktx2Loader)
   .setMeshoptDecoder(MeshoptDecoder);
 export const fbxLoader = new FBXLoader(loadingManager).setCrossOrigin('anonymous');

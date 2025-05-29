@@ -158,19 +158,9 @@ When deleting all objects manually geometries and textures are not cleaned up th
 ssh-add ~/.ssh/id_ed25519
 
 
-Maybe import CPanel async ?
-
-Cant select stuff in index_injected autoNavControls={false}
-External OrbitControls do not cooperate with TransformControls (they need to stop orbiting when TransformControls dragging).
-Probably better to report when TransformControls is dragging so that the app can disable OrbitControls.
-
-libs folder (draco/basis/...) needs to be added to the public folder of the application when threejs is used as library
-clarify this when we need it (what assets, test it)
-See the Draco importer and whitelist drc extension
+Remember how camera useOnPlay works. Cant we use this feature when injected ?
 
 Make hotkeys optional, make a play mode to be sent from the app and to disable CameraController nav keys
-
-Decide if we need Setup when CPanel is not used.
 
 Make sure we can use Experience and lib helpers without patchingThree or without using Setup and Inspector
 

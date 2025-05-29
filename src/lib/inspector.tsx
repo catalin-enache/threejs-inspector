@@ -106,7 +106,6 @@ export const Inspector = memo(
     useFrame(onRender);
     const r3fThreeGet = useThree((state) => state.get);
     const r3fThreeSet = useThree((state) => state.set);
-    r3fThreeGetSet?.({ r3fThreeGet, r3fThreeSet });
 
     const isDraggingTransformControls = useAppStore((state) => state.isDraggingTransformControls);
     const onTransformControlsDraggingRef = useRef(onTransformControlsDragging);
@@ -157,6 +156,10 @@ export const Inspector = memo(
     //     {customParamsElements}
     //   </>
     // );
+
+    useEffect(() => {
+      r3fThreeGetSet?.({ r3fThreeGet, r3fThreeSet });
+    }, [r3fThreeGetSet, r3fThreeGet, r3fThreeSet]);
 
     useEffect(() => {
       useAppStore.getState().setShowGizmos(showGizmos);

@@ -13,6 +13,8 @@ dist-demo
 dist-ssr
 *.local
 
+src/tests/__screenshots__
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

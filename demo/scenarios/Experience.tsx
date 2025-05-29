@@ -43,6 +43,10 @@ function Box(
   });
 
   useEffect(() => {
+    return api.registerDefaultPlayTriggers();
+  }, []);
+
+  useEffect(() => {
     // 'https://threejsfundamentals.org/threejs/resources/images/wall.jpg',
     // 'textures/file_example_TIFF_10MB.tiff',
     // 'textures/sample_5184×3456.tga',

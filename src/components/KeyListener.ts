@@ -42,19 +42,6 @@ export function KeyListener() {
       // @ts-ignore
       if (document.activeElement?.type === 'text' || isMouseDown) return;
       switch (e.code) {
-        case 'Space':
-          if (!keysPressed[e.code] && !isInjected && (isEditorMode || getAllMetaPressed(e))) {
-            const currentPlayingState = useAppStore.getState().playingState;
-            e.stopPropagation();
-            e.preventDefault(); // to  not interfere with form focused elements and cPanel folder collapsing
-            useAppStore.getState().setPlaying(currentPlayingState === 'playing' ? 'paused' : 'playing');
-          }
-          break;
-        case 'Backspace':
-          if (!keysPressed[e.code] && !isInjected && (isEditorMode || getAllMetaPressed(e))) {
-            useAppStore.getState().setPlaying('stopped');
-          }
-          break;
         case 'Backslash':
           !keysPressed[e.code] && useAppStore.getState().toggleFullscreen();
           break;

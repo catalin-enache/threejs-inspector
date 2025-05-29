@@ -4,6 +4,7 @@ import type { GLTF, Collada } from './loaders';
 import {
   registerFiles,
   gltfLoader,
+  dracoLoader,
   fbxLoader,
   plyLoader,
   objLoader,
@@ -12,6 +13,7 @@ import {
   colladaLoader,
   tifmkObjectLoader,
   GLTFLoader,
+  DRACOLoader,
   MTLLoader,
   FBXLoader,
   STLLoader,
@@ -28,6 +30,7 @@ export const FILE_FBX = 'FBX';
 export const FILE_PLY = 'PLY';
 export const FILE_GLTF = 'GLTF';
 export const FILE_GLTF_BINARY = 'GLTF_BINARY';
+export const FILE_DRACO = 'DRC';
 export const FILE_OBJ = 'OBJ';
 export const FILE_STL = 'STL';
 export const FILE_COLLADA = 'COLLADA';
@@ -41,6 +44,7 @@ const RootTypesSet = new Set([
   FILE_PLY,
   FILE_GLTF,
   FILE_GLTF_BINARY,
+  FILE_DRACO,
   FILE_OBJ,
   FILE_STL,
   FILE_COLLADA,
@@ -54,6 +58,7 @@ export const fileTypeMap: Record<string, string> = {
   ply: FILE_PLY,
   glb: FILE_GLTF_BINARY,
   gltf: FILE_GLTF,
+  drc: FILE_DRACO,
   obj: FILE_OBJ,
   stl: FILE_STL,
   dae: FILE_COLLADA,
@@ -71,6 +76,8 @@ export const getLoader = (fileType: string) => {
     case FILE_GLTF:
     case FILE_GLTF_BINARY:
       return gltfLoader;
+    case FILE_DRACO:
+      return dracoLoader;
     case FILE_OBJ:
       return objLoader;
     case FILE_STL:
@@ -186,7 +193,16 @@ const configLoader = ({
   path,
   resourcePath
 }: {
-  loader: GLTFLoader | FBXLoader | PLYLoader | OBJLoader | STLLoader | ColladaLoader | MTLLoader | TIFMKObjectLoader;
+  loader:
+    | GLTFLoader
+    | DRACOLoader
+    | FBXLoader
+    | PLYLoader
+    | OBJLoader
+    | STLLoader
+    | ColladaLoader
+    | MTLLoader
+    | TIFMKObjectLoader;
   path?: string;
   resourcePath?: string;
 }): {
@@ -212,7 +228,7 @@ const enhanceLoader = async ({
   resourcePath,
   sources
 }: {
-  loader: GLTFLoader | FBXLoader | PLYLoader | OBJLoader | STLLoader | ColladaLoader | TIFMKObjectLoader;
+  loader: GLTFLoader | DRACOLoader | FBXLoader | PLYLoader | OBJLoader | STLLoader | ColladaLoader | TIFMKObjectLoader;
   path?: string;
   resourcePath?: string;
   sources?: string[];
@@ -375,7 +391,7 @@ export const loadObject = async (
     collectDescendantAnimationsIfAny(root);
   } else if (loader instanceof OBJLoader) {
     root = result as THREE.Group;
-  } else if (loader instanceof PLYLoader || loader instanceof STLLoader) {
+  } else if (loader instanceof PLYLoader || loader instanceof STLLoader || loader instanceof DRACOLoader) {
     const geometry = result as THREE.BufferGeometry;
     const material = getMaterial?.(geometry) || new THREE.MeshStandardMaterial();
     geometry.computeVertexNormals();

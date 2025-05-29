@@ -34,7 +34,7 @@ describe('SetUp', () => {
             const { camera } = three;
             if (changed === 'camera' && camera.name === 'DefaultPerspectiveCamera') {
               await waitFor(() => expect(patchThree.shouldUseCameraControls(camera)).toBe(true));
-              useAppStore.getState().setPlaying('playing'); // will change camera to myPerspectiveCamera because is useOnPlay
+              useAppStore.getState().setPlayingState('playing'); // will change camera to myPerspectiveCamera because is useOnPlay
             }
             if (changed === 'camera' && camera.name === 'myPerspectiveCamera') {
               await waitFor(() => expect(patchThree.shouldUseCameraControls(camera)).toBe(false)); // because not attaching controls to playing camera

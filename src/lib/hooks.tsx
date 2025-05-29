@@ -17,6 +17,12 @@ const noop = (_playingState: AppStore['playingState'], _state: RootState, _delta
   lastXFrame = _xrFrame;
 };
 
+/**
+ * usePlay hook allows to run a callback on every frame when the app is in 'playing' state.
+ * It also provides the current playing state, which can be 'playing', 'paused', or 'stopped'.
+ * The state can be set using the api.setPlayingState and read from api.getPlayingState.
+ * api.registerDefaultPlayTriggers (space & backspace) is also provided for convenience.
+ */
 export const usePlay = (
   callback: (playingState: AppStore['playingState'], state: RootState, delta: number, xrFrame?: XRFrame) => void,
   renderPriority = 0,

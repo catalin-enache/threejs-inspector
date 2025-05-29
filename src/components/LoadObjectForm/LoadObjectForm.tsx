@@ -7,7 +7,7 @@ import patchThree from 'lib/patchThree';
 import './LoadObjectForm.css';
 
 // model extensions
-const rootExtensions = ['.glb', '.gltf', '.obj', '.fbx', '.dae', '.3ds', '.stl', '.ply', '.vtk'];
+const rootExtensions = ['.glb', '.gltf', '.drc', '.obj', '.fbx', '.dae', '.3ds', '.stl', '.ply', '.vtk'];
 const allowedExtensions = [
   ...rootExtensions,
   // image extensions and other related deps

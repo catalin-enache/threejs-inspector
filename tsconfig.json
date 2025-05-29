@@ -37,7 +37,7 @@
     },
 
     /* others */
-    "removeComments": true
+    "removeComments": false
   },
   "include": [
     "src/**/*"

@@ -33,6 +33,7 @@ export default defineConfig({
   test: {
     // root: './src/tests',
     browser: {
+      screenshotFailures: false,
       provider: 'playwright', // 'webdriverio' | 'playwright'
       enabled: true,
       headless: false, // overridden in CLI

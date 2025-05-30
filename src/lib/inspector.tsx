@@ -18,6 +18,7 @@ import { CustomParams, isCustomParamStruct } from 'lib/customParam.types';
 // KeyListener depends on CPanel (sideEffect) to add in DOM CPanel elements to listen to
 import { KeyListener } from 'components/KeyListener';
 import { type AppStore, useAppStore } from 'src/store';
+import { usePlay } from 'lib/hooks';
 // import { getCPanel } from 'lib/utils/lazyLoaders';
 extend(THREE as any);
 
@@ -36,14 +37,10 @@ export interface BaseInspectorProps {
   showInspector?: boolean;
   showGizmos?: boolean;
   useTransformControls?: boolean;
+  onRender?: RenderCallback;
+  onPlay?: Parameters<typeof usePlay>[0];
   onTransformControlsDragging?: (isDragging: boolean) => void;
   onPlayingStateChange?: (playingState: AppStore['playingState']) => void;
-  // for testing
-  onSetupEffect?: SetUpProps['onSetupEffect'];
-  onThreeChange?: SetUpProps['onThreeChange'];
-  onCPanelReady?: CPanelProps['onCPanelReady'];
-  onCPanelUnmounted?: CPanelProps['onCPanelUnmounted'];
-  onRender?: RenderCallback;
   r3fThreeGetSet?: ({
     r3fThreeGet,
     r3fThreeSet
@@ -51,6 +48,11 @@ export interface BaseInspectorProps {
     r3fThreeGet: RootState['get'];
     r3fThreeSet: RootState['set'];
   }) => void;
+  // for testing
+  onSetupEffect?: SetUpProps['onSetupEffect'];
+  onThreeChange?: SetUpProps['onThreeChange'];
+  onCPanelReady?: CPanelProps['onCPanelReady'];
+  onCPanelUnmounted?: CPanelProps['onCPanelUnmounted'];
 }
 
 export const buildCustomParamsElements = ({
@@ -93,17 +95,19 @@ export const Inspector = memo(
     showInspector = true,
     showGizmos = true,
     useTransformControls = true,
+    onRender = () => {},
+    onPlay = () => {},
     onTransformControlsDragging = () => {},
     onPlayingStateChange = () => {},
+    r3fThreeGetSet,
     onSetupEffect,
     onThreeChange,
     onCPanelReady,
     onCPanelUnmounted,
-    version = 0,
-    onRender = () => {},
-    r3fThreeGetSet
+    version = 0
   }: InspectorProps) => {
     useFrame(onRender);
+    usePlay(onPlay);
     const r3fThreeGet = useThree((state) => state.get);
     const r3fThreeSet = useThree((state) => state.set);
 
@@ -215,14 +219,15 @@ const configureAndRender = (params: InjectInspectorParams) => {
     showInspector,
     showGizmos,
     useTransformControls,
+    onRender,
+    onPlay,
     onTransformControlsDragging,
     onPlayingStateChange,
+    r3fThreeGetSet,
     onSetupEffect,
     onThreeChange,
     onCPanelReady,
-    onCPanelUnmounted,
-    onRender,
-    r3fThreeGetSet
+    onCPanelUnmounted
   } = params;
   /*
   similar to:
@@ -254,6 +259,7 @@ const configureAndRender = (params: InjectInspectorParams) => {
       onCPanelReady,
       onCPanelUnmounted,
       onRender,
+      onPlay,
       r3fThreeGetSet
     })
   );

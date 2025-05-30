@@ -13,7 +13,7 @@ dist-demo
 dist-ssr
 *.local
 
-src/tests/__screenshots__
+src/**/__screenshots__/
 
 # Editor directories and files
 .vscode/*

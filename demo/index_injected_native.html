@@ -262,6 +262,12 @@
       showInspector: true,
       showGizmos: true,
       useTransformControls: true,
+      onPlay: () => {
+        // console.log('Play triggered');
+      },
+      onRender: () => {
+        // console.log('Render triggered');
+      },
       onTransformControlsDragging: (dragging) => {
         const enabled = controls.enabled;
         controls.enabled = dragging ? false : enabled;

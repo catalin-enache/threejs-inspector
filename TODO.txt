@@ -153,17 +153,13 @@ Scene BBox is not calculated correct for Jennifer imported as JSON until selecti
 Deleting an object does not delete all geometries/textures - this should have been fixed, confirm.
 When deleting all objects manually geometries and textures are not cleaned up the same way as when clearing the scene.
 
+When dragging TransformControls frameloop is switched to always.
+*DONE* it happens because the app is re-rendered when listening to TransformControls change and the frameloop is overridden by the app at re-render.
+
 
 
 ssh-add ~/.ssh/id_ed25519
 
-
-
-When dragging TransformControls frameloop is switched to always.
-
-Add onPlay the same as we have onRender in Inspector
-
-Allow get/set frameloop when using injectInspector in native ThreeJs example
 
 Make sure we can use Experience and lib helpers without patchingThree or without using Setup and Inspector
 

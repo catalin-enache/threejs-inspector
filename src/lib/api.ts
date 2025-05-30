@@ -4,7 +4,7 @@ import { deepClean } from './utils/cleanUp';
 import { createTexturesFromImages } from './utils/loadTexture';
 import { loadObject } from './utils/loadObject';
 import { splitMeshesByMaterial } from './utils/optimiseModel';
-import { useAppStore } from 'src/store';
+import { useAppStore, type AppStore } from 'src/store';
 import { registerDefaultPlayTriggers } from './utils/registerDefaultPlayTriggers';
 
 export default {
@@ -46,3 +46,5 @@ export default {
   loadObject,
   splitMeshesByMaterial
 };
+
+export type { AppStore };

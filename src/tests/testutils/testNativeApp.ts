@@ -1,19 +1,18 @@
 import * as THREE from 'three';
 import { injectInspector } from 'lib/inspector';
 import { CustomParams } from 'lib/customParam.types';
-import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import Stats from 'three/examples/jsm/libs/stats.module';
 import { SetUpProps } from 'components/SetUp/SetUp';
 import { CPanelProps } from 'components/CPanel/CPanel';
+import { type AppStore } from 'src/store';
+import { type RootState } from '@react-three/fiber';
 
 export interface InitNativeAppProps {
   renderer?: THREE.WebGLRenderer;
   scene?: THREE.Scene;
   camera?: THREE.PerspectiveCamera | THREE.OrthographicCamera;
-  frameloop?: 'always' | 'demand' | 'never';
-  autoNavControls?: boolean;
-  // if orbitControls are provided, they replace internal OrbitControls when autoNavControls is true
-  orbitControls?: any;
+  frameloop?: RootState['frameloop'];
+  autoNavControls?: AppStore['autoNavControls'];
   customParams?: CustomParams;
   // for testing
   onSetupEffect?: SetUpProps['onSetupEffect'];
@@ -28,8 +27,7 @@ export function initNativeApp(props: InitNativeAppProps) {
     scene: _scene,
     camera: _camera,
     frameloop = 'always',
-    autoNavControls = true,
-    orbitControls: _orbitControls,
+    autoNavControls = 'always',
     customParams,
     onThreeChange,
     onSetupEffect,
@@ -81,7 +79,6 @@ export function initNativeApp(props: InitNativeAppProps) {
   const animate = () => {
     // const delta = clock.getDelta();
     // if ( mixer ) mixer.update( delta );
-    orbitControls?.enabled && orbitControls.update();
     renderer!.render(scene, camera);
     stats.update();
   };
@@ -94,13 +91,6 @@ export function initNativeApp(props: InitNativeAppProps) {
     renderer.setAnimationLoop(animate);
     renderer.shadowMap.enabled = true;
     container.appendChild(renderer.domElement);
-  }
-
-  let orbitControls = _orbitControls;
-  if (!orbitControls) {
-    orbitControls = new OrbitControls(camera, renderer.domElement);
-    orbitControls.enableDamping = true;
-    orbitControls.dampingFactor = 0.1;
   }
 
   window.addEventListener('resize', onWindowResize);
@@ -148,7 +138,6 @@ export function initNativeApp(props: InitNativeAppProps) {
     // hemiLight,
     renderer,
     clock,
-    orbitControls,
     updateInspector,
     unmountInspector,
     cleanUp

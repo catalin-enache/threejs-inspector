@@ -13,15 +13,18 @@
 
   import * as THREE from 'three';
   import { injectInspector } from 'src/lib/inspector.js';
+  import api from 'src/lib/api.js';
   import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
   import { FBXLoader } from 'three/addons/loaders/FBXLoader.js';
   import Stats from 'three/addons/libs/stats.module.js';
 
-  const customCameraControls = true;
+  api.registerDefaultPlayTriggers();
+
+  const customCameraControls = false;
 
   const manager = new THREE.LoadingManager();
 
-  let camera, scene, renderer, stats, object, loader, controls;
+  let camera, perspectiveCamera, orthographicCamera, scene, renderer, stats, object, loader, controls;
   let mixer;
 
   const clock = new THREE.Clock();
@@ -43,8 +46,27 @@
     const container = document.createElement( 'div' );
     document.body.appendChild( container );
 
-    camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 10000 );
-    camera.position.set( 100, 200, 300 );
+    perspectiveCamera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 10000 );
+    perspectiveCamera.position.set( 100, 200, 300 );
+
+    orthographicCamera = new THREE.OrthographicCamera(window.innerWidth / -2,  window.innerWidth / 2, window.innerHeight / 2, window.innerHeight / -2, 0.1, 10000);
+    orthographicCamera.position.set( 100, 200, 300 );
+
+    camera = perspectiveCamera;
+
+    window.addEventListener('keydown', (event) => {
+      if (event.code === 'KeyC') {
+        if (camera === perspectiveCamera) {
+          camera = orthographicCamera;
+        } else {
+          camera = perspectiveCamera;
+        }
+        controls.object = camera;
+        if (typeof updateInspector !== "undefined") {
+          updateInspector({ camera });
+        }
+      }
+    });
 
     scene = new THREE.Scene();
     scene.background = new THREE.Color( 0xa0a0a0 );
@@ -69,13 +91,6 @@
     // mesh.receiveShadow = true;
     // scene.add( mesh );
 
-
-
-    // const grid = new THREE.GridHelper( 2000, 20, 0x000000, 0x000000 );
-    // grid.material.opacity = 0.2;
-    // grid.material.transparent = true;
-    // scene.add( grid );
-
     loader = new FBXLoader( manager );
     loadAsset( params.asset );
 
@@ -86,11 +101,11 @@
     renderer.shadowMap.enabled = true;
     container.appendChild( renderer.domElement );
 
-    if (customCameraControls) {
-      controls = new OrbitControls( camera, renderer.domElement );
-      controls.target.set( 0, 100, 0 );
-      controls.update();
-    }
+    controls = new OrbitControls( camera, renderer.domElement );
+    controls.target.set( 0, 100, 0 );
+    controls.update();
+    controls.enabled = customCameraControls
+
 
 
     window.addEventListener( 'resize', onWindowResize );
@@ -190,8 +205,15 @@
   }
 
   function onWindowResize() {
-    camera.aspect = window.innerWidth / window.innerHeight;
-    camera.updateProjectionMatrix();
+    perspectiveCamera.aspect = window.innerWidth / window.innerHeight;
+    perspectiveCamera.updateProjectionMatrix();
+
+    orthographicCamera.left = window.innerWidth / -2;
+    orthographicCamera.right = window.innerWidth / 2;
+    orthographicCamera.top = window.innerHeight / 2;
+    orthographicCamera.bottom = window.innerHeight / -2;
+    orthographicCamera.updateProjectionMatrix();
+
     renderer.setSize( window.innerWidth, window.innerHeight );
   }
 
@@ -226,26 +248,40 @@
 
   // TODO: improve somehow to allow frameloop controlling from Inspector
 
-  // can be called multiple times with different options
-  const { updateInspector } = injectInspector({
-    camera,
-    scene,
-    renderer,
-    frameloop: 'always',
-    autoNavControls: !customCameraControls,
-    customParams,
-    useHotKeys: true,
-    showInspector: true,
-    showGizmos: true,
-    useTransformControls: true,
-    onTransformControlsDragging: (dragging) => {
-      if (controls) {
-        controls.enabled = !dragging;
-      }
-    },
-    // onRender: animate,
-    r3fThreeGetSet
-  });
+  let updateInspector = undefined;
+
+  setTimeout(() => {
+    // can be called multiple times with different options
+    const injectInspectorResult = injectInspector({
+      camera,
+      scene,
+      renderer,
+      frameloop: 'always',
+      autoNavControls: customCameraControls ? 'never' : 'whenStopped',
+      customParams,
+      showInspector: true,
+      showGizmos: true,
+      useTransformControls: true,
+      onTransformControlsDragging: (dragging) => {
+        const enabled = controls.enabled;
+        controls.enabled = dragging ? false : enabled;
+      },
+      onPlayingStateChange: (playingState) => {
+        if (mixer) {
+          if (playingState === 'playing') {
+            mixer.timeScale = 1;
+          } else {
+            mixer.timeScale = 0;
+          }
+        }
+        controls.enabled = customCameraControls || playingState !== 'stopped';
+      },
+      // onRender: animate,
+      r3fThreeGetSet
+    });
+    updateInspector = injectInspectorResult.updateInspector;
+  }, 2000)
+
 
 </script>
 

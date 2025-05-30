@@ -4,7 +4,7 @@ import { Canvas, RootState } from '@react-three/fiber';
 import { Inspector, InspectorProps } from 'lib/inspector';
 import { defaultScene, defaultPerspectiveCamera, defaultOrthographicCamera } from 'lib/patchThree';
 import { SetUpProps } from 'components/SetUp/SetUp';
-import { useAppStore } from 'src/store';
+import { type AppStore, useAppStore } from 'src/store';
 import { CPanelProps } from 'components/CPanel/CPanel';
 import { useDefaultSetup } from 'lib/hooks';
 
@@ -78,7 +78,7 @@ const glOptions = { antialias: true, precision: 'highp' };
 
 export interface TestInjectedInspectorAppProps {
   children?: ReactNode;
-  autoNavControls?: boolean;
+  autoNavControls?: AppStore['autoNavControls'];
   customParams?: InspectorProps['customParams'];
   includeDirLight?: boolean;
   includeFloorPlane?: boolean;
@@ -105,7 +105,7 @@ export function TestInjectedInspectorApp(props: TestInjectedInspectorAppProps) {
 
   const {
     children,
-    autoNavControls = true,
+    autoNavControls = 'always',
     customParams,
     includeDirLight = true,
     includeFloorPlane = true,
@@ -198,7 +198,8 @@ export function TestDefaultApp(props: TestDefaultAppProps) {
     onThreeChange,
     onCPanelReady,
     onCPanelUnmounted,
-    cameraType
+    cameraType,
+    autoNavControls: 'always'
   });
 
   useEffect(() => {

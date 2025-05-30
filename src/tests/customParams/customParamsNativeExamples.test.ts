@@ -615,7 +615,7 @@ describe('Custom Params examples', () => {
       };
 
       const { cleanUp, unmountInspector } = initNativeApp({
-        autoNavControls: true,
+        autoNavControls: 'always',
         customParams,
         onCPanelReady: handleCPanelReady,
         onCPanelUnmounted: handleCPanelUnmounted

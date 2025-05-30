@@ -7,6 +7,8 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import { Experience } from './scenarios/Experience';
 import { Inspector } from 'src/lib/inspector';
 import { extend } from '@react-three/fiber';
+import { type AppStore } from 'src/store';
+import api from 'src/lib/api';
 import './main.css';
 
 extend({ OrbitControls });
@@ -62,20 +64,28 @@ interface AppProps {
 export function App(props: AppProps) {
   const { children } = props;
 
-  const customCameraControls = true;
-  // @ts-ignore
+  const customCameraControls = false;
   const [camera, setCamera] = useState<THREE.PerspectiveCamera | THREE.OrthographicCamera>(camera1);
   const [renderer, setRenderer] = useState<THREE.WebGLRenderer | null>(null);
   const [isDraggingTransformControls, setIsDraggingTransformControls] = useState(false);
+  const initialPlayingState = api.getPlayingState();
+  const [playingState, setPlayingState] = useState<AppStore['playingState']>(initialPlayingState);
 
   useEffect(() => {
-    const intervalId = setInterval(() => {
-      // setCamera((prevCamera) => {
-      //   return prevCamera === camera1 ? camera2 : camera1;
-      // });
-    }, 4000);
-    return () => clearInterval(intervalId);
-  }, []);
+    const keysListener = (event: KeyboardEvent) => {
+      if (event.code === 'KeyC') {
+        if (camera === camera1) {
+          setCamera(camera2);
+        } else {
+          setCamera(camera1);
+        }
+      }
+    };
+    window.addEventListener('keydown', keysListener);
+    return () => {
+      window.removeEventListener('keydown', keysListener);
+    };
+  }, [camera]);
 
   return (
     <Canvas
@@ -95,20 +105,22 @@ export function App(props: AppProps) {
       frameloop={'always'}
     >
       <Inspector
-        autoNavControls={!customCameraControls}
+        autoNavControls={customCameraControls ? 'never' : 'whenStopped'}
         customParams={customParams}
-        useHotKeys={true}
         showInspector={true}
+        showGizmos={true}
+        useTransformControls={true}
         onTransformControlsDragging={setIsDraggingTransformControls}
+        onPlayingStateChange={setPlayingState}
       />
       {/*dampingFactor={0.05} is default*/}
       {/*<_OrbitControls makeDefault={true} enableDamping={true} dampingFactor={0.1} />*/}
       {/*CameraControls do not allow controlling camera from outside*/}
       {/*<_CameraControls makeDefault={true} />*/}
-      {customCameraControls && renderer && (
+      {renderer && (
         <orbitControls
           args={[camera, renderer.domElement]}
-          enabled={!isDraggingTransformControls}
+          enabled={!isDraggingTransformControls && (customCameraControls || playingState !== 'stopped')}
           enableDamping={false}
         />
       )}

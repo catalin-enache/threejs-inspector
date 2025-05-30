@@ -8,7 +8,7 @@ Make labels expand on hover *DONE*
 See if CustomControl can be improved *DONE*
 When using different camera on play we might/will need different controller *DONE*
 Fix keyup not firing when contextmenu in cPanel (keeps hanging fly navigation) *DONE* (preventing contextmenu on cPanel)
-Bug: In continuous update in Orbit Controls the scene flickers. *DONE* (because  numberCommon.step was lower than 3 decimals precision)
+Bug: In continuous update in Orbit Controls the scene flickers. *DONE* (because  numberCommon->step was lower than 3 decimals precision)
 Bug: After changing texture at runtime the details subfolder does not reflect it. *DONE* (rebuilding the tree manually on change)
 Bug: After adding scene background (some large image) some commands in cPanel respond slowly (e.g. ContinuouslyUpdate, changing cameraType or controlType, play/stop) *DONE*
 it seems it happens only after change until the texture is being rebuilt.
@@ -34,7 +34,7 @@ After they are added why they do  not move when dragged, or at least why the hel
 Bug: spruit_sunrise_4k.hdr.jpg not working as cubemap (might need handling like here: webgl_loader_texture_hdrjpg.html) *DONE* (using HDR-JPG loader)
 Write doc about loading textures and cubeMaps *DONE*
 
-Bug: on inspecting coffeemat.glb it turns full metallic (WebGL: INVALID_ENUM: compressedTexSubImage2D)
+Bug: on inspecting coffeemat->glb it turns full metallic (WebGL: INVALID_ENUM: compressedTexSubImage2D)
 Only happens when in binding helpers we're adding bindings for children.
 *DONE* (we were missing a lot of texture format constants for compressed textures)
 
@@ -158,17 +158,18 @@ When deleting all objects manually geometries and textures are not cleaned up th
 ssh-add ~/.ssh/id_ed25519
 
 
-Remember how camera useOnPlay works. Cant we use this feature when injected ?
 
-Make hotkeys optional, make a play mode to be sent from the app and to disable CameraController nav keys
+When dragging TransformControls frameloop is switched to always.
+
+Add onPlay the same as we have onRender in Inspector
+
+Allow get/set frameloop when using injectInspector in native ThreeJs example
 
 Make sure we can use Experience and lib helpers without patchingThree or without using Setup and Inspector
 
 Add experience switcher in CPanel to easy switch between available experiences
 
 Make a use case (Scenario) where user wants to test textures on some object using different material templates.
-
-
 
 
 
@@ -182,7 +183,7 @@ Allow loading more json objects in the scene and save/load them.
 
 Add scene navigator (top/bottom/left/right) from threejs editor
 Show scene performance and statistics
-Add top/left/bottom/right panel options (note: existing implementations are buggy) - we already have 1,7,3,9 on numeric pad for this.
+Add top/left/bottom/right panel options (note: existing implementations are buggy - are they ?) - we already have 1,7,3,9 on numeric pad for this.
 
 Could we add a use_pmremGenerator bool to inspector ?
 

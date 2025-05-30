@@ -223,7 +223,7 @@ type Module = {
   getSceneSize: () => number;
   sceneBBox: THREE.Box3;
   getSceneBBox: () => THREE.Box3;
-  updateSceneBBox: (params: { action: 'add' | 'remove'; object: THREE.Object3D }) => void;
+  updateSceneBBox: (params: { action: 'add' | 'remove'; object?: THREE.Object3D }) => void;
   shouldUpdateSceneBBoxOnRemoval: boolean;
   setShouldUpdateSceneBBoxOnRemoval: (shouldUpdate: boolean) => void;
   getShouldUpdateSceneBBoxOnRemoval: () => boolean;
@@ -285,6 +285,9 @@ const module: Module = {
   setCurrentScene(scene: THREE.Scene) {
     this.currentScene = scene;
     this.updateCubeCameras();
+    this.updateSceneBBox({
+      action: 'add'
+    });
   },
   clearScene() {
     window.dispatchEvent(new CustomEvent('TIFMK.ClearScene'));
@@ -324,7 +327,7 @@ const module: Module = {
       exclude: undefined,
       useFrustum: false,
       sceneBBox: action === 'add' ? module.sceneBBox : undefined,
-      objects: action === 'add' ? [object] : undefined,
+      objects: action === 'add' && object ? [object] : undefined,
       precise: false
     });
 
@@ -454,8 +457,12 @@ const module: Module = {
   shouldUseCameraControls(camera: THREE.PerspectiveCamera | THREE.OrthographicCamera) {
     const isUseOnPlayCamera = this.getIsUseOnPlayCamera(camera);
     const autoNavControls = useAppStore.getState().autoNavControls;
+    const isPlaying = useAppStore.getState().playingState !== 'stopped';
     const attachDefaultControllersToPlayingCamera = useAppStore.getState().attachDefaultControllersToPlayingCamera;
-    return autoNavControls && (!isUseOnPlayCamera || attachDefaultControllersToPlayingCamera);
+    return (
+      (autoNavControls === 'always' || (autoNavControls === 'whenStopped' && !isPlaying)) &&
+      (!isUseOnPlayCamera || attachDefaultControllersToPlayingCamera)
+    );
   },
 
   updateCameras() {

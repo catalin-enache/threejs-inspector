@@ -6,6 +6,12 @@ import { MaterialBindings } from './MaterialBindings';
 import { useAppStore } from 'src/store';
 import { exportObject, ExportableTypes } from 'lib/utils/downloadUtils';
 
+const getPositionRotationIsDisabled = () => {
+  const autoNavControls = useAppStore.getState().autoNavControls;
+  const playingState = useAppStore.getState().playingState;
+  return autoNavControls === 'never' || (autoNavControls === 'whenStopped' && playingState !== 'stopped');
+};
+
 export const Object3DBindings = (params: CommonGetterParams) => ({
   id: {
     label: 'ID',
@@ -55,15 +61,13 @@ export const Object3DBindings = (params: CommonGetterParams) => ({
     // (3 decimals should be enough precision)
     step: numberCommon.step,
     format: numberFormat(3),
-    disabled: !useAppStore.getState().autoNavControls
-    // if: (object: THREE.Object3D) => useAppStore.getState().autoNavControls
+    disabled: getPositionRotationIsDisabled()
   },
   rotation: {
     label: `Rotation(${params.angleFormat})(L)`,
     ...numberCommon,
     ...(params.angleFormat === 'deg' ? { format: radToDegFormatter } : {}),
-    disabled: !useAppStore.getState().autoNavControls
-    // if: (object: THREE.Object3D) => !isSkinnedMesh(object)
+    disabled: getPositionRotationIsDisabled()
   },
   // quaternion is not displayed because it interferes with rotation when cPanel updates
   // TODO: make a text plugin that only reads

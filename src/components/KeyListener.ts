@@ -21,7 +21,7 @@ export function KeyListener() {
   const cPanelVisible = useAppStore((state) => state.cPanelVisible);
   const isEditorMode = useAppStore((state) => state.showGizmos || state.cPanelVisible);
   const isInjected = useAppStore((state) => state.isInjected);
-  const autoNavControls = useAppStore((state) => state.autoNavControls);
+  const isPlaying = useAppStore((state) => state.playingState !== 'stopped');
   // const { scene, camera } = useThree();
   const keysPressed: any = useMemo(() => ({}), []);
 
@@ -40,7 +40,7 @@ export function KeyListener() {
       // console.log('KeyListener handleKeyDown', e.code);
       // prevent sending commands when typing in input fields
       // @ts-ignore
-      if (document.activeElement?.type === 'text' || isMouseDown) return;
+      if (document.activeElement?.type === 'text' || isMouseDown || isPlaying) return;
       switch (e.code) {
         case 'Backslash':
           !keysPressed[e.code] && useAppStore.getState().toggleFullscreen();
@@ -59,7 +59,7 @@ export function KeyListener() {
 
     const handleKeyUp = (e: KeyboardEvent) => {
       // console.log('KeyListener handleKeyUp', e.code);
-      if (document.activeElement?.tagName === 'INPUT' || isMouseDown) return;
+      if (document.activeElement?.tagName === 'INPUT' || isMouseDown || isPlaying) return;
       keysPressed[e.code] = false;
       switch (e.code) {
         case 'KeyP':
@@ -70,12 +70,6 @@ export function KeyListener() {
           break;
         case 'KeyH':
           if (cPanelVisible || getAllMetaPressed(e)) useAppStore.getState().toggleShowHelpers();
-          break;
-        case 'Space':
-          if (!isInjected && (isEditorMode || getAllMetaPressed(e))) {
-            e.stopPropagation();
-            e.preventDefault(); // to  not interfere with form focused elements and cPanel folder collapsing
-          }
           break;
         case 'KeyU':
           isEditorMode && useAppStore.getState().toggleCPanelContinuousUpdate();
@@ -126,6 +120,6 @@ export function KeyListener() {
       window.removeEventListener('keydown', handleKeyDown);
       window.removeEventListener('keyup', handleKeyUp);
     };
-  }, [isEditorMode, cPanelVisible, autoNavControls, isInjected, keysPressed]);
+  }, [isEditorMode, cPanelVisible, isInjected, keysPressed, isPlaying]);
   return null;
 }

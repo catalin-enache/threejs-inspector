@@ -40,7 +40,7 @@ describe('injectInspector', () => {
       };
 
       const { cleanUp, updateInspector, unmountInspector } = initNativeApp({
-        autoNavControls: true,
+        autoNavControls: 'always',
         onCPanelUnmounted: handleCPanelUnmounted,
         onSetupEffect: handleSetupEffect
       });

@@ -3,7 +3,7 @@ import { RootState, useThree } from '@react-three/fiber';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { RectAreaLightUniformsLib } from 'three/examples/jsm/lights/RectAreaLightUniformsLib';
 import { CameraControls, CameraControlsRefType } from 'components/CameraControls';
-import { useAppStore } from 'src/store';
+import { type AppStore, useAppStore } from 'src/store';
 import patchThree from 'lib/patchThree';
 // @ts-ignore
 import { outliner } from 'lib/third_party/ui.outliner';
@@ -36,7 +36,7 @@ export enum SETUP_EFFECT {
 const threeFields = ['camera', 'gl', 'raycaster', 'pointer', 'scene'] as (keyof RootState)[];
 
 export interface SetUpProps {
-  autoNavControls: boolean; // considered when orbitControls is falsy
+  autoNavControls: AppStore['autoNavControls'];
   isInjected?: boolean;
   // for tests
   onThreeChange?: (changed: keyof RootState, three: RootState) => void;
@@ -46,8 +46,8 @@ export interface SetUpProps {
 const SetUp = (props: SetUpProps) => {
   const {
     // if using drei camera controls (especially with makeDefault false),
-    // set autoNavControls to false, else will conflict
-    autoNavControls = false,
+    // set autoNavControls to 'never', else will conflict
+    autoNavControls = 'never',
     isInjected = true,
     onSetupEffect,
     onThreeChange
@@ -102,7 +102,7 @@ const SetUp = (props: SetUpProps) => {
   useEffect(() => {
     setIsInjected(isInjected);
     // if controls is not null, it means that the App is using external controls and autoNavControls is not needed
-    setAutoNavControls(autoNavControls && !controls);
+    setAutoNavControls(controls ? 'never' : autoNavControls);
     forceUpdate();
   }, [isInjected, setIsInjected, autoNavControls, setAutoNavControls, controls, forceUpdate]);
 

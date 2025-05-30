@@ -96,8 +96,8 @@ export interface AppStore {
   setIsInjected: (isInjected: boolean) => void;
   outlinerSearch: string;
   setOutlinerSearch: (outlinerSearch: string) => void;
-  autoNavControls: boolean;
-  setAutoNavControls: (autoNavControls: boolean) => void;
+  autoNavControls: 'never' | 'always' | 'whenStopped';
+  setAutoNavControls: (autoNavControls: 'never' | 'always' | 'whenStopped') => void;
   playingState: 'stopped' | 'playing' | 'paused';
   setPlayingState: (playingState: AppStore['playingState']) => void;
   getPlayingState: () => AppStore['playingState'];
@@ -196,7 +196,7 @@ export const useAppStore = create<AppStore>()(
       set({
         isInjected: true,
         outlinerSearch: '',
-        autoNavControls: false,
+        autoNavControls: 'never',
         playingState: 'stopped',
         angleFormat: angleFormatDefault,
         shiftKeyPressed: false,
@@ -235,7 +235,7 @@ export const useAppStore = create<AppStore>()(
     setIsInjected: (isInjected) => set({ isInjected }),
     outlinerSearch: '',
     setOutlinerSearch: (outlinerSearch) => set({ outlinerSearch }),
-    autoNavControls: false,
+    autoNavControls: 'never',
     setAutoNavControls: (autoNavControls) => set({ autoNavControls }),
     playingState: 'stopped',
     setPlayingState: (playingState) => {

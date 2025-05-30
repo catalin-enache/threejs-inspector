@@ -4,6 +4,8 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import { extend } from '@react-three/fiber';
 import { useDefaultSetup } from 'src/lib/hooks';
 import * as THREE from 'three';
+import { type AppStore } from 'src/store';
+import api from 'src/lib/api';
 
 extend({ OrbitControls });
 
@@ -17,16 +19,18 @@ export function App(props: AppProps) {
   const { children } = props;
   const [renderer, setRenderer] = useState<THREE.WebGLRenderer | null>(null);
   const [isDraggingTransformControls, setIsDraggingTransformControls] = useState(false);
+  const initialPlayingState = api.getPlayingState();
+  const [playingState, setPlayingState] = useState<AppStore['playingState']>(initialPlayingState);
 
   const customCameraControls = false;
 
   const { camera, scene, inspector } = useDefaultSetup({
-    useHotKeys: true,
     showInspector: true,
-    autoNavControls: !customCameraControls,
+    autoNavControls: customCameraControls ? 'never' : 'whenStopped',
     showGizmos: true,
     useTransformControls: true,
-    onTransformControlsDragging: setIsDraggingTransformControls
+    onTransformControlsDragging: setIsDraggingTransformControls,
+    onPlayingStateChange: setPlayingState
   });
 
   /*
@@ -66,10 +70,10 @@ export function App(props: AppProps) {
         // when legacy is true it sets THREE.ColorManagement.enabled = false, by default THREE.ColorManagement is enabled
         // when THREE.ColorManagement is enabled, ThreeJS will automatically handle the conversion of textures and colors to linear space.
       >
-        {customCameraControls && renderer && (
+        {renderer && (
           <orbitControls
             args={[camera, renderer.domElement]}
-            enabled={!isDraggingTransformControls}
+            enabled={!isDraggingTransformControls && (customCameraControls || playingState !== 'stopped')}
             enableDamping={false}
           />
         )}

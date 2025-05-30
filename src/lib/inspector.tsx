@@ -17,7 +17,7 @@ import { CustomControl } from 'components/CustomControl/CustomControl';
 import { CustomParams, isCustomParamStruct } from 'lib/customParam.types';
 // KeyListener depends on CPanel (sideEffect) to add in DOM CPanel elements to listen to
 import { KeyListener } from 'components/KeyListener';
-import { useAppStore } from 'src/store';
+import { type AppStore, useAppStore } from 'src/store';
 // import { getCPanel } from 'lib/utils/lazyLoaders';
 extend(THREE as any);
 
@@ -31,13 +31,13 @@ type buildCustomParamsElementsParams = {
 };
 
 export interface BaseInspectorProps {
-  autoNavControls?: boolean;
+  autoNavControls?: AppStore['autoNavControls'];
   customParams?: CustomParams;
-  useHotKeys?: boolean;
   showInspector?: boolean;
   showGizmos?: boolean;
   useTransformControls?: boolean;
   onTransformControlsDragging?: (isDragging: boolean) => void;
+  onPlayingStateChange?: (playingState: AppStore['playingState']) => void;
   // for testing
   onSetupEffect?: SetUpProps['onSetupEffect'];
   onThreeChange?: SetUpProps['onThreeChange'];
@@ -88,13 +88,13 @@ export interface InspectorProps extends BaseInspectorProps {
 
 export const Inspector = memo(
   ({
-    autoNavControls = false,
+    autoNavControls = 'never',
     customParams,
-    useHotKeys = true,
     showInspector = true,
     showGizmos = true,
     useTransformControls = true,
     onTransformControlsDragging = () => {},
+    onPlayingStateChange = () => {},
     onSetupEffect,
     onThreeChange,
     onCPanelReady,
@@ -106,6 +106,10 @@ export const Inspector = memo(
     useFrame(onRender);
     const r3fThreeGet = useThree((state) => state.get);
     const r3fThreeSet = useThree((state) => state.set);
+
+    const playingState = useAppStore((state) => state.playingState);
+    const onPlayingStateChangeRef = useRef(onPlayingStateChange);
+    onPlayingStateChangeRef.current = onPlayingStateChange;
 
     const isDraggingTransformControls = useAppStore((state) => state.isDraggingTransformControls);
     const onTransformControlsDraggingRef = useRef(onTransformControlsDragging);
@@ -152,7 +156,7 @@ export const Inspector = memo(
     //       onThreeChange={onThreeChange}
     //     />
     //     {CPanelComponent && <CPanelComponent onCPanelReady={onCPanelReady} onCPanelUnmounted={onCPanelUnmounted} />}
-    //     {CPanelComponent && useHotKeys && <KeyListener />}
+    //     {CPanelComponent && <KeyListener />}
     //     {customParamsElements}
     //   </>
     // );
@@ -173,6 +177,10 @@ export const Inspector = memo(
       onTransformControlsDraggingRef.current(isDraggingTransformControls);
     }, [isDraggingTransformControls]);
 
+    useEffect(() => {
+      onPlayingStateChangeRef.current(playingState);
+    }, [playingState, onPlayingStateChangeRef]);
+
     return (
       <>
         <SetUp
@@ -182,7 +190,7 @@ export const Inspector = memo(
           onThreeChange={onThreeChange}
         />
         {showInspector && <CPanel onCPanelReady={onCPanelReady} onCPanelUnmounted={onCPanelUnmounted} />}
-        {useHotKeys && <KeyListener />}
+        <KeyListener />
         {customParamsElements}
       </>
     );
@@ -193,7 +201,7 @@ export interface InjectInspectorParams extends BaseInspectorProps {
   renderer: THREE.WebGLRenderer;
   scene: THREE.Scene;
   camera: THREE.PerspectiveCamera | THREE.OrthographicCamera;
-  frameloop?: 'always' | 'demand' | 'never';
+  frameloop?: RootState['frameloop'];
 }
 
 const configureAndRender = (params: InjectInspectorParams) => {
@@ -204,11 +212,11 @@ const configureAndRender = (params: InjectInspectorParams) => {
     frameloop,
     autoNavControls,
     customParams,
-    useHotKeys,
     showInspector,
     showGizmos,
     useTransformControls,
     onTransformControlsDragging,
+    onPlayingStateChange,
     onSetupEffect,
     onThreeChange,
     onCPanelReady,
@@ -234,12 +242,12 @@ const configureAndRender = (params: InjectInspectorParams) => {
     createElement(Inspector, {
       autoNavControls,
       customParams,
-      useHotKeys,
       version: ++version,
       showInspector,
       showGizmos,
       useTransformControls,
       onTransformControlsDragging,
+      onPlayingStateChange,
       // for testing
       onSetupEffect,
       onThreeChange,

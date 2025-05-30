@@ -1,7 +1,9 @@
 import { useAppStore } from 'src/store';
 
-const keysHandler = (event: KeyboardEvent) => {
+const keysDownHandler = (event: KeyboardEvent) => {
   if (event.code === 'Space') {
+    event.stopPropagation();
+    event.preventDefault();
     if (useAppStore.getState().getPlayingState() === 'playing') {
       useAppStore.getState().setPlayingState('paused');
     } else {
@@ -12,9 +14,18 @@ const keysHandler = (event: KeyboardEvent) => {
   }
 };
 
+const keysUpHandler = (event: KeyboardEvent) => {
+  if (event.code === 'Space') {
+    event.stopPropagation();
+    event.preventDefault(); // to not interfere with form focused elements and cPanel folder collapsing
+  }
+};
+
 export const registerDefaultPlayTriggers = () => {
-  window.addEventListener('keydown', keysHandler);
+  window.addEventListener('keydown', keysDownHandler);
+  window.addEventListener('keyup', keysUpHandler);
   return () => {
-    window.removeEventListener('keydown', keysHandler);
+    window.removeEventListener('keydown', keysDownHandler);
+    window.removeEventListener('keyup', keysUpHandler);
   };
 };

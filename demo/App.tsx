@@ -4,8 +4,7 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import { extend } from '@react-three/fiber';
 import { useDefaultSetup } from 'src/lib/hooks';
 import * as THREE from 'three';
-import { type AppStore } from 'src/store';
-import api from 'src/lib/api';
+import { default as api, type AppStore } from 'src/lib/api';
 
 extend({ OrbitControls });
 

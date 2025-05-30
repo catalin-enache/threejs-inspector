@@ -7,8 +7,7 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import { Experience } from './scenarios/Experience';
 import { Inspector } from 'src/lib/inspector';
 import { extend } from '@react-three/fiber';
-import { type AppStore } from 'src/store';
-import api from 'src/lib/api';
+import { default as api, type AppStore } from 'src/lib/api';
 import './main.css';
 
 extend({ OrbitControls });

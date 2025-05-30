@@ -11,7 +11,6 @@ import { makeContinuousUpdate } from './continuousUpdate';
 import TexturePlugin from './Plugins/TexturePlugin';
 import { manipulateMouseSpeed } from './manipulateMouseSpeed';
 import { injectMainCss } from 'lib/cssInjector';
-void injectMainCss(); // when running in lib mode, we need to inject the css manually
 
 import {
   getObject3DBindings,
@@ -176,6 +175,7 @@ export interface CPanelProps {
 }
 
 export const CPanel = (props: CPanelProps) => {
+  void injectMainCss();
   const { onCPanelReady, onCPanelUnmounted } = props;
   const { camera, scene, gl, raycaster, frameloop } = useThree();
   const playingState = useAppStore((state) => state.playingState);

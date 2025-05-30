@@ -2,13 +2,13 @@
   "name": "threejs-inspector",
   "homepage": "https://catalin-enache.github.io/threejs-inspector/",
   "private": false,
-  "version": "0.0.54",
+  "version": "0.0.59",
   "type": "module",
   "typesVersions": {
     "*": {
       "": ["dist/index.d.ts"],
       "api": ["dist/lib/api.d.ts"],
-      "hooks": ["dist/lib/hooks.d.ts"],
+      "hooks": ["dist/lib/hooks/index.d.ts"],
       "inspector": ["dist/lib/inspector.d.ts"],
       "CustomControl": ["dist/components/CustomControl/CustomControl.d.ts"],
       "tsExtensions": ["dist/tsExtensions.d.ts"]
@@ -24,8 +24,8 @@
       "types":  "./dist/lib/api.d.ts"
     },
     "./hooks": {
-      "import": "./dist/lib/hooks.js",
-      "types":  "./dist/lib/hooks.d.ts"
+      "import": "./dist/lib/hooks/index.js",
+      "types":  "./dist/lib/hooks/index.d.ts"
     },
     "./inspector": {
       "import": "./dist/lib/inspector.js",

@@ -92,12 +92,16 @@ export const clearLocalStorage = () => {
 
 export interface AppStore {
   reset: () => void;
+  currentExperience: string | null;
+  experiences: NonNullable<AppStore['currentExperience']>[];
+  setExperiences: (experiences: AppStore['experiences']) => void;
+  setCurrentExperience: (experience: AppStore['currentExperience']) => void;
   isInjected: boolean;
   setIsInjected: (isInjected: boolean) => void;
   outlinerSearch: string;
   setOutlinerSearch: (outlinerSearch: string) => void;
   autoNavControls: 'never' | 'always' | 'whenStopped';
-  setAutoNavControls: (autoNavControls: 'never' | 'always' | 'whenStopped') => void;
+  setAutoNavControls: (autoNavControls: AppStore['autoNavControls']) => void;
   playingState: 'stopped' | 'playing' | 'paused';
   setPlayingState: (playingState: AppStore['playingState']) => void;
   getPlayingState: () => AppStore['playingState'];
@@ -194,6 +198,8 @@ export const useAppStore = create<AppStore>()(
       clearLocalStorage();
       get().setSelectedObject(null);
       set({
+        currentExperience: null,
+        experiences: [],
         isInjected: true,
         outlinerSearch: '',
         autoNavControls: 'never',
@@ -230,6 +236,14 @@ export const useAppStore = create<AppStore>()(
         selectedObjectStateFake: 0,
         destroyOnRemove: destroyOnRemoveDefault
       });
+    },
+    currentExperience: null,
+    experiences: [],
+    setExperiences: (experiences) => {
+      set({ experiences });
+    },
+    setCurrentExperience: (experience) => {
+      set({ currentExperience: experience });
     },
     isInjected: true,
     setIsInjected: (isInjected) => set({ isInjected }),

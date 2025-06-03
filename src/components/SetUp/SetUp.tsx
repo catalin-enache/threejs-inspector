@@ -157,7 +157,7 @@ const SetUp = (props: SetUpProps) => {
       // If that's not desired do not use useDefaultSetup hook but inject the <Inspector /> component instead.
       patchThree.setCurrentCamera(cameraType === 'perspective' ? defaultPerspectiveCamera : defaultOrthographicCamera);
     }
-    // notify main App to re-render and send new camera into canvas
+    // notify main App to re-render and send new camera into canvas (handled in useDefaultSetup hook)
     useAppStore.getState().triggerCurrentCameraChanged();
     onSetupEffect?.(SETUP_EFFECT.PLAYING_STATE_OR_CAMERA_TYPE, {
       playingState,

@@ -2,7 +2,7 @@
   "name": "threejs-inspector",
   "homepage": "https://catalin-enache.github.io/threejs-inspector/",
   "private": false,
-  "version": "0.0.59",
+  "version": "0.0.62",
   "type": "module",
   "typesVersions": {
     "*": {
@@ -11,6 +11,7 @@
       "hooks": ["dist/lib/hooks/index.d.ts"],
       "inspector": ["dist/lib/inspector.d.ts"],
       "CustomControl": ["dist/components/CustomControl/CustomControl.d.ts"],
+      "ExperienceSwitcher": ["dist/components/ExperienceSwitcher/ExperienceSwitcher.d.ts"],
       "tsExtensions": ["dist/tsExtensions.d.ts"]
     }
   },
@@ -34,6 +35,10 @@
     "./CustomControl": {
       "import": "./dist/components/CustomControl/CustomControl.js",
       "types":  "./dist/components/CustomControl/CustomControl.d.ts"
+    },
+    "./ExperienceSwitcher": {
+      "import": "./dist/components/ExperienceSwitcher/ExperienceSwitcher.js",
+      "types":  "./dist/components/ExperienceSwitcher/ExperienceSwitcher.d.ts"
     },
     "./tsExtensions": {
       "import": "./dist/tsExtensions.js",

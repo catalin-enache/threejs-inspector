@@ -156,12 +156,16 @@ When deleting all objects manually geometries and textures are not cleaned up th
 When dragging TransformControls frameloop is switched to always.
 *DONE* it happens because the app is re-rendered when listening to TransformControls change and the frameloop is overridden by the app at re-render.
 
+Make sure we can use Experience and lib helpers without patchingThree or without using Setup and Inspector
+*DONE*
+
 
 
 ssh-add ~/.ssh/id_ed25519
 
+make util pagesSwitcher for both native and R3F
 
-Make sure we can use Experience and lib helpers without patchingThree or without using Setup and Inspector
+make util useStats for native the same as useStats hook for R3F.
 
 Add experience switcher in CPanel to easy switch between available experiences
 

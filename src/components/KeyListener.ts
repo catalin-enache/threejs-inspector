@@ -40,7 +40,7 @@ export function KeyListener() {
       // console.log('KeyListener handleKeyDown', e.code);
       // prevent sending commands when typing in input fields
       // @ts-ignore
-      if (document.activeElement?.type === 'text' || isMouseDown || isPlaying) return;
+      if (document.activeElement?.type === 'text' || isMouseDown || isPlaying || e.repeat) return;
       switch (e.code) {
         case 'Backslash':
           !keysPressed[e.code] && useAppStore.getState().toggleFullscreen();

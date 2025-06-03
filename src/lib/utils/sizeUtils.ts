@@ -114,7 +114,7 @@ export function getSceneBoundingBoxSize({
     if (!isExcluded(object, exclude)) {
       // SkinnedMesh needs updateMatrixWorld when loaded from JSON
       // else the bounding box is wrong (test Jennifer as JSON)
-      object.updateMatrixWorld();
+      object.updateMatrixWorld(true);
       const objectBoundingBox = new THREE.Box3().setFromObject(object, precise);
       if (!useFrustum || frustum.intersectsBox(objectBoundingBox)) {
         sceneBBox.union(objectBoundingBox);

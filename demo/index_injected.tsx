@@ -4,13 +4,37 @@ import { createRoot } from 'react-dom/client';
 import { Canvas } from '@react-three/fiber';
 // import { CameraControls as _CameraControls, OrbitControls as _OrbitControls } from '@react-three/drei';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
-import { Experience } from './scenarios/Experience';
+import { ExperienceSwitcher } from 'src/components/ExperienceSwitcher/ExperienceSwitcher';
+import { Experience as DefaultExperience } from './scenarios/Experience';
+import { ProjectLongLatOnSphere } from './scenarios/ProjectLongLatOnSphere';
 import { Inspector } from 'src/lib/inspector';
 import { extend } from '@react-three/fiber';
 import { default as api, type AppStore } from 'src/lib/api';
 import './main.css';
 
 extend({ OrbitControls });
+
+const experiences = [
+  {
+    name: 'Default Experience',
+    Experience: DefaultExperience
+  },
+  {
+    name: 'Project Long/Lat on Sphere',
+    Experience: ProjectLongLatOnSphere
+  }
+];
+
+// const experiences = [
+//   {
+//     name: 'Default Experience',
+//     Experience: lazy(() => import('./scenarios/Experience'))
+//   },
+//   {
+//     name: 'Project Long/Lat on Sphere',
+//     Experience: lazy(() => import('./scenarios/ProjectLongLatOnSphere'))
+//   }
+// ];
 
 const params = {
   asset: 'two'
@@ -134,12 +158,14 @@ createRoot(document.getElementById('main') as HTMLElement).render(
   useStrictMode ? (
     <StrictMode>
       <App>
-        <Experience />
+        {/*<ProjectLongLatOnSphere />*/}
+        <ExperienceSwitcher experiences={experiences} />
       </App>
     </StrictMode>
   ) : (
     <App>
-      <Experience />
+      {/*<ProjectLongLatOnSphere />*/}
+      <ExperienceSwitcher experiences={experiences} />
     </App>
   )
 );

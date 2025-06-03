@@ -1,21 +1,18 @@
 import * as THREE from 'three';
-import { useEffect, useRef, useState } from 'react';
-import { useFrame, ThreeElements, useThree } from '@react-three/fiber';
+import { useEffect, useRef, useState, memo } from 'react';
+import { ThreeElements, useThree } from '@react-three/fiber';
 // @ts-ignore
-import Stats from 'three/addons/libs/stats.module.js';
 import { CustomControl } from 'src/components/CustomControl/CustomControl';
-import { usePlay } from 'src/lib/hooks';
+import { usePlay, useStats } from 'src/lib/hooks';
 import { TestIndexedCube3Materials } from './stuff/TestIndexedCube3Materials';
 // import { TestMorphTargets } from './TestMorphTargets';
 // @ts-ignore
 import { LightProbeGenerator } from 'three/examples/jsm/lights/LightProbeGenerator';
 import { getShadowMapMaterial } from 'src/lib/utils/customShaders';
-import api from 'src/lib/api';
+import api from 'lib/api';
 
 const degToRad = THREE.MathUtils.degToRad;
 
-const stats = new Stats();
-document.body.appendChild(stats.dom);
 const shadowMapMaterial = getShadowMapMaterial();
 // @ts-ignore
 function Box(
@@ -41,10 +38,6 @@ function Box(
       refMesh.current && (refMesh.current.rotation.x = 0);
     }
   });
-
-  useEffect(() => {
-    return api.registerDefaultPlayTriggers();
-  }, []);
 
   useEffect(() => {
     // 'https://threejsfundamentals.org/threejs/resources/images/wall.jpg',
@@ -91,9 +84,26 @@ function Box(
   );
 }
 
-export function Experience() {
+export const Experience = memo(function Experience() {
+  const initialisedRef = useRef(false);
   // @ts-ignore
   const { scene, gl, clock, camera } = useThree();
+  useStats();
+
+  useEffect(() => {
+    camera.position.set(0, 0, 22);
+    camera.rotation.set(0, 0, 0);
+    if (camera instanceof THREE.OrthographicCamera) {
+      camera.zoom = 25;
+    }
+  }, [camera]);
+
+  useEffect(() => {
+    // because R3F adds geometry asynchronously, after internal setup
+    api.updateSceneBBox();
+    return api.registerDefaultPlayTriggers();
+  }, []);
+
   const refDirectionalLight = useRef<THREE.DirectionalLight>(null!);
   const refPointLight = useRef<THREE.PointLight>(null!);
   const refSpotLight = useRef<THREE.SpotLight>(null!);
@@ -125,9 +135,6 @@ export function Experience() {
   const [number, setNumber] = useState(1.23);
   const audioListenerRef = useRef<THREE.AudioListener>(new THREE.AudioListener());
 
-  useFrame((_state, _delta) => {
-    stats.update();
-  });
   usePlay(
     (_playState, _rootState, _delta) => {
       if (refPointLight.current) {
@@ -166,6 +173,7 @@ export function Experience() {
   });
 
   useEffect(() => {
+    if (initialisedRef.current) return;
     api
       .createTexturesFromImages(
         ['alpha.jpg', 'ao.jpg', 'color.jpg', 'height.jpg', 'metalness.jpg', 'normal.jpg', 'roughness.jpg'].map(
@@ -191,6 +199,7 @@ export function Experience() {
   }, []);
 
   useEffect(() => {
+    if (initialisedRef.current) return;
     // 'https://threejsfundamentals.org/threejs/resources/images/wall.jpg',
     // 'textures/test/file_example_TIFF_1MB.tiff',
     // 'textures/test/one_gray_channel.exr',
@@ -333,6 +342,10 @@ export function Experience() {
         // camera.aspect = 400 / 200;
         // camera.updateProjectionMatrix();
       });
+  }, []);
+
+  useEffect(() => {
+    initialisedRef.current = true;
   }, []);
 
   return (
@@ -588,4 +601,6 @@ export function Experience() {
       )}
     </>
   );
-}
+});
+
+export default Experience;

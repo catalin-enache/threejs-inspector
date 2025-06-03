@@ -1,3 +1,4 @@
+import * as THREE from 'three';
 import patchThree from './patchThree';
 import { deepTraverse, cloneObject3D } from './utils/objectUtils';
 import { deepClean } from './utils/cleanUp';
@@ -16,11 +17,34 @@ export default {
   setCurrentRenderer: patchThree.setCurrentRenderer,
   refreshCPanel: patchThree.refreshCPanel,
   updateCubeCameras: patchThree.updateCubeCameras,
+  updateSceneBBox: patchThree.updateSceneBBox,
   getShouldUpdateSceneBBoxOnRemoval: patchThree.getShouldUpdateSceneBBoxOnRemoval,
   setShouldUpdateSceneBBoxOnRemoval: patchThree.setShouldUpdateSceneBBoxOnRemoval,
   getSceneSizeV3: patchThree.getSceneSizeV3(),
   getSceneSize: patchThree.getSceneSize(),
   getSceneBBox: patchThree.getSceneBBox(),
+
+  /**
+   * Sets default camera type (when in app  mode - not injected)
+   */
+  setCameraType: useAppStore.getState().setCameraType,
+  /**
+   * gets current camera registered with patchThree.
+   * This is not updated synchronously when setCameraType is called.
+   */
+  getCurrentCamera: patchThree.getCurrentCamera,
+  getDefaultPerspectiveCamera() {
+    return patchThree.defaultPerspectiveCamera;
+  },
+  getDefaultOrthographicCamera() {
+    return patchThree.defaultOrthographicCamera;
+  },
+  isDefaultPerspectiveCamera(camera: THREE.PerspectiveCamera | THREE.OrthographicCamera) {
+    return patchThree.defaultPerspectiveCamera === camera;
+  },
+  isDefaultOrthographicCamera(camera: THREE.PerspectiveCamera | THREE.OrthographicCamera) {
+    return patchThree.defaultOrthographicCamera === camera;
+  },
 
   /**
    * setPlayingState/getPlayingState work in conjunction with usePlay hook

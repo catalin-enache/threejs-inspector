@@ -2,8 +2,16 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react-swc';
 import { Mode, plugin as mdPlugin } from 'vite-plugin-markdown';
+import path from 'path';
+import fg from 'fast-glob';
 // @ts-ignore
 import { alias, extensions } from './vite.config.shared';
+
+const htmlPages = fg.sync('demo/*.html', { dot: false }).reduce<Record<string, string>>((entries, file) => {
+  const name = path.basename(file, '.html');
+  entries[name] = path.resolve(__dirname, file);
+  return entries;
+}, {});
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -31,7 +39,11 @@ export default defineConfig({
     emptyOutDir: true,
     sourcemap: true,
     assetsInlineLimit: 0,
-    target: 'esnext'
+    target: 'esnext',
+
+    rollupOptions: {
+      input: htmlPages
+    }
   },
   resolve: {
     alias,

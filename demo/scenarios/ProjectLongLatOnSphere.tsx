@@ -1,39 +1,44 @@
+import * as THREE from 'three';
 import { useEffect, useRef, useState } from 'react';
-import { useFrame } from '@react-three/fiber';
+import { useThree } from '@react-three/fiber';
 // @ts-ignore
-import Stats from 'three/addons/libs/stats.module.js';
 import { CustomControl } from 'src/components/CustomControl/CustomControl';
-import { usePlay } from 'src/lib/hooks';
+// import { usePlay } from 'src/lib/hooks';
 import { projectLongLatOnSphere } from 'src/lib/utils/projectLongLatOnSphere';
-import { useAppStore } from 'src/store';
-import patchThree from 'src/lib/patchThree';
-
-const stats = new Stats();
-document.body.appendChild(stats.dom);
+import { useStats } from 'lib/hooks';
+import { api } from 'src';
 
 const radius = 10;
 const initialDirection = { x: 0, y: 1.6 };
 
 export function ProjectLongLatOnSphere() {
   const [direction, setDirection] = useState(projectLongLatOnSphere({ ...initialDirection, r: radius }));
+  const { scene, camera } = useThree();
+  useStats();
+
+  useEffect(() => {
+    // because R3F adds geometry asynchronously, after internal setup
+    api.updateSceneBBox();
+    // Set up the scene
+    scene.background = new THREE.Color().setHex(0x000000);
+    return () => {
+      scene.background = null;
+    };
+  }, [scene]);
+
+  useEffect(() => {
+    camera.position.set(0, 0, 22);
+    camera.rotation.set(0, 0, 0);
+    if (camera instanceof THREE.OrthographicCamera) {
+      camera.zoom = 30;
+    }
+  }, [camera]);
 
   const customPropsRef = useRef({
     direction: initialDirection
   });
 
-  useFrame((_state, _delta) => {
-    stats.update();
-  });
-
-  usePlay((_state, _delta) => {});
-
-  useEffect(() => {
-    useAppStore.getState().setCameraType('orthographic');
-    const currentCamera = patchThree.getCurrentCamera();
-    currentCamera.position.set(-12, 0, 0);
-    currentCamera.rotation.set(0, -90, 0);
-    currentCamera.zoom = 31;
-  }, []);
+  // usePlay((_state, _delta) => {});
 
   return (
     <>
@@ -72,3 +77,5 @@ export function ProjectLongLatOnSphere() {
     </>
   );
 }
+
+export default ProjectLongLatOnSphere;

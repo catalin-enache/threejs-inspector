@@ -10,6 +10,7 @@ import {
   RendererInfoMemoryBindings,
   RendererShadowMapBindings
 } from './RendererBindings';
+import { ExperiencesBindings } from './ExperiencesBindings';
 import { PaneBindings } from './PaneBindings';
 import { SceneConfigBindings } from './SceneConfigBindings';
 import { RaycasterParamsLineBindings, RaycasterParamsPointsBindings } from './RaycasterBindings';
@@ -42,6 +43,10 @@ export const getRendererBindings = (params: CommonGetterParams) => ({
       ...RendererInfoRenderBindings(params)
     }
   }
+});
+
+export const getExperiencesBindings = (params: CommonGetterParams) => ({
+  ...ExperiencesBindings(params)
 });
 
 export const getPaneBindings = (params: CommonGetterParams) => ({

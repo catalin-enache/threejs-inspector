@@ -223,7 +223,7 @@ type Module = {
   getSceneSize: () => number;
   sceneBBox: THREE.Box3;
   getSceneBBox: () => THREE.Box3;
-  updateSceneBBox: (params: { action: 'add' | 'remove'; object?: THREE.Object3D }) => void;
+  updateSceneBBox: (params?: { action?: 'add' | 'remove'; object?: THREE.Object3D }) => void;
   shouldUpdateSceneBBoxOnRemoval: boolean;
   setShouldUpdateSceneBBoxOnRemoval: (shouldUpdate: boolean) => void;
   getShouldUpdateSceneBBoxOnRemoval: () => boolean;
@@ -285,9 +285,7 @@ const module: Module = {
   setCurrentScene(scene: THREE.Scene) {
     this.currentScene = scene;
     this.updateCubeCameras();
-    this.updateSceneBBox({
-      action: 'add'
-    });
+    this.updateSceneBBox();
   },
   clearScene() {
     window.dispatchEvent(new CustomEvent('TIFMK.ClearScene'));
@@ -315,7 +313,7 @@ const module: Module = {
     return module.shouldUpdateSceneBBoxOnRemoval;
   },
 
-  updateSceneBBox({ action, object }) {
+  updateSceneBBox({ action, object } = {}) {
     if (!module.isSafeToMakeHelpers) return;
     if (action === 'remove' && !module.shouldUpdateSceneBBoxOnRemoval) {
       return;

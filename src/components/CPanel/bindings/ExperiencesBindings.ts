@@ -6,7 +6,7 @@ export const ExperiencesBindings = (_params: CommonGetterParams) => {
   const experiences = useAppStore.getState().experiences;
   return {
     currentExperience: {
-      label: 'Current',
+      label: 'Experience',
       options: experiences.reduce(
         (acc, exp) => {
           acc[exp] = exp;

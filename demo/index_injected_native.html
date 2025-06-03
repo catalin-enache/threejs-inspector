@@ -16,15 +16,18 @@
   import api from 'src/lib/api.js';
   import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
   import { FBXLoader } from 'three/addons/loaders/FBXLoader.js';
-  import Stats from 'three/addons/libs/stats.module.js';
 
+  import { projects } from './projects';
+
+  api.setProjects(projects);
   api.registerDefaultPlayTriggers();
+  api.injectStats();
 
   const customCameraControls = false;
 
   const manager = new THREE.LoadingManager();
 
-  let camera, perspectiveCamera, orthographicCamera, scene, renderer, stats, object, loader, controls;
+  let camera, perspectiveCamera, orthographicCamera, scene, renderer, object, loader, controls;
   let mixer;
 
   const clock = new THREE.Clock();
@@ -109,11 +112,6 @@
 
 
     window.addEventListener( 'resize', onWindowResize );
-
-    // stats
-    stats = new Stats();
-    container.appendChild( stats.dom );
-
   }
 
   function loadAsset( asset ) {
@@ -223,8 +221,6 @@
 
     if ( mixer ) mixer.update( delta );
     renderer.render( scene, camera );
-    stats.update();
-
   }
 
   function r3fThreeGetSet({ r3fThreeGet, r3fThreeSet }) {

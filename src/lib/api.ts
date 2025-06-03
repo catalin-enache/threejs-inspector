@@ -3,6 +3,7 @@ import patchThree from './patchThree';
 import { deepTraverse, cloneObject3D } from './utils/objectUtils';
 import { deepClean } from './utils/cleanUp';
 import { createTexturesFromImages } from './utils/loadTexture';
+import { injectStats } from './utils/injectStats';
 import { loadObject } from './utils/loadObject';
 import { splitMeshesByMaterial } from './utils/optimiseModel';
 import { useAppStore, type AppStore } from 'src/store';
@@ -23,6 +24,10 @@ export default {
   getSceneSizeV3: patchThree.getSceneSizeV3(),
   getSceneSize: patchThree.getSceneSize(),
   getSceneBBox: patchThree.getSceneBBox(),
+
+  injectStats,
+
+  setProjects: useAppStore.getState().setProjects,
 
   /**
    * Sets default camera type (when in app  mode - not injected)

@@ -15,6 +15,7 @@ import { injectMainCss } from 'lib/cssInjector';
 import {
   getObject3DBindings,
   getRendererBindings,
+  getProjectsBindings,
   getExperiencesBindings,
   getPaneBindings,
   getCameraStoreBindings,
@@ -193,6 +194,7 @@ export const CPanel = (props: CPanelProps) => {
   const showSceneSizeHelper = useAppStore((state) => state.showSceneSizeHelper);
 
   const experiences = useAppStore((state) => state.experiences);
+  const projects = useAppStore((state) => state.projects);
 
   const cPanelVisible = useAppStore((state) => state.cPanelVisible);
   const selectedObjectUUID = useAppStore((state) => state.selectedObjectUUID);
@@ -393,12 +395,17 @@ export const CPanel = (props: CPanelProps) => {
     // Cleanup prev folders and their bindings // BladeApi is more generic we can make a recursive function to remove all children
     cleanupContainer(sceneTab, { disposeRootFolder: true });
 
-    if (experiences && experiences.length) {
+    if ((experiences && experiences.length) || (projects && projects.length)) {
       const experienceFolder = sceneTab.addFolder({
-        title: 'Experiences',
+        title: 'Projects & Experiences',
         expanded: true
       });
-      buildBindings(experienceFolder, store, getExperiencesBindings(commonGetterParams), commonGetterParams);
+      if (projects && projects.length) {
+        buildBindings(experienceFolder, store, getProjectsBindings(commonGetterParams), commonGetterParams);
+      }
+      if (experiences && experiences.length) {
+        buildBindings(experienceFolder, store, getExperiencesBindings(commonGetterParams), commonGetterParams);
+      }
     }
 
     // Add Pane folder and bindings
@@ -494,6 +501,7 @@ export const CPanel = (props: CPanelProps) => {
     frameloop,
     raycaster,
     cPanelStateFake,
+    projects,
     experiences
   ]);
 
@@ -515,6 +523,7 @@ export const CPanel = (props: CPanelProps) => {
     angleFormat,
     playingState,
     cPanelStateFake,
+    projects,
     experiences
   ]);
 

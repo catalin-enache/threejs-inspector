@@ -159,15 +159,23 @@ When dragging TransformControls frameloop is switched to always.
 Make sure we can use Experience and lib helpers without patchingThree or without using Setup and Inspector
 *DONE*
 
+Add experience switcher in CPanel to easy switch between available experiences
+*DONE*
+
+make util pagesSwitcher for both native and R3F
+*DONE* added api.setProjects
+
+
+make util useStats for native the same as useStats hook for R3F
+*DONE* added api.injectStats
+
 
 
 ssh-add ~/.ssh/id_ed25519
 
-make util pagesSwitcher for both native and R3F
 
-make util useStats for native the same as useStats hook for R3F.
 
-Add experience switcher in CPanel to easy switch between available experiences
+
 
 Make a use case (Scenario) where user wants to test textures on some object using different material templates.
 

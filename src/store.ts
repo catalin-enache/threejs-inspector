@@ -5,6 +5,7 @@ import { subscribeWithSelector } from 'zustand/middleware';
 import type { BindingParams } from 'tweakpane';
 import * as THREE from 'three';
 import { setFullScreen } from 'lib/utils/fullScreenUtils';
+import { getProjectPathFromURL } from 'lib/utils/getSetProjectURL';
 
 const cPanelCustomParamsStore: any = {};
 let selectedObject: THREE.Object3D | null = null;
@@ -92,6 +93,10 @@ export const clearLocalStorage = () => {
 
 export interface AppStore {
   reset: () => void;
+  currentProjectPath: string | null;
+  projects: { path: string; name: string }[];
+  setProjects: (projects: AppStore['projects']) => void;
+  setCurrentProjectPath: (project: AppStore['currentProjectPath']) => void;
   currentExperience: string | null;
   experiences: NonNullable<AppStore['currentExperience']>[];
   setExperiences: (experiences: AppStore['experiences']) => void;
@@ -237,13 +242,23 @@ export const useAppStore = create<AppStore>()(
         destroyOnRemove: destroyOnRemoveDefault
       });
     },
+    currentProjectPath: null,
+    projects: [],
+    setProjects: (projects) => {
+      set({ projects });
+      const currentProjectPath = getProjectPathFromURL(projects);
+      set({ currentProjectPath });
+    },
+    setCurrentProjectPath: (currentProjectPath) => {
+      set({ currentProjectPath });
+    },
     currentExperience: null,
     experiences: [],
     setExperiences: (experiences) => {
       set({ experiences });
     },
-    setCurrentExperience: (experience) => {
-      set({ currentExperience: experience });
+    setCurrentExperience: (currentExperience) => {
+      set({ currentExperience });
     },
     isInjected: true,
     setIsInjected: (isInjected) => set({ isInjected }),

@@ -4,7 +4,11 @@ import { ExperienceSwitcher } from 'src/components/ExperienceSwitcher/Experience
 // import { Experience as DefaultExperience } from './scenarios/Experience';
 // import { ProjectLongLatOnSphere } from './scenarios/ProjectLongLatOnSphere';
 import { App } from './App';
+import api from 'src/lib/api';
 import './main.css';
+
+import { projects } from './projects';
+api.setProjects(projects);
 
 // const Experience = DefaultExperience;
 

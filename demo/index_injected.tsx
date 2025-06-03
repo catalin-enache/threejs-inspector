@@ -12,6 +12,9 @@ import { extend } from '@react-three/fiber';
 import { default as api, type AppStore } from 'src/lib/api';
 import './main.css';
 
+import { projects } from './projects';
+api.setProjects(projects);
+
 extend({ OrbitControls });
 
 const experiences = [

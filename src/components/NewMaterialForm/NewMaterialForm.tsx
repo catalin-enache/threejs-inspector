@@ -75,16 +75,16 @@ export const NewMaterialForm = () => {
         });
         newMaterial.needsUpdate = true;
 
-        if (destroyCurrentMaterial) {
-          if (destroyCurrentMaterialTextures) {
-            const mapsKeys = getMapsKeysForMaterial(material).map((item) => item.name);
-            mapsKeys.forEach((mapKey) => {
-              const key = mapKey as keyof THREE.Material;
-              if (material[key] && material[key] instanceof THREE.Texture) {
-                material[key].dispose();
-              }
-            });
-          }
+        if (destroyCurrentMaterialTextures) {
+          const mapsKeys = getMapsKeysForMaterial(material).map((item) => item.name);
+          mapsKeys.forEach((mapKey) => {
+            const key = mapKey as keyof THREE.Material;
+            if (material[key] && material[key] instanceof THREE.Texture) {
+              material[key].dispose();
+            }
+          });
+        }
+        if (destroyCurrentMaterial || destroyCurrentMaterialTextures) {
           material.dispose();
         }
 

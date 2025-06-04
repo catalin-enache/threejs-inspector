@@ -7,14 +7,14 @@ import { createFakeTexture } from 'lib/utils/textureUtils';
 import './MaterialEditForm.css';
 
 export const MaterialEditForm = () => {
-  const materialEditIsOpen = useAppStore((state) => state.materialEditIsOpen);
-  const setMaterialEditIsOpen = useAppStore((state) => state.setMaterialEditIsOpen);
+  const materialEditFormIsOpen = useAppStore((state) => state.materialEditFormIsOpen);
+  const setMaterialEditFormIsOpen = useAppStore((state) => state.setMaterialEditFormIsOpen);
   const material = patchThree.materialToEdit!;
   const contentRef = useRef<HTMLDivElement | null>(null);
 
   const handleClose = useCallback(() => {
-    setMaterialEditIsOpen(false);
-  }, [setMaterialEditIsOpen]);
+    setMaterialEditFormIsOpen(false);
+  }, [setMaterialEditFormIsOpen]);
 
   useEffect(() => {
     const content = document.createElement('div');
@@ -83,10 +83,10 @@ export const MaterialEditForm = () => {
     content.innerHTML += `
       </div>
     `;
-  }, [materialEditIsOpen, material]);
+  }, [materialEditFormIsOpen, material]);
 
   return (
-    <Modal isOpen={materialEditIsOpen} onClose={handleClose} title={material?.constructor.name} width="280px">
+    <Modal isOpen={materialEditFormIsOpen} onClose={handleClose} title={material?.constructor.name} width="280px">
       {contentRef.current}
     </Modal>
   );

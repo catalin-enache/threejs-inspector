@@ -316,7 +316,19 @@ export const Experience = memo(function Experience() {
             // );
             setTimeout(() => {
               // mesh.removeFromParent();
-            }, 8000);
+              // api.deepTraverse(
+              //   scene,
+              //   ({ value, path, ancestors }) => {
+              //     console.log('found', { value, path, ancestors });
+              //   },
+              //   ({ value, key, parent }) => {
+              //     if (!value) {
+              //       return false;
+              //     }
+              //     return value instanceof THREE.Material;
+              //   }
+              // );
+            }, 4000);
           });
 
         const testIndexedCube3Materials = TestIndexedCube3Materials();

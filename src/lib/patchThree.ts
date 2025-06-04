@@ -243,6 +243,14 @@ type Module = {
   hideTransformControls: () => void;
   // used internally by MaterialEditForm
   materialToEdit: THREE.Material | null;
+  // used internally by NewMaterialForm
+  objectToEdit:
+    | THREE.Mesh
+    | THREE.Sprite
+    | THREE.Line
+    | THREE.Points
+    | (THREE.Mesh | THREE.Sprite | THREE.Line | THREE.Points)[]
+    | null;
   render: () => void;
   currentRenderer: THREE.WebGLRenderer | null;
   getCurrentRenderer: () => THREE.WebGLRenderer | null;
@@ -430,6 +438,7 @@ const module: Module = {
   },
 
   materialToEdit: null,
+  objectToEdit: null,
 
   render() {
     if (!this.currentRenderer || !this.currentScene || !this.getCurrentCamera()) return;

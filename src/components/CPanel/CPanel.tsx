@@ -39,6 +39,7 @@ import { html } from '../../../README.md';
 import { CommonGetterParams } from './bindings/bindingTypes';
 import { LoadObjectForm } from '../LoadObjectForm/LoadObjectForm';
 import { MaterialEditForm } from '../MaterialEditForm/MaterialEditForm';
+import { NewMaterialForm } from '../NewMaterialForm/NewMaterialForm';
 import './CPanel.css';
 
 const cPanel = document.createElement('div');
@@ -532,6 +533,7 @@ export const CPanel = (props: CPanelProps) => {
     <>
       <LoadObjectForm />
       <MaterialEditForm />
+      <NewMaterialForm />
       {showAxesHelper && <axesHelper args={[1000]} />}
       {showGridHelper && <gridHelper args={[1000, 1000]} />}
       {showSceneSizeHelper && <SceneSizeHelper />}

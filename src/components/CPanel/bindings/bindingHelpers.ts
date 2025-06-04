@@ -241,7 +241,7 @@ const _buildBindings = (folder: FolderApi, object: any, bindings: any, params: C
           title: `${bindingKey} ${index}`,
           expanded: false
         });
-
+        bindingCandidate.__parentObject = object;
         try {
           _buildBindings(subFolder, item, bindingCandidate, params);
         } catch (error) {
@@ -462,6 +462,7 @@ const _buildBindings = (folder: FolderApi, object: any, bindings: any, params: C
     }
   }
 
+  const materialsParentsMap = new WeakMap<THREE.Material, THREE.Object3D[]>();
   //  Collecting materials from all children
   if (folder.title === 'Object3D' && object.traverse) {
     // root object
@@ -473,6 +474,10 @@ const _buildBindings = (folder: FolderApi, object: any, bindings: any, params: C
         const matArray = Array.isArray(child.material) ? child.material : [child.material];
         matArray.forEach((material) => {
           materials.add(material);
+          if (!materialsParentsMap.has(material)) {
+            materialsParentsMap.set(material, []);
+          }
+          materialsParentsMap.get(material)?.push(child);
         });
       }
     });
@@ -503,7 +508,10 @@ const _buildBindings = (folder: FolderApi, object: any, bindings: any, params: C
 
           const tryBuildBindings = () => {
             try {
-              _buildBindings(subFolder, material, MaterialBindings(params), params);
+              const bindings = MaterialBindings(params);
+              // @ts-ignore
+              bindings.__parentObject = materialsParentsMap.get(material);
+              _buildBindings(subFolder, material, bindings, params);
             } catch (error) {
               console.error('Error building bindings for', material.name || material.uuid, { material, error });
             }

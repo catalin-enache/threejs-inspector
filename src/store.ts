@@ -172,8 +172,10 @@ export interface AppStore {
   cPanelCustomParamsStructureStateFake: number;
   loadObjectIsOpen: boolean;
   setLoadObjectIsOpen: (isOpen: boolean) => void;
-  materialEditIsOpen: boolean;
-  setMaterialEditIsOpen: (isOpen: boolean) => void;
+  materialEditFormIsOpen: boolean;
+  setMaterialEditFormIsOpen: (isOpen: boolean) => void;
+  newMaterialFormIsOpen: boolean;
+  setNewMaterialFormIsOpen: (isOpen: boolean) => void;
   cameraType: 'perspective' | 'orthographic';
   setCameraType: (type: 'perspective' | 'orthographic') => void;
   toggleCameraType: () => void;
@@ -461,8 +463,10 @@ export const useAppStore = create<AppStore>()(
     cPanelCustomParamsStructureStateFake: 0,
     loadObjectIsOpen: false,
     setLoadObjectIsOpen: (loadObjectIsOpen) => set({ loadObjectIsOpen }),
-    materialEditIsOpen: false,
-    setMaterialEditIsOpen: (materialEditIsOpen) => set({ materialEditIsOpen }),
+    materialEditFormIsOpen: false,
+    setMaterialEditFormIsOpen: (materialEditFormIsOpen) => set({ materialEditFormIsOpen }),
+    newMaterialFormIsOpen: false,
+    setNewMaterialFormIsOpen: (newMaterialFormIsOpen) => set({ newMaterialFormIsOpen }),
     cameraType: cameraType, // Warning: orthographic camera does not work with CubeTexture for Scene.background
     setCameraType: (cameraType) => {
       if (get().isDraggingTransformControls) return;

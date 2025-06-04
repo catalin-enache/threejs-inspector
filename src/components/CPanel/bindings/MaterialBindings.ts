@@ -122,12 +122,21 @@ export const MaterialBindings = (params: CommonGetterParams) => {
       label: 'Wireframe',
       view: 'toggle'
     },
-    add: {
+    newMaterial: {
+      title: 'New Material',
+      label: 'New Material',
+      onClick: (({ object, bindings }) => {
+        patchThree.materialToEdit = object as THREE.Material;
+        patchThree.objectToEdit = bindings.__parentObject as typeof patchThree.objectToEdit;
+        useAppStore.getState().setNewMaterialFormIsOpen(true);
+      }) as onChange
+    },
+    addRemoveMaps: {
       title: 'Add/Remove maps',
       label: 'Add/Remove maps',
       onClick: (({ object }) => {
         patchThree.materialToEdit = object as THREE.Material;
-        useAppStore.getState().setMaterialEditIsOpen(true);
+        useAppStore.getState().setMaterialEditFormIsOpen(true);
       }) as onChange
     },
     color: {

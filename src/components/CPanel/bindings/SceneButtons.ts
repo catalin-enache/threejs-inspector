@@ -84,7 +84,7 @@ export const SceneButtons = ({ playingState, sceneObjects: { scene } }: CommonGe
     label: 'Clear Scene',
     title: 'Clear Scene',
     onClick: (() => {
-      patchThree.clearScene();
+      patchThree.clearScene({ log: true });
     }) as onChange
   },
   11: {

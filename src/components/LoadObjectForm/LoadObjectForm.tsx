@@ -166,7 +166,7 @@ export const LoadObjectForm = () => {
               scene.add(object);
               patchThree.updateSceneBBox({ action: 'add', object });
             } else {
-              patchThree.clearScene();
+              patchThree.clearScene({ log: true });
               const importedScene = object as unknown as THREE.Scene;
               const importedSceneChildren = [...importedScene.children];
 

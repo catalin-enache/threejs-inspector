@@ -216,7 +216,7 @@ type Module = {
   currentScene: THREE.Scene;
   getCurrentScene: () => THREE.Scene;
   setCurrentScene: (scene: THREE.Scene) => void;
-  clearScene: () => void;
+  clearScene: (options?: { log?: boolean }) => void;
   sceneSizeV3: THREE.Vector3;
   getSceneSizeV3: () => THREE.Vector3;
   sceneSize: number;
@@ -297,10 +297,10 @@ const module: Module = {
     this.updateCubeCameras();
     this.updateSceneBBox();
   },
-  clearScene() {
+  clearScene({ log } = {}) {
     window.dispatchEvent(new CustomEvent('TIFMK.ClearScene'));
     this.disposeTransformControls({ resetSelectedObject: true });
-    deepClean(this.currentScene);
+    deepClean(this.currentScene, { log });
   },
 
   sceneSizeV3: new THREE.Vector3(),

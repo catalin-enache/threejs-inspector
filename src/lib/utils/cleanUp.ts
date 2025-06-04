@@ -33,7 +33,26 @@ export function disposeMediaElement(
 
 // https://threejs.org/manual/#en/cleanup
 // https://discourse.threejs.org/t/three-js-dispose-things-so-hard/46664/7
-export const deepClean = (object: THREE.Object3D) => {
+export const deepClean = (
+  object: THREE.Object3D,
+  {
+    disposeDisposables = true,
+    disposeRenderTargets = true,
+    disposeTextures = true,
+    disposeGeometries = true,
+    disposeMaterials = true,
+    disposeSkeletons = true,
+    log = false
+  }: {
+    disposeDisposables?: boolean;
+    disposeRenderTargets?: boolean;
+    disposeTextures?: boolean;
+    disposeGeometries?: boolean;
+    disposeMaterials?: boolean;
+    disposeSkeletons?: boolean;
+    log?: boolean;
+  } = {}
+) => {
   const geometriesSet = new Set<THREE.BufferGeometry>();
   const materialsSet = new Set<THREE.Material>();
   const texturesSet = new Set<THREE.Texture>();
@@ -85,59 +104,66 @@ export const deepClean = (object: THREE.Object3D) => {
     });
   }
 
-  console.log(
-    'Disposing of',
-    {
-      geometries: geometriesSet.size,
-      materials: materialsSet.size,
-      textures: texturesSet.size,
-      skeletons: skeletonsSet.size,
-      otherDisposables: disposableSet.size,
-      renderTargets: renderTargetsSet.size
-    },
-    'for object',
-    object
-  );
+  log &&
+    console.log(
+      'Disposing of',
+      {
+        ...(disposeGeometries ? { geometries: geometriesSet.size } : {}),
+        ...(disposeMaterials ? { materials: materialsSet.size } : {}),
+        ...(disposeTextures ? { textures: texturesSet.size } : {}),
+        ...(disposeSkeletons ? { skeletons: skeletonsSet.size } : {}),
+        ...(disposeDisposables ? { otherDisposables: disposableSet.size } : {}),
+        ...(disposeRenderTargets ? { renderTargets: renderTargetsSet.size } : {})
+      },
+      'for object',
+      object
+    );
 
-  renderTargetsSet.forEach((renderTarget) => {
-    renderTarget.dispose();
-  });
+  disposeRenderTargets &&
+    renderTargetsSet.forEach((renderTarget) => {
+      renderTarget.dispose();
+    });
   renderTargetsSet.clear();
 
-  geometriesSet.forEach((geometry) => {
-    geometry.dispose();
-  });
+  disposeGeometries &&
+    geometriesSet.forEach((geometry) => {
+      geometry.dispose();
+    });
   geometriesSet.clear();
 
-  texturesSet.forEach((texture) => {
-    if (texture instanceof ImageBitmap) {
-      disposeMediaElement(texture, true);
-    }
-    if (texture.image) {
-      const images = Array.isArray(texture.image) ? texture.image : [texture.image];
-      images.forEach((image) => {
-        if (image) {
-          disposeMediaElement(image, true);
-        }
-      });
-    }
-    texture.dispose();
-  });
+  disposeTextures &&
+    texturesSet.forEach((texture) => {
+      if (texture instanceof ImageBitmap) {
+        disposeMediaElement(texture, true);
+      }
+      if (texture.image) {
+        const images = Array.isArray(texture.image) ? texture.image : [texture.image];
+        images.forEach((image) => {
+          if (image) {
+            disposeMediaElement(image, true);
+          }
+        });
+      }
+      texture.dispose();
+    });
   texturesSet.clear();
 
-  materialsSet.forEach((material) => {
-    material.dispose();
-  });
+  disposeMaterials &&
+    materialsSet.forEach((material) => {
+      material.dispose();
+    });
   materialsSet.clear();
 
-  skeletonsSet.forEach((skeleton) => {
-    skeleton.dispose();
-  });
+  disposeSkeletons &&
+    skeletonsSet.forEach((skeleton) => {
+      skeleton.dispose();
+    });
   skeletonsSet.clear();
 
-  disposableSet.forEach((disposable) => {
-    // @ts-ignore
-    disposable.dispose();
-  });
+  disposeDisposables &&
+    disposableSet.forEach((disposable) => {
+      // @ts-ignore
+      disposable.dispose();
+    });
   disposableSet.clear();
 };

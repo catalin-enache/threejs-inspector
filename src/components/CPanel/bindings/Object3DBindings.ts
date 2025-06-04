@@ -102,6 +102,13 @@ export const Object3DBindings = (params: CommonGetterParams) => ({
     view: 'toggle',
     if: (object: THREE.Object3D) => !(object as THREE.Camera).isCamera
   },
+  layers: {
+    title: 'Layers',
+    mask: {
+      label: 'Mask',
+      step: 1
+    }
+  },
   material: {
     // for Mesh
     title: 'Material',

@@ -3,6 +3,8 @@ import { radToDegFormatter } from 'lib/utils/formatters';
 import { numberCommon } from './bindingHelpers';
 import { TextureBindings } from './TextureBindings';
 import type { CommonGetterParams, onChange } from './bindingTypes';
+import patchThree from 'lib/patchThree';
+import { useAppStore } from 'src/store';
 
 const stencilOps = {
   ZeroStencilOp: THREE.ZeroStencilOp,
@@ -119,6 +121,14 @@ export const MaterialBindings = (params: CommonGetterParams) => {
     wireframe: {
       label: 'Wireframe',
       view: 'toggle'
+    },
+    add: {
+      title: 'Add/Remove maps',
+      label: 'Add/Remove maps',
+      onClick: (({ object }) => {
+        patchThree.materialToEdit = object as THREE.Material;
+        useAppStore.getState().setMaterialEditIsOpen(true);
+      }) as onChange
     },
     color: {
       label: 'Color',

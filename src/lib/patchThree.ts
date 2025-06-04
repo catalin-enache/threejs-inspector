@@ -241,6 +241,8 @@ type Module = {
   disposeTransformControls: (_?: { resetSelectedObject?: boolean }) => void;
   showTransformControls: () => void;
   hideTransformControls: () => void;
+  // used internally by MaterialEditForm
+  materialToEdit: THREE.Material | null;
   render: () => void;
   currentRenderer: THREE.WebGLRenderer | null;
   getCurrentRenderer: () => THREE.WebGLRenderer | null;
@@ -426,6 +428,8 @@ const module: Module = {
     if (!this.transformControls) return;
     this.transformControls.getHelper().removeFromParent();
   },
+
+  materialToEdit: null,
 
   render() {
     if (!this.currentRenderer || !this.currentScene || !this.getCurrentCamera()) return;

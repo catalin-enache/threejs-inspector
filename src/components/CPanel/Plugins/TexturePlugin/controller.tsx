@@ -5,6 +5,7 @@ import { Modal } from 'components/Modal/Modal';
 import * as THREE from 'three';
 import { useAppStore } from 'src/store';
 import { createRoot } from 'react-dom/client';
+import { NonTransferableTextureProps } from 'lib/utils/textureUtils';
 
 let reactRoot: ReturnType<typeof createRoot> | null = null;
 export const rememberCubeTextureRenderLayout = new Map<string, 'cross' | 'equirectangular'>();
@@ -209,6 +210,18 @@ export class TextureController implements Controller<TextureView> {
         this.setIsLoading(false);
         // prettier-ignore
         // console.log('TexturePlugin TextureController value.setRawValue', { texture, 'this.isMounted': this.isMounted });
+
+        // maintaining certain original texture properties
+        Object.keys(this.value.rawValue).forEach((key) => {
+          if (
+            NonTransferableTextureProps.has(key)
+          ) {
+            return;
+          }
+          // @ts-ignore
+          texture[key] = this.value.rawValue[key];
+        });
+
         this.value.rawValue.dispose(); // release old texture
         this.value.setRawValue(texture, {
           forceEmit: true,

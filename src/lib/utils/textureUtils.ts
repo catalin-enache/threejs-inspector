@@ -1,6 +1,66 @@
 import * as THREE from 'three';
 import { TextureImage } from 'src/types';
 
+export const NonTransferableTextureProps = new Set([
+  'image',
+  'images',
+  'source',
+  'uuid',
+  'id',
+  'version',
+  'data',
+  'video',
+  'mipmaps',
+  'pmremVersion',
+  'type',
+  'format'
+]);
+
+export function createFakeTexture(mapType: string, material: THREE.Material) {
+  const size = 64;
+  const canvas = document.createElement('canvas');
+  canvas.width = canvas.height = size;
+  const ctx = canvas.getContext('2d')!;
+
+  ctx.fillStyle = '#000';
+
+  switch (mapType) {
+    case 'map':
+    case 'emissiveMap':
+      ctx.fillStyle = '#00ffcc';
+      break;
+
+    case 'normalMap':
+    case 'clearcoatNormalMap':
+      ctx.fillStyle = 'rgb(128,128,255)';
+      break;
+
+    default:
+      ctx.fillStyle = '#888'; // grayscale
+  }
+
+  ctx.fillRect(0, 0, size, size);
+  const texture = new THREE.CanvasTexture(canvas);
+
+  if (mapType === 'map' || mapType === 'emissiveMap') {
+    texture.colorSpace = THREE.SRGBColorSpace;
+  }
+
+  // Apply relevant material settings
+  if (material) {
+    if (mapType === 'normalMap') (material as THREE.MeshStandardMaterial).normalScale.set(1, 1);
+    if (mapType === 'bumpMap') (material as THREE.MeshStandardMaterial).bumpScale = 1;
+    if (mapType === 'displacementMap') (material as THREE.MeshStandardMaterial).displacementScale = 1;
+    if (mapType === 'roughnessMap') (material as THREE.MeshStandardMaterial).roughness = 1;
+    if (mapType === 'metalnessMap') (material as THREE.MeshStandardMaterial).metalness = 1;
+    if (mapType === 'alphaMap') material.transparent = true;
+  }
+
+  texture.needsUpdate = true;
+  material.needsUpdate = true;
+  return texture;
+}
+
 export const isTextureImage = (obj: any): obj is TextureImage => {
   if (!obj) return false;
   return (

@@ -22,6 +22,18 @@ export const Modal = (props: ModalProps) => {
   }, [onClose]);
 
   useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && isOpen) {
+        handleClose();
+      }
+    };
+    document.addEventListener('keydown', handleEscape);
+    return () => {
+      document.removeEventListener('keydown', handleEscape);
+    };
+  }, [handleClose, isOpen]);
+
+  useEffect(() => {
     if (!isOpen) return;
     const modalContainer = document.createElement('div');
     modalContainer.classList.add('inspectorModal');

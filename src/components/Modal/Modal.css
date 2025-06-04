@@ -47,13 +47,23 @@
 
 .inspectorModal .formRow input, .inspectorModal .formRow select, .inspectorModal button {
   margin: 4px 0 0 0;
-  height: 24px;
+  min-height: 24px; /* min-height (instead of height) for close button when modal is too big */
   width: 100%;
   outline: none;
   background: var(--tp-input-background-color);
   border: none;
   color: var(--tp-container-foreground-color);
   cursor: pointer;
+}
+
+.inspectorModal .formRow.inline label {
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.inspectorModal .formRow.inline input, .inspectorModal .formRow.inline select, .inspectorModal.inline button {
+
 }
 
 .inspectorModal button {

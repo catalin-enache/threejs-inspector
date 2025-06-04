@@ -38,6 +38,7 @@ import { outliner } from 'lib/third_party/ui.outliner';
 import { html } from '../../../README.md';
 import { CommonGetterParams } from './bindings/bindingTypes';
 import { LoadObjectForm } from '../LoadObjectForm/LoadObjectForm';
+import { MaterialEditForm } from '../MaterialEditForm/MaterialEditForm';
 import './CPanel.css';
 
 const cPanel = document.createElement('div');
@@ -530,6 +531,7 @@ export const CPanel = (props: CPanelProps) => {
   return (
     <>
       <LoadObjectForm />
+      <MaterialEditForm />
       {showAxesHelper && <axesHelper args={[1000]} />}
       {showGridHelper && <gridHelper args={[1000, 1000]} />}
       {showSceneSizeHelper && <SceneSizeHelper />}

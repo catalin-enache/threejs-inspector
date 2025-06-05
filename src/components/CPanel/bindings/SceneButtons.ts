@@ -103,13 +103,6 @@ export const SceneButtons = ({ playingState, sceneObjects: { scene } }: CommonGe
       patchThree.updateCubeCameras();
     }) as onChange
   },
-  destroyOnRemove: {
-    label: 'Destroy objects on Remove',
-    view: 'toggle',
-    onChange: ((_) => {
-      useAppStore.getState().toggleDestroyOnRemove();
-    }) as onChange
-  },
   gizmoSize: {
     label: 'Gizmo Size (refresh page to take effect)',
     min: 0.1,

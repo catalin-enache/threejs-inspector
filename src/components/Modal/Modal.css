@@ -24,6 +24,10 @@
   font-size: 18px;
   height: 24px;
   color: var(--tp-container-foreground-color);
+
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 /* hide scrollbar */

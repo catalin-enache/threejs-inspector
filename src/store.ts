@@ -67,11 +67,6 @@ const attachDefaultControllersToPlayingCamera = localStorage.getItem(
   ? localStorage.getItem('threeInspector__attachDefaultControllersToPlayingCamera') === 'true'
   : attachDefaultControllersToPlayingCameraDefault;
 
-const destroyOnRemoveDefault = true;
-const destroyOnRemove = localStorage.getItem('threeInspector__destroyOnRemove')
-  ? localStorage.getItem('threeInspector__destroyOnRemove') === 'true'
-  : destroyOnRemoveDefault;
-
 const positionPointerKeyMultiplierDefault = { x: 1, y: 1 };
 const positionPointerKeyMultiplier = localStorage.getItem('threeInspector__positionPointerKeyMultiplier')
   ? JSON.parse(localStorage.getItem('threeInspector__positionPointerKeyMultiplier')!)
@@ -87,7 +82,6 @@ export const clearLocalStorage = () => {
   localStorage.removeItem('threeInspector__cPanelOpacity');
   localStorage.removeItem('threeInspector__cPanelSize');
   localStorage.removeItem('threeInspector__attachDefaultControllersToPlayingCamera');
-  localStorage.removeItem('threeInspector__destroyOnRemove');
   localStorage.removeItem('threeInspector__positionPointerKeyMultiplier');
 };
 
@@ -176,6 +170,8 @@ export interface AppStore {
   setMaterialEditFormIsOpen: (isOpen: boolean) => void;
   newMaterialFormIsOpen: boolean;
   setNewMaterialFormIsOpen: (isOpen: boolean) => void;
+  deleteModelConfirmationFormIsOpen: boolean;
+  setDeleteModelConfirmationFormIsOpen: (isOpen: boolean) => void;
   cameraType: 'perspective' | 'orthographic';
   setCameraType: (type: 'perspective' | 'orthographic') => void;
   toggleCameraType: () => void;
@@ -192,9 +188,6 @@ export interface AppStore {
   selectedObjectStateFake: number;
   triggerSelectedObjectChanged: () => void;
   deleteSelectedObject: () => void;
-  destroyOnRemove: boolean;
-  setDestroyOnRemove: (destroyOnRemove: boolean) => void;
-  toggleDestroyOnRemove: () => void;
   positionPointerKeyMultiplier: { x: number; y: number };
   setPositionPointerKeyMultiplier: (positionPointerKeyMultiplier: { x: number; y: number }) => void;
 }
@@ -242,8 +235,7 @@ export const useAppStore = create<AppStore>()(
         currentSceneStateFake: 0,
         attachDefaultControllersToPlayingCamera: attachDefaultControllersToPlayingCameraDefault,
         selectedObjectUUID: '',
-        selectedObjectStateFake: 0,
-        destroyOnRemove: destroyOnRemoveDefault
+        selectedObjectStateFake: 0
       });
     },
     currentProjectPath: null,
@@ -467,6 +459,9 @@ export const useAppStore = create<AppStore>()(
     setMaterialEditFormIsOpen: (materialEditFormIsOpen) => set({ materialEditFormIsOpen }),
     newMaterialFormIsOpen: false,
     setNewMaterialFormIsOpen: (newMaterialFormIsOpen) => set({ newMaterialFormIsOpen }),
+    deleteModelConfirmationFormIsOpen: false,
+    setDeleteModelConfirmationFormIsOpen: (deleteModelConfirmationFormIsOpen) =>
+      set({ deleteModelConfirmationFormIsOpen }),
     cameraType: cameraType, // Warning: orthographic camera does not work with CubeTexture for Scene.background
     setCameraType: (cameraType) => {
       if (get().isDraggingTransformControls) return;
@@ -533,7 +528,6 @@ export const useAppStore = create<AppStore>()(
       })),
     deleteSelectedObject: () => {
       const object = get().getSelectedObject();
-      const destroyOnRemove = get().destroyOnRemove;
 
       if (!object) return;
 
@@ -550,19 +544,9 @@ export const useAppStore = create<AppStore>()(
 
       if (!scene) return;
 
-      object.removeFromParent();
-      if (destroyOnRemove) {
-        object.destroy();
-      }
-    },
-    destroyOnRemove: destroyOnRemove,
-    setDestroyOnRemove: (destroyOnRemove) => {
-      set({ destroyOnRemove });
-      localStorage.setItem('threeInspector__destroyOnRemove', destroyOnRemove.toString());
-    },
-    toggleDestroyOnRemove: () => {
-      set((state) => ({ destroyOnRemove: !state.destroyOnRemove }));
-      localStorage.setItem('threeInspector__destroyOnRemove', get().destroyOnRemove.toString());
+      set({
+        deleteModelConfirmationFormIsOpen: true
+      });
     },
     positionPointerKeyMultiplier,
     setPositionPointerKeyMultiplier: (positionPointerKeyMultiplier) => {

@@ -169,6 +169,9 @@ make util pagesSwitcher for both native and R3F
 make util useStats for native the same as useStats hook for R3F
 *DONE* added api.injectStats
 
+When deleting an object through inspector raise a confirmation dialog asking what to destroy.
+*DONE*
+
 
 
 ssh-add ~/.ssh/id_ed25519

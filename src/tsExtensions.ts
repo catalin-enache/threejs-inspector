@@ -75,7 +75,6 @@ declare module 'three' {
 
   interface Object3D {
     __inspectorData: Partial<__inspectorData>;
-    destroy: () => void;
   }
 
   interface RenderTarget {

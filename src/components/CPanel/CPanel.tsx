@@ -40,6 +40,7 @@ import { CommonGetterParams } from './bindings/bindingTypes';
 import { LoadObjectForm } from '../LoadObjectForm/LoadObjectForm';
 import { MaterialEditForm } from '../MaterialEditForm/MaterialEditForm';
 import { NewMaterialForm } from '../NewMaterialForm/NewMaterialForm';
+import { DeleteSelectedObjectConfirmationForm } from '../DeleteSelectedObjectConfirmationForm/DeleteSelectedObjectConfirmationForm';
 import './CPanel.css';
 
 const cPanel = document.createElement('div');
@@ -428,8 +429,6 @@ export const CPanel = (props: CPanelProps) => {
       sceneFolder,
       {
         gizmoSize: useAppStore.getState().gizmoSize,
-        // TODO: allow this option on delete modal
-        destroyOnRemove: useAppStore.getState().destroyOnRemove,
         frameLoop: frameloop
       },
       getSceneButtons(commonGetterParams),
@@ -534,6 +533,7 @@ export const CPanel = (props: CPanelProps) => {
       <LoadObjectForm />
       <MaterialEditForm />
       <NewMaterialForm />
+      <DeleteSelectedObjectConfirmationForm />
       {showAxesHelper && <axesHelper args={[1000]} />}
       {showGridHelper && <gridHelper args={[1000, 1000]} />}
       {showSceneSizeHelper && <SceneSizeHelper />}

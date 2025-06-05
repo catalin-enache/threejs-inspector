@@ -162,12 +162,6 @@ THREE.Object3D.prototype.remove = (function () {
   };
 })();
 
-THREE.Object3D.prototype.destroy = (function () {
-  return function (this: THREE.Object3D) {
-    deepClean(this);
-  };
-})();
-
 THREE.Object3D.prototype.updateMatrixWorld = (function () {
   const originalUpdateMatrixWorld = THREE.Object3D.prototype.updateMatrixWorld;
   return function (this: THREE.Object3D, force: boolean) {

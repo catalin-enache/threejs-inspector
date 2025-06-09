@@ -8,7 +8,8 @@ type GetMapsForMaterialResult = {
 export const getMapsKeysForMaterial = (material: THREE.Material): GetMapsForMaterialResult[] => {
   const maps: GetMapsForMaterialResult[] = [];
   Object.keys(material).forEach((key) => {
-    if (key === 'map' || key.endsWith('Map')) {
+    // bck_ is used to store temporary disabled maps in MaterialEditForm
+    if ((key === 'map' || key.endsWith('Map')) && !key.startsWith('bck_')) {
       maps.push({
         name: key,
         present: !!(material as any)[key] // using 'any' to bypass strict typing

@@ -38,12 +38,16 @@ export const MaterialEditForm = () => {
       const isChecked = (target as HTMLInputElement).checked;
 
       if (isChecked) {
-        if (!(material as any)[dataMap]) {
+        if ((material as any)[`bck_${dataMap}`]) {
+          (material as any)[dataMap] = (material as any)[`bck_${dataMap}`];
+          delete (material as any)[`bck_${dataMap}`];
+        } else {
           (material as any)[dataMap] = createFakeTexture(dataMap, material);
         }
       } else {
         if ((material as any)[dataMap]) {
-          (material as any)[dataMap].dispose();
+          (material as any)[`bck_${dataMap}`] = (material as any)[dataMap];
+          // (material as any)[dataMap].dispose();
           delete (material as any)[dataMap];
         }
       }

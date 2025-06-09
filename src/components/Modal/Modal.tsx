@@ -12,14 +12,12 @@ interface ModalProps {
 // Using imperative DOM since we cannot use React predefined elements inside R3F canvas.
 export const Modal = (props: ModalProps) => {
   const { children, isOpen, onClose, title = '', width = '400px' } = props;
-  const modalHostRef = useRef<HTMLDivElement | null>(null);
-  const buttonCloseRef = useRef<HTMLButtonElement | null>(null);
-  const contentRef = useRef<HTMLDivElement | null>(null);
-  const handleCloseRef = useRef<any>(null);
 
+  const onCloseRef = useRef(onClose);
+  onCloseRef.current = onClose;
   const handleClose = useCallback(() => {
-    onClose();
-  }, [onClose]);
+    onCloseRef.current?.();
+  }, []);
 
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
@@ -34,12 +32,14 @@ export const Modal = (props: ModalProps) => {
   }, [handleClose, isOpen]);
 
   useEffect(() => {
-    if (!isOpen) return;
+    const controlPanelContent = document.getElementById('controlPanelContent');
+    if (!isOpen || !controlPanelContent) {
+      return;
+    }
     const modalContainer = document.createElement('div');
     modalContainer.classList.add('inspectorModal');
     modalContainer.style.width = width;
-    document.body.appendChild(modalContainer);
-    modalHostRef.current = modalContainer;
+    controlPanelContent.appendChild(modalContainer);
 
     const modalTitle = document.createElement('div');
     modalTitle.classList.add('inspectorModal__title');
@@ -48,31 +48,20 @@ export const Modal = (props: ModalProps) => {
 
     const content = document.createElement('div');
     content.classList.add('inspectorModal__content');
-    contentRef.current = content;
     content.appendChild(children);
     modalContainer.appendChild(content);
 
     const closeButton = document.createElement('button');
     closeButton.classList.add('inspectorModal__closeBtn');
     closeButton.innerText = 'Close';
-    buttonCloseRef.current = closeButton;
-    buttonCloseRef.current.addEventListener('click', handleClose);
+    closeButton.addEventListener('click', handleClose);
     modalContainer.appendChild(closeButton);
 
     return () => {
-      modalHostRef.current = null;
-      buttonCloseRef.current!.removeEventListener('click', handleCloseRef.current);
-      buttonCloseRef.current = null;
-      document.body.removeChild(modalContainer);
+      closeButton.removeEventListener('click', handleClose);
+      controlPanelContent.removeChild(modalContainer);
     };
-  }, [isOpen]);
-
-  useEffect(() => {
-    if (!buttonCloseRef.current) return;
-    buttonCloseRef.current.removeEventListener('click', handleCloseRef.current);
-    buttonCloseRef.current.addEventListener('click', handleClose);
-    handleCloseRef.current = handleClose;
-  }, [handleClose]);
+  }, [children, handleClose, isOpen, title, width]);
 
   return null;
 };

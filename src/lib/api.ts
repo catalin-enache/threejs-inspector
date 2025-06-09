@@ -8,6 +8,7 @@ import { loadObject } from './utils/loadObject';
 import { splitMeshesByMaterial } from './utils/optimiseModel';
 import { useAppStore, type AppStore } from 'src/store';
 import { registerDefaultPlayTriggers } from './utils/registerDefaultPlayTriggers';
+import { getMaterialFromType } from 'lib/utils/materialUtils';
 
 export default {
   getThreeRootState: patchThree.getThreeRootState,
@@ -17,6 +18,7 @@ export default {
   getCurrentRenderer: patchThree.getCurrentRenderer,
   setCurrentRenderer: patchThree.setCurrentRenderer,
   refreshCPanel: patchThree.refreshCPanel,
+  updateCubeCamera: patchThree.updateCubeCamera,
   updateCubeCameras: patchThree.updateCubeCameras,
   updateSceneBBox: patchThree.updateSceneBBox,
   getShouldUpdateSceneBBoxOnRemoval: patchThree.getShouldUpdateSceneBBoxOnRemoval,
@@ -28,6 +30,9 @@ export default {
   injectStats,
 
   setProjects: useAppStore.getState().setProjects,
+  setShowAxesHelper: useAppStore.getState().setShowAxesHelper,
+  setShowGridHelper: useAppStore.getState().setShowGridHelper,
+  setShowGizmos: useAppStore.getState().setShowGizmos,
 
   /**
    * Sets default camera type (when in app  mode - not injected)
@@ -70,6 +75,8 @@ export default {
   cloneObject3D,
   deepTraverse,
   deepClean,
+
+  getMaterialFromType,
 
   createTexturesFromImages,
   loadObject,

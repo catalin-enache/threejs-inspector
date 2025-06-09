@@ -1,13 +1,14 @@
 .inspectorModal {
+  --top: 35px;
   display: flex;
   flex-direction: column;
   box-sizing: border-box;
   padding: 8px 16px 16px 16px;
   position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  max-height: 90%;
+  top: var(--top);
+  right: 10px;
+  border: 1px solid #555;
+  max-height: calc(100% - var(--top));
   overflow-y: scroll;
   background-color: var(--tp-base-background-color-no-opacity);
   box-shadow: rgba(0, 0, 0, 0.15) 1.95px 1.95px 2.6px;

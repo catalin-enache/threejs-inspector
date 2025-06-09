@@ -34,7 +34,7 @@ export function disposeMediaElement(
 // https://threejs.org/manual/#en/cleanup
 // https://discourse.threejs.org/t/three-js-dispose-things-so-hard/46664/7
 export const deepClean = (
-  object: THREE.Object3D,
+  object: THREE.Object3D | THREE.Material,
   {
     disposeOtherDisposables = true,
     disposeRenderTargets = true,

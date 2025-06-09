@@ -14,7 +14,7 @@ api.setProjects(projects);
 
 // const experiences = [
 //   {
-//     name: 'Default Experience',
+//     name: 'Default',
 //     Experience: DefaultExperience
 //   },
 //   {
@@ -25,7 +25,11 @@ api.setProjects(projects);
 
 const experiences = [
   {
-    name: 'Default Experience',
+    name: 'Material Test',
+    Experience: lazy(() => import('./scenarios/MaterialTest'))
+  },
+  {
+    name: 'Default',
     Experience: lazy(() => import('./scenarios/Experience'))
   },
   {

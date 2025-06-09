@@ -380,7 +380,7 @@ export const Experience = memo(function Experience() {
           ref={refDirectionalLight}
           color={'white'}
           __inspectorData={{ isInspectable: false }}
-        ></directionalLight>
+        />
         <hemisphereLight
           // args={[0xffffff, 0xffffff, 2]}
           intensity={2}

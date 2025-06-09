@@ -172,15 +172,14 @@ make util useStats for native the same as useStats hook for R3F
 When deleting an object through inspector raise a confirmation dialog asking what to destroy.
 *DONE*
 
+Make a use case (Scenario) where user wants to test textures on some object using different material templates.
+
 
 
 ssh-add ~/.ssh/id_ed25519
 
 
 
-
-
-Make a use case (Scenario) where user wants to test textures on some object using different material templates.
 
 
 

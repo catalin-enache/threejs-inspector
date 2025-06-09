@@ -5,6 +5,7 @@ import { Canvas } from '@react-three/fiber';
 // import { CameraControls as _CameraControls, OrbitControls as _OrbitControls } from '@react-three/drei';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import { ExperienceSwitcher } from 'src/components/ExperienceSwitcher/ExperienceSwitcher';
+import { MaterialTest } from './scenarios/MaterialTest';
 import { Experience as DefaultExperience } from './scenarios/Experience';
 import { ProjectLongLatOnSphere } from './scenarios/ProjectLongLatOnSphere';
 import { Inspector } from 'src/lib/inspector';
@@ -19,7 +20,11 @@ extend({ OrbitControls });
 
 const experiences = [
   {
-    name: 'Default Experience',
+    name: 'Material Test',
+    Experience: MaterialTest
+  },
+  {
+    name: 'Default',
     Experience: DefaultExperience
   },
   {
@@ -30,7 +35,7 @@ const experiences = [
 
 // const experiences = [
 //   {
-//     name: 'Default Experience',
+//     name: 'Default',
 //     Experience: lazy(() => import('./scenarios/Experience'))
 //   },
 //   {

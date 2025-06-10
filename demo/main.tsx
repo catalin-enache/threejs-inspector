@@ -1,3 +1,4 @@
+/// <reference types="vite-plugin-glsl/ext" />
 import { StrictMode, lazy } from 'react';
 import { createRoot } from 'react-dom/client';
 import { ExperienceSwitcher } from 'src/components/ExperienceSwitcher/ExperienceSwitcher';
@@ -35,6 +36,10 @@ const experiences = [
   {
     name: 'Project Long/Lat on Sphere',
     Experience: lazy(() => import('./scenarios/ProjectLongLatOnSphere'))
+  },
+  {
+    name: 'Flag Shader',
+    Experience: lazy(() => import('./scenarios/Shaders/Flag/Flag'))
   }
 ];
 

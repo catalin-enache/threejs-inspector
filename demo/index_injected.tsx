@@ -8,6 +8,7 @@ import { ExperienceSwitcher } from 'src/components/ExperienceSwitcher/Experience
 import { MaterialTest } from './scenarios/MaterialTest';
 import { Experience as DefaultExperience } from './scenarios/Experience';
 import { ProjectLongLatOnSphere } from './scenarios/ProjectLongLatOnSphere';
+import { Flag } from './scenarios/Shaders/Flag/Flag';
 import { Inspector } from 'src/lib/inspector';
 import { extend } from '@react-three/fiber';
 import { default as api, type AppStore } from 'src/lib/api';
@@ -30,6 +31,10 @@ const experiences = [
   {
     name: 'Project Long/Lat on Sphere',
     Experience: ProjectLongLatOnSphere
+  },
+  {
+    name: 'Flag Shader',
+    Experience: Flag
   }
 ];
 

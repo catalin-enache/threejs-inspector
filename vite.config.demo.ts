@@ -2,6 +2,7 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react-swc';
 import { Mode, plugin as mdPlugin } from 'vite-plugin-markdown';
+import glsl from 'vite-plugin-glsl';
 import path from 'path';
 import fg from 'fast-glob';
 // @ts-ignore
@@ -15,7 +16,13 @@ const htmlPages = fg.sync('demo/*.html', { dot: false }).reduce<Record<string, s
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  plugins: [react(), mdPlugin({ mode: [Mode.HTML, Mode.MARKDOWN] })],
+  plugins: [
+    react(),
+    mdPlugin({ mode: [Mode.HTML, Mode.MARKDOWN] }),
+    glsl({
+      root: '/'
+    })
+  ],
   root: 'demo/',
   // base: process.env.NODE_ENV === 'production' ? '/threejs-inspector/' : './',
   base: './',

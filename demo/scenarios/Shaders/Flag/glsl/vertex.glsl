@@ -1,5 +1,3 @@
-//#include "../../../../../../src/glsl/shrink_y"
-#include "/src/glsl/shrink_y"
 
 uniform mat4 projectionMatrix;
 uniform mat4 viewMatrix;
@@ -22,8 +20,7 @@ void main() {
     float elevation = sin(modelPosition.x * uFrequency.x - uTime) * uIntensity;
     elevation += sin(modelPosition.y * uFrequency.y - uTime) * uIntensity;
     modelPosition.z += elevation;
-//    modelPosition.y *= 0.5; // scale height to half
-    shrink_y(modelPosition);
+    modelPosition.y *= 0.5; // scale height to half
 
     vec4 viewPosition = viewMatrix * modelPosition;
     vec4 projectedPosition = projectionMatrix * viewPosition;

@@ -38,8 +38,16 @@ const experiences = [
     Experience: lazy(() => import('./scenarios/ProjectLongLatOnSphere'))
   },
   {
-    name: 'Flag Shader',
+    name: 'Shader Flag',
     Experience: lazy(() => import('./scenarios/Shaders/Flag/Flag'))
+  },
+  {
+    name: 'Shader Pattern',
+    Experience: lazy(() => import('./scenarios/Shaders/Pattern/Pattern'))
+  },
+  {
+    name: 'Height Map to Normal Map',
+    Experience: lazy(() => import('./scenarios/Shaders/HeightMapToNormalMap/HeightMapToNormalMap'))
   }
 ];
 

@@ -43,7 +43,7 @@ const experiences = [
   },
   {
     name: 'Shader Pattern',
-    Experience: lazy(() => import('./scenarios/Shaders/Pattern/Pattern'))
+    Experience: lazy(() => import('./scenarios/Shaders/PatternsUV/PatternsUV'))
   },
   {
     name: 'Height Map to Normal Map',

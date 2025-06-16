@@ -24,7 +24,7 @@ const material = new THREE.ShaderMaterial({
   }
 });
 
-export function Pattern() {
+export function PatternsUV() {
   const { scene, camera } = useThree();
   useStats();
 
@@ -90,4 +90,4 @@ export function Pattern() {
   );
 }
 
-export default Pattern;
+export default PatternsUV;

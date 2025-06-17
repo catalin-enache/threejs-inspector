@@ -103,7 +103,7 @@ void main() {
     } else if (uPattern == 18) {
         gl_FragColor = vec4(0.01 / vec3(distance(vUv, vec2(uVars.x, uVars.y))), 1.0);
     } else if (uPattern == 19) {
-        vec2 vUvRot = _rotate2D(vUv, PI/180.0*360.0*uVars.x, vec2(0.5));
+        vec2 vUvRot = _rotate2D(vUv, 2.0 * PI * uVars.x, vec2(0.5));
         float stretch = uVars.y == 0.0 ? 0.2 : (1.0 - uVars.y);
         float lightX = 0.01 / distance(vec2(vUvRot.x * stretch, vUvRot.y), vec2(0.5 * stretch, 0.5));
         float lightY = 0.01 / distance(vec2(vUvRot.x , vUvRot.y * stretch), vec2(0.5, 0.5 * stretch));

@@ -48,6 +48,10 @@ const experiences = [
   {
     name: 'Height Map to Normal Map',
     Experience: lazy(() => import('./scenarios/Shaders/HeightMapToNormalMap/HeightMapToNormalMap'))
+  },
+  {
+    name: 'Extending ThreeJS Materials',
+    Experience: lazy(() => import('./scenarios/Shaders/ExtendingThreeJSMaterials/ExtendingThreeJSMaterials'))
   }
 ];
 

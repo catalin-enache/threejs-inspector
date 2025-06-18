@@ -38,6 +38,10 @@ mat2 _getRotate2dMat(float angle){
 
 }
 
+mat2 _getScale2dMat(vec2 scale){
+    return mat2(scale.x, 0.0, 0.0, scale.y);
+}
+
 vec2 _rotate2D(vec2 st, float rotation, vec2 center) {
     // Rotate st around center by rotation radians
     st -= center; // make center the origin

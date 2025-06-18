@@ -20,8 +20,15 @@ const material = new THREE.ShaderMaterial({
   transparent: false,
   uniforms: {
     uPattern: { value: 1 },
-    uVars: { value: new THREE.Vector4(0, 0, 0, 0) }
+    uVars: { value: new THREE.Vector4(0, 0, 0, 0) },
+    uResolution: {
+      value: new THREE.Vector2(window.innerWidth, window.innerHeight)
+    }
   }
+});
+
+window.addEventListener('resize', () => {
+  material.uniforms.uResolution.value.set(window.innerWidth, window.innerHeight);
 });
 
 export function PatternsUV() {

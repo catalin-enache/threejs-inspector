@@ -33,7 +33,7 @@ const experiences = [
     Experience: ProjectLongLatOnSphere
   },
   {
-    name: 'Flag Shader',
+    name: 'Shader Flag',
     Experience: Flag
   }
 ];

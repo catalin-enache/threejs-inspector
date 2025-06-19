@@ -14,4 +14,18 @@ float selectGridCell(vec2 ipos, float row, float col) {
     */
 }
 
+vec2 truchetPattern(in vec2 st, in float index){
+    index = fract(((index - 0.5) * 2.0));
+    if (index > 0.75) {
+        st = vec2(1.0) - st; // Flip Both eq to 180° rotation
+    } else if (index > 0.5) {
+        st = vec2(1.0 - st.x, st.y); // Flip X
+        //st = vec2(st.y, 1.0 - st.x); // Rotate +-90°
+    } else if (index > 0.25) {
+        //st = vec2(st.x, 1.0 - st.y); // Flip Y
+        st = vec2(1.0 - st.y, st.x); // Rotate +-90°
+    }
+    return st;
+}
+
 #endif

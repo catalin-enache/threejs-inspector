@@ -42,15 +42,19 @@ const experiences = [
     Experience: lazy(() => import('./scenarios/Shaders/Flag/Flag'))
   },
   {
-    name: 'Shader Pattern',
+    name: 'Shader Patterns',
     Experience: lazy(() => import('./scenarios/Shaders/PatternsUV/PatternsUV'))
   },
   {
-    name: 'Height Map to Normal Map',
+    name: 'Shader Shapes',
+    Experience: lazy(() => import('./scenarios/Shaders/Shapes/Shapes'))
+  },
+  {
+    name: 'Shader Height Map to Normal Map',
     Experience: lazy(() => import('./scenarios/Shaders/HeightMapToNormalMap/HeightMapToNormalMap'))
   },
   {
-    name: 'Extending ThreeJS Materials',
+    name: 'Shader extending ThreeJS Materials',
     Experience: lazy(() => import('./scenarios/Shaders/ExtendingThreeJSMaterials/ExtendingThreeJSMaterials'))
   }
 ];

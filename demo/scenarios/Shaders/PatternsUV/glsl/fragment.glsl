@@ -1,7 +1,7 @@
 #include /src/glsl/math
 #include /src/glsl/uv
-#include /src/glsl/patterns
-#include /src/glsl/perlinNoise
+#include /src/glsl/noise
+#include /src/glsl/shapes
 
 
 uniform int uPattern;
@@ -154,8 +154,8 @@ void main() {
         float pNoise = sin(cnoise(vUv * (1.0 + uVars.x * 100.0)) * 20.0);
         gl_FragColor = vec4(vec3(pNoise), 1.0);
     } else {
-        gl_FragColor = vec4(vUv.xy, 0.0, 1.0);
-//        gl_FragColor = vec4(gl_FragCoord.xy / vResolution.xy, 0.0, 1.0);
+        vec2 st = vUv;
+        gl_FragColor = vec4(st, 0.0, 1.0);
     }
 
 }

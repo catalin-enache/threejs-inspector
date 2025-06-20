@@ -4,7 +4,7 @@ import { useThree } from '@react-three/fiber';
 // @ts-ignore
 import { CustomControl } from 'src/components/CustomControl/CustomControl';
 // import { usePlay } from 'src/lib/hooks';
-import { projectLongLatOnSphere } from 'src/lib/utils/projectLongLatOnSphere';
+import { projectLongLatOnSphere } from 'src/lib/utils/math/projectLongLatOnSphere';
 import { useStats } from 'lib/hooks';
 import { api } from 'src';
 

@@ -21,11 +21,12 @@ export function App(props: AppProps) {
   const initialPlayingState = api.getPlayingState();
   const [playingState, setPlayingState] = useState<AppStore['playingState']>(initialPlayingState);
 
-  const customCameraControls = false;
+  const customCameraControls = 0; // 0 'never' | 1 'always' | 2 'whenPlaying'
 
   const { camera, scene, inspector } = useDefaultSetup({
     showInspector: true,
-    autoNavControls: customCameraControls ? 'never' : 'whenStopped',
+    // @ts-ignore
+    autoNavControls: customCameraControls === 0 ? 'always' : customCameraControls === 1 ? 'never' : 'whenStopped',
     showGizmos: true,
     useTransformControls: true,
     onTransformControlsDragging: setIsDraggingTransformControls,
@@ -48,6 +49,7 @@ export function App(props: AppProps) {
   // R3F takes care of adding/removing the camera from the scene
   // and propagating it to useThree hook
   // R3F does not support changing the scene after initial setup
+
   return (
     <>
       <Canvas
@@ -72,7 +74,11 @@ export function App(props: AppProps) {
         {renderer && (
           <orbitControls
             args={[camera, renderer.domElement]}
-            enabled={!isDraggingTransformControls && (customCameraControls || playingState !== 'stopped')}
+            enabled={
+              !isDraggingTransformControls &&
+              // @ts-ignore
+              (customCameraControls === 1 || (customCameraControls === 2 && playingState !== 'stopped'))
+            }
             enableDamping={false}
           />
         )}

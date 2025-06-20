@@ -38,6 +38,10 @@ const experiences = [
     Experience: lazy(() => import('./scenarios/ProjectLongLatOnSphere'))
   },
   {
+    name: 'Point Segment',
+    Experience: lazy(() => import('./scenarios/PointSegment'))
+  },
+  {
     name: 'Shader Flag',
     Experience: lazy(() => import('./scenarios/Shaders/Flag/Flag'))
   },

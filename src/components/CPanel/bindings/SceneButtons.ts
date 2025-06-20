@@ -1,5 +1,5 @@
 import { useAppStore } from 'src/store';
-import { focusCamera } from 'lib/utils/cameraUtils';
+import { focusCamera } from 'lib/utils/camera/cameraUtils';
 import { exportObject } from 'lib/utils/downloadUtils';
 import type { CommonGetterParams, onChange } from './bindingTypes';
 import { numberCommon } from './bindingHelpers';

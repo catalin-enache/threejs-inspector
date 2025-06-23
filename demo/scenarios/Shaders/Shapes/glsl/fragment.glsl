@@ -1,4 +1,5 @@
 #include /src/glsl/math
+#include /src/glsl/bezier
 #include /src/glsl/uv
 #include /src/glsl/noise
 #include /src/glsl/shapes
@@ -68,6 +69,27 @@ void main() {
 //        color = mix(vec3(1), color, lineSegment(st, cp0, cp1));
         gl_FragColor = vec4(color, 1.0);
         st = st * 0.5 + 0.5; // remap to [0, 1] range
+        return;
+    } else if (uShape == 12) {
+        float ax = uVars.x;
+        float ay = uVars.y;
+        float bx = uVars.z;
+        float by = uVars.w;
+
+        vec2 a = vec2(ax, ay);
+        vec2 b = vec2(bx, by);
+
+        float l = cubicBezier(st.x, a, b);
+        vec3 color = vec3(smoothstep(l, l+0.001, st.y));
+
+        color = mix(vec3(0.5), color, lineSegment(st, vec2(0.0), a));
+        color = mix(vec3(0.5), color, lineSegment(st, vec2(1.0), b));
+        color = mix(vec3(0.5), color, lineSegment(st, a, b));
+        color = mix(vec3(1.0,0.0,0.0), color, smoothstep(0.01,0.011,distance(a, st)));
+        color = mix(vec3(1.0,0.0,0.0), color, smoothstep(0.01,0.011,distance(b, st)));
+
+        gl_FragColor = vec4(color, 1.0);
+
         return;
     } else {
         vec3 color = vec3(st, 0.0);

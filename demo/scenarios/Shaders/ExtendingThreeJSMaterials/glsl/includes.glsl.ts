@@ -1,7 +1,9 @@
 import math from 'src/glsl/math.glsl';
+import transformations from 'src/glsl/transformations.glsl';
 
 export const addUniforms = `
   ${math}
+  ${transformations}
   
   uniform vec4 uVars;
 `;

@@ -1,4 +1,5 @@
 #include /src/glsl/math
+#include /src/glsl/transformations
 #include /src/glsl/uv
 #include /src/glsl/noise
 #include /src/glsl/shapes

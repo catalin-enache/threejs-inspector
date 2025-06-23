@@ -11,16 +11,72 @@ varying vec2 vUv;
 
 
 void main() {
+    vec2 st = vUv;
+    float y = st.x;
     if (uShape == 1) {
-        vec2 st = vUv;
-        float y = (sin(st.x * 10.0) + 1.0) / 2.0;
-        float pct = plot(st, y);
-        vec3 color = vec3(y);
-        color = (1.0 - pct) * color + pct * vec3(0.0, 1.0, 0.0);
+        y = (sin(st.x * (1.0 - uVars.x) * 20.0) + 1.0) / 2.0 * (1.0 - uVars.y);
+    } else if (uShape == 2) {
+        y = pow(st.x, (1.0 - uVars.x) * 5.0);
+    } else if (uShape == 3) {
+        float x = st.x + uVars.x;
+        y = smoothstep(0.2 + uVars.y, 0.5 - uVars.y, x) - smoothstep(0.5 + uVars.y, 0.8 - uVars.y, x);
+    } else if (uShape == 4) {
+        y = mod(st.x / (1.0 - uVars.z) - uVars.y, 0.1 + uVars.x);
+    } else if (uShape == 5) {
+        y = ceil(st.x * (1.0 - uVars.x) * 10.0) / 10.0;
+    } else if (uShape == 6) {
+        y = sign((st.x - uVars.x) * 2.0 - 1.0) * (1.0 - uVars.y);
+    } else if (uShape == 7) {
+        y = abs((st.x - uVars.x) * 2.0 - 1.0) * (1.0 - uVars.y);
+    } else if (uShape == 8 || uShape == 9 || uShape == 10 || uShape == 11) {
+        st -= 0.5;
+        st *= 2.0; // remap to [-1, 1] range
+        float xRange = uVars.x * 2.0 - 1.0;
+        float yRange = uVars.y * 2.0 - 1.0;
+        float zRange = uVars.z * 2.0 - 1.0;
+        float wRange = uVars.w * 2.0 - 1.0;
+
+        vec2 a = vec2(xRange, yRange);
+        vec2 b = vec2(zRange, wRange);
+
+        vec3 color = vec3(0.0);
+        float h = 0.0;
+
+        vec2 pa = st - a, ba = b - a;
+        // h = dot(pa, ba) / dot(ba, ba); // without clamping the projection goes along the entire line,
+        // with clamping the projection is limited to the segment ba
+        h = clamp(dot(pa, ba) / dot(ba, ba), 0.0, 1.0); // percentage (ratio) along the segment, where pa projects on segment ba (0..1)
+//        h = fract(clamp(dot(pa, ba) / dot(ba, ba), 0.0, 1.0 )); // for interesting gradient effects if this is used as color
+        vec2 projection = ba * h; // a + ba * h is the point on the segment ba closest to pa
+        vec2 segmentTo_pa = pa - projection; // === | pa - ba * h | (st - a) - ba * h | st - a - ba * h | st - (a + ba * h)
+        float distanceToTheSegment = length(segmentTo_pa);
+        float line = smoothstep(0.0, 0.001, distanceToTheSegment);
+        if (uShape == 8) {
+            color = vec3(fract(h));
+        } else if (uShape == 9) {
+            color = vec3(abs(segmentTo_pa), 0.0);
+        } else if (uShape == 10) {
+            color = vec3(distanceToTheSegment);
+        } else if (uShape == 11) {
+            color = vec3(line);
+        } else {
+            color = vec3(0.0); // default case
+        }
+
+        color = mix(vec3(1.0, 0.0, 0.0), color, smoothstep(0.01, 0.02, distance(a, st))); // point a
+        color = mix(vec3(0.0, 1.0, 0.0), color, smoothstep(0.01, 0.02, distance(b, st))); // point b
+//        color = mix(vec3(1), color, lineSegment(st, cp0, cp1));
         gl_FragColor = vec4(color, 1.0);
+        st = st * 0.5 + 0.5; // remap to [0, 1] range
+        return;
     } else {
-        vec2 st = vUv;
-        gl_FragColor = vec4(st, 0.0, 1.0);
+        vec3 color = vec3(st, 0.0);
+        gl_FragColor = vec4(color, 1.0);
+        return;
     }
 
+    float pct = plot(st, y);
+    vec3 color = vec3(y);
+    color = (1.0 - pct) * color + pct * vec3(0.0, 1.0, 0.0);
+    gl_FragColor = vec4(color, 1.0);
 }

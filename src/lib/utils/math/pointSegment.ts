@@ -10,7 +10,8 @@ export const getClosestPointOnSegment = (
   const pa = new THREE.Vector3().subVectors(p, a);
   const h = pa.dot(ba) / ba.dot(ba); // ba.dot(ba) is the length squared of the segment ba
   const hClamped = Math.max(0, Math.min(1, h));
-  const closestPoint = new THREE.Vector3().addVectors(a, ba.multiplyScalar(clamped ? hClamped : h));
+  const projection = ba.multiplyScalar(clamped ? hClamped : h);
+  const closestPoint = new THREE.Vector3().addVectors(a, projection);
   return closestPoint;
 };
 
@@ -26,6 +27,7 @@ export const getDistanceToClosestPointOnSegment = (
 
 // getting the distance directly without computing projection
 // https://mathworld.wolfram.com/Point-LineDistance3-Dimensional.html
+// |(p - a) x (p - b)| / |b - a|
 export const getDistanceToClosestPointOnSegment2 = (p: THREE.Vector3, a: THREE.Vector3, b: THREE.Vector3) => {
   const pa = new THREE.Vector3().subVectors(p, a);
   const pb = new THREE.Vector3().subVectors(p, b);

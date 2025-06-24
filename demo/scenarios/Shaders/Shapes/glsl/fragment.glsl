@@ -91,9 +91,32 @@ void main() {
         gl_FragColor = vec4(color, 1.0);
 
         return;
-    } else {
-        vec3 color = vec3(st, 0.0);
+    } else if (uShape == 13) {
+        vec3 color = vec3(0.0);
+
+        vec2 size = vec2(0.2, 0.2);
+        float r = rectangle(st, size);
+//        float r = roundedRectangle(st);
+        color = vec3(r);
         gl_FragColor = vec4(color, 1.0);
+        return;
+    } else if (uShape == 14) {
+        vec3 color = vec3(0.0);
+        float f = flower(st, int(uVars[0] * 10.0));
+        color = vec3(f);
+        gl_FragColor = vec4(color, 1.0);
+        return;
+    } else if (uShape == 15) {
+        vec3 color = vec3(0.0);
+        float f = polygon(st, int(uVars[0] * 10.0));
+        color = vec3(f);
+        gl_FragColor = vec4(color, 1.0);
+        return;
+    } else {
+        st = st * 2.0 - 1.0; // remap to [-1, 1] range
+        vec3 color = vec3(length(max(abs(st)-.5, 0.0)));
+        gl_FragColor = vec4(color, 1.0);
+        st = st * 0.5 + 0.5; // remap to [0, 1] range
         return;
     }
 

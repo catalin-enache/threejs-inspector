@@ -60,17 +60,15 @@ void main() {
 
         float col = 3.0;
         float row = 2.0;
-        float cellMatch1 = selectGridCell(ipos, floor(uVars.x * 10.0), floor(uVars.x * 10.0));
-        float cellMatch2 = selectGridCell(ipos, floor(uVars.y * 10.0), floor(uVars.y * 10.0));
+        float cellMatch1 = selectGridCell(st, int(floor(uVars.x * 10.0)), int(floor(uVars.x * 10.0)));
+        float cellMatch2 = selectGridCell(st, int(floor(uVars.y * 10.0)), int(floor(uVars.y * 10.0)));
 
-        // Soft circle inside the every cell
-        float d = distance(fpos, vec2(0.5));
-        float shapeAlphaMask = smoothstep(0.3, 0.29, d);
+        float circ = circle(fpos, 0.3);
 
         vec3 bgColor = vec3(rnd);
         vec3 cellColor = vec3(0.2, 1.0, 0.2);
 
-        float mask = shapeAlphaMask * cellMatch1 + shapeAlphaMask * cellMatch2;
+        float mask = circ * cellMatch1 + circ * cellMatch2;
 
 
         gl_FragColor = vec4(mix(bgColor, cellColor, mask), 1.0);
@@ -154,9 +152,33 @@ void main() {
     } else if (uPattern == 26) {
         float pNoise = sin(cnoise(vUv * (1.0 + uVars.x * 100.0)) * 20.0);
         gl_FragColor = vec4(vec3(pNoise), 1.0);
+    } else if (uPattern == 27) {
+        vec2 uv = vUv;
+        uv = _rotate2D(uv, uVars.x * PI * 2.0, vec2(0.5, 0.5));
+        uv *= vec2(3.0, 3.0);
+        float isOddRow = step(1.0, mod(uv.y, 2.0)); // isOddRow = mod(x, 2.0) < 1.0 ? 0. : 1. ;
+        uv.x += uVars.z * isOddRow; // offset odd rows
+        vec2 tile = fract(uv);
+        ivec2 cell = ivec2(1, 1);
+        float cellMatch = selectGridCell(uv, cell.y, cell.x); // 0 or 1 if in the cell
+
+        tile -= 0.5;
+        float d = length(tile);
+        vec2 dir = (d > 0.0) ? tile / d : vec2(0.0); // prevent NaN at center
+        tile -= dir * ((1.0 - d) * 0.1);
+        tile += 0.5;
+        tile = _rotate2D(tile, uVars.y * PI * 2.0, vec2(0.5)); // rotate tile
+        float shape = rectangle(tile, vec2(0.3, 0.2)); // draw shape in the rotated tile
+        tile = _rotate2D(tile, -uVars.y * PI * 2.0, vec2(0.5)); // rotate back the tile
+
+        float mask =  shape * cellMatch;
+
+        gl_FragColor = vec4(mix(vec3(tile, 0.0), vec3(1.0,1.0,0.0), mask), 1.0);
     } else {
         vec2 st = vUv;
-        gl_FragColor = vec4(st, 0.0, 1.0);
+
+
+        gl_FragColor = vec4(vec2(st), 0.0, 1.0);
     }
 
 }

@@ -2,9 +2,10 @@
 #define TIFMK_UV_GLSL
 
 
-float selectGridCell(vec2 ipos, float row, float col) {
-    float rowMatch = 1.0 - step(0.5, abs(ipos.y - row));
-    float colMatch = 1.0 - step(0.5, abs(ipos.x - col));
+float selectGridCell(vec2 pos, int row, int col) {
+    vec2 ipos = floor(pos);
+    float rowMatch = 1.0 - step(0.5, abs(ipos.y - float(row)));
+    float colMatch = 1.0 - step(0.5, abs(ipos.x - float(col)));
     return colMatch * rowMatch;
     /*
     abs(ipos.x - col) is zero only when you're in column

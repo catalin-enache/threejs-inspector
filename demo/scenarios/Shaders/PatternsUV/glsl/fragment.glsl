@@ -174,11 +174,42 @@ void main() {
         float mask =  shape * cellMatch;
 
         gl_FragColor = vec4(mix(vec3(tile, 0.0), vec3(1.0,1.0,0.0), mask), 1.0);
+    } else if (uPattern == 28) {
+        // dot corners influence from gradient noise https://thebookofshaders.com/11/
+        vec2 st = vUv;
+        vec2 v = (uVars.xy - vec2(0.5)) * 2.0;
+        st = (st - vec2(0.5)) * 2.0;
+        float circle = 1.0 - step(0.1, length(st - v));
+        float f = dot(v, st - v) * 2.0; // projection of st on v
+        float draw = circle + f;
+        gl_FragColor = vec4(vec3(draw), 1.0);
+    } else if (uPattern == 29) {
+        // dot corners influence from gradient noise https://thebookofshaders.com/11/
+        vec2 st = vUv;
+
+        vec2 f = fract(st);
+        vec2 u = f*f*(3.0-2.0*f);
+
+        float f0 = dot(vec2(1.0, 1.0), f - vec2(0.0, 0.0));
+        float f1 = dot(vec2(0.0, 1.0), f - vec2(1.0, 0.0));
+        float f2 = dot(vec2(1.0, 0.0), f - vec2(0.0, 1.0));
+        float f3 = dot(vec2(0.0, 0.0), f - vec2(1.0, 1.0));
+
+        vec2 rand = vec2(floor(uVars.x * 20.0), floor(uVars.y * 20.0));
+
+        f0 = dot(_random2(rand + vec2(0.0,0.0) ), f - vec2(0.0,0.0));
+        f1 = dot(_random2(rand + vec2(1.0,0.0) ), f - vec2(1.0,0.0));
+        f2 = dot(_random2(rand + vec2(0.0,1.0) ), f - vec2(0.0,1.0));
+        f3 = dot(_random2(rand + vec2(1.0,1.0) ), f - vec2(1.0,1.0));
+
+        float m = mix(mix(f0, f1, u.x), mix(f2, f3, u.x), u.y) * 2.0;
+
+        gl_FragColor = vec4(vec3(m), 1.0);
+
     } else {
         vec2 st = vUv;
 
-
-        gl_FragColor = vec4(vec2(st), 0.0, 1.0);
+        gl_FragColor = vec4(vec3(st, 0.0), 1.0);
     }
 
 }

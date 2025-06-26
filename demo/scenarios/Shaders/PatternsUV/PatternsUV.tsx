@@ -77,7 +77,7 @@ export function PatternsUV() {
         control={{
           label: 'Pattern',
           min: 1,
-          max: 30,
+          max: 40,
           step: 1
         }}
       />

@@ -4,6 +4,7 @@
 #include /src/glsl/noise
 #include /src/glsl/shapes
 #include /src/glsl/color
+#include /src/glsl/voronoi
 
 
 uniform int uPattern;
@@ -241,8 +242,32 @@ void main() {
         }
 
         gl_FragColor = vec4(finalColor, 1.0);
-    }
-    else {
+    } else if (uPattern == 31) {
+        vec2 st = vUv;
+        vec3 color = vec3(0.0);
+
+        st *= 3.;
+
+        vec2 i_st = floor(st);
+        vec2 f_st = fract(st);
+
+        // Voronoi result
+        VoronoiResult voronoiResult = voronoi(st, uTime * .1);
+        float m_dist = voronoiResult.dist;
+        vec2 m_point = voronoiResult.point;
+
+//        color += m_dist;
+//        color.rg = m_point;
+        color += dot(m_point, vec2(.3, .6)); // The weights .3 and .6 are arbitrary — chosen for visual variety.
+        // draw point
+        color += 1. - step(0.02, m_dist);
+        // draw grid
+        color.r += step(0.98, f_st.x) + step(0.98, f_st.y);
+
+        gl_FragColor = vec4(color, 1.0);
+
+
+    } else {
         gl_FragColor = vec4(vUv, 0.0, 1.0);
     }
 

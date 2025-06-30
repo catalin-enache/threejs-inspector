@@ -3,10 +3,12 @@
 #include /src/glsl/uv
 #include /src/glsl/noise
 #include /src/glsl/shapes
+#include /src/glsl/color
 
 
 uniform int uPattern;
 uniform vec4 uVars;
+uniform float uTime;
 
 varying vec2 vUv;
 varying vec2 vResolution;
@@ -50,13 +52,13 @@ void main() {
     } else if (uPattern == 13) {
         gl_FragColor = vec4(vec3(floor(vUv.y * 10.0) / 10.0 * floor(vUv.x * 10.0) / 10.0), 1.0);
     } else if (uPattern == 14) {
-        gl_FragColor = vec4(vec3(_random(vUv.xy)), 1.0);
+        gl_FragColor = vec4(vec3(random(vUv.xy)), 1.0);
     } else if (uPattern == 15) {
         vec2 st = vUv.xy * 10.0;
 //        vec2 st = vec2((vUv.x + vUv.y/50.0) * 10.0, vUv.y * 10.0);
         vec2 ipos = floor(st); // integer part
         vec2 fpos = fract(st); // fraction part
-        float rnd = _random(ipos);
+        float rnd = random(ipos);
 
         float col = 3.0;
         float row = 2.0;
@@ -79,7 +81,7 @@ void main() {
 //        st *= 5.0; // scale (zoom out)
         vec2 ipos = floor(st); // integer part
         vec2 fpos = fract(st); // fraction part
-        float rnd = _random(ipos);
+        float rnd = random(ipos);
 
         float color = 0.0;
 //        vec2 tile = fpos;
@@ -105,7 +107,7 @@ void main() {
     } else if (uPattern == 18) {
         gl_FragColor = vec4(0.01 / vec3(distance(vUv, vec2(uVars.x, uVars.y))), 1.0);
     } else if (uPattern == 19) {
-        vec2 vUvRot = _rotate2D(vUv, 2.0 * PI * uVars.x, vec2(0.5));
+        vec2 vUvRot = rotate2D(vUv, 2.0 * PI * uVars.x, vec2(0.5));
         float stretch = uVars.y == 0.0 ? 0.2 : (1.0 - uVars.y);
         float lightX = 0.01 / distance(vec2(vUvRot.x * stretch, vUvRot.y), vec2(0.5 * stretch, 0.5));
         float lightY = 0.01 / distance(vec2(vUvRot.x , vUvRot.y * stretch), vec2(0.5, 0.5 * stretch));
@@ -154,7 +156,7 @@ void main() {
         gl_FragColor = vec4(vec3(pNoise), 1.0);
     } else if (uPattern == 27) {
         vec2 uv = vUv;
-        uv = _rotate2D(uv, uVars.x * PI * 2.0, vec2(0.5, 0.5));
+        uv = rotate2D(uv, uVars.x * PI * 2.0, vec2(0.5, 0.5));
         uv *= vec2(3.0, 3.0);
         float isOddRow = step(1.0, mod(uv.y, 2.0)); // isOddRow = mod(x, 2.0) < 1.0 ? 0. : 1. ;
         uv.x += uVars.z * isOddRow; // offset odd rows
@@ -167,9 +169,9 @@ void main() {
         vec2 dir = (d > 0.0) ? tile / d : vec2(0.0); // prevent NaN at center
         tile -= dir * ((1.0 - d) * 0.1);
         tile += 0.5;
-        tile = _rotate2D(tile, uVars.y * PI * 2.0, vec2(0.5)); // rotate tile
+        tile = rotate2D(tile, uVars.y * PI * 2.0, vec2(0.5)); // rotate tile
         float shape = rectangle(tile, vec2(0.3, 0.2)); // draw shape in the rotated tile
-        tile = _rotate2D(tile, -uVars.y * PI * 2.0, vec2(0.5)); // rotate back the tile
+        tile = rotate2D(tile, -uVars.y * PI * 2.0, vec2(0.5)); // rotate back the tile
 
         float mask =  shape * cellMatch;
 
@@ -197,19 +199,51 @@ void main() {
 
         vec2 rand = vec2(floor(uVars.x * 20.0), floor(uVars.y * 20.0));
 
-        f0 = dot(_random2(rand + vec2(0.0,0.0) ), f - vec2(0.0,0.0));
-        f1 = dot(_random2(rand + vec2(1.0,0.0) ), f - vec2(1.0,0.0));
-        f2 = dot(_random2(rand + vec2(0.0,1.0) ), f - vec2(0.0,1.0));
-        f3 = dot(_random2(rand + vec2(1.0,1.0) ), f - vec2(1.0,1.0));
+        f0 = dot(random2(rand + vec2(0.0,0.0) ), f - vec2(0.0,0.0));
+        f1 = dot(random2(rand + vec2(1.0,0.0) ), f - vec2(1.0,0.0));
+        f2 = dot(random2(rand + vec2(0.0,1.0) ), f - vec2(0.0,1.0));
+        f3 = dot(random2(rand + vec2(1.0,1.0) ), f - vec2(1.0,1.0));
 
         float m = mix(mix(f0, f1, u.x), mix(f2, f3, u.x), u.y) * 2.0;
 
         gl_FragColor = vec4(vec3(m), 1.0);
 
-    } else {
-        vec2 st = vUv;
+    }
+    else if (uPattern == 30) {
+        // https://www.youtube.com/watch?v=f4s1h2YETNY&ab_channel=kishimisu
+        vec2 uv = vUv;
+        uv = (uv - vec2(0.5)) * 2.0; // remap to [-1, 1] range
+        vec2 uv0 = uv;
+        float d;
+        vec3 finalColor = vec3(0.0);
+        vec2 tile = uv;
 
-        gl_FragColor = vec4(vec3(st, 0.0), 1.0);
+        for (float i = 0.0; i < 4.0; i++) {
+            tile *= 1.5;
+            tile = fract(tile);
+            tile = (tile - vec2(0.5));
+
+            d = length(tile) * exp(-length(uv0));
+            vec3 col = palette(
+                length(uv0) + i*.4 + uTime/4.,
+                vec3(0.5, 0.5, 0.5),
+                vec3(0.5, 0.5, 0.5),
+                vec3(1.0, 1.0, 1.0),
+                vec3(0.263, 0.416, 0.557)
+            );
+
+            d = sin(d * 8. + uTime)/8.;
+            d = abs(d);
+//            d = 0.01 / d;
+            d = pow(0.01 / d, 1.2); // make it more contrasty
+
+            finalColor += col * d;
+        }
+
+        gl_FragColor = vec4(finalColor, 1.0);
+    }
+    else {
+        gl_FragColor = vec4(vUv, 0.0, 1.0);
     }
 
 }

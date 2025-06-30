@@ -10,7 +10,7 @@ export const addUniforms = `
 
 export const declarations = `
   float angle = PI/2.0 * position.z * uVars.x;
-  mat2 rotationMatrix = _getRotate2dMat(angle);
+  mat2 rotationMatrix = getRotate2dMat(angle);
 `;
 
 export const distortNormals = `

@@ -21,6 +21,7 @@ const material = new THREE.ShaderMaterial({
   uniforms: {
     uPattern: { value: 1 },
     uVars: { value: new THREE.Vector4(0, 0, 0, 0) },
+    uTime: { value: 0 },
     uResolution: {
       value: new THREE.Vector2(window.innerWidth, window.innerHeight)
     }
@@ -59,7 +60,10 @@ export function PatternsUV() {
     }
   }, [camera]);
 
-  usePlay((_playingState, _rootState, _delta) => {});
+  usePlay((_playingState, _rootState, _delta) => {
+    const elapsedTime = _rootState.clock.elapsedTime;
+    material.uniforms.uTime.value = elapsedTime;
+  });
 
   return (
     <>

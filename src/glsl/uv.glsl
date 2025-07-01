@@ -2,7 +2,7 @@
 #define TIFMK_UV_GLSL
 
 
-float selectGridCell(vec2 pos, int row, int col) {
+float tifmk_selectGridCell(vec2 pos, int row, int col) {
     vec2 ipos = floor(pos);
     float rowMatch = 1.0 - step(0.5, abs(ipos.y - float(row)));
     float colMatch = 1.0 - step(0.5, abs(ipos.x - float(col)));
@@ -15,7 +15,7 @@ float selectGridCell(vec2 pos, int row, int col) {
     */
 }
 
-vec2 truchetPattern(in vec2 st, in float index){
+vec2 tifmk_truchetPattern(in vec2 st, in float index){
     index = fract(((index - 0.5) * 2.0));
     if (index > 0.75) {
         st = vec2(1.0) - st; // Flip Both eq to 180° rotation

@@ -1,22 +1,22 @@
 #ifndef TIFMK_BEZIER_GLSL
 #define TIFMK_BEZIER_GLSL
 
-float slopeFromT (float t, float A, float B, float C){
+float tifmk_slopeFromT (float t, float A, float B, float C){
     float dtdx = 1.0/(3.0*A*t*t + 2.0*B*t + C);
     return dtdx;
 }
 
-float xFromT (float t, float A, float B, float C, float D){
+float tifmk_xFromT (float t, float A, float B, float C, float D){
     float x = A*(t*t*t) + B*(t*t) + C*t + D;
     return x;
 }
 
-float yFromT (float t, float E, float F, float G, float H){
+float tifmk_yFromT (float t, float E, float F, float G, float H){
     float y = E*(t*t*t) + F*(t*t) + G*t + H;
     return y;
 }
 
-float cubicBezier(float x, vec2 a, vec2 b){
+float tifmk_cubicBezier(float x, vec2 a, vec2 b){
 
     float y0a = 0.0; // initial y
     float x0a = 0.0; // initial x
@@ -41,13 +41,13 @@ float cubicBezier(float x, vec2 a, vec2 b){
     // Assume for the first guess that t = x.
     float currentt = x;
     for (int i=0; i < 5; i++){
-        float currentx = xFromT (currentt, A,B,C,D);
-        float currentslope = slopeFromT (currentt, A,B,C);
+        float currentx = tifmk_xFromT (currentt, A,B,C,D);
+        float currentslope = tifmk_slopeFromT (currentt, A,B,C);
         currentt -= (currentx - x)*(currentslope);
         currentt = clamp(currentt,0.0,1.0);
     }
 
-    float y = yFromT (currentt,  E,F,G,H);
+    float y = tifmk_yFromT (currentt,  E,F,G,H);
     return y;
 }
 

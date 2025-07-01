@@ -4,12 +4,12 @@
 
 #include /src/glsl/math
 
-float plot(vec2 p, float pct) { // pct means "percentage" / p is st (surface texture coordinate)
+float tifmk_plot(vec2 p, float pct) { // pct means "percentage" / p is st (surface texture coordinate)
     return  smoothstep(pct - 0.01, pct, p.y) -
     smoothstep(pct, pct + 0.01, p.y);
 }
 
-float lineSegment(vec2 p, vec2 a, vec2 b) {
+float tifmk_lineSegment(vec2 p, vec2 a, vec2 b) {
     vec2 pa = p - a, ba = b - a;
     // 0..1 gradient between a and b
     // representing how much projection is between each pixel pa and the vector ba
@@ -19,22 +19,22 @@ float lineSegment(vec2 p, vec2 a, vec2 b) {
     return smoothstep(0.0, 0.001, length(pa - ba * h));
 }
 
-float circle(in vec2 p, in float radius) {
+float tifmk_circle(in vec2 p, in float radius) {
     vec2 dist = p - vec2(0.5);
     return 1. - smoothstep(radius - (radius * 0.01), radius + (radius * 0.01), dot(dist, dist) * 4.0);
 }
 
-float rectangle(in vec2 p, in vec2 size) {
+float tifmk_rectangle(in vec2 p, in vec2 size) {
     p = p * 2.0 - 1.0; // remap to [-1, 1] range
     return step(0.01, 1.0 - max( abs(p.x / size.x), abs(p.y / size.y) ));
 }
 
-float roundedRectangle(in vec2 p) {
+float tifmk_roundedRectangle(in vec2 p) {
     p = p * 2.0 - 1.0; // remap to [-1, 1] range
     return 1.0 - step(0.1, length(max(abs(p)-.5, 0.0)));
 }
 
-float flower(in vec2 p, in int sides) {
+float tifmk_flower(in vec2 p, in int sides) {
     vec2 pos = (vec2(0.5) - p) * 2.0; // remap to [-1, 1] range
 
     float r = length(pos);
@@ -50,7 +50,7 @@ float flower(in vec2 p, in int sides) {
     return 1. - smoothstep(f, f+0.02 , r);
 }
 
-float polygon(in vec2 p, in int sides) {
+float tifmk_polygon(in vec2 p, in int sides) {
     p = (vec2(0.5) - p) * 2.0; // remap to [-1, 1] range
     float d = 0.0;
     float a = atan(p.y, p.x) + PI;

@@ -5,6 +5,7 @@
 #include /src/glsl/shapes
 #include /src/glsl/color
 #include /src/glsl/voronoi
+#include /node_modules/lygia/generative/worley.glsl
 
 
 uniform int uPattern;
@@ -53,20 +54,20 @@ void main() {
     } else if (uPattern == 13) {
         gl_FragColor = vec4(vec3(floor(vUv.y * 10.0) / 10.0 * floor(vUv.x * 10.0) / 10.0), 1.0);
     } else if (uPattern == 14) {
-        gl_FragColor = vec4(vec3(random(vUv.xy)), 1.0);
+        gl_FragColor = vec4(vec3(tifmk_random(vUv.xy)), 1.0);
     } else if (uPattern == 15) {
         vec2 st = vUv.xy * 10.0;
 //        vec2 st = vec2((vUv.x + vUv.y/50.0) * 10.0, vUv.y * 10.0);
         vec2 ipos = floor(st); // integer part
         vec2 fpos = fract(st); // fraction part
-        float rnd = random(ipos);
+        float rnd = tifmk_random(ipos);
 
         float col = 3.0;
         float row = 2.0;
-        float cellMatch1 = selectGridCell(st, int(floor(uVars.x * 10.0)), int(floor(uVars.x * 10.0)));
-        float cellMatch2 = selectGridCell(st, int(floor(uVars.y * 10.0)), int(floor(uVars.y * 10.0)));
+        float cellMatch1 = tifmk_selectGridCell(st, int(floor(uVars.x * 10.0)), int(floor(uVars.x * 10.0)));
+        float cellMatch2 = tifmk_selectGridCell(st, int(floor(uVars.y * 10.0)), int(floor(uVars.y * 10.0)));
 
-        float circ = circle(fpos, 0.3);
+        float circ = tifmk_circle(fpos, 0.3);
 
         vec3 bgColor = vec3(rnd);
         vec3 cellColor = vec3(0.2, 1.0, 0.2);
@@ -82,11 +83,11 @@ void main() {
 //        st *= 5.0; // scale (zoom out)
         vec2 ipos = floor(st); // integer part
         vec2 fpos = fract(st); // fraction part
-        float rnd = random(ipos);
+        float rnd = tifmk_random(ipos);
 
         float color = 0.0;
 //        vec2 tile = fpos;
-        vec2 tile = truchetPattern(fpos, rnd);
+        vec2 tile = tifmk_truchetPattern(fpos, rnd);
 //        color = fpos.y;
         if (floor(uVars.x * 10.0) == 0.0) {
             // Maze
@@ -108,7 +109,7 @@ void main() {
     } else if (uPattern == 18) {
         gl_FragColor = vec4(0.01 / vec3(distance(vUv, vec2(uVars.x, uVars.y))), 1.0);
     } else if (uPattern == 19) {
-        vec2 vUvRot = rotate2D(vUv, 2.0 * PI * uVars.x, vec2(0.5));
+        vec2 vUvRot = tifmk_rotate2D(vUv, 2.0 * PI * uVars.x, vec2(0.5));
         float stretch = uVars.y == 0.0 ? 0.2 : (1.0 - uVars.y);
         float lightX = 0.01 / distance(vec2(vUvRot.x * stretch, vUvRot.y), vec2(0.5 * stretch, 0.5));
         float lightY = 0.01 / distance(vec2(vUvRot.x , vUvRot.y * stretch), vec2(0.5, 0.5 * stretch));
@@ -147,32 +148,32 @@ void main() {
 
         gl_FragColor = vec4(vec3(circle), 1.0);
     } else if (uPattern == 24) {
-        float pNoise = cnoise(vUv * (1.0 + uVars.x * 100.0));
+        float pNoise = tifmk_cnoise(vUv * (1.0 + uVars.x * 100.0));
         gl_FragColor = vec4(vec3(pNoise), 1.0);
     } else if (uPattern == 25) {
-        float pNoise = step(0.1, cnoise(vUv * (1.0 + uVars.x * 100.0)));
+        float pNoise = step(0.1, tifmk_cnoise(vUv * (1.0 + uVars.x * 100.0)));
         gl_FragColor = vec4(vec3(pNoise), 1.0);
     } else if (uPattern == 26) {
-        float pNoise = sin(cnoise(vUv * (1.0 + uVars.x * 100.0)) * 20.0);
+        float pNoise = sin(tifmk_cnoise(vUv * (1.0 + uVars.x * 100.0)) * 20.0);
         gl_FragColor = vec4(vec3(pNoise), 1.0);
     } else if (uPattern == 27) {
         vec2 uv = vUv;
-        uv = rotate2D(uv, uVars.x * PI * 2.0, vec2(0.5, 0.5));
+        uv = tifmk_rotate2D(uv, uVars.x * PI * 2.0, vec2(0.5, 0.5));
         uv *= vec2(3.0, 3.0);
         float isOddRow = step(1.0, mod(uv.y, 2.0)); // isOddRow = mod(x, 2.0) < 1.0 ? 0. : 1. ;
         uv.x += uVars.z * isOddRow; // offset odd rows
         vec2 tile = fract(uv);
         ivec2 cell = ivec2(1, 1);
-        float cellMatch = selectGridCell(uv, cell.y, cell.x); // 0 or 1 if in the cell
+        float cellMatch = tifmk_selectGridCell(uv, cell.y, cell.x); // 0 or 1 if in the cell
 
         tile -= 0.5;
         float d = length(tile);
         vec2 dir = (d > 0.0) ? tile / d : vec2(0.0); // prevent NaN at center
         tile -= dir * ((1.0 - d) * 0.1);
         tile += 0.5;
-        tile = rotate2D(tile, uVars.y * PI * 2.0, vec2(0.5)); // rotate tile
-        float shape = rectangle(tile, vec2(0.3, 0.2)); // draw shape in the rotated tile
-        tile = rotate2D(tile, -uVars.y * PI * 2.0, vec2(0.5)); // rotate back the tile
+        tile = tifmk_rotate2D(tile, uVars.y * PI * 2.0, vec2(0.5)); // rotate tile
+        float shape = tifmk_rectangle(tile, vec2(0.3, 0.2)); // draw shape in the rotated tile
+        tile = tifmk_rotate2D(tile, -uVars.y * PI * 2.0, vec2(0.5)); // rotate back the tile
 
         float mask =  shape * cellMatch;
 
@@ -200,10 +201,10 @@ void main() {
 
         vec2 rand = vec2(floor(uVars.x * 20.0), floor(uVars.y * 20.0));
 
-        f0 = dot(random2(rand + vec2(0.0,0.0) ), f - vec2(0.0,0.0));
-        f1 = dot(random2(rand + vec2(1.0,0.0) ), f - vec2(1.0,0.0));
-        f2 = dot(random2(rand + vec2(0.0,1.0) ), f - vec2(0.0,1.0));
-        f3 = dot(random2(rand + vec2(1.0,1.0) ), f - vec2(1.0,1.0));
+        f0 = dot(tifmk_random2(rand + vec2(0.0,0.0) ), f - vec2(0.0,0.0));
+        f1 = dot(tifmk_random2(rand + vec2(1.0,0.0) ), f - vec2(1.0,0.0));
+        f2 = dot(tifmk_random2(rand + vec2(0.0,1.0) ), f - vec2(0.0,1.0));
+        f3 = dot(tifmk_random2(rand + vec2(1.0,1.0) ), f - vec2(1.0,1.0));
 
         float m = mix(mix(f0, f1, u.x), mix(f2, f3, u.x), u.y) * 2.0;
 
@@ -225,7 +226,7 @@ void main() {
             tile = (tile - vec2(0.5));
 
             d = length(tile) * exp(-length(uv0));
-            vec3 col = palette(
+            vec3 col = tifmk_palette(
                 length(uv0) + i*.4 + uTime/4.,
                 vec3(0.5, 0.5, 0.5),
                 vec3(0.5, 0.5, 0.5),
@@ -252,7 +253,7 @@ void main() {
         vec2 f_st = fract(st);
 
         // Voronoi result
-        VoronoiResult voronoiResult = voronoi(st, uTime * .1);
+        VoronoiResult voronoiResult = tifmk_voronoi(st, uTime * .1);
         float m_dist = voronoiResult.dist;
         vec2 m_point = voronoiResult.point;
 
@@ -266,6 +267,16 @@ void main() {
 
         gl_FragColor = vec4(color, 1.0);
 
+    } else if (uPattern == 32) {
+        vec4 color = vec4(vec3(0.0), 1.0);
+        vec2 st = vUv;
+
+        vec2 d2 = worley2(vec2(st*10.0 + uTime));
+        vec2 d3 = worley2(vec3(st*10.0, uTime));
+
+        color += 1.0-mix(d2.x, d3.x, step(0.5, st.x));
+
+        gl_FragColor = color;
 
     } else {
         gl_FragColor = vec4(vUv, 0.0, 1.0);

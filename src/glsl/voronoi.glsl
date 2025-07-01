@@ -7,7 +7,7 @@ struct VoronoiResult {
 };
 
 // worley
-VoronoiResult voronoi(vec2 st, float uTime) {
+VoronoiResult tifmk_voronoi(vec2 st, float uTime) {
     vec2 i_st = floor(st);
     vec2 f_st = fract(st);
     float m_dist = 1.;
@@ -16,7 +16,7 @@ VoronoiResult voronoi(vec2 st, float uTime) {
     for (int x = -1; x <= 1; x++) {
         for (int y = -1; y <= 1; y++) {
             vec2 neighbor = vec2(float(x), float(y));
-            vec2 point = random2(i_st + neighbor) / 2.0 + 0.5;
+            vec2 point = tifmk_random2(i_st + neighbor) / 2.0 + 0.5;
             // animate point
             if (uTime > 0.0) {
                 point = sin(uTime + point * TWO_PI) / 2.0 + 0.5;
@@ -37,8 +37,8 @@ VoronoiResult voronoi(vec2 st, float uTime) {
     return result;
 }
 
-VoronoiResult voronoi(vec2 st) {
-    return voronoi(st, 0.0); // default uTime to 0.0
+VoronoiResult tifmk_voronoi(vec2 st) {
+    return tifmk_voronoi(st, 0.0); // default uTime to 0.0
 }
 
 #endif

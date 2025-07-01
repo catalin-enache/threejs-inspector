@@ -66,7 +66,7 @@ void main() {
 
         color = mix(vec3(1.0, 0.0, 0.0), color, smoothstep(0.01, 0.02, distance(a, st))); // point a
         color = mix(vec3(0.0, 1.0, 0.0), color, smoothstep(0.01, 0.02, distance(b, st))); // point b
-//        color = mix(vec3(1), color, lineSegment(st, cp0, cp1));
+//        color = mix(vec3(1), color, tifmk_lineSegment(st, cp0, cp1));
         gl_FragColor = vec4(color, 1.0);
         st = st * 0.5 + 0.5; // remap to [0, 1] range
         return;
@@ -79,12 +79,12 @@ void main() {
         vec2 a = vec2(ax, ay);
         vec2 b = vec2(bx, by);
 
-        float l = cubicBezier(st.x, a, b);
+        float l = tifmk_cubicBezier(st.x, a, b);
         vec3 color = vec3(smoothstep(l, l+0.001, st.y));
 
-        color = mix(vec3(0.5), color, lineSegment(st, vec2(0.0), a));
-        color = mix(vec3(0.5), color, lineSegment(st, vec2(1.0), b));
-        color = mix(vec3(0.5), color, lineSegment(st, a, b));
+        color = mix(vec3(0.5), color, tifmk_lineSegment(st, vec2(0.0), a));
+        color = mix(vec3(0.5), color, tifmk_lineSegment(st, vec2(1.0), b));
+        color = mix(vec3(0.5), color, tifmk_lineSegment(st, a, b));
         color = mix(vec3(1.0,0.0,0.0), color, smoothstep(0.01,0.011,distance(a, st)));
         color = mix(vec3(1.0,0.0,0.0), color, smoothstep(0.01,0.011,distance(b, st)));
 
@@ -95,20 +95,20 @@ void main() {
         vec3 color = vec3(0.0);
 
         vec2 size = vec2(0.2, 0.2);
-        float r = rectangle(st, size);
-//        float r = roundedRectangle(st);
+        float r = tifmk_rectangle(st, size);
+//        float r = tifmk_roundedRectangle(st);
         color = vec3(r);
         gl_FragColor = vec4(color, 1.0);
         return;
     } else if (uShape == 14) {
         vec3 color = vec3(0.0);
-        float f = flower(st, int(uVars[0] * 10.0));
+        float f = tifmk_flower(st, int(uVars[0] * 10.0));
         color = vec3(f);
         gl_FragColor = vec4(color, 1.0);
         return;
     } else if (uShape == 15) {
         vec3 color = vec3(0.0);
-        float f = polygon(st, int(uVars[0] * 10.0));
+        float f = tifmk_polygon(st, int(uVars[0] * 10.0));
         color = vec3(f);
         gl_FragColor = vec4(color, 1.0);
         return;
@@ -120,7 +120,7 @@ void main() {
         return;
     }
 
-    float pct = plot(st, y);
+    float pct = tifmk_plot(st, y);
     vec3 color = vec3(y);
     color = (1.0 - pct) * color + pct * vec3(0.0, 1.0, 0.0);
     gl_FragColor = vec4(color, 1.0);

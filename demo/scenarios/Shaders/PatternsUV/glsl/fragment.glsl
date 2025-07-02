@@ -5,7 +5,8 @@
 #include /src/glsl/shapes
 #include /src/glsl/color
 #include /src/glsl/voronoi
-#include /node_modules/lygia/generative/worley.glsl
+#include /src/glsl/worley
+#include /node_modules/lygia/generative/voronoi
 
 
 uniform int uPattern;
@@ -243,6 +244,7 @@ void main() {
         }
 
         gl_FragColor = vec4(finalColor, 1.0);
+
     } else if (uPattern == 31) {
         vec2 st = vUv;
         vec3 color = vec3(0.0);
@@ -253,32 +255,75 @@ void main() {
         vec2 f_st = fract(st);
 
         // Voronoi result
-        VoronoiResult voronoiResult = tifmk_voronoi(st, uTime * .1);
+        VoronoiResult voronoiResult = tifmk_voronoi(st, uTime * .5);
         float m_dist = voronoiResult.dist;
         vec2 m_point = voronoiResult.point;
 
-//        color += m_dist;
-//        color.rg = m_point;
-        color += dot(m_point, vec2(.3, .6)); // The weights .3 and .6 are arbitrary — chosen for visual variety.
+        color += pow(1. - m_dist, 1.);
+//        color += dot(m_point, vec2(.3, .6)); // The weights .3 and .6 are arbitrary — chosen for visual variety.
         // draw point
-        color += 1. - step(0.02, m_dist);
+        color.rb *= step(0.02, m_dist); // suntract rb from around the point
         // draw grid
         color.r += step(0.98, f_st.x) + step(0.98, f_st.y);
 
         gl_FragColor = vec4(color, 1.0);
 
     } else if (uPattern == 32) {
+        vec2 st = vUv;
+        vec3 color = vec3(0.0);
+
+        st *= 3.;
+
+        vec2 i_st = floor(st);
+        vec2 f_st = fract(st);
+
+        VoronoiResult voronoiResult = tifmk_voronoi_metaball(st, uTime * .5);
+        float m_dist = voronoiResult.dist;
+        vec2 m_point = voronoiResult.point;
+
+        // draw point / metabball
+        color += step(0.06, m_dist);
+
+        gl_FragColor = vec4(color, 1.0);
+
+    } else if (uPattern == 33) {
         vec4 color = vec4(vec3(0.0), 1.0);
         vec2 st = vUv;
 
-        vec2 d2 = worley2(vec2(st*10.0 + uTime));
-        vec2 d3 = worley2(vec3(st*10.0, uTime));
+        // https://raw.githubusercontent.com/patriciogonzalezvivo/lygia_examples/main/generative_voronoi.frag
+        vec3 d2 = voronoi(vec2(st * 5. + uTime));
+        vec3 d3 = voronoi(vec3(st * 5., uTime));
 
-        color += 1.0-mix(d2.x, d3.x, step(0.5, st.x));
+        color.rgb += mix(d2, d3, step(0.5, st.x));
 
         gl_FragColor = color;
 
-    } else {
+    } else if (uPattern == 34 || uPattern == 35 || uPattern == 36 || uPattern == 37) {
+        vec4 color = vec4(vec3(0.0), 1.0);
+        vec2 st = vUv;
+
+        // https://raw.githubusercontent.com/patriciogonzalezvivo/lygia_examples/main/generative_worley.frag
+        vec2 d2 = tifmk_worley2(vec2(st*10.0 + uTime));
+        vec2 d3 = tifmk_worley2(vec3(st*10.0, uTime));
+
+        if (uPattern == 34) {
+            // var 1 F1 distance
+            color += mix(d2.x, d3.x, step(0.5, st.x));
+        } else if (uPattern == 35) {
+            // var 1 F2 distance
+            color += mix(d2.y, d3.y, step(0.5, st.x));
+        } else if (uPattern == 36) {
+            // var 2 F2 - F1 crystals
+            color += mix(d2.y, d3.y, step(0.5, st.x));
+            color -= mix(d2.x, d3.x, step(0.5, st.x));
+        } else if (uPattern == 37) {
+            // var 3 - water-ish
+            color += mix(d2.y * d2.x, d3.y * d3.x, step(0.5, st.x));
+        }
+
+        gl_FragColor = color;
+
+    }  else {
         gl_FragColor = vec4(vUv, 0.0, 1.0);
     }
 

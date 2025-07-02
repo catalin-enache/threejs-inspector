@@ -17,21 +17,5 @@ float tifmk_modulo(float a, float b) {
     return a - floor(a / b) * b;
 }
 
-float tifmk_random (in float x) {
-    return fract(sin(x) * 1e4);
-}
-
-// https://thebookofshaders.com/10/
-float tifmk_random(in vec2 st)
-{
-    return fract(sin(dot(st.xy, vec2(12.9898, 78.233))) * 43758.5453123);
-}
-
-vec2 tifmk_random2(vec2 st){
-    st = vec2( dot(st, vec2(127.1, 311.7)), dot(st, vec2(269.5, 183.3)) );
-    return -1.0 + 2.0 * fract(sin(st) * 43758.5453123);
-}
-
-
 
 #endif

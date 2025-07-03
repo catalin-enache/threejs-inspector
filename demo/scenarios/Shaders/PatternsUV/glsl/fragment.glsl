@@ -259,10 +259,11 @@ void main() {
         float m_dist = voronoiResult.dist;
         vec2 m_point = voronoiResult.point;
 
-        color += pow(1. - m_dist, 1.);
-//        color += dot(m_point, vec2(.3, .6)); // The weights .3 and .6 are arbitrary — chosen for visual variety.
+//        color += pow(1. - m_dist, 1.);
+        color += dot(m_point, vec2(.3, .6)); // The weights .3 and .6 are arbitrary — chosen for visual variety.
         // draw point
         color.rb *= step(0.02, m_dist); // suntract rb from around the point
+//        color += 1. - step(0.02, m_dist);
         // draw grid
         color.r += step(0.98, f_st.x) + step(0.98, f_st.y);
 
@@ -323,7 +324,17 @@ void main() {
 
         gl_FragColor = color;
 
-    }  else {
+    }  else if (uPattern == 38) {
+        vec2 st = vUv * 10.;
+        vec3 color = vec3(0.0);
+        VoronoiResult voronoiResult = tifmk_voronoi_borders(st, uTime * .5);
+        color += voronoiResult.dist;
+        color += 1. - smoothstep(0.01, 0.02, voronoiResult.dist); // draw borders;
+        color += 1. - smoothstep(0.05, 0.06, length(voronoiResult.point)); // draw feature point
+
+        gl_FragColor = vec4(color, 1.0);
+
+    } else {
         gl_FragColor = vec4(vUv, 0.0, 1.0);
     }
 

@@ -6,6 +6,7 @@
 #include /src/glsl/color
 #include /src/glsl/voronoi
 #include /src/glsl/worley
+#include /src/glsl/iqnoise
 #include /node_modules/lygia/generative/voronoi
 
 
@@ -333,6 +334,13 @@ void main() {
         color += 1. - smoothstep(0.05, 0.06, length(voronoiResult.point)); // draw feature point
 
         gl_FragColor = vec4(color, 1.0);
+
+    } else if (uPattern == 39) {
+        vec2 st = vUv * 10.;
+        vec3 color = vec3(0.0);
+        float d = tifmk_iqnoise(st, uVars.x, uVars.y);
+
+        gl_FragColor = vec4(vec3(d), 1.0);
 
     } else {
         gl_FragColor = vec4(vUv, 0.0, 1.0);

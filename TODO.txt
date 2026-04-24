@@ -102,6 +102,7 @@ setFrameloop('never') conflicts with usePlay hook.
 Add a button on the scene panel to update CubeCameras on demand. *DONE*
 
 
+
 Remove everything from the scene and check geometries in scene renderer info, They should be 0.
 *DONE* they cannot be 0 due to internals of three, but they do not leak.
 

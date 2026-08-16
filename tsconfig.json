@@ -39,7 +39,8 @@
     "removeComments": false
   },
   "include": [
-    "src/**/*"
+    "src/**/*",
+    "demo/**/*"
   ],
   "references": [{ "path": "./tsconfig.node.json" }]
 }

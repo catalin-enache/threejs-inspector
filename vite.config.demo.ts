@@ -29,7 +29,8 @@ export default defineConfig({
   publicDir: '../public',
   server: {
     host: true,
-    open: true
+    open: true,
+    port: 5174,
   },
   optimizeDeps: {
     esbuildOptions: {
